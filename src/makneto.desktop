@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Makneto
+Exec=makneto %i -caption "%c"
+Icon=makneto
+Type=Application
+DocPath=makneto/makneto.html
+GenericName=A KDE4 Application
+Terminal=0
+
