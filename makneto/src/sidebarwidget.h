@@ -11,7 +11,7 @@
 
 class KMultiTabBar;
 class QHBoxLayout;
-class ConnectionView;
+class QStackedWidget;
 
 /**
  * This is sidebar widget for Makneto
@@ -35,10 +35,16 @@ public:
 	*/
 	virtual ~SidebarWidget();
 
+	int appendTabWidget(QWidget *widget, const QPixmap &pic, int id, const QString &text); 
+	int currentIndex() const { return m_currentIndex; }
+	void setCurrentIndex(int index);
+private slots:
+	void tabClicked(int id);
 private:
 	QHBoxLayout *m_layout;
-	ConnectionView *m_conn;
 	KMultiTabBar *m_multitab;
+	QStackedWidget *m_widgets;
+	int m_currentIndex;
 };
 
 #endif // SIDEBARWIDGET_H
