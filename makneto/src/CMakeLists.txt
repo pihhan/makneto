@@ -1,5 +1,7 @@
 project(makneto)
 
+SET(CMAKE_BUILD_TYPE Debug)
+
 find_package(KDE4 REQUIRED)
 find_package(QCA2 REQUIRED)
 find_package(Qt4 REQUIRED)
@@ -38,6 +40,8 @@ set(makneto_SRCS
 	maknetoview.cpp
 	sidebarwidget.cpp
 	connectionview.cpp
+	roasterview.cpp
+	connection.cpp
 
 #libidn
 	iris/libidn/profiles.c
@@ -119,6 +123,8 @@ kde4_moc_headers(makneto
 )
 
 kde4_add_executable(makneto ${makneto_SRCS})
+
+SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g -O2")
 
 target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES})
 

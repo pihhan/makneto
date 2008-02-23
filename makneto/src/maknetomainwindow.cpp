@@ -48,7 +48,7 @@ MaknetoMainWindow::~MaknetoMainWindow()
 void MaknetoMainWindow::setupActions()
 {
     KStandardAction::openNew(this, SLOT(fileNew()), actionCollection());
-    KStandardAction::quit(this, SLOT(quit()), actionCollection());
+//    KStandardAction::quit(this, SLOT(quit()), actionCollection());
 
     KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 }

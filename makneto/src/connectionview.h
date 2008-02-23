@@ -8,14 +8,14 @@
 #define CONNECTIONVIEW_H
 
 #include <QtGui/QWidget>
-#include "xmpp.h"
 
 class QVBoxLayout;
 class QPushButton;
 class QGridLayout;
+class Connection;
 
 /**
- * This is connectio view widget for Makneto
+ * This is connection view widget for Makneto
  *
  * @short Connection view widget
  * @author Jaroslav Reznik <rezzabuh@gmail.com>
@@ -36,6 +36,14 @@ public:
 	*/
 	virtual ~ConnectionView();
 
+private slots:
+	void onlineClicked(bool);
+	void awayClicked(bool);
+	void xaClicked(bool);
+	void dndClicked(bool);
+	void invisibleClicked(bool);
+	void offlineClicked(bool);
+
 private:
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_buttonslayout;
@@ -43,8 +51,12 @@ private:
 
 	QPushButton *m_buttononline;
 	QPushButton *m_buttonaway;
+	QPushButton *m_buttonxa;
 	QPushButton *m_buttondnd;
+	QPushButton *m_buttoninvisible;
 	QPushButton *m_buttonoffline;
+
+	Connection *m_conn;
 };
 
 #endif // CONNECTIONVIEW_H
