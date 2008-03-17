@@ -7,9 +7,11 @@
 #define MAKNETOVIEW_H
 
 #include <QtGui/QWidget>
+#include "makneto.h"
 
 class QPainter;
 class KUrl;
+class SessionView;
 
 /**
  * This is the main view class for Makneto.  Most of the non-menu,
@@ -21,6 +23,8 @@ class KUrl;
  * @version 0.1
  */
 
+class Makneto;
+
 class MaknetoView : public QWidget
 {
     Q_OBJECT
@@ -28,7 +32,7 @@ public:
     /**
      * Default constructor
      */
-    MaknetoView(QWidget *parent);
+    MaknetoView(QWidget *parent, Makneto *makneto);
 
     /**
      * Destructor
@@ -48,6 +52,9 @@ signals:
 
 private slots:
     void switchColors();
+
+private:
+	SessionView *m_sessionview; 
 };
 
 #endif // MaknetoVIEW_H

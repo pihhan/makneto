@@ -7,6 +7,8 @@
 #define MAKNETOMAINWINDOW_H
 
 #include <kxmlguiwindow.h>
+#include "ui_prefs_base.h"
+#include "makneto.h"
 
 class MaknetoView;
 class KToggleAction;
@@ -20,11 +22,14 @@ class KUrl;
  * @author Jaroslav Reznik <rezzabuh@gmail.com>
  * @version 0.1
  */
+
+class Makneto;
+
 class MaknetoMainWindow : public KXmlGuiWindow
 {
     Q_OBJECT
 public:
-    MaknetoMainWindow();
+    MaknetoMainWindow(Makneto *makneto);
 
     virtual ~MaknetoMainWindow();
 
@@ -36,7 +41,9 @@ private:
     void setupActions();
 
 private:
+    Ui::prefs_base ui_prefs_base ;
     MaknetoView *m_view;
+    Makneto *m_makneto;
 
     KToggleAction *m_toolbarAction;
     KToggleAction *m_statusbarAction;

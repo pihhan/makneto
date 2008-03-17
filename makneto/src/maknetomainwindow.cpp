@@ -5,6 +5,7 @@
  */
 #include "maknetomainwindow.h"
 #include "maknetoview.h"
+#include "settings.h"
 
 #include <QtGui/QDropEvent>
 #include <QtGui/QPainter>
@@ -19,11 +20,13 @@
 
 #include <KDE/KLocale>
 
-MaknetoMainWindow::MaknetoMainWindow()
+MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto)
     : KXmlGuiWindow(),
-    m_view(new MaknetoView(this))
+    m_view(new MaknetoView(this, makneto))
 {
-    setAcceptDrops(true);
+	m_makneto = makneto;
+
+   setAcceptDrops(true);
 
     setCentralWidget(m_view);
 
@@ -59,6 +62,17 @@ void MaknetoMainWindow::fileNew()
 
 void MaknetoMainWindow::optionsPreferences()
 {
+	if ( KConfigDialog::showDialog( "settings" ) )  {
+		return;
+	}
+
+	KConfigDialog *dialog = new KConfigDialog(this, "settings", Settings::self());
+	QWidget *generalSettingsDlg = new QWidget;
+	ui_prefs_base.setupUi(generalSettingsDlg);
+	dialog->addPage(generalSettingsDlg, i18n("General"), "package_setting");
+	connect(dialog, SIGNAL(settingsChanged(QString)), m_view, SLOT(settingsChanged()));
+	dialog->setAttribute( Qt::WA_DeleteOnClose );
+	dialog->show();
 }
 
 #include "maknetomainwindow.moc"
