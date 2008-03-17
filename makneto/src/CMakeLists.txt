@@ -42,6 +42,23 @@ set(makneto_SRCS
 	connectionview.cpp
 	roasterview.cpp
 	connection.cpp
+	makneto.cpp
+	maknetocontactlist.cpp
+	maknetocontact.cpp
+	wbwidget.cpp
+	wbscene.cpp
+	wbitems.cpp
+	sessionview.cpp
+
+#contactlist
+	contactlist/contactlistalphacomparator.cpp
+	contactlist/contactlist.cpp
+	contactlist/contactlistgroupitem.cpp
+	contactlist/contactlistmodel.cpp
+	contactlist/contactlistcontact.cpp
+	contactlist/contactlistgroup.cpp
+	contactlist/contactlistitem.cpp
+	contactlist/contactlistview.cpp
 
 #libidn
 	iris/libidn/profiles.c
@@ -121,6 +138,9 @@ kde4_moc_headers(makneto
         iris/xmpp-im/xmpp_tasks.h
         iris/xmpp-im/xmpp_discoinfotask.h
 )
+
+kde4_add_ui_files(makneto_SRCS maknetoview_base.ui prefs_base.ui)
+kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})
 

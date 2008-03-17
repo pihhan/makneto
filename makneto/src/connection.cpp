@@ -56,7 +56,7 @@ bool Connection::login()
 {
 	qDebug() << "Connection::connect()";
 
-	m_jid = Jid("test@localhost");
+	m_jid = Jid("rezza@jabber.cz");
 
 	m_conn = new AdvancedConnector(this);
 	m_conn->setOptSSL(false);
@@ -88,8 +88,8 @@ void Connection::needAuthParams(bool, bool, bool)
 {
 	qDebug() << "Connection::needAuthParams(...)";
 
-	m_stream->setUsername("test");
-	m_stream->setPassword("test");
+	m_stream->setUsername("rezza");
+	m_stream->setPassword("Pondeli1");
 
 	m_stream->continueAfterParams();
 }

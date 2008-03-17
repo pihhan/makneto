@@ -1,4 +1,5 @@
 #include "maknetomainwindow.h"
+#include "makneto.h"
 #include <kapplication.h>
 #include <kaboutdata.h>
 #include <kcmdlineargs.h>
@@ -23,9 +24,13 @@ int main(int argc, char **argv)
 	KCmdLineArgs::addCmdLineOptions(options);
 	KApplication app;
 
-	MaknetoMainWindow mainWindow;
+	// Makneto main
+	Makneto *makneto = new Makneto;
+	MaknetoMainWindow *mainWindow = new MaknetoMainWindow(makneto);
     
-	mainWindow.show();
+	makneto->setMainWindow(mainWindow);
+
+	mainWindow->show();
 
 	return app.exec();
 }
