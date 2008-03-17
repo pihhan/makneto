@@ -62,7 +62,7 @@
 #include "td.h"
 #endif
 
-//#define XMPP_DEBUG
+#define XMPP_DEBUG
 
 using namespace XMPP;
 
@@ -351,6 +351,9 @@ void ClientStream::continueAfterWarning()
 	}
 	else if(d->state == WaitTLS) {
 		d->state = Connecting;
+		
+		qDebug() << "ClientStream::continueAfterWarning: Connecting state";
+
 		processNext();
 	}
 }
@@ -638,7 +641,7 @@ void ClientStream::ss_readyRead()
 		d->srv.addIncomingData(a);
 	if(d->notify & CoreProtocol::NRecv) {
 #ifdef XMPP_DEBUG
-		printf("We needed data, so let's process it\n");
+		qDebug() << "We needed data, so let's process it";
 #endif
 		processNext();
 	}
@@ -653,7 +656,7 @@ void ClientStream::ss_bytesWritten(int bytes)
 
 	if(d->notify & CoreProtocol::NSend) {
 #ifdef XMPP_DEBUG
-		printf("We were waiting for data to be written, so let's process\n");
+		qDebug() << "We were waiting for data to be written, so let's process";
 #endif
 		processNext();
 	}
@@ -711,9 +714,6 @@ void ClientStream::sasl_nextStep(const QByteArray &stepData)
 
 void ClientStream::sasl_needParams(const QCA::SASL::Params& p) 
 {
-#ifdef XMPP_DEBUG
-	printf("need params: %d,%d,%d,%d\n", p.user, p.authzid, p.pass, p.realm);
-#endif
 	/*if(p.authzid && !p.user) {
 		d->sasl->setAuthzid(d->jid.bare());
 		//d->sasl->setAuthzid("infiniti.homelesshackers.org");
@@ -742,7 +742,7 @@ void ClientStream::sasl_authCheck(const QString &user, const QString &)
 void ClientStream::sasl_authenticated()
 {
 #ifdef XMPP_DEBUG
-	printf("sasl authed!!\n");
+	qDebug() << "sasl authed!!";
 #endif
 	d->sasl_ssf = d->sasl->ssf();
 
@@ -755,7 +755,7 @@ void ClientStream::sasl_authenticated()
 void ClientStream::sasl_error()
 {
 #ifdef XMPP_DEBUG
-	printf("sasl error: %d\n", d->sasl->authCondition());
+	qDebug() << "sasl error: " << d->sasl->authCondition();
 #endif
 	// has to be auth error
 	int x = convertedSASLCond();
@@ -904,7 +904,7 @@ void ClientStream::processNext()
 
 	while(1) {
 #ifdef XMPP_DEBUG
-		printf("Processing step...\n");
+		qDebug() << "Processing step...";
 #endif
 		bool ok = d->client.processStep();
 		// deal with send/received items
@@ -1091,9 +1091,17 @@ bool ClientStream::handleNeed()
 			// no SASL plugin?  fall back to Simple SASL
 			if(!QCA::isSupported("sasl")) {
 				QCA::insertProvider(createProviderSimpleSASL());
+#ifdef XMPP_DEBUG
+				printf("Simple SASL\n");
+#endif
+
 			}
 
 			d->sasl = new QCA::SASL();
+#ifdef XMPP_DEBUG
+				printf("SASL\n");
+#endif
+
 			connect(d->sasl, SIGNAL(clientStarted(bool,const QByteArray&)), SLOT(sasl_clientFirstStep(bool, const QByteArray&)));
 			connect(d->sasl, SIGNAL(nextStep(const QByteArray &)), SLOT(sasl_nextStep(const QByteArray &)));
 			connect(d->sasl, SIGNAL(needParams(const QCA::SASL::Params&)), SLOT(sasl_needParams(const QCA::SASL::Params&)));
