@@ -50,8 +50,9 @@ MaknetoView::~MaknetoView()
 
 }
 
-void MaknetoView::switchColors()
+void MaknetoView::settingsChanged()
 {
+
 }
 
 #include "maknetoview.moc"

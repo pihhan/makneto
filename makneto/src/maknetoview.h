@@ -50,8 +50,9 @@ signals:
      */
     void signalChangeCaption(const QString& text);
 
+
 private slots:
-    void switchColors();
+	void settingsChanged();
 
 private:
 	SessionView *m_sessionview; 
