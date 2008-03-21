@@ -38,6 +38,8 @@ public:
 	*/
 	virtual ~SessionView();
 
+	QString session() { return m_session; }
+	QString jid() { return m_jid; }
 private:
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;
@@ -51,6 +53,9 @@ private:
 	QTextEdit *m_chatinput;
 
 	QPushButton *m_sendmsg;
+	
+	QString m_session;
+	QString m_jid;
 };
 
 #endif // SESSIONVIEW_H
