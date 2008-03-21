@@ -66,10 +66,12 @@ void MaknetoMainWindow::optionsPreferences()
 		return;
 	}
 
+	qDebug() << Settings::jabberID();
+
 	KConfigDialog *dialog = new KConfigDialog(this, "settings", Settings::self());
 	QWidget *generalSettingsDlg = new QWidget;
 	ui_prefs_base.setupUi(generalSettingsDlg);
-	dialog->addPage(generalSettingsDlg, i18n("General"), "package_setting");
+	dialog->addPage(generalSettingsDlg, i18n("Account"), "preferences-system-network");
 	connect(dialog, SIGNAL(settingsChanged(QString)), m_view, SLOT(settingsChanged()));
 	dialog->setAttribute( Qt::WA_DeleteOnClose );
 	dialog->show();

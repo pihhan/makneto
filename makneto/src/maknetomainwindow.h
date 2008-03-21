@@ -41,7 +41,7 @@ private:
     void setupActions();
 
 private:
-    Ui::prefs_base ui_prefs_base ;
+    Ui::Account ui_prefs_base ;
     MaknetoView *m_view;
     Makneto *m_makneto;
 

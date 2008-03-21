@@ -2,5 +2,5 @@
 File=makneto.kcfg
 ClassName=Settings
 Singleton=true
-Mutators=col_background,col_foreground
+Mutators=jabberID,jabberPassword,storePassword
 # will create the necessary code for setting those variables
