@@ -78,11 +78,11 @@
          </item>
          <item>
           <widget class="QCheckBox" name="kcfg_storePassword" >
-           <property name="text" >
-            <string>Store password</string>
-           </property>
            <property name="enabled" >
             <bool>false</bool>
+           </property>
+           <property name="text" >
+            <string>Store password</string>
            </property>
           </widget>
          </item>
@@ -121,11 +121,150 @@
      </widget>
      <widget class="QWidget" name="tab_2" >
       <property name="enabled" >
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <attribute name="title" >
        <string>Connection</string>
       </attribute>
+      <widget class="QGroupBox" name="groupBox_3" >
+       <property name="enabled" >
+        <bool>true</bool>
+       </property>
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>461</width>
+         <height>181</height>
+        </rect>
+       </property>
+       <property name="title" >
+        <string>Connection Settings</string>
+       </property>
+       <widget class="QWidget" name="" >
+        <property name="geometry" >
+         <rect>
+          <x>20</x>
+          <y>30</y>
+          <width>421</width>
+          <height>120</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" >
+         <item>
+          <widget class="QLabel" name="label_3" >
+           <property name="text" >
+            <string>Manual host settings</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" >
+           <item>
+            <widget class="QLabel" name="label_4" >
+             <property name="text" >
+              <string>Host:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="kcfg_jabberHost" />
+           </item>
+           <item>
+            <widget class="QLabel" name="label_5" >
+             <property name="text" >
+              <string>Port:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="kcfg_jabberPort" >
+             <property name="maximumSize" >
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_6" >
+           <property name="text" >
+            <string>File transfer proxy</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" >
+           <item>
+            <widget class="QLabel" name="label_7" >
+             <property name="text" >
+              <string>JID:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="kcfg_jabberFileTransferJID" />
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_4" >
+       <property name="enabled" >
+        <bool>true</bool>
+       </property>
+       <property name="geometry" >
+        <rect>
+         <x>10</x>
+         <y>210</y>
+         <width>461</width>
+         <height>131</height>
+        </rect>
+       </property>
+       <property name="title" >
+        <string>Security</string>
+       </property>
+       <widget class="QWidget" name="" >
+        <property name="geometry" >
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>156</width>
+          <height>79</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" >
+         <item>
+          <widget class="QCheckBox" name="kcfg_allowPlain" >
+           <property name="text" >
+            <string>Allow plaintext login</string>
+           </property>
+           <property name="checked" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="kcfg_useSSL" >
+           <property name="text" >
+            <string>Use SSL encryption</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="kcfg_noSSLWarn" >
+           <property name="text" >
+            <string>No SSL warnings</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </widget>
     </widget>
    </item>

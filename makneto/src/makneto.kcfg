@@ -14,5 +14,27 @@
     <entry name="storePassword" type="Bool">
 	    <label>Password storage</label>
     </entry>
+    <entry name="jabberHost" type="String">
+	    <label>Defines Jabber server host</label>
+    </entry>
+    <entry name="jabberPort" type="Int">
+	    <label>Defines Jabber server port</label>
+    </entry>
+    <entry name="jabberFileTransferJID" type="String">
+	    <label>Defines Jabber filetransfer proxy</label>
+    </entry>
+    <entry name="allowPlain" type="Bool">
+	    <label>Plaintext login</label>
+            <default>true</default>
+    </entry>
+    <entry name="useSSL" type="Bool">
+	    <label>SSL encryption</label>
+            <default>false</default>
+    </entry>
+    <entry name="noSSLWarn" type="Bool">
+	    <label>No SSL encryption warnings</label>
+            <default>false</default>
+    </entry>
+
   </group>
 </kcfg>
