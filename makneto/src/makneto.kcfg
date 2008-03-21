@@ -3,19 +3,16 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
-  <kcfgfile name="Maknetorc"/>
-  <group name="Preferences">
-    <entry name="col_background" type="Color">
-	    <label>color of the background</label>
-	    <default>black</default>
+  <kcfgfile name="maknetorc"/>
+  <group name="Account">
+    <entry name="jabberID" type="String">
+	    <label>Defines Jabber ID</label>
     </entry>
-    <entry name="col_foreground" type="Color">
-	    <label>color of the foreground</label>
-	    <default>yellow</default>
+    <entry name="jabberPassword" type="Password">
+	    <label>Defines Jabber password</label>
     </entry>
-    <entry name="val_time" type="Int">
-	    <label>size of a ball</label>
-	    <default>2</default>
+    <entry name="storePassword" type="Bool">
+	    <label>Password storage</label>
     </entry>
   </group>
 </kcfg>
