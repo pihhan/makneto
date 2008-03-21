@@ -81,6 +81,9 @@
            <property name="text" >
             <string>Store password</string>
            </property>
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
         </layout>
