@@ -41,7 +41,10 @@ QVariant ContactListModel::data(const QModelIndex &index, int role) const
 		if ((contact = dynamic_cast<ContactListContact*>(item))) {
 			QString txt;
 			if (showStatus_ && !contact->status().message().isEmpty()) {
-				txt = QString("%1 (%2)").arg(contact->name()).arg(contact->status().message());
+				if (contact->name().isEmpty())
+					txt = QString("<%1> (%2)").arg(contact->jid()).arg(contact->status().message());
+				else
+					txt = QString("%1 (%2)").arg(contact->name()).arg(contact->status().message());
 			}
 			else
 				txt = contact->name();
@@ -74,13 +77,13 @@ QVariant ContactListModel::data(const QModelIndex &index, int role) const
 	}
 	else if (role == Qt::TextColorRole) {
 		if ((contact = dynamic_cast<ContactListContact*>(item))) {
-			if(contact->status().type() == Status::Away || contact->status().type() == Status::XA) {
+			if(contact->status().type() == ContactListStatus::Away || contact->status().type() == ContactListStatus::XA) {
 				return qVariantFromValue(AWAY_COLOR);
 			}
-			else if (contact->status().type() == Status::Offline) {
+			else if (contact->status().type() == ContactListStatus::Offline) {
 				return qVariantFromValue(OFFLINE_COLOR);
 			}
-			else if (contact->status().type() == Status::DND) {
+			else if (contact->status().type() == ContactListStatus::DND) {
 				return qVariantFromValue(DND_COLOR);
 			}
 			else {

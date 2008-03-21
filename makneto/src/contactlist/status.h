@@ -3,19 +3,19 @@
 
 #include <QString>
 
-class Status
+class ContactListStatus
 {
 public:
-	enum Type { Online, Away, FFC, XA, DND, Offline };
+    enum Type { Online, Away, FFC, XA, DND, Offline, Invisible };
 
-	Status(Type type, const QString& message) : type_(type), message_(message) {};
+    ContactListStatus(Type type, const QString& message) : type_(type), message_(message) {};
 
-	Type type() const { return type_; }
-	const QString& message() const { return message_; }
+    Type type() const { return type_; }
+    const QString& message() const { return message_; }
 
 private:
-	Type type_;
-	QString message_;
+    Type type_;
+    QString message_;
 };
 
 #endif

@@ -16,7 +16,7 @@ public:
 	virtual const QString& name() const = 0;
 	// FIXME: Change this into Jid
 	virtual QString jid() const = 0;
-	virtual Status status() const = 0;
+	virtual ContactListStatus status() const = 0;
 	virtual QIcon statusIcon() const;
 	virtual QIcon picture() const;
 	virtual void updateParent();

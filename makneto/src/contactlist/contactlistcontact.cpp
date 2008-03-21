@@ -17,7 +17,7 @@ ContactListContact::~ContactListContact()
 
 int ContactListContact::countOnline() const
 {
-	return (status().type() == Status::Offline ? 0 : 1);
+	return (status().type() == ContactListStatus::Offline ? 0 : 1);
 }
 
 QString ContactListContact::toolTip() const
@@ -56,7 +56,7 @@ void ContactListContact::updateParent()
 			newParent = contactList()->invisibleGroup();
 		}
 	}
-	else if (status().type() == Status::Offline && !contactList()->showOffline()) {
+	else if (status().type() == ContactListStatus::Offline && !contactList()->showOffline()) {
 		//qDebug() << "contactlistcontact.cpp: Contact is invisible";
 		newParent = contactList()->invisibleGroup();
 	}
