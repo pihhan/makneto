@@ -5,28 +5,47 @@
  */
 
 #include "roasterview.h"
-#include "klistwidgetsearchline.h"
+#include "makneto.h"
+#include "maknetocontactlist.h"
+#include "contactlist/contactlistmodel.h"
+#include "contactlist/contactlistview.h"
+#include "contactlist/contactlist.h"
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QTreeView>
+#include <klineedit.h>
 
-RoasterView::RoasterView(QWidget *)
+RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 {
 	m_mainlayout = new QVBoxLayout(this);
-	m_mainlayout->setMargin(0);
-	m_mainlayout->setSpacing(0);
+	m_buttonslayout = new QHBoxLayout(this);
 
-	// TODO: toolbar
-	// buttons: add new contact to roaster etc...
+	// buttons
+	m_addcontact = new QPushButton(KIconLoader::global()->loadIcon("list-add-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Add contact"), this);
+	m_buttonslayout->addWidget(m_addcontact);
+	//connect(m_buttononline, SIGNAL(clicked(bool)), SLOT(onlineClicked(bool)));
+
+	m_offline = new QPushButton(KIconLoader::global()->loadIcon("edit-find-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Show all"), this);
+	m_offline->setToggleButton(true);
+	m_offline->setChecked(true);
+	m_buttonslayout->addWidget(m_offline);
+	connect(m_offline, SIGNAL(clicked(bool)), SLOT(offlineClicked(bool)));
+
+	// contact list model
+	m_model = new ContactListModel(m_makneto->getContactList());
 
 	// roster
-	m_roster = new QTreeView(this);
+	m_roster = new ContactListView(this);
+	m_roster->setModel(m_model);
 
-	// TODO: search button for roaster
-
-	// TODO: filter button
-	// filter for online/offline contacts in roaster
+	// search button for roster
+	m_search = new KLineEdit(this);
+	m_search->setClearButtonShown(true);
+	connect(m_search, SIGNAL(textChanged(const QString&)), SLOT(search(const QString&)));
 	
+	// finally add to layout
+	m_mainlayout->addLayout(m_buttonslayout);
+	m_mainlayout->addWidget(m_search);
 	m_mainlayout->addWidget(m_roster);
 
 	setLayout(m_mainlayout);
@@ -37,3 +56,15 @@ RoasterView::~RoasterView()
 
 }
 
+void RoasterView::search(const QString& search)
+{
+	m_makneto->getContactList()->setSearch(search);
+	
+}
+
+void RoasterView::offlineClicked(bool toggled)
+{
+	m_makneto->getContactList()->setShowOffline(toggled);
+}
+
+#include "roasterview.moc"

@@ -9,14 +9,20 @@
 #include "contactlist/contactlistgroupitem.h"
 #include "contactlist/contactlistrootitem.h"
 
-void MaknetoContactList::addContact(const QString& name, const QString& jid, const Status& status, const QString& group = QString())
+#include "xmpp_status.h"
+
+#include <iostream>
+
+void MaknetoContactList::addContact(const QString& name, const QString& jid, const QString& group = QString())
 {
 	ContactListGroupItem *groupItem = rootItem();
 
+	// find/create group
 	if (!group.isEmpty()) 
 	{
 		MaknetoGroup g(group);
-		groupItem = static_cast<MaknetoGroup*>(rootItem()->findFirstItem(&g));;
+
+		groupItem = static_cast<MaknetoGroup*>(rootItem()->findFirstItem(&g));
 
 		if (!groupItem) 
 		{
@@ -30,5 +36,35 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 		
 	}
 
-	new MaknetoContact(name, jid, status, groupItem);
+	new MaknetoContact(name, jid, groupItem);
 }
+
+void MaknetoContactList::setAvailability(const QString& jid, const XMPP::Status& status)
+{
+	std::cout << "setAvailability(" << jid.toUtf8().data() << ")" << std::endl;
+
+	ContactListGroupItem *root = rootItem();
+
+	MaknetoGroup *groupItem = 0;
+	MaknetoContact *item = 0;
+
+	for (int i=0; i<root->items(); i++)
+	{
+		groupItem = static_cast<MaknetoGroup*>(root->atIndex(i));
+		item = 0;
+
+		if (groupItem)
+		{
+			item = groupItem->findContactByJid(jid);
+
+			if (item)
+			{
+				item->setStatus(status);
+			}
+		}
+	}
+
+	emitDataChanged();
+}
+
+#include "maknetocontactlist.moc"

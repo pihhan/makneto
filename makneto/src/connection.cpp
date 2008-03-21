@@ -5,6 +5,8 @@
  */
 
 #include "connection.h"
+#include "makneto.h"
+#include "maknetocontactlist.h"
 
 #include "xmpp.h"
 #include "xmpp_client.h"
@@ -17,13 +19,15 @@
 
 using namespace XMPP;
 
-Connection::Connection()
+Connection::Connection(Makneto *makneto): m_makneto(makneto)
 {
 	m_tlsHandler = 0;
 	m_conn = 0;
 	m_stream = 0;
 	m_tls = 0;
 	m_jid = 0;
+
+	m_rosterFinished = false;
 
 	m_client = new Client();
 	m_client->setClientName("Makneto");
@@ -282,10 +286,10 @@ void Connection::sessionStart_finished()
 	JT_Session *j = (JT_Session*)sender();
 	if ( j->success() ) 
 	{
-		Status s;
-		s.setIsAvailable(true);
-		s.setType(Status::Online);
-		m_client->setPresence(s);
+// 		Status s;
+// 		s.setIsAvailable(true);
+// 		s.setType(Status::Online);
+// 		m_client->setPresence(s);
 
 		sessionStarted();
 	}
@@ -304,12 +308,12 @@ void Connection::sessionStarted()
 	qDebug() << "Connection::sessionStarted()";
 
 	m_client->rosterRequest();
-
 }
 
 void Connection::setStatus(Status status)
 {
-	m_client->setPresence(status);
+	if (m_rosterFinished)
+		m_client->setPresence(status);
 }
 
 bool Connection::isOnline()
@@ -318,17 +322,22 @@ bool Connection::isOnline()
 		return m_stream->isAuthenticated();
 }
 
-void Connection::client_rosterRequestFinished(bool, int, const QString &)
+void Connection::client_rosterRequestFinished(bool success, int, const QString &)
 {
 	qDebug() << "Connection::client_rosterRequestFinished()";
+
+	m_rosterFinished = true;
+
+	// status change after roster request finished! otherwise we lost presence
+	// from contacts not in roster!!!
+	setStatus(XMPP::Status::Online);
 }
 
 void Connection::client_rosterItemAdded(const RosterItem &item)
 {
 	qDebug() << "Connection::client_rosterItemAdded(item)";
 
-	qDebug() << item.name();
-	qDebug() << item.groups();
+	m_makneto->getContactList()->addContact(item.name(), item.jid().full(), item.groups().at(0));
 }
 
 void Connection::client_rosterItemUpdated(const RosterItem &)
@@ -341,14 +350,16 @@ void Connection::client_rosterItemRemoved(const RosterItem &)
 	qDebug() << "Connection::client_rosterItemRemoved(item)";
 }
 
-void Connection::client_resourceAvailable(const Jid &, const Resource &)
+void Connection::client_resourceAvailable(const Jid &jid, const Resource &resource)
 {
 	qDebug() << "Connection::client_resourceAvailable()";
+	m_makneto->getContactList()->setAvailability(jid.bare(), resource.status());
 }
 
-void Connection::client_resourceUnavailable(const Jid &, const Resource &)
+void Connection::client_resourceUnavailable(const Jid &jid, const Resource &resource)
 {
 	qDebug() << "Connection::client_resourceUnavailable()";
+	m_makneto->getContactList()->setAvailability(jid.bare(), resource.status());
 }
 
 void Connection::client_presenceError(const Jid &, int, const QString &)

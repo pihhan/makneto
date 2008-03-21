@@ -28,8 +28,6 @@ int main(int argc, char **argv)
 	Makneto *makneto = new Makneto;
 	MaknetoMainWindow *mainWindow = new MaknetoMainWindow(makneto);
     
-	makneto->setMainWindow(mainWindow);
-
 	mainWindow->show();
 
 	return app.exec();

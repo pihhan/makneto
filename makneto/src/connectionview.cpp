@@ -8,6 +8,7 @@
 #include "kiconloader.h"
 #include "klocale.h"
 #include "connection.h"
+#include "makneto.h"
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
@@ -15,7 +16,7 @@
 
 #include "xmpp_status.h"
 
-ConnectionView::ConnectionView(QWidget *)
+ConnectionView::ConnectionView(QWidget *, Makneto *makneto): m_makneto(makneto)
 {
 	m_buttonslayout = new QVBoxLayout(this);
 	m_buttonslayout->setMargin(0);
@@ -46,8 +47,6 @@ ConnectionView::ConnectionView(QWidget *)
 	connect(m_buttonoffline, SIGNAL(clicked(bool)), SLOT(offlineClicked(bool)));
 
 	setLayout(m_buttonslayout);
-
-	m_conn = new Connection();
 }
 
 ConnectionView::~ConnectionView()
@@ -58,55 +57,59 @@ ConnectionView::~ConnectionView()
 void ConnectionView::onlineClicked(bool)
 {
 	// check if we are yet logged in
-	if(!m_conn->isOnline())
-		m_conn->login();
+	if(!m_makneto->getConnection()->isOnline())
+	{
+		m_makneto->getConnection()->login();
+		
+		return;
+	}
 
 	// otherwise just set status to Online
-	m_conn->setStatus(XMPP::Status::Online);
+	m_makneto->getConnection()->setStatus(XMPP::Status::Online);
 }
 
 void ConnectionView::awayClicked(bool)
 {
 	// check if we are yet logged in
-	if(!m_conn->isOnline())
-		m_conn->login();
+	if(!m_makneto->getConnection()->isOnline())
+		m_makneto->getConnection()->login();
 
 	// set status to Away
-	m_conn->setStatus(XMPP::Status::Away);
+	m_makneto->getConnection()->setStatus(XMPP::Status::Away);
 }
 
 void ConnectionView::xaClicked(bool)
 {
 	// check if we are yet logged in
-	if(!m_conn->isOnline())
-		m_conn->login();
+	if(!m_makneto->getConnection()->isOnline())
+		m_makneto->getConnection()->login();
 
 	// set status to XA
-	m_conn->setStatus(XMPP::Status::XA);
+	m_makneto->getConnection()->setStatus(XMPP::Status::XA);
 }
 
 void ConnectionView::dndClicked(bool)
 {
 	// check if we are yet logged in
-	if(!m_conn->isOnline())
-		m_conn->login();
+	if(!m_makneto->getConnection()->isOnline())
+		m_makneto->getConnection()->login();
 
 	// set status to DND
-	m_conn->setStatus(XMPP::Status::DND);
+	m_makneto->getConnection()->setStatus(XMPP::Status::DND);
 }
 
 void ConnectionView::invisibleClicked(bool)
 {
 	// check if we are yet logged in
-	if(!m_conn->isOnline())
-		m_conn->login();
+	if(!m_makneto->getConnection()->isOnline())
+		m_makneto->getConnection()->login();
 
 	// set status to Invisible
-	m_conn->setStatus(XMPP::Status::Invisible);
+	m_makneto->getConnection()->setStatus(XMPP::Status::Invisible);
 }
 
 void ConnectionView::offlineClicked(bool)
 {
-	if(m_conn->isOnline())
-		m_conn->logout();
+	if(m_makneto->getConnection()->isOnline())
+		m_makneto->getConnection()->logout();
 }

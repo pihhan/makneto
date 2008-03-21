@@ -59,6 +59,7 @@ set(makneto_SRCS
 	contactlist/contactlistgroup.cpp
 	contactlist/contactlistitem.cpp
 	contactlist/contactlistview.cpp
+	contactlist/status.h
 
 #libidn
 	iris/libidn/profiles.c

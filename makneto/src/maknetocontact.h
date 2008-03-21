@@ -10,6 +10,8 @@
 #include "contactlist/contactlistcontact.h"
 #include "contactlist/contactlistgroup.h"
 #include "contactlist/contactlistgroupitem.h"
+#include "contactlist/status.h"
+
 
 /**
  * This is contact for Makneto
@@ -19,13 +21,18 @@
  * @version 0.1
  */
 
+namespace XMPP
+{
+	class Status;
+}
+
 class MaknetoContact : public ContactListContact
 {
 public:
 	/**
 	* Default constructor
 	*/
-	MaknetoContact(const QString& name, const QString& jid, const Status& status, ContactListGroupItem* parent);
+	MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent);
 
 	/**
 	* Destructor
@@ -33,11 +40,14 @@ public:
 	virtual ~MaknetoContact();
 	virtual const QString& name() const { return m_name; }
 	virtual QString jid() const { return m_jid; }
-	virtual Status status() const { return m_status; }
+	virtual ContactListStatus status() const { return m_status; }
+
+	void setName(const QString& name) { m_name = name; } 
+	void setStatus(const XMPP::Status& status);
 private:
 	QString m_name;
 	QString m_jid;
-	Status m_status;
+	ContactListStatus m_status;
 };
 
 class MaknetoGroup : public ContactListGroup
@@ -53,7 +63,14 @@ public:
 	*/
 	virtual ~MaknetoGroup() { }
 
-	virtual const QString& name() const { return m_name; } 
+	virtual const QString& name() const { return m_name; }
+	bool equals(ContactListItem *to) const
+	{
+		MaknetoGroup *group = dynamic_cast<MaknetoGroup*>(to);
+		return (group && group->name() == m_name);
+	}
+
+	MaknetoContact* findContactByJid(const QString& jid);
 private:
 	QString m_name;
 };

@@ -13,6 +13,7 @@ class QVBoxLayout;
 class QPushButton;
 class QGridLayout;
 class Connection;
+class Makneto;
 
 /**
  * This is connection view widget for Makneto
@@ -29,7 +30,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	ConnectionView(QWidget *parent);
+	ConnectionView(QWidget *parent, Makneto *makneto);
 
 	/**
 	* Destructor
@@ -57,6 +58,7 @@ private:
 	QPushButton *m_buttonoffline;
 
 	Connection *m_conn;
+	Makneto *m_makneto;
 };
 
 #endif // CONNECTIONVIEW_H

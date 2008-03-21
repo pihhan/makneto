@@ -20,8 +20,7 @@
  * @version 0.1
  */
 
-class MaknetoMainWindow;
-class RoasterView;
+class MaknetoContactList;
 
 class Makneto : public QObject
 {
@@ -37,14 +36,11 @@ public:
 	*/
 	virtual ~Makneto();
 
-	void setMainWindow(MaknetoMainWindow *mainWindow);
-	void setRosterView(RoasterView *roster);
 	Connection *getConnection() { return m_conn; }
-
+	MaknetoContactList *getContactList() { return m_cl; }
 private:
-	MaknetoMainWindow *m_mainWindow;
 	Connection *m_conn;
-	RoasterView *m_roster;
+	MaknetoContactList *m_cl;
 };
 
 #endif // MAKNETO_H

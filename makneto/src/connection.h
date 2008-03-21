@@ -40,6 +40,8 @@ namespace QCA
 
 using namespace XMPP;
 
+class Makneto;
+
 class Connection : public QObject
 {
 	Q_OBJECT
@@ -47,7 +49,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	Connection();
+	Connection(Makneto *makneto);
 
 	/**
 	* Destructor
@@ -89,6 +91,8 @@ private:
 	QCATLSHandler *m_tlsHandler;
 	Jid m_jid;
 	QCA::TLS *m_tls;
+	Makneto *m_makneto;
+	bool m_rosterFinished;
 
 protected:
 	void sessionStarted();

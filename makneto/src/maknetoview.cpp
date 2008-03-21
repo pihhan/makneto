@@ -11,6 +11,7 @@
 #include "kiconloader.h"
 #include "klocale.h"
 #include "makneto.h"
+#include "maknetocontactlist.h"
 
 #include <klocale.h>
 #include <QtGui/QLabel>
@@ -25,14 +26,12 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 	// prepare sidebar
 	SidebarWidget *sidebar = new SidebarWidget(this);
 
-	ConnectionView *m_conn = new ConnectionView(this);
-	RoasterView *m_roaster = new RoasterView(this);
+	ConnectionView *m_conn = new ConnectionView(this, makneto);
+	RoasterView *m_roaster = new RoasterView(this, makneto);
 
-	makneto->setRosterView(m_roaster);
+	sidebar->appendTabWidget(m_conn, KIconLoader::global()->loadIcon("konqueror", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 0, i18n("Network"));
 
-	sidebar->appendTabWidget(m_conn, KIconLoader::global()->loadIcon("connect-no", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 0, i18n("Session"));
-
-	sidebar->appendTabWidget(m_roaster, KIconLoader::global()->loadIcon("users", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 1, i18n("Roaster"));
+	sidebar->appendTabWidget(m_roaster, KIconLoader::global()->loadIcon("system-users", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 1, i18n("Contacts"));
 
 	sidebar->setCurrentIndex(0);
 	sidebar->setMaximumWidth(250); 

@@ -11,10 +11,15 @@
 #include "xmpp.h"
 
 class QVBoxLayout;
+class QHBoxLayout;
 class QPushButton;
 class QGridLayout;
 class KListWidgetSearchLine;
 class QTreeView;
+class Makneto;
+class ContactListModel;
+class ContactListView;
+class KLineEdit;
 
 /**
  * This is roaster view widget for Makneto
@@ -31,17 +36,30 @@ public:
 	/**
 	* Default constructor
 	*/
-	RoasterView(QWidget *parent);
+	RoasterView(QWidget *parent, Makneto *makneto);
 
 	/**
 	* Destructor
 	*/
 	virtual ~RoasterView();
 
+public slots:
+	void search(const QString& search);
+	void offlineClicked(bool toggled);
+
 private:
 	QVBoxLayout *m_mainlayout;
+	QHBoxLayout *m_buttonslayout;
 
-	QTreeView *m_roster;
+	QPushButton *m_addcontact;
+	QPushButton *m_offline;
+
+	Makneto *m_makneto;
+
+	ContactListModel *m_model;
+	ContactListView *m_roster;
+
+	KLineEdit *m_search;
 };
 
 #endif // ROASTERVIEW_H
