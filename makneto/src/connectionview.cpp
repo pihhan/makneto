@@ -18,6 +18,8 @@
 
 ConnectionView::ConnectionView(QWidget *, Makneto *makneto): m_makneto(makneto)
 {
+	m_mainlayout = new QVBoxLayout(this);
+
 	m_buttonslayout = new QVBoxLayout(this);
 	m_buttonslayout->setMargin(0);
 	m_buttonslayout->setSpacing(0);
@@ -46,7 +48,10 @@ ConnectionView::ConnectionView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	m_buttonslayout->addWidget(m_buttonoffline);
 	connect(m_buttonoffline, SIGNAL(clicked(bool)), SLOT(offlineClicked(bool)));
 
-	setLayout(m_buttonslayout);
+	m_mainlayout->addLayout(m_buttonslayout, Qt::AlignTop);
+	m_mainlayout->addStretch();
+
+	setLayout(m_mainlayout);
 }
 
 ConnectionView::~ConnectionView()
