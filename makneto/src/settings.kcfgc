@@ -2,5 +2,5 @@
 File=makneto.kcfg
 ClassName=Settings
 Singleton=true
-Mutators=jabberID,jabberPassword,storePassword
+Mutators=jabberID,jabberPassword,storePassword,jabberHost,jabberPort,allowPlain,useSSL,noSSLWarn
 # will create the necessary code for setting those variables

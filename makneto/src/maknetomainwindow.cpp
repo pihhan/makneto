@@ -66,8 +66,6 @@ void MaknetoMainWindow::optionsPreferences()
 		return;
 	}
 
-	qDebug() << Settings::jabberID();
-
 	KConfigDialog *dialog = new KConfigDialog(this, "settings", Settings::self());
 	QWidget *generalSettingsDlg = new QWidget;
 	ui_prefs_base.setupUi(generalSettingsDlg);

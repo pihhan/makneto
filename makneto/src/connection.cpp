@@ -15,7 +15,10 @@
 #include "xmpp_tasks.h"
 #include "xmpp_features.h"
 
+#include "settings.h"
+
 #include <QtCrypto>
+#include <QMessageBox>
 
 using namespace XMPP;
 
@@ -60,14 +63,29 @@ bool Connection::login()
 {
 	qDebug() << "Connection::connect()";
 
-	m_jid = Jid("rezza@jabber.cz");
+	qDebug() << "jabberID" << Settings::jabberID();
+	qDebug() << "jabberPassword" << Settings::jabberPassword();
+	qDebug() << "jabberHost" << Settings::jabberHost();
+	qDebug() << "jabberPort" << Settings::jabberPort();
+
+	// my jabber id from settings
+	m_jid = Jid(Settings::jabberID());
 
 	m_conn = new AdvancedConnector(this);
+
 	m_conn->setOptSSL(false);
-	m_conn->setOptProbe(false);
+	m_conn->setOptProbe(true);
+	
+	if (!Settings::jabberHost().isEmpty())
+	{
+		qDebug() << "Using host settings";
+		m_conn->setOptHostPort(Settings::jabberHost(), Settings::jabberPort());
+	}
 
 	m_stream = new ClientStream(m_conn, m_tlsHandler);
-	m_stream->setAllowPlain(ClientStream::AllowPlain);
+
+	if (Settings::allowPlain())
+		m_stream->setAllowPlain(ClientStream::AllowPlain);
 
 	connect(m_stream, SIGNAL(needAuthParams(bool, bool, bool)), SLOT(needAuthParams(bool, bool, bool)));
 	connect(m_stream, SIGNAL(connected()), SLOT(connected()));
@@ -92,8 +110,8 @@ void Connection::needAuthParams(bool, bool, bool)
 {
 	qDebug() << "Connection::needAuthParams(...)";
 
-	m_stream->setUsername("rezza");
-	m_stream->setPassword("Pondeli1");
+	m_stream->setUsername(m_jid.node());
+	m_stream->setPassword(Settings::jabberPassword());
 
 	m_stream->continueAfterParams();
 }
@@ -257,6 +275,11 @@ void Connection::error(int code)
 		str = tr("Broken security layer (SASL)");
 	else
 		str = tr("None");
+
+	QMessageBox::critical(0, tr("Makneto"),
+                   str,
+                   QMessageBox::Ok,
+                   QMessageBox::Ok);
 
 	qDebug() << str;
 }
