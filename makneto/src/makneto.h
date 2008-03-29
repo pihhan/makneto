@@ -12,6 +12,13 @@
 
 #include <QObject>
 
+namespace XMPP 
+{
+	class Message;
+}
+
+using namespace XMPP;
+
 /**
  * This is Makneto class - central class of Makneto suite
  *
@@ -38,6 +45,10 @@ public:
 
 	Connection *getConnection() { return m_conn; }
 	MaknetoContactList *getContactList() { return m_cl; }
+
+public slots:
+	void conn_messageReceived(const QString &);
+
 private:
 	Connection *m_conn;
 	MaknetoContactList *m_cl;
