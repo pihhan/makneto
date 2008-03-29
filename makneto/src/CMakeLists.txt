@@ -159,4 +159,4 @@ install( FILES makneto.desktop  DESTINATION  ${XDG_APPS_INSTALL_DIR} )
 install( FILES makneto.kcfg  DESTINATION  ${KCFG_INSTALL_DIR} )
 install( FILES maknetoui.rc  DESTINATION  ${DATA_INSTALL_DIR}/makneto )
 
-
+add_subdirectory( icons )
