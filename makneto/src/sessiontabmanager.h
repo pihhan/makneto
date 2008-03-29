@@ -38,7 +38,7 @@ public:
 	*/
 	virtual ~SessionTabManager();
 
-	void newSessionTab(const QString &text);
+	SessionView *newSessionTab(const QString &text);
 	SessionView *findSession(const QString &jid);
 public slots:
 	void messageReceived(const Message &message);
@@ -48,6 +48,7 @@ private:
 
 	KTabBar *m_tab;
 	QStackedWidget *m_widgets;
+	Makneto *m_makneto;
 };
 
 #endif // SESSIONTABMANAGER_H

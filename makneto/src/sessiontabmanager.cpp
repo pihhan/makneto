@@ -17,7 +17,7 @@
 #include "xmpp_message.h"
 #include "xmpp_jid.h"
 
-SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *)
+SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(makneto)
 {
 	m_mainlayout = new QVBoxLayout(this);
 	m_mainlayout->setMargin(5);
@@ -45,7 +45,7 @@ SessionTabManager::~SessionTabManager()
 
 }
 
-void SessionTabManager::newSessionTab(const QString &text)
+SessionView* SessionTabManager::newSessionTab(const QString &text)
 {
 	// add new tab
 	m_tab->addTab(text);
@@ -53,6 +53,10 @@ void SessionTabManager::newSessionTab(const QString &text)
 	// create new session view and add to widgets
 	SessionView *session = new SessionView(this, text);
 	m_widgets->addWidget(session);
+
+	connect(session, SIGNAL(sendMessage(const Message &)), m_makneto->getConnection(), SLOT(sendMessage(const Message &)));
+
+	return session;
 }
 
 SessionView* SessionTabManager::findSession(const QString &jid)
@@ -77,9 +81,7 @@ void SessionTabManager::messageReceived(const Message &message)
 	session = findSession(message.from().full());
 
 	if (!session)
-		newSessionTab(message.from().full());
-	else
-	{
-		session->chatMessage(message);
-	}
+		session = newSessionTab(message.from().full());
+
+	session->chatMessage(message);
 }

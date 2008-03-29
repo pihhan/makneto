@@ -16,6 +16,8 @@ class QTextEdit;
 class WbWidget;
 class QSplitter;
 
+#include "xmpp_chatstate.h"
+
 namespace XMPP 
 {
 	class Message;
@@ -49,6 +51,13 @@ public:
 	QString jid() { return m_jid; }
 
 	void chatMessage(const Message &message); 
+
+public slots:
+	void sendClicked();
+
+signals:
+	void sendMessage(const Message &);
+
 private:
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;
@@ -65,6 +74,8 @@ private:
 	
 	QString m_session;
 	QString m_jid;
+
+	ChatState m_lastChatState;
 };
 
 #endif // SESSIONVIEW_H
