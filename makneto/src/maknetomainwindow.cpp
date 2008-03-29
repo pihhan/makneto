@@ -51,13 +51,18 @@ MaknetoMainWindow::~MaknetoMainWindow()
 void MaknetoMainWindow::setupActions()
 {
     KStandardAction::openNew(this, SLOT(fileNew()), actionCollection());
-//    KStandardAction::quit(this, SLOT(quit()), actionCollection());
+    KStandardAction::quit(this, SLOT(quit()), actionCollection());
 
     KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 }
 
 void MaknetoMainWindow::fileNew()
 {
+}
+
+void MaknetoMainWindow::quit()
+{
+	m_makneto->getConnection()->clientDisconnect();
 }
 
 void MaknetoMainWindow::optionsPreferences()

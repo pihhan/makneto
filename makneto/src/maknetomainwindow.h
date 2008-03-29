@@ -27,26 +27,27 @@ class Makneto;
 
 class MaknetoMainWindow : public KXmlGuiWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    MaknetoMainWindow(Makneto *makneto);
-
-    virtual ~MaknetoMainWindow();
-
+	MaknetoMainWindow(Makneto *makneto);
+	
+	virtual ~MaknetoMainWindow();
+	
 private slots:
-    void fileNew();
-    void optionsPreferences();
+	void fileNew();
+	void quit();
+	void optionsPreferences();
+
 
 private:
-    void setupActions();
-
-private:
-    Ui::Account ui_prefs_base ;
-    MaknetoView *m_view;
-    Makneto *m_makneto;
-
-    KToggleAction *m_toolbarAction;
-    KToggleAction *m_statusbarAction;
+	void setupActions();
+	
+	Ui::Account ui_prefs_base ;
+	MaknetoView *m_view;
+	Makneto *m_makneto;
+	
+	KToggleAction *m_toolbarAction;
+	KToggleAction *m_statusbarAction;
 };
 
 #endif // _MAKNETOMAINWINDOW_H_
