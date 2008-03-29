@@ -37,10 +37,9 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 	sidebar->setCurrentIndex(0);
 	sidebar->setMaximumWidth(250); 
 
-	// prepare whiteboard view
-	m_sessionview = new SessionView(this);
+	// session manager
+	m_sessiontabmanager = new SessionTabManager(makneto, this);
 
-	m_sessiontabmanager = new SessionTabManager(this);
 	// add to layout
 	layout->addWidget(sidebar);
 	//layout->addWidget(m_sessionview);

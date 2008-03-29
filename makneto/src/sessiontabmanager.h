@@ -7,12 +7,14 @@
 #ifndef SESSIONTABMANAGER_H
 #define SESSIONTABMANAGER_H
 
+#include "makneto.h"
+
 #include <QtGui/QWidget>
 
-class KMultiTabBar;
 class QStackedWidget;
 class QVBoxLayout;
-class QTabBar;
+class KTabBar;
+class SessionView;
 
 /**
  * This is session tab manager widget for Makneto
@@ -29,7 +31,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	SessionTabManager(QWidget *parent);
+	SessionTabManager(Makneto *makneto, QWidget *parent);
 
 	/**
 	* Destructor
@@ -37,10 +39,14 @@ public:
 	virtual ~SessionTabManager();
 
 	void newSessionTab(const QString &text);
+	SessionView *findSession(const QString &jid);
+public slots:
+	void messageReceived(const Message &message);
+ 
 private:
 	QVBoxLayout *m_mainlayout;
 
-	QTabBar *m_multitab;
+	KTabBar *m_tab;
 	QStackedWidget *m_widgets;
 };
 

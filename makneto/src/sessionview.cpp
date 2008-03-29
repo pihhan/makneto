@@ -16,9 +16,11 @@
 #include <QtGui/QTextEdit>
 #include <QtGui/QSplitter>
 
-#include "xmpp_status.h"
+#include "xmpp_message.h"
+#include "xmpp_chatstate.h"
+#include "xmpp_jid.h"
 
-SessionView::SessionView(QWidget *)
+SessionView::SessionView(QWidget *, const QString &jid): m_jid(jid)
 {
 	m_mainlayout = new QVBoxLayout(this);
 	m_mainlayout->setMargin(0);
@@ -36,6 +38,9 @@ SessionView::SessionView(QWidget *)
 	m_chatoutput = new QTextEdit(this);
 	m_chatinput = new QTextEdit(this);
 
+	m_chatoutput->setTextFormat(Qt::RichText);
+	m_chatoutput->setReadOnly(true);
+
 	m_chatlayout->addWidget(m_chatoutput);
 	m_chatlayout->addWidget(m_chatinput);
 
@@ -52,4 +57,35 @@ SessionView::SessionView(QWidget *)
 SessionView::~SessionView()
 {
 
+}
+
+void SessionView::chatMessage(const Message &message)
+{
+	QString text;
+
+	switch (message.chatState())
+	{
+		case StateComposing:
+			text += "<i>"+message.from().bare()+" is composing message</i>";
+			break;
+
+		case StateGone:
+			text += "<i>"+message.from().bare()+" has gone</i>";
+			break;
+
+		case StateInactive:
+		case StatePaused:
+		case StateNone:
+			return;
+
+			break;
+
+		case StateActive:
+			if (!message.body().isEmpty())
+				text = "<b>"+message.from().bare()+"</b>: "+message.body();
+			else
+				return;
+	}
+
+	m_chatoutput->append(text);
 }

@@ -52,9 +52,6 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	connect(m_client, SIGNAL(subscription(const Jid &, const QString &, const QString&)), SLOT(client_subscription(const Jid &, const QString &, const QString&)));
 	connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
 	connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
-
-	//connect(this, SIGNAL(connMessageReceived(const QString &)), makneto, SLOT(conn_messageReceived(const QString &)));
-
 }
 
 Connection::~Connection()
@@ -400,7 +397,7 @@ void Connection::client_messageReceived(const Message &message)
 
 	qDebug() << message.body();
 
-	emit connMessageReceived("TEST");
+	emit connMessageReceived(message);
 }
 
 void Connection::client_subscription(const Jid &, const QString &, const QString&)

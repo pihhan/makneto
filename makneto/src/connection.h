@@ -85,7 +85,7 @@ private slots:
 	void client_xmlOutgoing(const QString &);
 
 signals:
-	void connMessageReceived(const QString &s);
+	void connMessageReceived(const Message &message);
 	void connConnected(void);
 	void connDisconnected(void);
 

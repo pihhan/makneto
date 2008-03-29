@@ -16,6 +16,13 @@ class QTextEdit;
 class WbWidget;
 class QSplitter;
 
+namespace XMPP 
+{
+	class Message;
+}
+
+using namespace XMPP;
+
 /**
  * This is session view widget for Makneto
  *
@@ -31,7 +38,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	SessionView(QWidget *parent);
+	SessionView(QWidget *parent, const QString &jid);
 
 	/**
 	* Destructor
@@ -40,6 +47,8 @@ public:
 
 	QString session() { return m_session; }
 	QString jid() { return m_jid; }
+
+	void chatMessage(const Message &message); 
 private:
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;

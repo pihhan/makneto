@@ -17,7 +17,7 @@ Makneto::Makneto(QObject *parent) : QObject(parent)
 	// set up connection
 	m_conn = new Connection(this);
 
-	connect(m_conn, SIGNAL(connMessageReceived(const QString &)), this, SLOT(conn_messageReceived(const QString &)));
+	connect(m_conn, SIGNAL(connMessageReceived(const Message &)), this, SLOT(conn_messageReceived(const Message &)));
 
 	// create contact list
 	m_cl = new MaknetoContactList();
@@ -28,7 +28,7 @@ Makneto::~Makneto()
 
 }
 
-void Makneto::conn_messageReceived(const QString &)
+void Makneto::conn_messageReceived(const Message &)
 {
 	std::cout << "Makneto::conn_messageReceived" << std::endl;
 }

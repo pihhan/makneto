@@ -47,7 +47,7 @@ public:
 	MaknetoContactList *getContactList() { return m_cl; }
 
 public slots:
-	void conn_messageReceived(const QString &);
+	void conn_messageReceived(const Message &);
 
 private:
 	Connection *m_conn;
