@@ -12,6 +12,7 @@
 class QPainter;
 class KUrl;
 class SessionView;
+class SessionTabManager;
 
 /**
  * This is the main view class for Makneto.  Most of the non-menu,
@@ -55,7 +56,8 @@ private slots:
 	void settingsChanged();
 
 private:
-	SessionView *m_sessionview; 
+	SessionView *m_sessionview;
+	SessionTabManager *m_sessiontabmanager;
 };
 
 #endif // MaknetoVIEW_H

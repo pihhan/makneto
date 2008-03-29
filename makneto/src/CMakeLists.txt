@@ -49,6 +49,7 @@ set(makneto_SRCS
 	wbscene.cpp
 	wbitems.cpp
 	sessionview.cpp
+	sessiontabmanager.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp

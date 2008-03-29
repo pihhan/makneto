@@ -8,6 +8,7 @@
 #include "connectionview.h"
 #include "roasterview.h"
 #include "sessionview.h"
+#include "sessiontabmanager.h"
 #include "kiconloader.h"
 #include "klocale.h"
 #include "makneto.h"
@@ -39,9 +40,12 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 	// prepare whiteboard view
 	m_sessionview = new SessionView(this);
 
+	m_sessiontabmanager = new SessionTabManager(this);
 	// add to layout
 	layout->addWidget(sidebar);
-	layout->addWidget(m_sessionview);
+	//layout->addWidget(m_sessionview);
+	layout->addWidget(m_sessiontabmanager);
+
 	setLayout(layout);
 }
 
