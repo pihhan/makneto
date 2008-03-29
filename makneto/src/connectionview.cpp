@@ -24,27 +24,27 @@ ConnectionView::ConnectionView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	m_buttonslayout->setMargin(0);
 	m_buttonslayout->setSpacing(0);
 
-	m_buttononline = new QPushButton(KIconLoader::global()->loadIcon("hi16-action-jabber_online", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Online"), this);
+	m_buttononline = new QPushButton(KIconLoader::global()->loadIcon("maknetoonline", KIconLoader::Toolbar), i18n("&Online"), this);
 	m_buttonslayout->addWidget(m_buttononline);
 	connect(m_buttononline, SIGNAL(clicked(bool)), SLOT(onlineClicked(bool)));
 
-	m_buttonaway = new QPushButton("&Away", this);
+	m_buttonaway = new QPushButton(KIconLoader::global()->loadIcon("maknetoaway", KIconLoader::Toolbar), i18n("&Away"), this);
 	m_buttonslayout->addWidget(m_buttonaway);
 	connect(m_buttonaway, SIGNAL(clicked(bool)), SLOT(awayClicked(bool)));
 
-	m_buttonxa = new QPushButton("&Extended Away", this);
+	m_buttonxa = new QPushButton(KIconLoader::global()->loadIcon("maknetoxa", KIconLoader::Toolbar), i18n("&Extended Away"), this);
 	m_buttonslayout->addWidget(m_buttonxa);
 	connect(m_buttonxa, SIGNAL(clicked(bool)), SLOT(xaClicked(bool)));
 
-	m_buttondnd = new QPushButton("&Do not disturb", this);
+	m_buttondnd = new QPushButton(KIconLoader::global()->loadIcon("maknetodnd", KIconLoader::Toolbar), i18n("&Do not disturb"), this);
 	m_buttonslayout->addWidget(m_buttondnd);
 	connect(m_buttondnd, SIGNAL(clicked(bool)), SLOT(dndClicked(bool)));
 
-	m_buttoninvisible = new QPushButton("&Invisible", this);
+	m_buttoninvisible = new QPushButton(KIconLoader::global()->loadIcon("maknetoinvisible", KIconLoader::Toolbar), i18n("&Invisible"), this);
 	m_buttonslayout->addWidget(m_buttoninvisible);
 	connect(m_buttoninvisible, SIGNAL(clicked(bool)), SLOT(invisibleClicked(bool)));
 
-	m_buttonoffline = new QPushButton("O&ffline", this);
+	m_buttonoffline = new QPushButton(KIconLoader::global()->loadIcon("maknetooffline", KIconLoader::Toolbar), i18n("O&ffline"), this);
 	m_buttonslayout->addWidget(m_buttonoffline);
 	connect(m_buttonoffline, SIGNAL(clicked(bool)), SLOT(offlineClicked(bool)));
 
