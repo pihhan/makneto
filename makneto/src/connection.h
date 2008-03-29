@@ -57,6 +57,7 @@ public:
 	virtual ~Connection();
 
 	bool login();
+	void clientDisconnect();
 	bool logout();
 	void setStatus(Status);
 	bool isOnline();
@@ -83,6 +84,8 @@ private slots:
 	void client_debugText(const QString &);
 	void client_xmlIncoming(const QString &);
 	void client_xmlOutgoing(const QString &);
+
+	void sendMessage(const Message &);
 
 signals:
 	void connMessageReceived(const Message &message);

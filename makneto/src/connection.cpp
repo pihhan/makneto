@@ -50,8 +50,8 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	connect(m_client, SIGNAL(resourceUnavailable(const Jid &, const Resource &)), SLOT(client_resourceUnavailable(const Jid &, const Resource &)));
 	connect(m_client, SIGNAL(presenceError(const Jid &, int, const QString &)), SLOT(client_presenceError(const Jid &, int, const QString &)));
 	connect(m_client, SIGNAL(subscription(const Jid &, const QString &, const QString&)), SLOT(client_subscription(const Jid &, const QString &, const QString&)));
-	connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
-	connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
+	//connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
+	//connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
 }
 
 Connection::~Connection()
@@ -62,11 +62,6 @@ Connection::~Connection()
 bool Connection::login()
 {
 	qDebug() << "Connection::connect()";
-
-	qDebug() << "jabberID" << Settings::jabberID();
-	qDebug() << "jabberPassword" << Settings::jabberPassword();
-	qDebug() << "jabberHost" << Settings::jabberHost();
-	qDebug() << "jabberPort" << Settings::jabberPort();
 
 	// my jabber id from settings
 	m_jid = Jid(Settings::jabberID());
@@ -105,6 +100,13 @@ bool Connection::logout()
 	m_client->close();
 
 	return true;
+}
+
+void Connection::clientDisconnect()
+{
+	logout();
+
+	m_client->close();
 }
 
 void Connection::needAuthParams(bool, bool, bool)
@@ -415,6 +417,11 @@ void Connection::client_xmlIncoming(const QString &)
 
 void Connection::client_xmlOutgoing(const QString &)
 {
+}
+
+void Connection::sendMessage(const Message &message)
+{
+	m_client->sendMessage(message);
 }
 
 #include "connection.moc"
