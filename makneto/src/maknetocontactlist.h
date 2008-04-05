@@ -25,6 +25,9 @@ namespace XMPP
 	class Status;
 }
 
+class Makneto;
+class QActionGroup;
+
 class MaknetoContactList : public ContactList
 {
 	Q_OBJECT
@@ -32,7 +35,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	MaknetoContactList() : ContactList() { }
+	MaknetoContactList(Makneto *makneto);
 
 	/**
 	* Destructor
@@ -42,6 +45,10 @@ public:
 	void addContact(const QString& name, const QString& jid, const QString& group);
 	void setAvailability(const QString& jid, const XMPP::Status& status);
 	//void setUnavailability(const QString& jid);
+
+private:
+	Makneto *m_makneto;
+	QActionGroup *m_contactActions;
 };
 
 #endif // MAKNETOCONTACTLIST_H

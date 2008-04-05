@@ -10,9 +10,11 @@
 
 #include "xmpp_status.h"
 
+#include <QtGui/QMenu>
+
 #include <iostream>
 
-MaknetoContact::MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent) : ContactListContact(parent), m_name(name), m_jid(jid), m_status(ContactListStatus::Offline, "Offline")
+MaknetoContact::MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent, QMenu *contactMenu) : ContactListContact(parent), m_name(name), m_jid(jid), m_status(ContactListStatus::Offline, "Offline"), m_contactMenu(contactMenu)
 {
 
 }
@@ -76,4 +78,9 @@ void MaknetoContact::setStatus(const XMPP::Status &status)
 			m_status = ContactListStatus(ContactListStatus::FFC, "Free for chat");
 			break;
 	}
+}
+
+void MaknetoContact::showContextMenu(const QPoint &where)
+{
+	m_contactMenu->exec(where);
 }

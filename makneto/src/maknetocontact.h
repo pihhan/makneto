@@ -12,6 +12,7 @@
 #include "contactlist/contactlistgroupitem.h"
 #include "contactlist/status.h"
 
+#include <QtGui/QMenu>
 
 /**
  * This is contact for Makneto
@@ -32,7 +33,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent);
+	MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent, QMenu *contactMenu);
 
 	/**
 	* Destructor
@@ -41,6 +42,7 @@ public:
 	virtual const QString& name() const { return m_name; }
 	virtual QString jid() const { return m_jid; }
 	virtual ContactListStatus status() const { return m_status; }
+	virtual void showContextMenu(const QPoint &where);
 
 	void setName(const QString& name) { m_name = name; } 
 	void setStatus(const XMPP::Status& status);
@@ -48,6 +50,7 @@ private:
 	QString m_name;
 	QString m_jid;
 	ContactListStatus m_status;
+	QMenu *m_contactMenu;
 };
 
 class MaknetoGroup : public ContactListGroup

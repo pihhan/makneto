@@ -11,11 +11,24 @@
 
 #include "xmpp_status.h"
 
+#include "makneto.h"
+
+#include <QtGui/QMenu>
+#include <QtGui/QActionGroup>
+#include <QtGui/QAction>
+
 #include <iostream>
+
+MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makneto(makneto) 
+{ 
+	m_contactActions = new QActionGroup(0);
+	connect(m_contactActions, SIGNAL(triggered(QAction *)), makneto, SLOT(contactTriggered(QAction *)));
+}
 
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QString& group = QString())
 {
 	ContactListGroupItem *groupItem = rootItem();
+	QMenu *contactMenu = new QMenu(NULL);
 
 	// find/create group
 	if (!group.isEmpty()) 
@@ -33,10 +46,17 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 		{
 			groupItem = new MaknetoGroup(group, rootItem());
 		}
-		
 	}
 
-	new MaknetoContact(name, jid, groupItem);
+	// create contact menu
+	QAction *newSession = new QAction(i18n("New &session"), m_contactActions);
+	newSession->setData(QVariant(jid));
+
+	//connect(newSession, SIGNAL(triggered()), m_makneto, SLOT(actionNewSession()));
+
+	contactMenu->addAction(newSession);
+
+	new MaknetoContact(name, jid, groupItem, contactMenu);
 }
 
 void MaknetoContactList::setAvailability(const QString& jid, const XMPP::Status& status)
