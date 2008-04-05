@@ -46,8 +46,14 @@ public:
 	Connection *getConnection() { return m_conn; }
 	MaknetoContactList *getContactList() { return m_cl; }
 
+signals:
+	void newSession(const QString &text);
+
 public slots:
 	void conn_messageReceived(const Message &);
+	void actionNewSession(const QString &);
+	void actionNewSession();
+	void contactTriggered(QAction *action);
 
 private:
 	Connection *m_conn;

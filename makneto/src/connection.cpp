@@ -65,6 +65,7 @@ bool Connection::login()
 
 	// my jabber id from settings
 	m_jid = Jid(Settings::jabberID());
+	m_jid.setResource("Makneto");
 
 	m_conn = new AdvancedConnector(this);
 
@@ -90,7 +91,9 @@ bool Connection::login()
 	connect(m_stream, SIGNAL(error(int)), SLOT(error(int)));
 	connect(m_stream, SIGNAL(authenticated()), SLOT(authenticated()));
 
-	m_client->connectToServer(m_stream, m_jid, true);
+	Jid j = m_jid.withResource("Makneto");
+
+	m_client->connectToServer(m_stream, j, true);
 
 	return true;
 }
@@ -291,9 +294,7 @@ void Connection::authenticated()
 {
 	qDebug() << "Connection::authenticated()";
 
-	qDebug() << m_jid.host() << "," << m_jid.user();
-
-	m_client->start(m_jid.host(), m_jid.user(), "test", "makneto");
+	m_client->start(m_jid.host(), m_jid.user(), "test", "Makneto");
 
 	if (!m_stream->old())
 	{
