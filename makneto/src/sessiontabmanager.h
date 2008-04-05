@@ -40,9 +40,11 @@ public:
 
 	SessionView *newSessionTab(const QString &text);
 	SessionView *findSession(const QString &jid);
+
 public slots:
 	void messageReceived(const Message &message);
- 
+	void newSession(const QString &text);
+
 private:
 	QVBoxLayout *m_mainlayout;
 

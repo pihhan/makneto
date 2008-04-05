@@ -17,6 +17,8 @@
 #include "xmpp_message.h"
 #include "xmpp_jid.h"
 
+#include <iostream>
+
 SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(makneto)
 {
 	m_mainlayout = new QVBoxLayout(this);
@@ -36,6 +38,9 @@ SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(mak
 
 	// we want to receive messages
 	connect(makneto->getConnection(), SIGNAL(connMessageReceived(const Message &)), this, SLOT(messageReceived(const Message &)));
+	connect(makneto, SIGNAL(newSession(const QString &)), this, SLOT(newSession(const QString &)));
+
+	// TODO: and status (from contact list?)
 
 	setLayout(m_mainlayout);
 }
@@ -83,5 +88,15 @@ void SessionTabManager::messageReceived(const Message &message)
 	if (!session)
 		session = newSessionTab(message.from().full());
 
-	session->chatMessage(message);
+	if (!message.whiteboard().tagName().isEmpty())
+		session->whiteboardMessage(message);
+	else
+		session->chatMessage(message);
+}
+
+void SessionTabManager::newSession(const QString &text)
+{
+	std::cout << "SessionTabManager::newSession";
+
+	newSessionTab(text);
 }

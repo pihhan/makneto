@@ -15,8 +15,12 @@ class QPushButton;
 class QTextEdit;
 class WbWidget;
 class QSplitter;
+class QDomElement;
+class KToolBar;
 
 #include "xmpp_chatstate.h"
+
+#include "settings.h"
 
 namespace XMPP 
 {
@@ -50,10 +54,14 @@ public:
 	QString session() { return m_session; }
 	QString jid() { return m_jid; }
 
+	void createToolBar();
 	void chatMessage(const Message &message); 
+	void whiteboardMessage(const Message &message);
 
 public slots:
 	void sendClicked();
+	void sendWhiteboard(const QDomElement &wb);
+	void setMode(QAction *);
 
 signals:
 	void sendMessage(const Message &);
@@ -62,6 +70,8 @@ private:
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;
 	QHBoxLayout *m_bottomlayout;
+
+	KToolBar *m_wbtoolbar;
 
 	QSplitter *m_splitter;
 
