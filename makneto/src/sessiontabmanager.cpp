@@ -6,16 +6,20 @@
 
 #include "sessiontabmanager.h"
 #include "sessionview.h"
+#include "maknetohtmlbrowser.h"
 
 #include "ktabbar.h"
 #include "kiconloader.h"
 
+
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 #include <QtGui/QStackedWidget>
+#include <QtGui/QFrame>
 
 #include "xmpp_message.h"
 #include "xmpp_jid.h"
+
 
 #include <iostream>
 
@@ -41,6 +45,12 @@ SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(mak
 	connect(makneto, SIGNAL(newSession(const QString &)), this, SLOT(newSession(const QString &)));
 
 	// TODO: and status (from contact list?)
+
+	// KHTMLpart widget for "Home tab"
+	MaknetoHTMLBrowser *homeTabBrowser = new MaknetoHTMLBrowser(this);
+
+	m_tab->addTab("Home");
+	m_widgets->addWidget(homeTabBrowser);
 
 	setLayout(m_mainlayout);
 }
@@ -68,7 +78,8 @@ SessionView* SessionTabManager::findSession(const QString &jid)
 {
 	SessionView *session;
 
-	for (int i=0; i<m_widgets->count(); i++)
+	// From 1!!! First widget is home tab! 
+	for (int i=1; i<m_widgets->count(); i++)
 	{
 		session = dynamic_cast<SessionView*>(m_widgets->widget(i));
 

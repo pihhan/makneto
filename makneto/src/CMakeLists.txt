@@ -50,6 +50,7 @@ set(makneto_SRCS
 	wbitems.cpp
 	sessionview.cpp
 	sessiontabmanager.cpp
+	maknetohtmlbrowser.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp
@@ -148,7 +149,7 @@ kde4_add_executable(makneto ${makneto_SRCS})
 
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g -O2")
 
-target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES})
+target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS})
 
 install(TARGETS makneto DESTINATION ${BIN_INSTALL_DIR} )
 
