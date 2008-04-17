@@ -10,7 +10,7 @@ set(QT_USE_QT3SUPPORT TRUE)
 include(${QT_USE_FILE})
 
 include (KDE4Defaults)
-include_directories( ${KDE4_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} iris/include iris/libidn iris/xmpp-core iris/xmpp-im 
+include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} iris/include iris/libidn iris/xmpp-core iris/xmpp-im 
 iris/jabber cutestuff/util cutestuff/network cutestuff/legacy )
 
 link_directories( 
@@ -51,6 +51,7 @@ set(makneto_SRCS
 	sessionview.cpp
 	sessiontabmanager.cpp
 	maknetohtmlbrowser.cpp
+	mediaplayer.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp
@@ -149,7 +150,7 @@ kde4_add_executable(makneto ${makneto_SRCS})
 
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g -O2")
 
-target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS})
+target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS})
 
 install(TARGETS makneto DESTINATION ${BIN_INSTALL_DIR} )
 
