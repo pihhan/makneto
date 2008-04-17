@@ -16,9 +16,11 @@
 #include <QtGui/QWidget>
 #include <QtGui/QStackedWidget>
 #include <QtGui/QFrame>
+#include <QDebug>
 
 #include "xmpp_message.h"
 #include "xmpp_jid.h"
+#include "filetransfer.h"
 
 
 #include <iostream>
@@ -42,6 +44,7 @@ SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(mak
 
 	// we want to receive messages
 	connect(makneto->getConnection(), SIGNAL(connMessageReceived(const Message &)), this, SLOT(messageReceived(const Message &)));
+	connect(makneto->getConnection(), SIGNAL(connIncomingFileTransfer(FileTransfer *)), this, SLOT(incomingFileTransfer(FileTransfer *)));
 	connect(makneto, SIGNAL(newSession(const QString &)), this, SLOT(newSession(const QString &)));
 
 	// TODO: and status (from contact list?)
@@ -66,13 +69,18 @@ SessionView* SessionTabManager::newSessionTab(const QString &text)
 	m_tab->addTab(text);
 	
 	// create new session view and add to widgets
-	SessionView *session = new SessionView(this, text);
+	SessionView *session = new SessionView(this, text, m_tab->count()-1);
 	m_widgets->addWidget(session);
 
 	connect(session, SIGNAL(sendMessage(const Message &)), m_makneto->getConnection(), SLOT(sendMessage(const Message &)));
 
 	return session;
 }
+
+/**
+*	@param 
+*	@return session
+*/
 
 SessionView* SessionTabManager::findSession(const QString &jid)
 {
@@ -90,24 +98,62 @@ SessionView* SessionTabManager::findSession(const QString &jid)
 	return 0;
 }
 
+void SessionTabManager::bringToFront(SessionView *session)
+{
+	std::cout << "SessionTabManager::bringToFront(" << session->id() << ")" << std::endl;
+	
+	m_tab->setCurrentIndex(session->id());	
+}
+
 void SessionTabManager::messageReceived(const Message &message)
 {
 	SessionView *session;
 
+	// check for existing session
 	session = findSession(message.from().full());
 
+	// no existing session - create new one
 	if (!session)
 		session = newSessionTab(message.from().full());
 
+	// send proper message type to session
 	if (!message.whiteboard().tagName().isEmpty())
 		session->whiteboardMessage(message);
 	else
 		session->chatMessage(message);
+
+	// bring to front
+	bringToFront(session);
+}
+
+void SessionTabManager::incomingFileTransfer(FileTransfer *ft)
+{
+	std::cout << "SessionTabManager::incommingFileTransfer" << std::endl;
+
+	SessionView *session;
+
+	// check for existing session for peer
+	session = findSession(ft->peer().full());
+
+	// no existing session - create new one
+	if (!session)
+		session = newSessionTab(ft->peer().full());
+
+	session->fileTransfer(ft);
+
+	// bring to front
+	bringToFront(session);
 }
 
 void SessionTabManager::newSession(const QString &text)
 {
-	std::cout << "SessionTabManager::newSession";
+	std::cout << "SessionTabManager::newSession << std::endl";
 
-	newSessionTab(text);
+	SessionView *session;
+
+	// create new session
+	session = newSessionTab(text);
+
+	// bring to front
+	bringToFront(session);
 }

@@ -5,12 +5,14 @@
  */
 
 #include "sessionview.h"
+#include "mediaplayer.h"
 #include "kiconloader.h"
 #include "klocale.h"
 #include "wbwidget.h"
 #include "ktoolbar.h"
 #include "kaction.h"
 
+#include <iostream>
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QHBoxLayout>
@@ -20,12 +22,17 @@
 #include <QtGui/QSplitter>
 #include <QDomElement>
 #include <QtCore/QSignalMapper>
+#include <QtCore/QBuffer>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
 #include "xmpp_jid.h"
+#include "filetransfer.h"
 
-SessionView::SessionView(QWidget *, const QString &jid): m_jid(jid), m_lastChatState(StateNone)
+#include <Phonon/VideoPlayer>
+
+
+SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid), m_lastChatState(StateNone), m_id(id)
 {
 	m_splitter = new QSplitter(this);
 	m_splitter->setOrientation(Qt::Vertical);
@@ -41,6 +48,13 @@ SessionView::SessionView(QWidget *, const QString &jid): m_jid(jid), m_lastChatS
 	m_mainlayout->addWidget(m_wbwidget);
 	connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
 	m_wbwidget->setMode(WbWidget::DrawPath);
+
+	//TODO: test only
+	QWidget *w = new QWidget;
+
+	player = new Phonon::VideoPlayer(Phonon::VideoCategory, w);
+	w->resize(100, 100);
+	m_mainlayout->addWidget(w);
 
 	
 	m_chatlayout = new QVBoxLayout();
@@ -61,6 +75,10 @@ SessionView::SessionView(QWidget *, const QString &jid): m_jid(jid), m_lastChatS
 	m_mainlayout->addLayout(m_chatlayout);
 
 	setLayout(m_mainlayout);
+
+	// TODO: test only!!!
+	m_testbuffer = new QBuffer;
+	m_testbuffer->open(QBuffer::ReadWrite);
 }
 
 SessionView::~SessionView()
@@ -210,7 +228,32 @@ void SessionView::whiteboardMessage(const Message &message)
 	m_wbwidget->processWb(message.whiteboard());
 }
 
+void SessionView::fileTransfer(FileTransfer *ft)
+{
+	FileTransfer *transfer = ft;
+
+	QString text;
+
+	text = "<b>" + transfer->peer().bare()+"</b> Incoming file '" + transfer->fileName() +"'";
+
+	m_chatoutput->append(text);
+
+	connect(transfer, SIGNAL(readyRead(const QByteArray &)), SLOT(transferRead(const QByteArray &)));
+
+	transfer->accept();
+
+	player->load(m_testbuffer);
+	player->play();
+}
+
 void SessionView::setMode(QAction *action)
 {
 	m_wbwidget->setMode(WbWidget::Mode(action->data().toInt()));
+}
+
+void SessionView::transferRead(const QByteArray &a)
+{
+	std::cout << "SessionView::transferRead()" << std::endl;
+
+	m_testbuffer->write(a.data());
 }

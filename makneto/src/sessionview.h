@@ -17,6 +17,7 @@ class WbWidget;
 class QSplitter;
 class QDomElement;
 class KToolBar;
+class QBuffer;
 
 #include "xmpp_chatstate.h"
 
@@ -25,6 +26,13 @@ class KToolBar;
 namespace XMPP 
 {
 	class Message;
+	class FileTransfer;
+}
+
+namespace Phonon
+{
+	class ByteStream;
+	class VideoPlayer;
 }
 
 using namespace XMPP;
@@ -44,7 +52,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	SessionView(QWidget *parent, const QString &jid);
+	SessionView(QWidget *parent, const QString &jid, const int id);
 
 	/**
 	* Destructor
@@ -53,15 +61,18 @@ public:
 
 	QString session() { return m_session; }
 	QString jid() { return m_jid; }
+	int const id() { return m_id; }
 
 	void createToolBar();
 	void chatMessage(const Message &message); 
 	void whiteboardMessage(const Message &message);
+	void fileTransfer(FileTransfer *ft);
 
 public slots:
 	void sendClicked();
 	void sendWhiteboard(const QDomElement &wb);
 	void setMode(QAction *);
+	void transferRead(const QByteArray &a);
 
 signals:
 	void sendMessage(const Message &);
@@ -84,8 +95,13 @@ private:
 	
 	QString m_session;
 	QString m_jid;
+	int m_id;
 
 	ChatState m_lastChatState;
+
+	// TODO: TEST ONLY!
+	QBuffer *m_testbuffer;
+	Phonon::VideoPlayer *player;
 };
 
 #endif // SESSIONVIEW_H

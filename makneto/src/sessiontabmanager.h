@@ -40,10 +40,11 @@ public:
 
 	SessionView *newSessionTab(const QString &text);
 	SessionView *findSession(const QString &jid);
-
+	void bringToFront(SessionView *session);
 public slots:
 	void messageReceived(const Message &message);
 	void newSession(const QString &text);
+	void incomingFileTransfer(FileTransfer *ft);
 
 private:
 	QVBoxLayout *m_mainlayout;

@@ -31,6 +31,7 @@ namespace XMPP
 	class RosterItem;
 	class Resource;
 	class Message;
+	class FileTransfer;
 }
 
 namespace QCA 
@@ -84,13 +85,15 @@ private slots:
 	void client_debugText(const QString &);
 	void client_xmlIncoming(const QString &);
 	void client_xmlOutgoing(const QString &);
+	void client_incomingFileTransfer();
 
 	void sendMessage(const Message &);
 
 signals:
-	void connMessageReceived(const Message &message);
+	void connMessageReceived(const Message &);
 	void connConnected(void);
 	void connDisconnected(void);
+	void connIncomingFileTransfer(FileTransfer *);
 
 private:
 	Client *m_client;

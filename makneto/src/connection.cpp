@@ -14,6 +14,7 @@
 #include "xmpp_jid.h"
 #include "xmpp_tasks.h"
 #include "xmpp_features.h"
+#include "filetransfer.h"
 
 #include "settings.h"
 
@@ -37,8 +38,9 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 
 	QStringList features;
 	features << "http://jabber.org/protocol/commands";
-	features << "http://jabber.org/protocol/rosterx";
 	m_client->setFeatures(Features(features));
+
+	m_client->setFileTransferEnabled(true);
 
 	connect(m_client, SIGNAL(debugText(const QString &)), SLOT(client_debugText(const QString &)));
 	connect(m_client, SIGNAL(messageReceived(const Message &)), this, SLOT(client_messageReceived(const Message &)));
@@ -52,6 +54,7 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	connect(m_client, SIGNAL(subscription(const Jid &, const QString &, const QString&)), SLOT(client_subscription(const Jid &, const QString &, const QString&)));
 	//connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
 	//connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
+	connect(m_client->fileTransferManager(), SIGNAL(incomingReady()), SLOT(client_incomingFileTransfer()));
 }
 
 Connection::~Connection()
@@ -418,6 +421,19 @@ void Connection::client_xmlIncoming(const QString &)
 
 void Connection::client_xmlOutgoing(const QString &)
 {
+}
+
+void Connection::client_incomingFileTransfer()
+{
+	qDebug() << "Connection::client_incomingFileTransfer()";
+
+	FileTransfer *ft = m_client->fileTransferManager()->takeIncoming();
+
+	if (!ft)
+		return;
+
+	// process incoming file transfer
+	emit connIncomingFileTransfer(ft);
 }
 
 void Connection::sendMessage(const Message &message)
