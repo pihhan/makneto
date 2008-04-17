@@ -19,6 +19,7 @@
     </entry>
     <entry name="jabberPort" type="Int">
 	    <label>Defines Jabber server port</label>
+            <default>5222</default>
     </entry>
     <entry name="jabberFileTransferJID" type="String">
 	    <label>Defines Jabber filetransfer proxy</label>
