@@ -23,6 +23,8 @@
 #include <QDomElement>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QBuffer>
+#include <QtCore/QByteArray>
+#include <QtGui/QFrame>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
@@ -34,8 +36,13 @@
 
 SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid), m_lastChatState(StateNone), m_id(id)
 {
-	m_splitter = new QSplitter(this);
-	m_splitter->setOrientation(Qt::Vertical);
+	m_mainSplitter = new QSplitter(this);
+	m_mainSplitter->setOrientation(Qt::Vertical);
+
+	m_chatFrame = new QFrame;
+
+	m_chatSplitter = new QSplitter(m_chatFrame);
+	m_chatSplitter->setOrientation(Qt::Vertical);
 
 	m_mainlayout = new QVBoxLayout(this);
 	m_mainlayout->setMargin(0);
@@ -44,19 +51,12 @@ SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid
 	createToolBar();
 
 	// add whiteboard widget
-	m_wbwidget = new WbWidget("s1", "rezza@jabber.cz", QSize(300, 300), m_splitter);
-	m_mainlayout->addWidget(m_wbwidget);
+	m_wbwidget = new WbWidget("s1", "rezza@jabber.cz", QSize(300, 400), this);
+	//m_mainlayout->addWidget(m_wbwidget, 1000);
 	connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
 	m_wbwidget->setMode(WbWidget::DrawPath);
+	m_wbwidget->setMinimumSize(300, 400);
 
-	//TODO: test only
-	QWidget *w = new QWidget;
-
-	player = new Phonon::VideoPlayer(Phonon::VideoCategory, w);
-	w->resize(100, 100);
-	m_mainlayout->addWidget(w);
-
-	
 	m_chatlayout = new QVBoxLayout();
 
 	m_chatoutput = new QTextEdit(this);
@@ -64,21 +64,26 @@ SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid
 	m_sendmsg = new QPushButton("&Send", this);
 	connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
 
+	// output chat text edit props
 	m_chatoutput->setTextFormat(Qt::RichText);
 	m_chatoutput->setReadOnly(true);
 
-	m_chatlayout->addWidget(m_chatoutput);
-	m_chatlayout->addWidget(m_chatinput);
-	m_chatlayout->addWidget(m_sendmsg);
-	
-	m_mainlayout->addWidget(m_wbwidget);
-	m_mainlayout->addLayout(m_chatlayout);
+	m_chatSplitter->addWidget(m_chatoutput);
+	m_chatSplitter->addWidget(m_chatinput);
+	m_chatSplitter->addWidget(m_sendmsg);
+
+
+	m_mainSplitter->addWidget(m_wbwidget);
+	m_mainSplitter->addWidget(m_chatSplitter);
+
+	m_mainlayout->addWidget(m_mainSplitter);
+	m_mainlayout->addWidget(m_chatFrame);
 
 	setLayout(m_mainlayout);
 
 	// TODO: test only!!!
-	m_testbuffer = new QBuffer;
-	m_testbuffer->open(QBuffer::ReadWrite);
+	ba = new QByteArray;
+	m_testbuffer = new QBuffer(ba, this);
 }
 
 SessionView::~SessionView()
@@ -242,8 +247,14 @@ void SessionView::fileTransfer(FileTransfer *ft)
 
 	transfer->accept();
 
-	player->load(m_testbuffer);
-	player->play();
+	mediap = new MediaPlayer(this);
+	//mediap->show();
+
+	//mediap->setBuffer(m_testbuffer);
+
+	bytes = 0;
+	//player->load(m_testbuffer);
+	//player->play();
 }
 
 void SessionView::setMode(QAction *action)
@@ -253,7 +264,22 @@ void SessionView::setMode(QAction *action)
 
 void SessionView::transferRead(const QByteArray &a)
 {
-	std::cout << "SessionView::transferRead()" << std::endl;
+	ba->append(a);
+	std::cout << "a.size=" << a.size() << std::endl;
+	bytes=bytes+a.size();
 
-	m_testbuffer->write(a.data());
+/*	std::cout << "written=" << m_testbuffer->write(a.data()) << std::endl;
+	m_testbuffer->waitForBytesWritten(1000);*/
+	std::cout << "buffer.size()=" << m_testbuffer->size() << std::endl;
+	std::cout << "bytes=" << bytes << std::endl;
+	std::cout << "ba.size()=" << ba->size() << std::endl;
+
+	if (bytes==183173120)
+	{
+		m_testbuffer->open(QIODevice::ReadOnly);
+		//m_testbuffer->seek(0);
+		mediap->setCurrentSource(m_testbuffer);
+		mediap->show();
+	}
+
 }

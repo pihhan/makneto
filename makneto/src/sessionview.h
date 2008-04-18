@@ -8,6 +8,9 @@
 #define SESSIONVIEW_H
 
 #include <QtGui/QWidget>
+#include <QByteArray>
+
+#include "mediaplayer.h"
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -18,6 +21,7 @@ class QSplitter;
 class QDomElement;
 class KToolBar;
 class QBuffer;
+class QFrame;
 
 #include "xmpp_chatstate.h"
 
@@ -84,7 +88,10 @@ private:
 
 	KToolBar *m_wbtoolbar;
 
-	QSplitter *m_splitter;
+	QSplitter *m_mainSplitter;
+	QSplitter *m_chatSplitter;
+
+	QFrame *m_chatFrame;
 
 	WbWidget *m_wbwidget;
 	
@@ -102,6 +109,9 @@ private:
 	// TODO: TEST ONLY!
 	QBuffer *m_testbuffer;
 	Phonon::VideoPlayer *player;
+	int bytes;
+	QByteArray *ba;
+	MediaPlayer *mediap;
 };
 
 #endif // SESSIONVIEW_H
