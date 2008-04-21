@@ -22,6 +22,7 @@ class QDomElement;
 class KToolBar;
 class QBuffer;
 class QFrame;
+class FTStream;
 
 #include "xmpp_chatstate.h"
 
@@ -112,6 +113,7 @@ private:
 	int bytes;
 	QByteArray *ba;
 	MediaPlayer *mediap;
+	FTStream *m_ftstream;
 };
 
 #endif // SESSIONVIEW_H

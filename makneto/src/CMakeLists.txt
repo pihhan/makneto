@@ -52,6 +52,7 @@ set(makneto_SRCS
 	sessiontabmanager.cpp
 	maknetohtmlbrowser.cpp
 	mediaplayer.cpp
+	ftstream.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp

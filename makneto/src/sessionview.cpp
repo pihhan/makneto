@@ -11,6 +11,7 @@
 #include "wbwidget.h"
 #include "ktoolbar.h"
 #include "kaction.h"
+#include "ftstream.h"
 
 #include <iostream>
 
@@ -84,6 +85,8 @@ SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid
 	// TODO: test only!!!
 	ba = new QByteArray;
 	m_testbuffer = new QBuffer(ba, this);
+	m_testbuffer->open(QIODevice::ReadWrite);
+
 }
 
 SessionView::~SessionView()
@@ -243,13 +246,16 @@ void SessionView::fileTransfer(FileTransfer *ft)
 
 	m_chatoutput->append(text);
 
-	connect(transfer, SIGNAL(readyRead(const QByteArray &)), SLOT(transferRead(const QByteArray &)));
+	connect(transfer, SIGNAL(readyRead(const QByteArray &)), this, SLOT(transferRead(const QByteArray &)));
 
 	transfer->accept();
 
-	mediap = new MediaPlayer(this);
-	//mediap->show();
+	m_ftstream = new FTStream(m_testbuffer, transfer->fileSize(), this);
 
+	mediap = new MediaPlayer(this);
+	mediap->show();
+	mediap->setCurrentSource(m_ftstream);
+	
 	//mediap->setBuffer(m_testbuffer);
 
 	bytes = 0;
@@ -265,21 +271,24 @@ void SessionView::setMode(QAction *action)
 void SessionView::transferRead(const QByteArray &a)
 {
 	ba->append(a);
-	std::cout << "a.size=" << a.size() << std::endl;
+/*	std::cout << "a.size=" << a.size() << std::endl;*/
 	bytes=bytes+a.size();
 
 /*	std::cout << "written=" << m_testbuffer->write(a.data()) << std::endl;
 	m_testbuffer->waitForBytesWritten(1000);*/
-	std::cout << "buffer.size()=" << m_testbuffer->size() << std::endl;
-	std::cout << "bytes=" << bytes << std::endl;
-	std::cout << "ba.size()=" << ba->size() << std::endl;
+ //	std::cout << "buffer.size()=" << m_testbuffer->size() << std::endl;
+// 	std::cout << "bytes=" << bytes << std::endl;
+// 	std::cout << "ba.size()=" << ba->size() << std::endl;
 
-	if (bytes==183173120)
-	{
-		m_testbuffer->open(QIODevice::ReadOnly);
-		//m_testbuffer->seek(0);
-		mediap->setCurrentSource(m_testbuffer);
-		mediap->show();
-	}
+// 	if (bytes==183173120)
+// 	{
+// 		m_testbuffer->open(QIODevice::ReadOnly);
+// 		//m_testbuffer->seek(0);
+// 		mediap->setCurrentSource(m_testbuffer);
+// 		mediap->show();
+// 	}
+
+ 	if (bytes==4456448)
+		mediap->setCurrentSource(m_ftstream);
 
 }
