@@ -5,11 +5,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>400</height>
+    <width>506</width>
+    <height>411</height>
    </rect>
   </property>
-  <layout class="QGridLayout" >
+  <property name="minimumSize" >
+   <size>
+    <width>506</width>
+    <height>411</height>
+   </size>
+  </property>
+  <layout class="QGridLayout" name="verticalLayout" >
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="enabled" >
@@ -19,6 +25,14 @@
       <number>0</number>
      </property>
      <widget class="QWidget" name="tab" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>486</width>
+        <height>363</height>
+       </rect>
+      </property>
       <attribute name="title" >
        <string>Network</string>
       </attribute>
@@ -123,6 +137,14 @@
       <property name="enabled" >
        <bool>true</bool>
       </property>
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>486</width>
+        <height>363</height>
+       </rect>
+      </property>
       <attribute name="title" >
        <string>Connection</string>
       </attribute>
@@ -141,7 +163,7 @@
        <property name="title" >
         <string>Connection Settings</string>
        </property>
-       <widget class="QWidget" name="" >
+       <widget class="QWidget" name="layoutWidget" >
         <property name="geometry" >
          <rect>
           <x>20</x>
@@ -228,7 +250,7 @@
        <property name="title" >
         <string>Security</string>
        </property>
-       <widget class="QWidget" name="" >
+       <widget class="QWidget" name="layoutWidget" >
         <property name="geometry" >
          <rect>
           <x>10</x>
