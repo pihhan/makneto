@@ -54,6 +54,7 @@ public slots:
 	void actionNewSession(const QString &);
 	void actionNewSession();
 	void contactTriggered(QAction *action);
+	void addUser(const XMPP::Jid &, const QString &, bool requestAuth);
 
 private:
 	Connection *m_conn;

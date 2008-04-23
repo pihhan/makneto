@@ -9,6 +9,7 @@
 
 #include <QtGui/QWidget>
 #include "xmpp.h"
+#include "ui_add_contact.h"
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -46,8 +47,11 @@ public:
 public slots:
 	void search(const QString& search);
 	void offlineClicked(bool toggled);
+	void addContactClicked(bool toggled);
 
 private:
+	Ui::AddContact ui_add_contact;
+
 	QVBoxLayout *m_mainlayout;
 	QHBoxLayout *m_buttonslayout;
 

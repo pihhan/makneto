@@ -7,6 +7,7 @@
 #include "makneto.h"
 #include "maknetocontactlist.h"
 #include "connection.h"
+#include "xmpp_tasks.h"
 
 #include <iostream>
 
@@ -50,6 +51,14 @@ void Makneto::actionNewSession()
 void Makneto::contactTriggered(QAction *action)
 {
 	emit newSession(action->data().toString() + "/Makneto");
+}
+
+void Makneto::addUser(const XMPP::Jid &jid, const QString &group, bool requestAuth)
+{
+	std::cout << "Makneto::addUser()" << std::endl;
+
+	m_conn->addUser(jid, group, requestAuth);
+	
 }
 
 #include "makneto.moc"

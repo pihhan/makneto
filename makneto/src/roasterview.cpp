@@ -10,10 +10,15 @@
 #include "contactlist/contactlistmodel.h"
 #include "contactlist/contactlistview.h"
 #include "contactlist/contactlist.h"
+#include "addcontactdialog.h"
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QTreeView>
+#include <QtGui/QWidget>
+
 #include <klineedit.h>
+#include <kdialog.h>
+
 
 RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 {
@@ -23,7 +28,7 @@ RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	// buttons
 	m_addcontact = new QPushButton(KIconLoader::global()->loadIcon("list-add-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Add contact"), this);
 	m_buttonslayout->addWidget(m_addcontact);
-	//connect(m_buttononline, SIGNAL(clicked(bool)), SLOT(onlineClicked(bool)));
+	connect(m_addcontact, SIGNAL(clicked(bool)), SLOT(addContactClicked(bool)));
 
 	m_offline = new QPushButton(KIconLoader::global()->loadIcon("edit-find-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Show all"), this);
 	m_offline->setToggleButton(true);
@@ -60,6 +65,14 @@ void RoasterView::search(const QString& search)
 {
 	m_makneto->getContactList()->setSearch(search);
 	
+}
+
+void RoasterView::addContactClicked(bool toggled)
+{
+	AddContactDialog *addContact = new AddContactDialog(this);
+	addContact->show();
+
+	connect(addContact, SIGNAL(addUser(const XMPP::Jid &, const QString &, bool)), m_makneto, SLOT(addUser(const XMPP::Jid &, const QString &, bool)));
 }
 
 void RoasterView::offlineClicked(bool toggled)

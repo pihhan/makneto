@@ -15,6 +15,8 @@
 #include "xmpp_tasks.h"
 #include "xmpp_features.h"
 #include "filetransfer.h"
+#include "xmpp_tasks.h"
+
 
 #include "settings.h"
 
@@ -439,6 +441,13 @@ void Connection::client_incomingFileTransfer()
 void Connection::sendMessage(const Message &message)
 {
 	m_client->sendMessage(message);
+}
+
+void Connection::addUser(const Jid &jid, const QString &group, bool requestAuth)
+{
+	JT_Roster *roster = new JT_Roster(m_client->rootTask());
+	roster->set(jid, "", QStringList());
+	roster->go(true);
 }
 
 #include "connection.moc"

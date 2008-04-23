@@ -89,6 +89,9 @@ private slots:
 
 	void sendMessage(const Message &);
 
+public slots:
+	void addUser(const Jid &jid, const QString &group, bool requestAuth);
+
 signals:
 	void connMessageReceived(const Message &);
 	void connConnected(void);
