@@ -369,11 +369,6 @@ void Connection::client_rosterItemAdded(const RosterItem &item)
 {
 	qDebug() << "Connection::client_rosterItemAdded(item)";
 
-	qDebug() << "Item name=" << item.name();
-	qDebug() << "Item jid=" << item.jid().full();
-	qDebug() << "Item groups count=" << item.groups().size();
-
-	//TODO: proper groups handling
 	if (item.groups().size()==0)
 		m_makneto->getContactList()->addContact(item.name(), item.jid().full(), "");
 	else
