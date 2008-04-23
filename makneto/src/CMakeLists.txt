@@ -53,6 +53,7 @@ set(makneto_SRCS
 	maknetohtmlbrowser.cpp
 	mediaplayer.cpp
 	ftstream.cpp
+	addcontactdialog.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp
@@ -144,7 +145,7 @@ kde4_moc_headers(makneto
         iris/xmpp-im/xmpp_discoinfotask.h
 )
 
-kde4_add_ui_files(makneto_SRCS maknetoview_base.ui prefs_base.ui)
+kde4_add_ui_files(makneto_SRCS maknetoview_base.ui prefs_base.ui add_contact.ui)
 kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})
