@@ -97,6 +97,8 @@ MediaPlayer::MediaPlayer(QWidget * parent)
 	for(int i = 0; i<caps.size(); i++)
 		qDebug(caps[i].name());
 
+	resize(300, 350);
+
 	setLayout(m_mainLayout);
 }
 
