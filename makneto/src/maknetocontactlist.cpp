@@ -29,11 +29,17 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 {
 	ContactListGroupItem *groupItem = rootItem();
 	QMenu *contactMenu = new QMenu(NULL);
+	QString groupCorrected;
+
+	if (group.isEmpty())
+		groupCorrected = "Unknown";
+	else
+		groupCorrected = group;
 
 	// find/create group
-	if (!group.isEmpty()) 
+	if (!groupCorrected.isEmpty()) 
 	{
-		MaknetoGroup g(group);
+		MaknetoGroup g(groupCorrected);
 
 		groupItem = static_cast<MaknetoGroup*>(rootItem()->findFirstItem(&g));
 
@@ -44,7 +50,7 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 	
 		if (!groupItem) 
 		{
-			groupItem = new MaknetoGroup(group, rootItem());
+			groupItem = new MaknetoGroup(groupCorrected, rootItem());
 		}
 	}
 
