@@ -6,10 +6,13 @@
 #include "maknetomainwindow.h"
 #include "maknetoview.h"
 #include "settings.h"
+#include "mediaplayer.h"
 
 #include <QtGui/QDropEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPrinter>
+
+#include <QtCore/QBuffer>
 
 #include <kconfigdialog.h>
 #include <kstatusbar.h>
@@ -19,6 +22,9 @@
 #include <kstandardaction.h>
 
 #include <KDE/KLocale>
+
+#include <Phonon/MediaSource>
+#include "ftstream.h"
 
 MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto)
     : KXmlGuiWindow(),
@@ -58,6 +64,14 @@ void MaknetoMainWindow::setupActions()
 
 void MaknetoMainWindow::fileNew()
 {
+	MediaPlayer *mediap = new MediaPlayer(this);
+
+	//m_media->setCurrentSource(Phonon::MediaSource("/home/jreznik/Movies/music/Metallica/live.earth.london.metallica.hdtv.xvid-2hd.avi"));
+	mediap->setCurrentSource(Phonon::MediaSource("/home/jreznik/grass.mp3"));
+
+	mediap->show();
+
+
 }
 
 void MaknetoMainWindow::quit()
