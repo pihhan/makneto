@@ -18,6 +18,7 @@
 #include <QtGui/QLabel>
 #include <QtGui/QHBoxLayout>
 #include <kmultitabbar.h>
+#include <QtGui/QSplitter>
 
 MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 {
@@ -42,7 +43,6 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 
 	// add to layout
 	layout->addWidget(sidebar);
-	//layout->addWidget(m_sessionview);
 	layout->addWidget(m_sessiontabmanager);
 
 	setLayout(layout);

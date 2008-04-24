@@ -34,7 +34,8 @@ public:
 	virtual ~MaknetoMainWindow();
 	
 private slots:
-	void fileNew();
+	void fullScreen();
+	void showMenubar();
 	void quit();
 	void optionsPreferences();
 

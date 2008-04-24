@@ -31,6 +31,8 @@ SidebarWidget::SidebarWidget(QWidget *) : m_currentIndex(-1)
 
 	m_multitab->setPosition(KMultiTabBar::Left);
 
+	setMinimumSize(0, 0);
+
 	setLayout(m_layout);
 }
 
@@ -63,10 +65,7 @@ void SidebarWidget::setCurrentIndex(int index)
 		// set widget to index
 		m_multitab->setTab(m_currentIndex, true);
 		
-		qDebug() << "setCurrentIndex: m_widgets->currentIndex=" << m_widgets->currentIndex();
-		qDebug() << "setCurrentIndex: set stacked widget" << index;
 		m_widgets->setCurrentIndex(index);
-		qDebug() << "setCurrentIndex: m_widgets->currentIndex=" << m_widgets->currentIndex();
 	}
 }
 
@@ -75,11 +74,11 @@ void SidebarWidget::tabClicked(int id)
 	if (m_currentIndex != id)
 	{
 		setCurrentIndex(id);
+		m_widgets->setVisible(true);
 	}
 	else
 	{
-		// TODO: hide widget
-		//m_widgets->setVisible(!m_widgets->isVisible());
+		m_widgets->setVisible(!m_widgets->isVisible());
 	}
 }
 
