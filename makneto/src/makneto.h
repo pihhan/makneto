@@ -15,6 +15,7 @@
 namespace XMPP 
 {
 	class Message;
+	class Status;
 }
 
 using namespace XMPP;
@@ -48,9 +49,11 @@ public:
 
 signals:
 	void newSession(const QString &text);
+	void statusChanged(const XMPP::Status &);
 
 public slots:
 	void conn_messageReceived(const Message &);
+// 	void conn_statusChanged(const XMPP::Status &);
 	void actionNewSession(const QString &);
 	void actionNewSession();
 	void contactTriggered(QAction *action);

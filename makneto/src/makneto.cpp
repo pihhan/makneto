@@ -19,6 +19,7 @@ Makneto::Makneto(QObject *parent) : QObject(parent)
 	m_conn = new Connection(this);
 
 	connect(m_conn, SIGNAL(connMessageReceived(const Message &)), this, SLOT(conn_messageReceived(const Message &)));
+// 	connect(m_conn, SIGNAL(connStatusChanged(const Status &)), this, SLOT(conn_statusChanged(const Status &)));
 
 	// create contact list
 	m_cl = new MaknetoContactList(this);

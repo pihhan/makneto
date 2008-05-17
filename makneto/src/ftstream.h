@@ -34,6 +34,7 @@ protected:
 	void reset();
 	void needData();
 	void enoughData();
+//	void seekStream(qint64 offset);
 
 private slots:
 	void moreData();
@@ -44,6 +45,9 @@ private:
 
 	bool m_reading;
 	bool m_endOfDataSent;
+
+	qlonglong m_sentBytes;
+	qlonglong m_fileSize;
 };
 
 #endif // FTSTREAM_H

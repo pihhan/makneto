@@ -32,6 +32,7 @@ namespace XMPP
 	class Resource;
 	class Message;
 	class FileTransfer;
+	class Status;
 }
 
 namespace QCA 
@@ -97,6 +98,7 @@ signals:
 	void connConnected(void);
 	void connDisconnected(void);
 	void connIncomingFileTransfer(FileTransfer *);
+	void connStatusChanged(const XMPP::Status &);
 
 private:
 	Client *m_client;

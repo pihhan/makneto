@@ -37,6 +37,8 @@ MediaPlayer::MediaPlayer(QWidget * parent)
 	m_label = new QLabel("Unknow video from unknown contact");
 	m_mainLayout->addWidget(m_label);
 
+	connect(this, SIGNAL(rejected ()), this, SLOT(close()));
+
 	m_media = new Phonon::MediaObject;
 	connect(m_media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State)));
 	connect(m_media, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
@@ -106,13 +108,31 @@ void MediaPlayer::setCurrentSource(const Phonon::MediaSource &source)
 {
 	m_media->setCurrentSource(source);
 
+	// setup player components
 	if (m_media->hasVideo())
 	{
 		m_video->show();
 		resize(300, 350);
 	}
 	else
+	{
 		m_video->hide();
+		resize(300, 0);
+	}
+
+	// we are seekable
+	if (m_media->isSeekable())
+	{
+		actionSeekForward->setEnabled(true);
+		actionSeekBackward->setEnabled(true);
+	}
+	else
+	{
+		actionSeekForward->setEnabled(false);
+		actionSeekBackward->setEnabled(false);
+	}
+
+	qDebug(m_media->metaData("ARTIST").first());
 }
 
 void MediaPlayer::createButtons()
@@ -186,9 +206,31 @@ void MediaPlayer::hasVideoChanged(bool hasVideo)
 	std::cout << "MediaPlayer::hasVideoChanged() = " << m_media->hasVideo() << std::endl;
 
 	if (m_media->hasVideo())
+	{
 		m_video->show();
+		resize(300, 350);
+	}
 	else
+	{
 		m_video->hide();
+		resize(300, 0);
+	}
+
+	if (m_media->isSeekable())
+	{
+		actionSeekForward->setEnabled(true);
+		actionSeekBackward->setEnabled(true);
+	}
+	else
+	{
+		actionSeekForward->setEnabled(false);
+		actionSeekBackward->setEnabled(false);
+	}
+}
+
+void MediaPlayer::close()
+{
+	m_media->stop();
 }
 
 #include "mediaplayer.moc"

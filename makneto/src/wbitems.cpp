@@ -1,5 +1,6 @@
 /*
  * wbitems.cpp - the item classes for the SVG WB
+ * Copyright (C) 2008  Jaroslav Reznik
  * Copyright (C) 2006  Joonas Govenius
  *
  * This program is free software; you can redistribute it and/or

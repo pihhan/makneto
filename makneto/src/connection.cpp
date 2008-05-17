@@ -61,6 +61,17 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 
 Connection::~Connection()
 {
+	logout();
+
+
+	delete m_stream;
+	m_stream = 0;
+
+	delete m_conn;
+	m_conn = 0;
+
+	delete m_client;
+	m_client = 0;
 
 }
 
@@ -89,6 +100,8 @@ bool Connection::login()
 	if (Settings::allowPlain())
 		m_stream->setAllowPlain(ClientStream::AllowPlain);
 
+	m_stream->setRequireMutualAuth(true);
+
 	connect(m_stream, SIGNAL(needAuthParams(bool, bool, bool)), SLOT(needAuthParams(bool, bool, bool)));
 	connect(m_stream, SIGNAL(connected()), SLOT(connected()));
 	connect(m_stream, SIGNAL(connectionClosed()), SLOT(connectionClosed()));
@@ -105,7 +118,15 @@ bool Connection::login()
 
 bool Connection::logout()
 {
+	setStatus(XMPP::Status::Offline);
+
 	m_client->close();
+
+	delete m_stream;
+	m_stream = 0;
+
+	delete m_conn;
+	m_conn = 0;
 
 	return true;
 }
@@ -346,6 +367,8 @@ void Connection::setStatus(Status status)
 {
 	if (m_rosterFinished)
 		m_client->setPresence(status);
+
+	emit connStatusChanged(status);
 }
 
 bool Connection::isOnline()
@@ -455,6 +478,9 @@ void Connection::addUser(const Jid &jid, const QString &group, bool requestAuth)
 	JT_Roster *roster = new JT_Roster(m_client->rootTask());
 	roster->set(jid, "", QStringList());
 	roster->go(true);
+
+	if (requestAuth)
+		m_client->sendSubscription(jid, "subscribe");
 }
 
 #include "connection.moc"

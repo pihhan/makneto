@@ -45,6 +45,7 @@ public slots:
 private slots:
 	void stateChanged(Phonon::State state);
 	void hasVideoChanged(bool hasVideo);
+	void close();
 
 private:
 	void createButtons();

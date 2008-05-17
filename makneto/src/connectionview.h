@@ -10,10 +10,17 @@
 #include <QtGui/QWidget>
 
 class QVBoxLayout;
+class QHBoxLayout;
 class QPushButton;
 class QGridLayout;
+class QLabel;
 class Connection;
 class Makneto;
+
+namespace XMPP
+{
+	class Status;
+}
 
 /**
  * This is connection view widget for Makneto
@@ -45,11 +52,15 @@ private slots:
 	void invisibleClicked(bool);
 	void offlineClicked(bool);
 
+public slots:
+	void statusChanged(const XMPP::Status &);
+
 private:
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_buttonslayout;
-	QGridLayout *m_infolayout;
+	QHBoxLayout *m_stateLayout;
 
+	QPushButton *m_buttonUserIcon;
 	QPushButton *m_buttononline;
 	QPushButton *m_buttonaway;
 	QPushButton *m_buttonxa;
@@ -57,8 +68,13 @@ private:
 	QPushButton *m_buttoninvisible;
 	QPushButton *m_buttonoffline;
 
+	QLabel *m_labelJabberID;
+	QLabel *m_labelStatus;
+
 	Connection *m_conn;
 	Makneto *m_makneto;
+
+	void setStatus(const XMPP::Status &status);
 };
 
 #endif // CONNECTIONVIEW_H

@@ -19,9 +19,6 @@ int main(int argc, char **argv)
 	about.addAuthor( ki18n("Jaroslav Reznik"), KLocalizedString(), "rezzabuh@gmail.com" );
 	KCmdLineArgs::init(argc, argv, &about);
 
-	KCmdLineOptions options;
-	options.add("+[URL]", ki18n( "Document to open" ));
-	KCmdLineArgs::addCmdLineOptions(options);
 	KApplication app;
 
 	// Makneto main

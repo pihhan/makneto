@@ -10,11 +10,13 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QTimer>
 
-FTStream::FTStream(QBuffer *buffer, qlonglong fileSize, QObject *parent)
+FTStream::FTStream(QBuffer *buffer, qlonglong fileSize, QObject *parent) : m_fileSize(fileSize)
 {
 	qDebug("FTStream::FTStream()");
 
 	m_buffer = buffer;
+	m_sentBytes = 0;
+	m_endOfDataSent = false;
 	
 	// this stream is not seekable
 	setStreamSeekable(false);
@@ -37,6 +39,8 @@ void FTStream::reset()
 	qDebug("FTStream::reset()");
 
 	m_buffer->reset();
+/*	m_sentBytes = 0;
+	m_endOfDataSent = false;*/
 }
 
 void FTStream::moreData()
@@ -47,8 +51,20 @@ void FTStream::moreData()
 	{
 		QByteArray data = m_buffer->read(4096);
 
+// 		m_sentBytes += data.size();
+
 		writeData(data);
 	}
+
+/*	if (!m_endOfDataSent || (m_sentBytes == m_fileSize))
+	{
+		endOfData();
+		m_endOfDataSent = true;
+
+		qDebug("FTStream::moreData(): end of data");
+
+		setStreamSeekable(true);
+	}*/
 }
 
 void FTStream::needData()
@@ -67,3 +83,9 @@ void FTStream::enoughData()
 	// enough data, stop pushing
 	m_timer->stop();
 }
+
+// void FTStream::seekStream(qint64 offset)
+// {
+// 	if (m_endOfDataSent)
+// 		m_buffer->seek(offset);
+// }

@@ -70,9 +70,15 @@ void MaknetoMainWindow::optionsPreferences()
 	}
 
 	KConfigDialog *dialog = new KConfigDialog(this, "settings", Settings::self());
-	QWidget *generalSettingsDlg = new QWidget;
-	ui_prefs_base.setupUi(generalSettingsDlg);
-	dialog->addPage(generalSettingsDlg, i18n("Account"), "preferences-system-network");
+
+	QWidget *accountSettingsDlg = new QWidget;
+	ui_prefs_account.setupUi(accountSettingsDlg);
+	dialog->addPage(accountSettingsDlg, i18n("Account"), "preferences-system-network");
+
+// 	QWidget *fileTransferSettingsDlg = new QWidget;
+// 	ui_prefs_file_transfer.setupUi(fileTransferSettingsDlg);
+// 	dialog->addPage(fileTransferSettingsDlg, i18n("File transfer"), "preferences-other");
+
 	connect(dialog, SIGNAL(settingsChanged(QString)), m_view, SLOT(settingsChanged()));
 	dialog->setAttribute( Qt::WA_DeleteOnClose );
 	dialog->show();

@@ -158,6 +158,9 @@ void SessionView::createToolBar()
 	m_wbtoolbar->addAction(actionImage);
 	actionImage->setData(QVariant(WbWidget::DrawImage));
 
+	KAction *actionSendFile = new KAction(KIcon("mail-send"), i18n("Send file"), this);
+	m_wbtoolbar->addAction(actionSendFile);
+	connect(actionSendFile, SIGNAL(triggered()), this, SLOT(actionSendFileTriggered()));
 
 
 }
@@ -290,5 +293,10 @@ void SessionView::transferRead(const QByteArray &a)
 
  	if (bytes==4456448)
 		mediap->setCurrentSource(m_ftstream);
+
+}
+
+void SessionView::actionSendFileTriggered()
+{
 
 }

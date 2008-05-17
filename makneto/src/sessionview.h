@@ -78,6 +78,7 @@ public slots:
 	void sendWhiteboard(const QDomElement &wb);
 	void setMode(QAction *);
 	void transferRead(const QByteArray &a);
+	void actionSendFileTriggered();
 
 signals:
 	void sendMessage(const Message &);

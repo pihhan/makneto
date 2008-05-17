@@ -43,7 +43,7 @@ private slots:
 private:
 	void setupActions();
 	
-	Ui::Account ui_prefs_base ;
+	Ui::Account ui_prefs_account ;
 	MaknetoView *m_view;
 	Makneto *m_makneto;
 	
