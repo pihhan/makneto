@@ -16,7 +16,7 @@ MaknetoHTMLBrowser::MaknetoHTMLBrowser(QWidget *)
 {
 	mainLayout = new QVBoxLayout;
 
-	KUrl url("/home/jreznik/DIP/web/home/index.html");
+  KUrl url("http://makneto.sourceforge.net/");
 	KHTMLPart *homeTabBrowser = new KHTMLPart;
 	homeTabBrowser->openUrl(url);
 

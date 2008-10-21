@@ -1,3 +1,9 @@
+# KDevelop Custom Project File List
+CMakeFiles
+CMakeFiles/CompilerIdC
+CMakeFiles/CompilerIdC/CMakeCCompilerId.c
+CMakeFiles/CompilerIdCXX
+CMakeFiles/CompilerIdCXX/CMakeCXXCompilerId.cpp
 CMakeLists.txt
 CMakeTmp
 CMakeTmp/check_qt_visibility.cpp
@@ -71,7 +77,6 @@ src/iris/xmpp-im/xmpp_xmlcommon.cpp
 src/iris/xmpp-im/xmpp_xmlcommon.h
 src/main.cpp
 src/makneto_automoc.cpp
-src/makneto_automoc.cpp.rule
 src/maknetomainwindow.cpp
 src/maknetomainwindow.h
 src/maknetoview.cpp

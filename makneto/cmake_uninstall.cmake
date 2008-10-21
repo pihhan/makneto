@@ -1,8 +1,8 @@
-IF(NOT EXISTS "/home/kde-devel/src/makneto/install_manifest.txt")
-  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/home/kde-devel/src/makneto/install_manifest.txt\"")
-ENDIF(NOT EXISTS "/home/kde-devel/src/makneto/install_manifest.txt")
+IF(NOT EXISTS "/home/radek/app/trunk/makneto/install_manifest.txt")
+  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/home/radek/app/trunk/makneto/install_manifest.txt\"")
+ENDIF(NOT EXISTS "/home/radek/app/trunk/makneto/install_manifest.txt")
 
-FILE(READ "/home/kde-devel/src/makneto/install_manifest.txt" files)
+FILE(READ "/home/radek/app/trunk/makneto/install_manifest.txt" files)
 STRING(REGEX REPLACE "\n" ";" files "${files}")
 FOREACH(file ${files})
   MESSAGE(STATUS "Uninstalling \"${file}\"")
