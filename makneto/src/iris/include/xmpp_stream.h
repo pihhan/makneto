@@ -31,6 +31,8 @@ class QDomDocument;
 
 namespace XMPP 
 {
+
+        /*! \brief Generic abstraction for any network connection. */
 	class Stream : public QObject
 	{
 		Q_OBJECT
@@ -64,9 +66,16 @@ namespace XMPP
 		virtual QString errorText() const=0;
 		virtual QDomElement errorAppSpec() const=0;
 
+                /*! \brief Helper to create stanza using parameters. 
+                 * \param k Kind of stanza, FIXME: describe types.
+                 * \param to Destination of stanza, to parameter as Jid type. 
+                 * \param type FIXME: fill something. 
+                 * \param id Id of Iq packets. Make sure you have good enough random generator.*/
 		Stanza createStanza(Stanza::Kind k, const Jid &to="", const QString &type="", const QString &id="");
+                /*! \brief Convert XML tree to Stanza. */
 		Stanza createStanza(const QDomElement &e);
 
+                /*! \brief Convert XML tree to string. */
 		static QString xmlToString(const QDomElement &e, bool clip=false);
 
 	signals:

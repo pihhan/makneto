@@ -104,9 +104,9 @@ private:
 	
 	QString m_session;
 	QString m_jid;
+	ChatState m_lastChatState;
 	int m_id;
 
-	ChatState m_lastChatState;
 
 	// TODO: TEST ONLY!
 	QBuffer *m_testbuffer;

@@ -69,7 +69,7 @@ void FTStream::moreData()
 
 void FTStream::needData()
 {
-	qDebug("FTStream::needData(): %x", m_buffer->size());
+	qDebug("FTStream::needData(): %llx", m_buffer->size());
 
 	// start pushing data
 	m_timer->start();

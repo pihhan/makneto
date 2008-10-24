@@ -66,7 +66,7 @@ SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid
 	connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
 
 	// output chat text edit props
-	m_chatoutput->setTextFormat(Qt::RichText);
+	//m_chatoutput->setTextFormat(Qt::RichText); // FIXME: port to correct behaviour on Qt4
 	m_chatoutput->setReadOnly(true);
 
 	m_chatSplitter->addWidget(m_chatoutput);
@@ -175,12 +175,13 @@ void SessionView::sendClicked()
 	message.setFrom(Settings::jabberID()+"/Makneto");
 	message.setType("chat");
 	message.setChatState(StateActive);
-	message.setBody(m_chatinput->text());
+        // TODO: support xhtml using correct xep, for now, only plaintext
+	message.setBody(m_chatinput->toPlainText());
 
 	emit sendMessage(message);
 
 	// format for chat window
-	text = "<b>Me</b>: "+m_chatinput->text();
+	text = "<b>Me</b>: "+m_chatinput->toPlainText();
 
 	m_chatinput->setText("");
 

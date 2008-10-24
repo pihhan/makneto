@@ -27,6 +27,7 @@ using namespace XMPP;
 
 Connection::Connection(Makneto *makneto): m_makneto(makneto)
 {
+
 	m_tlsHandler = 0;
 	m_conn = 0;
 	m_stream = 0;
@@ -37,6 +38,10 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 
 	m_client = new Client();
 	m_client->setClientName("Makneto");
+
+        // FIXME: make this better and more secure, also this does memleak
+        m_tls = new QCA::TLS();
+        //m_tlsHandler = new XMPP::QCATLSHandler(m_tls);
 
 	QStringList features;
 	features << "http://jabber.org/protocol/commands";
@@ -81,13 +86,15 @@ bool Connection::login()
 
 	// my jabber id from settings
 	m_jid = Jid(Settings::jabberID());
-	m_jid.setResource("Makneto");
+        if (m_jid.resource().isEmpty()) {
+	        m_jid = m_jid.withResource("Makneto");
+        }
 
 	m_conn = new AdvancedConnector(this);
 
 	// TODO:ssl connection
 	m_conn->setOptSSL(false);
-	m_conn->setOptProbe(true);
+	m_conn->setOptProbe(false);
 	
 	if (!Settings::jabberHost().isEmpty())
 	{
@@ -100,7 +107,8 @@ bool Connection::login()
 	if (Settings::allowPlain())
 		m_stream->setAllowPlain(ClientStream::AllowPlain);
 
-	m_stream->setRequireMutualAuth(true);
+        // this makes problems with integrated Simple SASL library.
+	m_stream->setRequireMutualAuth(false);
 
 	connect(m_stream, SIGNAL(needAuthParams(bool, bool, bool)), SLOT(needAuthParams(bool, bool, bool)));
 	connect(m_stream, SIGNAL(connected()), SLOT(connected()));
@@ -320,7 +328,7 @@ void Connection::authenticated()
 {
 	qDebug() << "Connection::authenticated()";
 
-	m_client->start(m_jid.host(), m_jid.user(), "test", "Makneto");
+	m_client->start(m_jid.domain(), m_jid.node(), "test", "Makneto");
 
 	if (!m_stream->old())
 	{
@@ -375,10 +383,13 @@ bool Connection::isOnline()
 {
 	if(m_stream)
 		return m_stream->isAuthenticated();
+        else
+                return false;
 }
 
 void Connection::client_rosterRequestFinished(bool success, int, const QString &)
 {
+        Q_UNUSED(success)
 	qDebug() << "Connection::client_rosterRequestFinished()";
 
 	m_rosterFinished = true;
