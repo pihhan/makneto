@@ -16,7 +16,7 @@ $ cd ..
 pote opatchovat iris na podporu whiteboardingu,
 zkompilovat iris tak, aby knihovny byly v iris/lib
 $ cd iris
-$ patch -p0 -i ../patches/whiteboarding.patch
+$ patch -p0 -i ../patches/whiteboard.patch
 $ ../qconf/qconf
 $ ./configure --debug
 $ make
