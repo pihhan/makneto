@@ -1,0 +1,563 @@
+%=========================================================================
+% (c) David Øezáè, 2002
+%=========================================================================
+\chapter{Úvod}
+Pro usnadnìní tvorby dokumentací a sjednocení vzhledu prací byla zhotovena
+dokumentární tøída \verb_fitprj_. V¹echny relevantní informace k~této
+dokumentární (instalace, pou¾ití apod.) jsou uvedeny v~dokumentaci tøídy.
+V~tomto dokumentu jsou uvedeny pouze v¹eobecné pokyny
+týkající se základních typografických zásad.
+
+\section{Poznámky ke vkládání obrázkù}
+Jenom tak ze zcela cvièných dùvodù je zde uveden zpùsob, jak vlo¾it obrázek \ref{pic_logo}.
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=5cm,keepaspectratio]{fig/vut_fit}
+  \caption{Logo FITu}
+  \label{pic_logo}
+\end{center}
+\end{figure}
+
+Relevantní kód, který toto zpùsobil vypadá takto:
+\begin{verbatim}
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=5cm,keepaspectratio]{fig/vut_fit}
+  \caption{Logo FITu}
+  \label{pic_logo}
+\end{center}
+\end{figure}
+\end{verbatim}
+
+V¹imnìte si, ¾e jméno souboru (\verb!vut_fit!) neobsahuje pøíponu. Toho lze
+pak vyu¾ít v~pøípadì, ¾e máme verze obrázkù vektorových pro pøeklad do výstupu
+DVI (pota¾mo PS) nebo rastrové obrázky pro výstup do PDF. 
+
+Nezapomeòte, ¾e do výstupu v~PDF nelze vlo¾it postscriptové obrázky (\verb_.ps_,
+\verb_.eps_). Ty je nutno nejprve pøevést napø. pomocí programu \verb_epstopdf_ do
+PDF, který u¾ je pou¾itelný. (Vektorový formát zachováme; pokud vlo¾íme obrázek tak, 
+jak je uvedeno v~pøíkladu, mù¾eme smìle produkovat kvalitní výstup i v~postscriptu.)
+
+\section{Kontrola pravopisu}
+
+Pøeklepy mù¾eme zkontrolovat napøíklad pomocí programu \verb_aspell_. Pøíklad pou¾ití pøi kontrole
+souboru \verb_soubor.tex_ vypadá takto:
+
+\bigskip
+\verb_aspell -c soubor.tex -d czech -t_
+\bigskip
+
+Je tøeba si uvìdomit, ¾e \verb_aspell_ kontroluje pouze jednotlivá slova. Neuva¾uje kontext 
+ani sémantiku.
+
+\section{Poznámky k~pøekladu}
+Dokument v~\LaTeX u pøelo¾íme pomocí pøíkazu \verb_latex_. Tím získáme (pokud je bez
+chyb) výstup ve formátu DVI, který mù¾eme pøevést pomocí programu \verb_dvips_
+do postscriptu.
+
+Pokud z~nìjakého dùvodu potøebujeme získat výstup ve formátu PDF, pou¾ijeme k~pøekladu
+\verb_pdflatex_. Pøevod z~postscriptu do PDF pomocí \verb_pstopdf_ je vylo¾enì nevhodný.
+
+\bigskip
+
+{\bf Pozor:} Nezapomeòte na to, ¾e pøeklad je nutno vìt¹inou provést nìkolikrát -- aby 
+se vytvoøil aktuální obsah, odkazy v~dokumentu apod. Také je ¾ádoucí pou¾ít program
+\verb_vlna_, který doplòuje za pøedlo¾ky, které nesmìjí zùstat na konci øádku vlnku (\verb_~_).
+
+\bigskip
+
+U¾iteèný mù¾e být také Bib\TeX, který usnadòuje zaèleòování odkazù na pou¾itou
+literaturu. Ve zvlá¹tním souboru definujeme jednotlivé publikace, na které se budeme
+odkazovat. Ve vlastním textu pak pou¾íváme obyèejný pøíkaz \verb_\cite_ a parametrem
+urèujícím polo¾ku seznamu publikací. Pøeklad pak probíhá tak, ¾e nìkolikrát 
+støídavì spustíme \verb_latex_ (resp. \verb_pdflatex_) a \verb_bibtex_
+aby se v¹echny zmìny (odkazy, seznam literatury) projevily.
+
+\bigskip
+
+Jako pøíklad vlo¾ení textového souboru do dokumentu si uvedeme obsah souboru
+\verb|Makefile|, kterým byl pøelo¾en tento dokument: 
+
+\begin{verbatim}
+CO=priklad
+
+all: $(CO).ps
+pdf: $(CO).pdf
+
+$(CO).ps: $(CO).dvi
+        dvips $(CO)
+
+$(CO).pdf: clean
+        pdflatex $(CO)
+        bibtex $(CO)
+        pdflatex $(CO)
+        pdflatex $(CO)
+
+$(CO).dvi: $(CO).tex $(CO).bib
+        latex $(CO)
+        bibtex $(CO)
+        latex $(CO)
+        latex $(CO)
+
+desky:
+        latex desky
+        dvips desky
+        dvipdf desky
+
+clean:
+        rm -f *.dvi *.log $(CO).blg $(CO).bbl $(CO).toc *.aux $(CO).out
+
+\end{verbatim} 
+
+Mù¾ete pozorovat jak \LaTeX{} rozmis»uje plovoucí objekty -- napøíklad
+tabulky. Pokud vám nevyhovuje jejich umístìní, je mo¾né dosáhnout zmìny
+vhodnými parametry pøíkazù (viz dokumentace \LaTeX{}u).
+
+
+\section{Test fontù}
+Rùzné øezy písem a pøíkazy, kterými se vyvolávají jsou uvedeny v~tabulce \ref{tab_rezy}.
+V~tabulce \ref{tab_stupne} jsou pak uvedeny vzory rùzných stupòù písma. V~¾ádné pøípadì to 
+neznamená, ¾e je musíte v¹echny pou¾ít.
+
+\renewcommand{\arraystretch}{1.3}
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\verb_\rm_ & {\rm ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\it_ & {\it ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\bf_ & {\bf ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\sl_ & {\sl ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\sf_ & {\sf ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\sc_ & {\sc ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\tt_ & {\tt ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\em_ & {\em ABCDabcd ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Tabulka s~rùznými øezy písem.}
+\label{tab_rezy}
+\end{table}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\verb_\tiny_ & {\tiny ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\scriptsize_ & {\scriptsize ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\footnotesize_ & {\footnotesize ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\small_ & {\small ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\normalsize_ & {\normalsize ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\large_ & {\large ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\Large_ & {\Large ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\LARGE_ & {\LARGE ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\huge_ & {\huge ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\verb_\Huge_ & {\Huge ABCabc ì¹èø¾Ì©ÈØ®ýáíéÁÍÉÍ}\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Tabulka s~rùznými stupni písma.}
+\label{tab_stupne}
+\end{table}
+\renewcommand{\arraystretch}{1.0}
+
+%
+% =============================================================================================
+% =============================================================================================
+%
+
+
+
+
+
+\chapter{Typografické zásady}
+
+\section{Úvodem}
+
+Pokud ji¾ pou¾ijeme pro sazbu tak kvalitní systém jakým je \TeX/\LaTeX
+\ (a chceme tedy dosáhnout co nejlep¹ího vzhledu výsledného dokumentu),
+urèitì budeme ochotni investovat pár chvil do nastudování nejzákladnìj¹ích
+typografických pravidel, bez jejich¾ znalosti by nám nepomohl ani sebelep¹í
+sázecí systém.
+
+S~laskavým svolením pana Jiøího Rybièky, autora knihy
+{\em \LaTeX\  pro zaèáteèníky}, je zde uvedeno nìkolik zásad, které je vhodné
+dodr¾et (kapitola \uv{Základní pravidla hladké sazby}, \cite{Rybicka}).
+
+Nejprve bych si dovolil uvést sám nìkolik pravidel, která nebyla v~publikaci
+uvedena, následuje úryvek z~ji¾ zmínìné knihy.
+
+\section{Poznámky k~sazbì textu}
+\begin{description}
+  \item[Zkratky]  slov, výrazù, akademických titulù apod. se pou¾ívají jen
+   u~v¾itých výrazù a vìt¹inou konèí teèkou. Ta se sázejí tìsnì za
+   zkratkou (aj., apod., atd., DrSc., CSc.). Následuje-li za zkratkovou
+   teèkou dvojteèka, sází se také bez mezery, pøímo za teèku. U~spojených
+   zkratek se sází zú¾ená mezislovní mezera. Na zaèátku vìty se spojená
+   zkratka nahrazuje celým výrazem. Iniciálové zkratky (tj. zkratky
+   z~velkých poèáteèních písem spojených slov názvù, organizací a rùzných
+   institucí) se sázejí verzálkami bez teèky (OSN, NATO, OPEC, ODS, ÈR).
+
+   \item[Interpunkèní  znaménka]  --  teèka, èárka, dvojteèka, otazník a
+   vykøièník -- se sázejí tìsnì za poslední písmeno slova. {\em Za} toto
+   znaménko se vkládá mezera.
+\end{description}
+
+  \subsection{Dìlení slov}
+   Slova  se  dìlí podle pravopisných pravidel a podle estetických zásad.
+   Poèet  dìlení nemá pøesáhnout poèet tøí a nesmí být vìt¹í ne¾ ¹estkrát
+   pod  sebou.  Za  dìlení  se  pova¾ují i øádky zakonèené interpunkèními
+   znaménky  (teèka,  èárka,  støedník  a dvojteèka), jeliko¾ pravý okraj
+   sazby je jimi naru¹en stejnì jako divisem.
+
+   Dvouslabièná  slova  se  mohou dìlit pouze v~pøípadì, ¾e druhá èást má
+   alespoò tøi písmena (vý-tah, ses-tra).
+
+   Víceslabièná  slova  se dìlí podle slabik, pøièem¾ je v¾dy rozhodující
+   základ  slova,  slabièná  pøedpona  a pøípona.  Pokud stojí vedle sebe
+   uprostøed  slova dvì souhlásky, nechává se jedna na první rádce, druhá
+   se  pøevádí  na  øádku následující. Slova slo¾ená se dìlí, pokud je to
+   mo¾né, na èásti slo¾eniny (èesko-slovenský, zemì-koule).
+
+   \bigskip
+
+   Dìlit se nesmí
+   \begin{itemize}
+     \item tak, aby na konci øádky zùstalo pouze jedno písmeno (o-pice)
+     \item zkrácený titul a pøíjmení (ing.\,Novák)
+     \item èíslice a název poèítaného pøedmìtu èi jevu (100\,km, 1000\,Kè)
+     \item datum (je mo¾né dìlit den s~mìsícem od letopoètu)
+     \item zkratky
+     \item odkaz na stránku v~internetu (URL)
+   \end{itemize}
+
+   Ne¾ádoucí je dále dìlení, pøi kterém se do druhé øádky pøená¹ejí pouze
+   dvì  písmena,  a dìlení  slov,  jejich¾  rozdìlením  by vznikly výrazy
+   ne¾ádoucího  nebo  zvulgarizovaného  významu (pravid-lo, spisova-tele,
+   tlu-moèit).
+
+  \subsection{Zvýraznìní textu}
+   Není  povoleno pro zvýraznìní textu pou¾ívat podtr¾ené písmo.
+   Je  to  z~dùvodu,  ¾e  èárka  podtr¾ení  se dotýká nìkterých písmen a
+   zpùsobuje  jejich  men¹í  èitelnost. Pro zvýraznìní se pou¾ívá kurzíva
+   anebo  tuèné  písmo popø. tuèná kurzíva. Podtrhávání je zlozvyk, který
+   pochází  z~éry  psacích  strojù,  kdy  neexistoval  jiný  zpùsob, jak
+   zvýraznit nìjakou èást textu.
+
+   Pro zvýraznìní slov pou¾ijte nejlépe konstrukce
+   \verb({\em zvýraznìno}( -- získáme
+   {\em zvýraznìno}. V~kurzívì jsou v¹echny znaky sklonìné doprava, proto
+   se na konec dává pøíkaz \verb(\/(, který zaji¹»uje, aby poslední sklonìné
+   písmeno nezasahovalo do následujícího kolmého písmena nebo aby nezmen¹ilo
+   následující mezeru (tzv. kurzívní korekce). Kurzívní korekce se nepou¾ívá,
+   následuje-li teèka nebo èárka.
+
+  \noindent Pøíklady:
+
+   \noindent\verb(©el {\em podél\/} {\em le\/}sa. ©el podél {\em lesa}.Pak\,\dots(
+
+   \noindent ©el {\em podél\/} {\em le\/}sa. ©el podél {\em lesa}. Pak\,\dots
+
+
+   \subsection{Pravopis}
+   Patrnì není tøeba zdùrazòovat, ¾e je velmi vhodné, abychom
+   se vyhnuli pravopisným chybám. Zejména se pak sna¾íme vyvarovat hrubým chybám typu i/y nebo s/z.
+   Dáváme pozor také na interpunkci v~okolí vìt vedlej¹ích. Rovnì¾ nepùsobí dobøe,
+   pokud se nìkterá slova opakují v~ka¾dé vìtì dvakrát. Cizí slova pou¾ijeme radìji
+   pouze v~pøípadì, ¾e známe jejich pøesný význam.
+
+
+\newpage
+\section{Základní pravidla hladké sazby}
+\begin{center}
+  {\em Jiøí Rybièka}
+\end{center}
+
+Hladká sazba se obecnì øídí typografickými pravidly i pravidly èeského
+pravopisu. Dùle¾itá a v~praxi potøebná jsou pravidla pro sazbu rùzných
+znakù, která dále uvedeme vèetnì jejich realizace v~systému \TeX/\LaTeX.
+
+\begin{description}
+  \item [Mezera:] Napí¹eme-li nìkolik mezer za sebou, systém je chápe stejnì
+jako jednu mezislovní mezeru. (V~sazbì neexistuje délková jednotka \uv{1
+úhoz} jako na psacím stroji!)
+
+  \item [Zú¾ená mezera:] V~sazbì se pou¾ívá v~mnoha pøípadech. V~systému \TeX
+\ se sází pøíkazem \verb(\,( bez okolních mezer. Zú¾ená mezera má stejné
+chování jako nezlomitelná mezera.
+
+  \item [Nezlomitelná mezera:] {\em Nezlomitelná mezera} je taková mezera,
+v~ní¾ nikdy nenastane øádkový zlom (konec øádku). V~systému \TeX \  se sází
+znakem tilda (\verb(~(). Pou¾ijeme ji v~pøípadì, kdy chceme svázat dvì slova
+pevnì k~sobì, co¾ nastává v~následujících situacích:
+
+\begin{enumerate}
+  \item Jednoznaková pøedlo¾ka nebo spojka a následující slovo. Jedná se
+o~pøedlo¾ky {\em K, k, O, o, S, s, U, u, V, v, Z, z} a spojky {\em A, I, i},
+které se nemohou ocitnout na konci øádku. Jedinou pøípustnou výjimku tvoøí
+spojka malé {\em a}.\footnote{Pro automatické vlo¾ení nezlomitelné mezery
+za v¹echny pøedlo¾ky a spojky slou¾í napøíklad program {\tt vlnka} dostupný
+v~èeské instalaci systému \TeX.}
+
+  \item Iniciála a pøíjmení, zkrácený titul a pøíjmení. Napøíklad zápis
+v~podobì
+\verb_J.~K.~Tyl_ nebo \verb_ing.~Malý_ zaruèí, ¾e pøi jakémkoliv formátování
+textu nebudou od sebe odtr¾eny jednotlivé èásti.
+
+  \item Èíslo a jednotka ve zkratce. Je-li uvedena fyzikální nebo jiná
+jednotka za èíselným údajem ve zkratce, nesmí být oddìlena koncem øádku
+(napø. \verb_5~kg_). Nastanou-li pøi spojení èísla a jednotky potí¾e pøi
+sazbì odstavce (vznikne-li spojením velký celek), pak je mo¾né zkratku
+vypsat celým slovem a oddìlit od èíselné hodnoty.
+
+  \item Jednotlivá trojèíslí èísla. Èíslo musí být uvedeno celé na jednom
+øádku, sázíme se zú¾enými mezerami, tedy napøíklad \verb_45\,000_.
+Vznikne-li spojením velký celek obtí¾ný pro sazbu, mù¾eme napøíklad tøi nuly
+nahradit slovním zápisem {\em tisíc}. Letopoèty sázíme v¾dy bez mezer, jiná
+ètyøciferná èísla zpravidla také, vyjma pøípadu, kdy jsou uvedena ve
+sloupcích s~vícemístnými èísly. Telefonní èísla se sázejí ve skupinách po
+2--3 èíslicích se zú¾enou nezlomitelnou mezerou: tøímístné 222, ètyømístné
+22\,22, pìtimístné 222\,22, ¹estimístné 222\,222, sedmimìsíènì 222\,22\,22,
+osmimístné 22\,22\,22\,22.
+\end{enumerate}
+
+  \item [Spojovník] (divis): Pou¾ívá se jako spojovací znaménko ve slo¾ených
+výrazech. Sází se bez mezer znakem, který je dosa¾itelný pøímo na klávesnici
+a má ASCII kód 45. Pøíklady pou¾ití: Praha 9-Vysoèany, slovník
+èesko-nìmecký, Hana Procházková-Turská, bude-li.\footnote{Pro úplnost je
+tøeba poznamenat, ¾e dostane-li se spojovník na konec øádku, musí být
+opakován na øádku následujícím. I~na tento pøípad je \TeX \ vyzbrojen pøíkazem
+{\tt $\backslash$discretionary\{-\}\{-\}\{-\} }, který uvedeme místo spojovníku 
+a jeho¾
+vysvìtlení lze nalézt napø. v~pøíruèce \TeX book ({\sc Knuth, 1994}). }
+
+  \item[Pomlèka:] Pomlèka má podle pravopisných pravidel dva významy, které
+se odli¹ují mezerováním, a to význam {\em oddìlovaèe vìtných celkù}
+(s~mezerami po obou stranách), nebo význam \uv{a, a¾, a¾ do, versus} (bez
+mezer). Pomlèka bez mezer nesmí zùstat na konci øádku, v~tom pøípadì se
+nahrazuje slovním vyjádøením. V~sazbì existuje pomlèka pùlètverèíková, která
+se v~systému \TeX \ zapisuje dvìma po sobì jdoucími spojovníky (\verb(--(),
+v~americké typografii se pou¾ívá i pomlèka ètverèíková, zapisuje se tøemi po
+sobì jdoucími spojovníky (\verb(---(). Dal¹í vodorovnou èárkou s~odli¹ným
+rozmìrem je znak minus, jeho¾ velikost a posazení musí odpovídat znaku plus.
+Zde je rovnì¾ potøebné dbát na správné mezerování -- ve funkci unárního
+operátoru se pøimyká bez mezery k~danému èíslu, ve funkci binárního
+operátoru se vkládají mezery odpovídající v¹em ostatním binárním operátorùm,
+co¾ je v~matematické sazbì systému \TeX \ automaticky zaøízeno (dal¹í
+podrobnosti viz matematická sazba). Pou¾ití v¹ech uvedených elementù shrnuje
+následující tabulka.
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+  \hline
+  & \multicolumn{2}{|c|}{\bfseries Pøíklad pou¾ití} \\
+  \cline{2-3}
+  {\bfseries Element} & {\bfseries Zpùsob zápisu} & {\bfseries Vysázený text} \\
+  \hline
+  spojovník         & \verb(bude-li(             &  bude-li  \\
+  rozsah            & \verb(v letech 1944-58(    &  v~letech 1944-58 \\
+  interpunkce       & \verb(pøijít -- zvítìzit(  &  pøijít -- zvítìzit \\
+  záporné znaménko  & \verb($-5$, $a-b$(         &  $-5$, $a-b$ \\
+  \hline
+\end{tabular}
+\end{center}
+
+\medskip
+
+V~nìkterých pøípadech nejsou znaky pro pomlèky k~dispozici v~právì pou¾ité
+znakové sadì. Pak lze pro ètverèíkovou pomlèku (---) uvést pøíkaz
+\verb(\textemdash( a pro pùlètverèíkovou pomlèku (--) pøíkaz
+\verb(\textendash(. Pøi sazbì èeských textù se pou¾ívá zpravidla jen jedné
+velikosti pomlèky.
+
+  \item[Procento:] Samotný znak \verb(%( uvozuje poznámku. Ve¹kerý text,
+který se nachází za znakem \% do konce øádku, nebude pøekládán a sázen.
+
+Chceme-li zapsat a vysázet znak procento, musíme uvést zápis \verb(\%(.
+Tento znak se oddìluje od pøedchozího údaje zú¾enou mezerou. Pokud v¹ak \%
+tvoøí s~pøedchozím údajem jedno slovo, sází se bez mezery:
+\verb(10\,\%( = 10\,\% (deset procent), \verb(10\%( = 10\%
+(desetiprocentní).
+
+\item[Závorky:] V~hladké sazbì se pou¾ívají oblé (), hranaté [\,], výjimeènì
+slo¾ené \{\}. Oblé a hranaté závorky se sázejí zápisem pøíslu¹ných znakù
+z~klávesnice, slo¾ené závorky mají význam ohranièení skupiny nebo parametrù.
+Chceme-li je vysázet, musíme pou¾ít pøíkazy \verb(\{(, resp. \verb(\}(.
+Je-li v~závorkách uvedena celá vìta, sází se interpunkce uvnitø závorek,
+napøíklad \uv{\em Pr¹elo. (Bylo to na jaøe.)} oproti \uv{\em Pr¹elo (jako na
+jaøe).}
+
+\item[Uvozovky:] Psaní uvozovek na klasickém psacím stroji je omezeno dostupnými
+klávesami, nejsou tedy rozli¹eny poèáteèní a koncové uvozovky. Pøi sazbì
+jsou rozli¹ovány poèáteèní uvozovky (v~èe¹tinì dole) a koncové uvozovky
+(nahoøe, obrácenì). Proto¾e v¹ak angliètina nepou¾ívá uvozovky dole, je
+v~balíku \verb(czech( vytvoøen pøíkaz \verb(\uv( s~jedním povinným parametrem,
+který je text, jen¾ má být v~uvozovkách. Tedy zápisem \verb(\uv{slovo}(
+dostaneme po vysázení \uv{slovo}. Pro zápis samostatné èeské poèáteèní
+uvozovky mù¾eme pou¾ít pøíkaz \verb(\clqq(, samostatné koncové uvozovky pak
+\verb(\crqq(. chceme-li pou¾ít anglický zpùsob sazby uvozovek, uvedeme na
+zaèátku dva zpìtné apostrofy a na konci dva bì¾né apostrofy. Napøíklad
+\verb(``Hello''( se vysází jako ``Hello''. Tého¾ lze rovnì¾ dosáhnout
+pøíkazy \verb(textquotedblleft( pro poèáteèní uvozovky a
+\verb(textquotedblright( pro koncové. Poèáteèní uvozovky sázené na úèaøí lze
+získat pøíkazem \verb(\quotedblbase(.
+
+Místo uvozovek je v~nìkterých jazycích sázena dvojice úhlových závorek. Ty
+jsou k~dispozici pomocí pøíkazù \verb(\guillemotleft( a
+\verb(\guillemotright(  %(\guillemotleft xx \guillemotright). 
+($\ll$xx$\gg$).
+V~jednoduché
+variantì pak pomocí pøíkazù \verb(\guilsinglleft( a \verb(\guilsinglright(
+%(\guilsinglleft xx \guilsinglright).
+($<$xx$>$).
+
+Uvozovky v~jakémkoliv provedení musejí být sázeny stejným písmem typem písma
+jako text, který obklopují.
+
+\item[Apostrof:] Nìkdy se té¾ pou¾ívá pro uvození pøímé øeèi jen apostrofù.
+Opìt je potøebné mít k~dispozici dvojici: poèáteèní a koncový. Poèáteèní
+apostrof je zapsán znakem pro zpìtný apostrof, to je \verb(`(, koncový
+apostrof je zapsán znakem pro bì¾ný apostrof, to je \verb('(. Tedy zápisem
+\verb(`nìco'( dostáváme po vysázení `nìco'. Opìt v~pøípadì pou¾ití
+nestandardní znakové sady lze pou¾ít pøíkazy \verb(\textquoteleft(, resp.
+\verb(\textquoteright(. Pro vysázení apostrofu na úèaøí slou¾í pøíkaz
+\verb(\quotesinglbase(.
+
+\item[Paragraf:] Sází se pøíkazem \verb(\S( a oddìluje se od èísla zú¾enou
+mezerou: napøíklad \verb(\S\,58( = \S\,58.
+
+\item[Znak et:] Pou¾ívá se ve firemním oznaèení obvykle ve významu spojky a.
+Z~obou stran se oddìluje zú¾enou mezerou a sází se pøíkazem \verb(\&(
+
+Pøíklad: \verb(Kos\,\&\,syn( = Kos\,\&\,syn.
+
+\item[Tøi teèky:] Nahrazují nevyslovený nebo v~citaci vynechaný text. Teèky
+mají mezi sebou zvlá¹tní mezerování, které zaøizuje pøíkaz \verb(\dots(,
+a od slova, k~nìmu¾ patøí, se oddìlují zú¾enou mezerou. Pøíklad: 
+\verb(Já vím, ale\,\dots( = Já vím, ale\,\dots
+
+\item[Znak dolar:] Znak americké mìny se zapisuje pøíkazem \verb(\$( pøed
+èíselnou hodnotou a oddìluje se zú¾enou mezerou, napøíklad \verb(\$\,15( =
+\$\,15.
+
+\item[Znak èísla] (number sign): Pou¾ívá se v~anglických textech pro
+oznaèení napøíklad poøadového èísla. Sází se pøíkazem \verb(\#( a od èísla
+se neoddìluje: \verb(value \#5( = value \#5.
+
+\item[Stupeò:] Stupeò se sází pomocí matematického symbolu umístìného v~exponentu,
+co¾ zapí¹eme \verb($^\circ$(. V~pøípadì, ¾e se jedná o~jednotku, je oddìlen
+zú¾enou mezerou od hodnoty: \verb(20\,$^\circ$C( = 20\,$^\circ$C (20 stupòù
+Celsia -- mezi stupnìm a C naopak mezera není). Jedná-li se o~souèást
+jednoho slova, sází se bez mezer: \verb(15$^\circ$ úhel( = 15$^\circ$
+(patnáctistupòový) úhel. Stupeò alkoholu se sází v¾dy bez mezery:
+10$^\circ$ pivo.
+
+\item[Hvìzdièka a meèík:]  Pou¾ívají-li se jako znaménka pro narození a
+úmrtí, sázejí se pøed letopoèet (datum) za zú¾enou mezeru. Hvìzdièka je
+zcela bì¾ný znak zapsaný pøímo z~klávesnice, pro meèík existuje pøíkaz
+\verb(\dag(. 
+
+Pøíklady: \verb(*\,1912( = *\,1912, \verb(\dag\,1974( = \dag\,1974.
+
+\end{description}
+%
+%
+%-----------------------------------------------------------------------------
+%
+%
+%
+
+\chapter{Pokyny k~vypracování diplomové práce}
+
+Následující pokyny jsou dostupné té¾ na ¹kolních internetových stránkách \cite{fitWeb}.
+
+\section{Abstrakt a klíèová slova}
+Pod nadpisem \uv{Abstrakt} je uvedeno shrnutí práce zabírající prostor pøibli¾nì 10 øádkù.
+
+Za nadpisem \uv{Klíèová slova}: je uveden výèet klíèových slov oddìlených èárkami. Klíèovým
+slovem rozumíme i pojem vyjádøený více slovy.
+
+\section{Abstract and Key Words}
+Toté¾ anglicky na zvlá¹tní stranì.
+
+\bigskip
+
+Do termínu odevzdání diplomové práce diplomant poskytne rovnì¾ elektronickou podobu textu
+klíèových slov a abstraktu (èesky i anglicky) podle pokynù pro zveøejnìní na WWW.
+
+\subsection*{Pozor}
+Pokud bude práce v èe¹tinì, nejprve vlo¾íme stranu s abstraktem a klíèovými slovy v èe¹tinì
+a potom v angliètinì.  Pí¹eme-li práci v angliètinì, vlo¾íme stránky v opaèném poøadí.
+
+\section{Obsah}
+V~obsahu jsou uvedeny názvy kapitol a podkapitol první a druhé úrovnì. Pøi pou¾ití
+systému \LaTeX vyu¾ijte standardního pøíkazu \verb_\tableofcontents_. Pøi pou¾ití alternativních
+DTP programù se øiïte doporuèeními pro psaní odborného textu. Na øádku obsahu s~èíslem
+a názvem kapitoly èi podkapitoly je uvedena stránka, na které zaèíná pøíslu¹ný text.
+
+\section{Úvod}
+První kapitola práce má název \uv{Úvod}. Slou¾í k~zasazení øe¹ené problematiky do ¹ir¹ího
+kontextu a v~podobì struèného obsahu jednotlivých kapitol definuje strukturu písemné práce.
+V~závìru úvodní kapitoly student povinnì uvede návaznost diplomové práce na
+Roèníkový projekt a Semestrální projekt (tj. na výsledky vypracované ve stejnojmenných
+kurzech).
+
+Pokud diplomová práce na uvedené projekty nenavazuje, bude to zde explicitnì uvedeno.
+Pokud diplomová práce navazuje na uvedené projekty, objeví se zde struèná charakteristika
+objemu prací, které ji¾ vyøe¹ily tyto projekty a které byly pøevzaty do diplomové práce.
+Objeví se zde i odkazy do kapitol diplomové práce, ve kterých jsou výsledky vyu¾ity,
+nebo které se k~nim jinak vztahují.
+
+
+\section{Kapitoly a podkapitoly práce}
+Kapitoly bezprostøednì následující za úvodem obsahují formulaci konkrétního cíle práce, charakteristiku
+souèasného stavu øe¹ené problematiky, teoretická a odborná východiska øe¹ených problémù
+a specifikaci etap s~pøípadným vztahem k~roèníkovému a semestrálnímu projektu.
+Tyto kapitoly pøedstavují pøibli¾nì 30 a¾ 40 procent celkového rozsahu práce.
+
+V~dal¹ích kapitolách diplomant rozvede postup zpracování øe¹ené problematiky.
+
+Kapitoly a podkapitoly mají být uspoøádány v~logickém sledu, jejich rozsah by mìl odpovídat
+dùle¾itosti øe¹ené problematiky. Názornost textu je vhodné doplnit grafickými
+informacemi (tabulkami, grafy, obrázky, schématy a podobnì).
+
+\section{Závìr}
+Závìreèná kapitola obsahuje zhodnocení dosa¾ených výsledkù se zvlá¹» vyznaèeným
+vlastním pøínosem diplomanta. Povinnì se zde objeví i zhodnocení z~pohledu dal¹ího
+vývoje projektu, diplomant uvede námìty vycházející ze zku¹eností s~øe¹eným projektem a
+uvede rovnì¾ návaznosti na právì dokonèené projekty (øe¹ené v~rámci ostatních diplomových
+prací v~daném roce nebo na projekty øe¹ené na externích pracovi¹tích).
+
+\section{Literatura}
+Za závìreènou kapitolou je uveden seznam literatury. Pokud k~sazbì práce pou¾íváme
+\TeX nebo \LaTeX je vhodné vyu¾ít Bib\TeX.
+
+V ka¾dém pøípadì je potøeba rozhodnout se pro urèitý zpùsob uvádìní publikací (napø. nejprve
+pøíjmení, pak èárku, zkrácené jméno, dvojteèku a název díla\dots). Tento zpùsob pak dodr¾íme
+u v¹ech polo¾ek seznamu literatury!
+
+\section{Pøílohy}
+Do pøíloh umístíme ty èásti práce, které mají výraznì popisný charakter (napøíklad pøíruèka
+pro pou¾ití vytvoøeného systému, fragmenty zdrojového textu, detailní
+popisy øe¹ených èástí projektu, detailní schémata  a podobnì).
+
+
+%
+% ----------------------------------------------------
+%
+
+\chapter{Po¾adavky na rozsah}
+
+Viz informace na WWW FIT \verb|http://www.fit.vutbr.cz/info/statnice/|.
+
+
+
+\chapter{Závìr}
+Kromì ji¾ zmínìné knihy J. Rybièky \cite{Rybicka} je dostupná samozøejmì celá
+øada jiných publikací. Kniha \cite{Olsak} uvádí celou øadu u¾iteèných pøíkladù
+definic rùzných pøíkazù. \TeX book \cite{Knuth} ov¹em rozhodnì stojí alespoò za
+nahlédnutí -- jedná o~velmi kvalitní publikaci.
+
+Seznam dal¹ích
+u¾iteèných prací zabývajících se sazbou v~\TeX u nebo \LaTeX u je uveden napø. 
+na stránkách Èeskoslovenského sdru¾ení u¾ivatelù \TeX u \cite{cstugWeb}.

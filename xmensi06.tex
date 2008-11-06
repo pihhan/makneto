@@ -1,0 +1,110 @@
+%============================================================================
+% tento soubor pouzijete jako zaklad
+% kodovaní: iso-8859-2 (zmena prikazem iconv, recode nebo cstocs)
+%----------------------------------------------------------------------------
+% zpracování: make, make pdf, make desky, make clean
+% pøipomínky posílejte na e-mail: peringer AT fit.vutbr.cz
+% vim: set syntax=tex encoding=latin2:
+%============================================================================
+\documentclass[cover]{cls/fitthesis}
+% * Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit 
+%   parametr english nasledovne:
+%      \documentclass[english]{cls/fitthesis}
+% * Neprejete-li si vysazet na prvni strane dokumentu desky, zruste 
+%   parametr cover
+
+% zde zvolime kodovani, ve kterem je napsan text prace
+% "latin2" pro iso8859-2 nebo "cp1250" pro windows-1250
+\usepackage[latin2]{inputenc}
+
+%zde muzeme vlozit vlastni balicky
+
+% =======================================================================
+% balíèek "hyperref" vytváøí klikací odkazy v pdf, pokud tedy pou¾ijeme pdflatex
+% problém je, ¾e balíèek hyperref musí být uveden jako poslední, tak¾e nemù¾e
+% být v ¹ablonì
+\ifx\pdfoutput\undefined % nejedeme pod pdflatexem
+\else
+  \usepackage{color}
+  \usepackage[colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
+  \definecolor{links}{rgb}{0.4,0.5,0}
+  \definecolor{anchors}{rgb}{1,0,0}
+  \def\AnchorColor{anchors}
+  \def\LinkColor{links}
+  \def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajù kolem odkazù
+  \pdfcompresslevel=9
+\fi
+
+%Informace o praci/projektu
+%---------------------------------------------------------------------------
+\projectinfo{
+  %Prace
+  project=DP,           %typ prace BP/DP
+  year=2008,             %rok
+  date=\today,           %datum odevzdani
+  %Nazev prace
+  title.cs=Pøenos hlasu a videa pøes Jabber,  %nazev prace v cestine
+  title.en=Transport of video and voice using Jabber, %nazev prace v anglictine
+  %Autor
+  author=Petr Men¹ík,   %jmeno prijmeni autora
+  author.title.p=Bc., %titul pred jmenem (nepovinne)
+  %author.title.a=PhD, %titul za jmenem (nepovinne)
+  %Ustav
+  department=UPGM,
+  %Skolitel
+  supervisor=Josef Mlích, %jmeno prijmeni skolitele
+  supervisor.title.p=Ing.,   %titul pred jmenem (nepovinne)
+  %supervisor.title.a=Ph.D.,    %titul za jmenem (nepovinne)
+  %
+  %Klicova slova, abstrakty, prohlaseni a podekovani je mozne definovat 
+  %bud pomoci nasledujicich parametru nebo pomoci vyhrazenych maker (viz dale)
+  %===========================================================================
+  %Klicova slova
+  keywords.cs=video, voice, jabber, xmpp, rtp, jingle %klicova slova v ceskem jazyce
+  keywords.en=video, voice, jabber, xmpp, rtp, jingle, %klicova slova v anglickem jazyce
+  %Abstract
+  abstract.cs=výtah (abstrakt) práce v èeském jazyce, % abstrakt v ceskem jazyce
+  abstract.en=výtah (abstrakt) práce v anglickém jazyce, % abstrakt v anglickem jazyce
+  %Prohlaseni
+  declaration={Prohla¹uji, ¾e jsem tuto diplomovou práci vypracoval samostatnì pod vedením pana Josefa Mlícha},
+  %Podekovani (nepovinne)
+%  acknowledgment={Zde je mo¾no uvést podìkování vedoucímu práce a tìm, kteøí poskytli odbornou pomoc} % nepovinne
+}
+
+%Abstrakt (cesky, anglicky)
+%\abstract[cs]{Do tohoto odstavce bude zapsán výtah (abstrakt) práce v èeském jazyce.}
+%\abstract[en]{Do tohoto odstavce bude zapsán výtah (abstrakt) práce v anglickém jazyce.}
+
+%Klicova slova (cesky, anglicky)
+%\keywords[cs]{Sem budou zapsána jednotlivá klíèová slova v èeském jazyce, oddìlená èárkami.}
+%\keywords[en]{Sem budou zapsána jednotlivá klíèová slova v anglickém jazyce, oddìlená èárkami.}
+
+%Prohlaseni
+%\declaration{Prohla¹uji, ¾e jsem tuto bakaláøskou práci vypracoval samostatnì pod vedením pana X...
+%Dal¹í informace mi poskytli...
+%Uvedl jsem v¹echny literární prameny a publikace, ze kterých jsem èerpal.}
+
+%Podekovani (nepovinne)
+%\acknowledgment{V této sekci je mo¾no uvést podìkování vedoucímu práce a tìm, kteøí poskytli odbornou pomoc
+%(externí zadavatel, konzultant, apod.)..}
+
+\begin{document}
+  % Vysazeni titulnich stran
+  % ----------------------------------------------
+  \maketitle
+
+  % Obsah
+  % ----------------------------------------------
+  \tableofcontents
+
+  % Text prace
+  % ----------------------------------------------
+  \input{obsah}
+
+  % Pouzita literatura
+  % ----------------------------------------------
+  \bibliographystyle{plain}
+  \begin{flushleft}
+  \bibliography{priklad}
+  \end{flushleft}
+\end{document}
