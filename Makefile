@@ -2,7 +2,7 @@
 # (C) 2002 David Rezac
 #
 # asi budete chtit prejmenovat:
-CO=priklad
+CO=xmensi06
 
 all: $(CO).ps
 
