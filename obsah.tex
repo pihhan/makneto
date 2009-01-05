@@ -103,19 +103,493 @@ nejen psaní, ale i jednoduchého grafického vyjádøení v reálném èase mezi
 lidmi na dálku, elektronickou formou. Ke komunikaci po internetu je vyu¾it 
 XMPP protokol a jeho roz¹íøení pro pokroèilej¹í vìci. 
 
+\section{Grafický kabátek}
+
 Aplikace je napsána pouze pro operaèní systém Linux, resp. systémy typu POSIX.
-Grafický kabátek je napsán v pomìrnì novém toolkitu Qt verze 4 a KDE také verze 4. I kdy¾ Qt4 je multiplatormní toolkit pro tvorbu grafických aplikací, a na 
+Grafický kabátek je napsán v pomìrnì novém toolkitu Qt verze 4 a KDE také 
+verze~4. I~kdy¾ Qt4 je multiplatormní toolkit pro tvorbu grafických aplikací, a na 
 rozdíl od pøedchozích verzí nemá ani problém s právními podmínkami pro 
 svobodné programy na jiných platformách, program je závislý i na KDE~4, které 
 nejsou snadno pøenositelné na jiné platformy jako MS Windows nebo Apple OS X.
 Momentálnì ale Makneto není schopno bì¾et v jiném prostøedí ne¾ GNU/Linuxu.
+
+Qt4 knihovna je pomìrnì zdaøilá knihovna vyvíjená firmou Trolltech. Knihovna
+je naimplementovaná v jazyce C++ a v nìm se i vyvíjejí aplikace v této knihovnì
+napsané. Knihovna je multiplatformní a mù¾e fungovat na v¹ech majoritních
+souèasných platformách - MS Windows, MAC OS, GNU/Linux. Verze Qt existují i pro
+miniaturní zaøízení na bázi embeddded linuxu a Windows CE, ale ty se pro
+tento program nijak nevyu¾ijí. Knihovna má dvì rozdílné licenèní politiky.
+Jedna verze, pou¾ívaná Maknetem, je pøístupná zdarma pro open source aplikace
+pod licencí GNU General Public License (GPL). 
+Druhá verze je nabízena pro komerèní propriletární aplikace a její vyu¾ívání
+vy¾aduje nákup licence. 
+
+Qt pou¾ívá oproti standardnímu jazyku C++ nìkterá 
+roz¹íøení v pøekladaèích GNU GCC. Jsou to tzv. sloty a signály, které zastupují
+roli bì¾ných callbackù. Za cenu drobného sní¾ení výkonu poskytují intuitivnìj¹í
+práci z pohledu programátora a silnou typovou kontrolu pøedávaných parametrù.
+Jejich pou¾ití ale vy¾aduje pøekládání programu pomocí pøízpùsobených nástrojù
+a není mo¾né pomocí na linuxu bì¾ných GNU Autotools. Ruèní kompilace pomocí
+manuálnì psaného makefile a nástroje make je témìø nemo¾ná, proto¾e knihovna
+Qt obsahuje øadu oddìlených èástí a øadu podknihoven, které jsou potøeba pøedat linkeru pøi pøekladu. Nejbì¾nìj¹í nástroj pro 
+správu projektù Qt je nástroj Qmake dodávaný spolu s knihovnou. V projektu 
+Makneto se v¹ak pou¾ívá systém CMake, který je pomìrnì bì¾ný v KDE 4.
+
+Desktopové prostøedí KDE je jedním ze dvou nejroz¹íøenìj¹ích grafických 
+prostøedí na systémech GNU/Linux. Projekt KDE zalo¾il v roce 1996 Matthias 
+Ettricht. Jeho poslední øada 4 byla vydána 11. ledna 2008, zhruba v dobì psaní
+této aplikace Jaroslavem Øezníkem. KDE~4 pøiná¹í pomìrnì revoluèní zmìny 
+v ovládání a práce s desktopem. Pøiná¹í kromì nového grafického tématu nového
+správce plochy - Plasmu. Pøiná¹í pokroèilej¹í mo¾nosti pro applety - aplikace
+ji¾ jde integrovat snadno do bì¾né plochy. Pøibyla i podpora pro akcelerované
+grafické efekty pomocí kompozitního správce integrovaná pøímo do KDE. Makneto 
+je psané pøímo pro KDE 4 a bez nìj nemù¾e bì¾et, ale do nového prostøedí
+zapadne a pou¾ívá i systémové téma KDE.
 
 Aplikace je jednookenní aplikace s hlavní kreslící plochou a boèní li¹tou.
 V boèní li¹tì najdeme seznam kontaktù (v prostøedí Jabberu s ustáleným 
 jménem roster) pøepínatelný s nastavováním stavù. Aplikace má korektnì 
 naimplementován roster, se synchronizací kontaktù na server, ètením pøezdívek 
 a zobrazování stavu u¾ivatele. Funguje také správnì sdru¾ování kontaktù do 
-skupin. 
+skupin. I kdy¾ aplikace nenabízí nìjak velké mno¾ství funkcí, má pomìrnì
+intuituvní ovládání s celkem vydaøeným vzhledem a nechybí ani vestavìná 
+nápovìda. Pro lep¹í pøehlednost obsahuje aplikace systém zálo¾ek, pomocí nich¾
+lze pøepínat mezi jednotlivými zobrazeními boèních panelù. Program umí i re¾im práce pøes celou obrazovku, co¾ se pro demostraèní
+úèely mù¾e celkem hodit. 
+
+
+\section{Seznámení s pojmy}
+
+\subsection{Instant Messanging}
+Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. Je to elektronická obdoba
+po¹ty s mnoha jejími problémy a \uv{ne¹vary}. 
+Je sice nìkolikanásobnì rychlej¹í ne¾ jakýkoliv po¹»ák, který po¹tu 
+rozná¹í, ale pøesto není my¹lena na komunikaci v reálném èase. Bì¾ný email se k u¾ivateli nedoruèuje pøímo,
+ale doruèuje se do jeho schránky. Teprve z této schránky si mù¾e u¾ivatel nový email vyzvednout~a
+následnì pøeèíst. I~kdy¾ dnes má vìt¹ina programù nastavené vybírání po¹ty na krátkou periodu, nejèastìji
+5 minut, stále to není dost rychle ani na pomalý rozhovor. Proto¾e lidé si rádi vykládají, rádi by si 
+vykládali tro¹ku rychleji. 
+
+A to je právì úèel programù {\em Instant Messangingu}, volnì pøelo¾eno programù pro rychlou výmìnu zpráv.
+Na èeském internetu se podobné programy stále èastìji oznaèují "kecálky". Tyto programy u¾ nemají ¾ádnou 
+schránku, do které nejprve nìco musí doruèit. Tyto programy se naopak sna¾í o doruèení pøímé, od u¾ivatele
+k~u¾ivateli. Komunikace v tìchto sítích se nazývá komunikací v témìø reálném èase. Slovíèko {\em témìø}
+je na místì,
+proto¾e není definované doba, za kterou musí být zpráva doruèena. Zasíláním zpráv v reálném èase chápeme 
+v dne¹ním internetu spí¹e vìci synchronizované s èasem, kde zpozdìní má ne¾ádoucí efekt na kvalitu slu¾by.
+Systémy bì¾ící v reálném èase jsou napøíklad øídící jednotky automobilových motorù, kde zpo¾dìní jedna vteøina
+v ¾ádném pøípadì nastat nesmí. Naproti tomu, v bì¾né komunikaci mezi lidmi, nehraje jedna nebo dvì 
+vteøiny zásadní roli.
+
+Problém tìchto programù ov¹em je, ¾e, na rozdíl od emailu, nepochází ze stejného návrhu, ani nemají
+zveøejnìný protokol popisující komunikaci v jejich síti. Dokonce provozovatelé takových sítí obvykle 
+vùbec nestojí o to, aby se pøipojoval se nìkdo
+do jejich sítì s jiným programem, ne¾ je jejich vlastním. Tím pádem jsou v¹echny takové sítì oddìlené jedna od
+druhé a jejich u¾ivatelé musí být v¹ichni na té stejné síti, pokud spolu chtìjí komunikovat. Tuto mezeru 
+vyplòuje právì protokol Jabber.
+
+\subsection{Jabber/XMPP}
+Prvním neznámým pojmem je \verb|Jabber/XMPP|. Slovo Jabber znamená v pøekladu brebentit nebo breptat. 
+Jako protokol
+vnikl v roce 1999 a za jeho vznikem a prvotní implementací stojí Jerremie Miller. Jednou z~jeho unikátních 
+vlastností je, mimo mnoha jiných, také jeho otevøenost. Protokol je zalo¾ený na otevøeném a uznávaném 
+standardu \verb|XML|. Jabber pøinesl otevøenost a jednoduchý 
+popis fungování protokolu. 
+
+Narozdíl od ostatních protokolù nebyl prosazován jednou firmou se svým oficiálním klientem, ale definoval
+jednoznaèný zpùsob, jak spolu mají jakékoliv dva programy komunikovat. Výbìr XML v kombinaci s
+XML namespaces pøinesl navíc mo¾nost 
+roz¹iøovat protokol o nové prvky bez obav, ¾e slu¾by a programy podporující pouze staré vlastnosti 
+pøestanou fungovat. V té dobì byl je¹tì protokol oznaèován jenom {\tt Jabber}.
+
+Pøesto¾e byl protokol Jabber ve své dobì stabilizován, existovala dostateènì stabilní implementace serveru a 
+u¾ivatelé pøibývali, poøád protokol pøipomínal jenom jednu sí» z mnoha. Aby se pøede¹lo pochybnostem o tom, ¾e
+protokol není jenom dal¹ím z øady ji¾ existujících IM síti, jako jsou ICQ nebo MSN Messenger, byl navr¾en 
+nový, neutrální, název pro protokol {\em Extensible Messaging and Presence Protocol} -- \verb|XMPP|. A¾ pod 
+názvem \verb|XMPP| byl protokol uznán jako doporuèení {\tt IETF} pod oznaèením 
+\verb|RFC 3920| \cite{xmppCoreWeb} a \verb|RFC 3921| \cite{xmppImWeb}.
+
+XMPP je kompatibilní protokol s pùvodními specifikacemi Jabber protokolu, ale zavádí nové povinnosti. V podstatì
+tak starý protokol nahrazuje a pokud se bavíme dnes o protokolu Jabber, máme na mysli spí¹e jeho
+následníka protokol XMPP. Detaily protokolu budou popsány v dal¹ích kapitolách.
+
+\subsection{IRC}
+Protokol \verb|IRC| \cite{rfcIrc} je protokol urèený pøedev¹ím k diskuzím více lidí ve virtuálních místnostech. Pøesto¾e
+nemá mnoho spoleèného se systémem \verb_XMPP_, je jedním z mála otevøených standardizovaných protokolù, 
+které se hojnì 
+pou¾ívají. Na tomto protokolu jsou pìknì vidìt ne¹vary zpùsobené vìkem tohoto protokolu. Je sice otevøený,
+veøejnì zdokumentovaný a poèet programù jej podporujících lze na rukou tì¾ko spoèítat, ale je zalo¾ený
+na posílání textových zpráv v textovém tvaru. Jedna zpráva zaèíná pøíkazem, jejich parametry a konèí novým 
+øádkem. Z toho plyne omezení protokolu --- zprávu obsahující odøádkovaný text se na jediný pokus podaøit 
+nikdy nepodaøí. Navíc má problémy s urèováním kódové stránky, tak¾e lidé na rùzných platformách vidí 
+text s chybnými znaky místo diakritiky.
+
+\section{XML}
+\subsection{Extensible Markup Language}
+\verb|XML| \cite{xmlWeb} je jednoduchý hierarchický znaèkovací jazyk. Je odvozen od 
+pùvodního slo¾itìj¹ího znaè\-ko\-va\-cí\-ho jazyka \verb|SGML| (\verb_ISO_~8879). Zámìrem 
+XML bylo vyvinou dostateènì
+jednoduchý jazyk pro pøenos strukturovaných dat. Data jsou v textovém formátu a nejsou tedy ovlivnìna 
+nekompatibilitou mezi rùznými platformami. Jazyk byl zamý¹len k výmìnì velkých objemù dat mezi archivy textù,
+na¹el si ale cestu do v¹ech odvìtví poèítaèové techniky jako nesmírnì univerzální formát pro výmìnu 
+hierarchických dat. 
+
+Následuje malá ukázka XML.
+
+\begin{verbatim}
+<?xml version='1.0'?>
+<hlavni-tag>
+  <prvni-potomek/>
+  <druhy-potomek/>
+  <treti-potomek ma='atribut'>
+  	<potomstvo>Pøípadný dal¹í obsah není obsa¾en</potomstvo>
+  </treti-potomek><!-- komentar -->
+</hlavni-tag>
+\end{verbatim}
+
+Elementy jazyka nazýváme tagy. Tag je hierarchický jednotka, která mù¾e mít svoje atributy, tedy parametry
+s hodnotou uzavøenou v jednoduchých uvozovkách. Mù¾e mít také potomky--tagy, nebo vlastní hodnotu uzavøenou
+mezi poèáteèním a koncovým tagem. Koncový tag je uvozen lomítken /. 
+
+Jazyk XML není jenom jednoduchým jazykem pro pøenos prosté informace. Existuje napøíklad roz¹íøení \verb|XLink|,
+neboli \emph{XML Linking Language}, které definuje propojování a odkazování na jiné XML dokumenty nebo 
+jejich èásti. Dále napøíklad \verb|XPath| odkazuje na èásti dokumentu samého, tedy do jiného místa ve 
+stejném souboru. Pro \verb|XML| existuje velké mno¾ství mo¾ností a pou¾ití, ale hlavní význam má jeho existence
+pro strojové zpracování informací. Jednak umo¾ní platformnì nezávislou výmìnu, ale mimo jiné také umo¾òuje
+transformaci jednoho \verb|XML| souboru do jiného \verb|XML| souboru pomocí transformaèního jazyka \verb|XSLT|.
+Zajímavostí je, ¾e i definice tohoto jazyka jsou vlastnì dal¹ím XML dokumentem.
+
+\subsection{Práce s XML}
+Aèkoliv u¾ jsem uvedl, ¾e znaè\-ko\-va\-cí jazyk \verb|XML| je jednoduchý jazyk, práce s ním má svoje zvlá¹tnosti.
+I pøesto, ¾e formát dat je ryze textový, pro ètení \verb|XML| souborù se zpravidla pou¾ívá knihoven. 
+Soubory mají na pohled jednoduchou strukturu, ale ke správnému ètení a zápisu se zpravidla pou¾ívá 
+specializovaných knihoven. Text mù¾e obsahovat znakové entity, které je pøed zobrazením u¾ivateli pøevést.
+Knihovny pro zpracování XML najdeme dnes snad pro kterýkoliv pou¾ívaný jazyk a platformu.
+
+\subsection{SAX}
+\verb|SAX|, neboli \emph{Simple Api for XML} je rozhraní pro sekvenèní ètení \verb_XML_ souboru. Jeho nespornou výhodou je rychlost zpracování dokumentu.
+Proto¾e dokument nenaèítá celý naráz do pamìti, jeho rychlost se nesni¾uje ani pøi 
+velmi velkých dokumentech. Jeho pou¾ití
+je v¹ak pro programátora o to slo¾itìj¹í. SAX lze pou¾ít jenom ke ètení dokumentu, na zápis textu se tento zpùsob nehodí.Toto rozhraní není standartizováno ¾ádnou organizací a je odvozeno od pùvodní implementace rozhraní v Javì.
+Jednou z kvalitních knihoven tohoto typu je knihovna {\em expat}.
+
+\subsection{DOM}
+\emph{Document Object Model} je naproti tomu rozhraní pro objektový pøístup k dokumentùm. Oproti SAX 
+je zpùsob práce s dokumentem zcela odli¹ný, proto¾e je tøeba naèíst celý dokument do pamìti. Výhodou je
+snadná práce s dokumentem a intuitivní mo¾nost pohybu dopøedu i zpátky. Nevýhodou je, ¾e pøi opravdu velkých
+dokumentech takový pøístup klade velké nároky na systém. O to hor¹í je potom dopad na systém, 
+pokud se tento zpùsob pou¾ívá ve vìt¹í míøe na velkých souborech, napøíklad na serveru, kde bì¾í mno¾ství 
+dal¹ích procesù s nároky na
+pamì».
+
+\subsection{Streaming XML}
+Pøi pou¾ití \verb_XML_ pøes sí» je problematické ètení do¹lých tagù, dokud je¹tì nejsou zcela kompletní.
+Jestli¾e Jabber/XMPP pou¾ívá pro pøenos ve¹kerých zpráv XML, musí být schopen dekódovat XML je¹tì pøed 
+uzavøením kompletního spojení. Jinak bychom mohli hodnì tì¾ko mluvit o rychlém zasílání zpráv, pokud by pøi 
+ka¾dé zprávì bylo potøeba navázat a zase ukonèit spojení. Navíc ka¾dé navazování a ru¹ení spojení je zbyteèná 
+zátì¾ sítì i systému v pøípadì, ¾e zprávy jsou odesílány èasto. U systému pro rozhovor lidí se nìco takového 
+oèekává poka¾dé, kdy¾ spolu zaènou komunikovat. Je jisté, ¾e zpracovat pøijímaný text pomocí modelu \verb_DOM_
+není mo¾né, proto¾e za ¾ádných okolností nebude k dispozici kompletní \verb_XML_ strom, který by bylo
+mo¾né naèíst. Po pøipojení XMPP server otevírá tag \texttt{<stream>}, který se uzavírá a¾ po ohlá¹ení 
+od sítì nebo po chybì syntaxe XML. 
+
+
+\section{Fungování XMPP/Jabber}
+\subsection{XMPP Core}
+\verb_XMPP Core_ \cite{xmppCoreWeb} je základní mno¾inou protokolu XMPP. Tato èást definuje základní prvky 
+protokolu. I kdy¾ to není pøikázáno, obvyklá je architektura klient-server a spojení pomocí TCP protokolu.
+Jednou z nejvìt¹ích pøedností je {\em decentralizace}. Neexistuje ¾ádný centrální server sítì 
+Jabber/XMPP a tedy není mo¾né vyøadit celou sí» pomocí napadení nebo selhání na jednom místì. Jak 
+funguje decentralizace ukazuje obrázek \ref{pic_decentralizace}.
+
+U¾ivatelé se pøipojují na svùj vlastní server. Pokud chtìjí komunikovat s lidmi z jiných serverù,
+po¾ádají o autorizaci. Server automaticky rozpozná, ¾e zpráva není adresovaná kontaktùm lokálním, ale 
+serveru jinému.
+K doruèení zprávy se potom musí server spojit s cílovým serverem cílového kontaktu. 
+\verb_XMPP Core_ definuje
+pøedev¹ím zpùsob pøipojení autentizace klientù k serveru. Tato specifikace uvádí pouze podporu \verb_SASL_\footnote{Simple Authentication and Security Layer}
+autentizace, av¹ak star¹í klienty a servery mohou pou¾ívat i star¹í zpùsob autentizace pomocí \verb_SHA1_ hashe
+hesla. Jednou z hlavních pøedností protokolu je ¹iroká podpora bezpeènostích prvkù. Kromì ji¾ zmínìné bezpeèné
+autorizace poèítá protokol i s pou¾itím ¹ifrovaného kanálu pro výmìnu dat. I kdy¾ pùvodní Jabber servery 
+podporují i pøipojení na speciální TCP port chránìný pomocí SSL spojení, novìj¹í specifikace jasnì favorizuje
+pou¾ití TLS negotiation \footnote{Ustavení ¹ifrovaného kanálu a¾ po navázání ne¹ifrovaného spojení. Server tak mù¾e pou¾ít jediný port na ¹ifrované i ne¹ifrované spojení.} 
+a¾ po ustavení TCP spojení a úspì¹ném zpìtném volání
+\footnote{Princip zpìtného volání je vysvìtlen v následující kapitole}. Speciální port chránìný ¹ifrovaným
+kanálem mohou vyu¾ít pouze klienti, pro spojení serverù mezi sebou tato mo¾nost není podporována. 
+
+Ve specifikaci se jasnì øíká, ¾e XMPP je zjednodu¹enou verzí XML a nìkteré typy dat nesmí obsahovat. 
+Mezi takové patøí napøíklad XML komentáøe, nebo speciální sekce CDATA obsahující binární kód. Ve¹kerý binární 
+obsah, jako jsou fotky, který je pøená¹en, musí být pøeveden do sedmibitové formy. K tomu se pou¾ívá výhradnì 
+kódování base64.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=8cm,keepaspectratio]{decentralizace}
+  \caption{Ukázka decentralizace}
+  \label{pic_decentralizace}
+\end{center}
+\end{figure}
+
+\subsubsection{Ukázka pøipojení k serveru}
+Pøipojující se posílá hlavièku bez \verb|id|.
+\begin{verbatim}
+<?xml version='1.0'?>
+<stream:stream 
+   xmlns:stream='http://etherx.jabber.org/streams' 
+   xmlns='jabber:client' to='im.pihhan.info' >
+\end{verbatim}
+Server na ni odpoví tagem stream ji¾ s identifkátorem.
+\begin{verbatim}
+<?xml version='1.0'?>
+<stream:stream 
+   xmlns:stream='http://etherx.jabber.org/streams' 
+   xmlns='jabber:client' 
+   from='im.pihhan.info' 
+   id='r9o2mxpyygr5h7t3nzuwl873vrvytfgko5ma3c91'>
+\end{verbatim}
+
+\subsubsection{Zpìtné volání}
+Zpìtným voláním, neboli {\em dialbackem}, se ovìøuje toto¾nost vzdáleného serveru. 
+Proto¾e sí» je decentralizovaná, neexistuje ¾ádná centrální autorita, která by posuzovala bezpeènost a identitu
+serveru, se kterým se navazuje spojení. Jediná mo¾nost je tak spolehnout se na prostøedky ovìøení, které 
+má k dispozici sám server. 
+
+Sice se nabízí kontrola identity serverù pomocí TLS negotiation a ovìøování jejich
+certifikátù. Pokud v¹ak kontaktovaný server nepou¾ívá TLS vùbec nebo jej pou¾ívá, ale jeho certifikát není 
+ovìøitelný z na¹eho serveru, identitu tím neovìøíme. Serverù které mají certifikát podepsaný
+sám sebou, pøípadnì nám neznámou certifikaèní autoritou je na serveru mnoho. 
+Proto¾e komunikace mezi server probíhá na celém svìtì,
+není vùbec reálné, aby v¹echny servery byly schopny zkontrolovat 
+pravost ka¾dého certifikátu serveru, se kterým budou chtít komunikovat.
+
+Navíc existují zemì, kde pou¾ívání kryptografie je v rozporu se zákonem, a tam by nebylo mo¾né ovìøit 
+vùbec ¾ádnou identitu. Zkrátka omezení je pøíli¹ mnoho na to, aby se dalo mluvit o spolehlivém zpùsobu.
+Pokud se ale mù¾e pøipojit kdokoliv k serveru, a øíct jakékoliv jméno. To je v prostøedí internetu zcela 
+nepøijatelné, proto¾e by mohlo dojít k zaslání dùvìrných zpráv nepovolaným osobám. Je tedy potøeba dostateènì
+jednoduchý zpùsob, jak ovìøit pravost identity vzdáleného serveru.
+
+Zpìtné volání funguje na pricipu sdíleného klíèe. Server navazující spojení vygeneruje a po¹le serveru svùj
+klíè pro toto spojení. Pøijímající server toto spojení zatím nepotvrdí, a dokud tak neudìlá, nepøenese
+tímto spojením ¾ádná data. Pro pøijetí klíèe zahájí cílový server vlastní navazování spojení. Nejdøíve
+musí urèit, kam se má pøipojovat. 
+
+Pro urèení cíle pou¾ívá internetem ovìøený systém \verb_DNS_. {\em Domain Name System} je bì¾nì pou¾ívaný systém
+v internetu. Jeho pøednostmi je vysoká dostupnost a roz¹íøenost a kvalitní implementace nìkolika serverù.
+Hlavní úlohu v bezpeènosti dialbacku le¾í na bedrech systému DNS. Proto¾e v¹ak v dobì masového roz¹íøení 
+World Wide Webu je tato slu¾ba nepodstradatelná a podle toho jí také vìnuje vysoká pozornost kvùli zabezpeèení.
+
+K získání adresy 
+cílového serveru vyu¾ívá dotaz na typ odpovìdi \verb_SRV_, a parametrem je 
+\\
+\texttt{\_xmpp-server.\_tcp.jmeno.serveru.net}. V odpovìdi na tento dotaz mù¾e obdr¾et nìkolik doménových jmen,
+s jejich prioritou a portem. Teprve na tato jména se pøipojí, podle nejvy¹¹í priority si vybere tu nejvhodnìj¹í.
+
+Po pøipojení na takto získaný server zahájí komunikaci zasláním standardního tagu \verb_stream_ s~atributem 
+\verb_to_, který urèuje jméno cílového serveru. Tím ¾e pøipojující se server uvede, s jakým serverem se chce
+bavit, je umo¾nìno hostování více virtuálních serverù na jediném poèítaèi i \verb|TCP/IP| portu.
+
+Po zahájení komunikace server po¹le sdílený klíè, který obdr¾el od navazujícího serveru. 
+Pokud je \verb_DNS_ správnì nastaveno, server se pøipojil na ten samý server, který mu pøedtím posílal klíè.
+Proto¾e si pamatuje klíè, zkontroluje, zda takový klíè skuteènì poslal. Pokud ano, odpoví kladnì. Pro server,
+který pøijímal prvotní spojení, je to potvrzení, ¾e server je skuteènì tím, kým tvrdí. Po¹le tedy potvrzení
+o úspì¹ném pøijetí dialbacku do pùvodního spojení a platnost tohoto spojení potvrdí. Od této chvíle povolí
+odesílání i pøijímaní xml paketù z tohoto spojení. Schematický princip dialbacku je lépe vidìt na 
+obrázku \ref{pic_dialback}.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{dialback}
+  \caption{Princip zpìtného volání}
+  \label{pic_dialback}
+\end{center}
+\end{figure}
+
+\subsubsection{XML RPC}
+XMPP Core je zámìrnì oprostìn od konkrétních mechanismù fungování klienta pro zasílání zpráv. Standard je 
+pøipraven i pro pou¾ití v jiných oblastech, kde se nebudou zasílat zprávy stejným zpùsobem, jako v klasické 
+síti Jabber. Tím, ¾e protokol je zalo¾en na XML, nabízí se mnoho dal¹ích mo¾ností, jak vyu¾ít spolehlivou 
+základnu pro rychlé doruèení èástí XML dokumentù. Infrastruktura umo¾òuje plnou decentralizaci, pøitom ale 
+nabízí také vysokou bezpeènost. Jednou z vítaných vlastností je pou¾ití XML--RPC pøes sí» XMPP \cite{xepXmlRpc}. 
+
+RPC chápeme jako {\em Remote Procedure Call}, tedy vzdálené volání procedur. Volání funguje tak, ¾e vzdálené 
+slu¾bì nìkde na internetu po¹lu parametry a název operace, a ona mi vrátí výsledné hodnoty zpìt. V její 
+specifikaci \cite{xmlrpcWeb} se explicitnì poèítá s nasazením této technologie pomocí protokolu HTTP.
+Malým problémem ale je, ¾e funkce musí vrátit nìjaký výsledek v urèeném èase. HTTP protokol umí jedinì zadat
+dotaz a dostat na ni odpovìï. Pøi èekání na ni nemù¾e na stejném spojení dostat odpovìï jinou. HTTP servery
+mají omezenou dobu, po kterou podr¾í spojení s klientem. Pokud by slu¾ba pøesáhla tuto dobu, webový server
+zru¹í spojení a celý dotaz je tak nenávratnì ztracen. U \verb_HTTP_ protokolu není jiná mo¾nost, ne¾ po¾ádat
+si znovu se stejnými parametry o stejný dotaz a doufat, ¾e tentokrát si slu¾ba ulo¾ila rozpracované dílo
+nebo jej stihne vypracovat rychleji.
+
+U \verb_XMPP_ naopak ¾ádné takové omezení není. Na jediném spojení si mù¾e slu¾ba po¾ádat o nìkolik po¾adavkù
+naráz rùzným entitám, a pøitom obsluhovat pouze jedno jediné spojení. Slu¾ba si po¹le ¾ádost, a dokud zùstane
+pøipojena k XMPP serveru, mù¾e èekat, jak dlouho pova¾uje za potøebné. Server sám ji neodpojí. Tazatel se mù¾e 
+v klidu vìnovat obsluze jiných výsledkù, dokud nedorazí odpovìï. 
+
+\subsection{Stanzy}
+Stanzy jsou jednotlivé datové tagy XML, které se mohou vyskytovat v hlavním tagu spojení \texttt{<stream>}.
+Èasto se také popisují slovem XML paket.
+Stanzami nejsou nìkteré xml zprávy pøi navazování spojení, jako parametry \verb|SASL| autorizace nebo ¾ádost
+od navázání ¹ifrovaného spojení TLS. Po úspì¹ném dokonèení pøipojování jak klienta, tak serveru, u¾ nesmí 
+být odeslán ¾ádný jiný \verb|XML| paket, ne¾ povolená stanza. Ka¾dá stanza odesílaná mezi servery musí
+obsahovat pøíjemce v parametru \verb|to| i odesílatele v parametru \verb|from|. Stanza odeslaná klientem v 
+závislosti na jejím typu nemusí mít ani jedno z nich. Potom mají takové pakety zvlá¹ní význam pro server,
+který s nimi zachází speciálnì. Server ale pøi doruèování tìchto stanz dal¹ím entitám v síti tyto informace
+automaticky doplní.
+
+\subsubsection{Zpráva}
+První stanzou je textová zpráva.
+Textové zprávy pro bì¾ného u¾ivatele cestují v síti XMPP v tagu \texttt{<message>}
+
+\begin{verbatim}
+<message to='nekdo@example.org'>
+	<subject>Ukázková zpráva</subject>
+	<body>Zpráva pro ètenáøe textu</body>
+</message>
+\end{verbatim}
+
+Zprávy mohou být 4. typù
+\begin{itemize}
+\item jednoduchá zpráva
+\item rozhovor
+\item titulek
+\item chybová zpráva
+\end{itemize}
+
+Jednoduchá zpráva je obdobou emailu v síti XMPP. Tato zpráva mù¾e mít volitelnì i pøedmìt ve vnoøeném tagu
+\verb_<subject>_. Text zprávy je obsa¾en v tagu \verb_<body>_.
+
+\subsubsection{Informace o dostupnosti}
+Dal¹í stanzou je \verb|presence|.
+Sí» nedovoluje nikomu zaslat stav o dostupnosti bez toho, aby to ten daný èlovìk schválil. Pokud chcete
+vìdìt, jestli je pøítel online, napøed vám to musí povolit. Pro zaslání informace o stavu dostupnosti
+i pro dotaz o autorizaci dostupnosti se pou¾ívá tag \texttt{<presece>}.
+\begin{verbatim}
+<presence type='available'/>
+<presence>
+	<show/>
+</presence>
+\end{verbatim}
+
+Informace o dostupnosti mù¾e mít nìkolik typù.
+\begin{description}
+\item [available] -- stav dostupný. Ohla¹uje, ¾e u¾ivatel je pøipojen a pøítomen. Pokud není typ stavu uveden, pøedpokládá se tento.
+\item [away] -- stav pryè. U¾ivatel pravdìpodobnì není u svého poèítaèe, nebo zaøízení, kterým je do XMPP sítì 
+pøipojen.
+\item [xa] -- stav \verb|extended away|, v èeských pøekladech èasto pøekládán jako dlouho pryè. Ohla¹uje, ¾e u¾ivatel není a pravdìpodobnì nebude u poèítaèe del¹í dobu.
+\item [dnd] -- stav neru¹it. U¾ivatel sice u poèítaèe je, ale nepøeje si být ru¹en.
+\item [unavailable] -- stav nedostupný. U¾ivatel není vùbec pøipojen, nebo je ve skrytém stavu.
+\end{description}
+
+Anglicky se autorizaci dostupnosti v systému \verb|XMPP| øíká subscription. Pøesný pøeklad by znìl spí¹e "zápis", ale proto¾e jsou u¾ivatelé zvyklí napøíklad z ICQ na termín \uv{autorizace}, obvykle se pou¾ívá v èeských pøekladech termín \uv{autorizace}.
+
+\subsubsection{Obecné dotazy}
+Pro v¹echny ostatní akce slou¾í obecné dotazy pomocí \verb_iq_ paketù. Iq packet slou¾í pro obecné dotazování
+typu dotaz a odpovìï, které mù¾e pøi komunikaci nastat. Slou¾í ke zji¹»ování schopností klientù, k získávání
+verze klienta, atd. 
+
+Dotazy mají nìkolik povinných parametrù. Prvním z nich je \verb|id|. \verb|Id| jednoznaènì rozli¹uje dotaz a 
+odpovìï od ostatních. Ka¾dý dotaz, který klient odesílá, musí mít unikátní identifikátor. Jedinì takto lze 
+jednoznaènì urèit, o který typ se jedná. Dal¹í povinný parametr je \verb|namespace|. Namespace rozli¹uje,
+o jaký typ akce se vlastnì jedná. Namespace jsou definovány v jednotlivých roz¹íøeních \cite{xepWeb}, které
+registruje {\em XMPP Registrar}. Pou¾ití namespace umo¾òuje plynulý pøechod na novìj¹í technologie a rozli¹uje
+jednotlivé tagy. S jeho pomocí klienti snadno urèí, zda takový dotaz zpracovat umí, nebo ne. 
+Namespace je obsa¾en uvnitø \verb|iq| tagu v jeho prvním potomkovi. Jméno tagu potomka se mù¾e li¹it v 
+závislosti na roz¹íøení, zpravidla jím je ale tag \verb|query|.
+Posledním povinným parametrem je \verb|type|, který urèuje, o jaký úkon se tento dotaz pokou¹í.
+
+\begin{description}
+\item [get] -- ¾ádost o ètení hodnoty nebo polo¾ek. Asi nejèastìj¹í typ vyvolaný klientem.
+\item [set] -- ¾ádost o ulo¾ení nebo nastavení. 
+\item [result] -- výsledek jednoho z pøedchozích. musí obsahovat stejné \verb|id|, jako pùvodní dotaz. Oznaèuje úspì¹ný výsledek a v sobì nese výsledná data.
+\item [error] -- ¾ádost skonèila chybou. Takté¾ musí obsahovat \verb|id| dotazu, který chybu vyvolal. Obsahuje jednak hlá¹ení s chybou a obvykle také tìlo dotazu, který chybu vyvolal jako dal¹ího potomka.
+\end{description}
+
+Následuje pøíklad iq packetu.
+\begin{verbatim}
+<iq type='get' id='aab1a' >
+<query xmlns='jabber:iq:roster'/>
+</iq>
+
+<iq type='result' id='aab1a' >
+<query xmlns='jabber:iq:roster'>
+<item subscription='from' jid='icq.gajim.org' />
+<item subscription='both' name='Jan Novák' jid='649465485@icq.gajim.org' />
+</query>
+</iq>
+\end{verbatim}
+
+
+\subsection{XMPP IM}
+\verb_XMPP IM_ \cite{xmppImWeb} definuje roz¹íøené vlastnosti specifické pro výmìnu zpráv a výmìnu 
+dostupnosti. Jedna z hlavních èástí je také popis práce se seznamem kontaktù -- {\em rosteru}.
+
+Po¾adavky na základní fungování instang messangingu definuje standard takto.
+\begin{enumerate}
+\item Výmìna zpráv s ostatními u¾ivateli.
+\item Výmìna informace o dostupnosti s ostatními u¾ivateli.
+\item Správa autorizací kontaktù
+\item Správa polo¾ek v seznamu kontaktù. Systém \verb_XMPP_ nazývá seznam kontaktù pojmem Roster
+\item Zablokovat komunikaci k nebo od urèitých u¾ivatelù
+\end{enumerate}
+
+První tøi body ji¾ byly popsány v pøedchozích kapitolách. 
+Správu seznamu kontaktù zaji¹»uje \verb|iq query| s namespace \verb|jabber:x:roster|. Tento protokol zaji¹tuje
+vyzvednutí seznamu po pøihlá¹ení klienta. Vyzvednutí a správa kontaktù na serveru je pro klienty povinná. 
+U¾ivatel není omezen kontakty ulo¾enými na svém poèítaèi, proto¾e podle specifikace ka¾dý klient musí
+pracovat s kontakty na serveru. Tato správa kontaktù mimo jiné umo¾òuje pøipojení nìkolika klientù s rùzným 
+\verb|resource| na stejný úèet a udr¾uje je v¹echny synchronizované. Kontakty, kterým pøijme jeden z pøipojených
+klientù autorizaci, jsou automaticky serverem poslány v¹em zbylým jako nový kontakt do "rosteru".
+Tato operace se nazývá {\em roster push}.
+
+Blokování komunikace mezi urèitými u¾ivateli není v XMPP IM definováno pøesnì. Buï blokování komunikace 
+zaji¹»ují klienti ve vlastní re¾ii, nebo ji blokuje server podle pravidel roz¹íøení {\em Privacy Lists}
+\cite{xepPrivacyWeb}
+
+\subsection{Jabber ID}
+Jabber ID nebo zkrácenì \verb_JID_ je jednoznaèný identifikátor v síti XMPP. Identifikátor má 3 èásti.
+První je u¾ivatelská èást, která urèuje jednoznaènì u¾ivatele na jeho serveru. Druhá èást je plné doménové
+jméno serveru, která jej jednoznaènì urèuje v síti. 
+Tøetí je pak {\em resource}, tedy zdroj. Zdroj rozli¹uje jednotlivé pøipojené instance
+daného u¾ivatele. Plné \verb_JID_ mù¾e vypadat napøíklad následovnì.
+
+\begin{verbatim}
+pihhan@jabber.cz/Psi
+\end{verbatim}
+
+\subsection{XEP}
+{\em XMPP Extensions} \cite{xepWeb} jsou dal¹í zdokumentovaná roz¹íøení XMPP IM, která pøidávají dal¹í 
+funkcionalitu nad rámec základního protokolu \verb|XMPP|. Bez nich je \verb|XMPP IM| pouhý systém zasílání
+zpráv s velmi omezenými vlastnostmi. 
+
+\subsection{Service Discovery}
+Jedním z dùle¾itých roz¹íøení je {\em XEP-0030}, Service Discovery. Toto roz¹íøení slou¾í ke zji¹tování 
+dostupných slu¾eb a jejich podporovaných vlastností. Tuto úlohu mìlo dnes ji¾ historické roz¹íøení 
+Jabber Browsing (XEP--0011) a Agent Information (XEP-0094). Obì tyto roz¹íøení nahrazuje plnì a mnohem lépe.
+Proto¾e jabber má velké mno¾ství roz¹íøení, je èasto potøeba zjistit, která roz¹íøení slu¾ba podporuje. 
+Toto roz¹íøení nejenom ¾e umí zobrazit dostupné slu¾by pomocí dotazu na polo¾ky -- namespace 'http://jabber.org/protocol/disco\#items', ale také jejich vlastnosti pomocí namespace 'http://jabber.org/protocol/disco\#info'.
+
+% FIXME: Pøedìlat, pøí¹ernì nepochopitelné
+\subsubsection{Discovery Info}
+Ka¾dá entita má svoje vlastnosti a schopnosti. Entitou rozumíme buï slu¾bu, kontakt nebo vnoøený objekt 
+nìjaké slu¾by, napøíklad místnost v diskuzní skupinì. Entita je jedineènì urèená svým \verb|JID|, tedy u¾ivatelskou èástí, jménem serveru a zdrojem (resource), pøípadnì mù¾e být urèena i pomocí \verb|node|. 
+U¾ivatelská èást i zdroj mù¾e chybìt. Ka¾dá entita podporující
+Service Discovery musí umìt vrátit seznam podporovaných vlastností a identit. Identity rozli¹ují typ a 
+zamìøení entity. Výèet mo¾ných typù na rozdíl od pøedchozích specifikací není daný pøímo v roz¹íøení, ale 
+je zaregistrován u {\em Jabber Registrar}. Identita se skládá z kategorie a typu. Pøíkladem kategorie je napøíklad 
+\verb|client|, typ u nìj mù¾e být napøíklad \verb|pc| u klasického PC klienta, nebo \verb|phone| pøi pøipojení
+Java aplikací z mobilního telefonu. Jedna entita mù¾e mít v¾dy jen jeden typ z ka¾dé kategorie. Kromì 
+identity vrací entita pøi dotazu na schopnosti také seznam podporovaných vlastností v tagu 
+\verb|<features var='namespace'>|, kde {\em namespace} je ten stejný namespace, který se pou¾ije v \verb|iq|
+stanze k získání hodnoty. Tímto zpùsobem lze mo¾né tedy zjistit, co v¹echno daný kontakt podporuje je¹tì 
+pøedtím, ne¾ ode¹leme ¾ádost o provedení. To se hodí napøíklad pøi vytváøení nabídky pro daný kontakt, proto¾e
+nemá smysl u¾ivateli nabízet tucet vlastností, pøi jejich¾ vykonání na nìj stejnì vyskoèí chyba 
+neimplementováno.
+
+\subsubsection{Discovery Items}
+Ka¾dé entita mù¾e mít nìkolik dal¹ích entit. Jejich zji¹tìní provádí klient dotazem s namespace 'http://jabber.org/protocol/disco\#info'. Entita mù¾e vrátit nìkolik dal¹ích entit, které mohou být znovu prohlí¾eny.
+Lze tak vytvoøit stromovou strukturu s rùznými polo¾kami.
+
 
 \chapter{Závìr}
 
