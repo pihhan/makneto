@@ -157,6 +157,126 @@ nápovìda. Pro lep¹í pøehlednost obsahuje aplikace systém zálo¾ek, pomocí nich¾
 lze pøepínat mezi jednotlivými zobrazeními boèních panelù. Program umí i re¾im práce pøes celou obrazovku, co¾ se pro demostraèní
 úèely mù¾e celkem hodit. 
 
+Jedna instance aplikace mù¾e mít zároveò nìkolik sezení se sdílenou plochou
+mezi rùznými u¾ivateli. Jejich pøepínání se provádí pomocí zálo¾ek, které tak
+poskytují komfort víceokenní aplikace, pøi zachování jediného okna. Nedochází
+tak snadno k tomu, ¾e by u¾ivatel kreslil do jiné plochy, ne¾ zamý¹lel. 
+Bohu¾el aplikace neumí samostatnou kreslící plochu vyjmout, pokud by u¾ivatel
+radìji samostatná okna mìl.
+
+\subsection{Kreslící plocha}
+
+Zahajování sezení se provádí pøes seznam kontaktù v boèním panelu. Program
+pøedem nekontroluje, zda cílový kontakt umí stejný protokol kreslící plochy,
+jako aplikace Makneto. Výhoda je, ¾e si mù¾ete vyzkou¹et ovládání aplikace
+naneèisto a
+seznámit se s aplikací je¹tì pøed tím, ne¾ zaèneme ukazovat nìjakému èlovìku,
+¾e vám práce s aplikací je¹tì moc nejde.
+
+Nevýhoda je, ¾e u¾ivatel sám musí ruènì vybrat správný kontakt pro èlovìka, 
+se kterým chce sdílenou plochu otevøít, pokud má fungovat. To pova¾uji celkem 
+za nevýhodu, zvlá¹» pro u¾ivatele s úètem, kde má poèet kontaktù a¾ trojciferné
+èíslo nebo více. Program pomáhá alespoò èásteènì mo¾ností vypnutí zobrazení 
+offline kontaktù a nabídnutí jenom právì dostupnách lidí, nicménì zobrazení
+ikony nebo vyznaèení jinou barvou pro kontakty by se celkem hodilo.
+
+Program pou¾ívá pro kreslení vektorový model dat a v¹echna data jsou kreslená
+pomocí vektorovì definovaných èar. V nabídce je kreslení tu¾kou volnou rukou,
+kreslení èáry, obdélníku, elipsy a kruhu. Je mo¾né také vlo¾it bitmapový 
+obrázek v podporovaných formátech jpeg a png.
+
+Se v¹emi objekty jdou provádìt základní operace - zvìt¹ení, posunutí a rotace.
+Objekty lze samozøejmì z plochy vyjmout. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{makneto-plocha}
+  \caption{Hlavní okno aplikace Makneto}
+  \label{pic_makneto_workplace}
+\end{center}
+\end{figure}
+ 
+\chapter{Existující komunikaèní programy}
+
+\section{Komunikaèní programy}
+
+\subsection{Skype}
+V na¹ich krajinách asi nejbì¾nìji pou¾ívaným programem je Skype. 
+
+Skype byl zalo¾en v roce 2003 pány Niklas Zennström a Janus Friis.
+Není sice v ¾ádném pøípadì prvním softwarem, které by umo¾òoval hlasovou
+komunikaci pomocí internetu, pøesto právì tento program pøinesl volání
+z poèítaèe na poèítaè bì¾ným u¾ivatelùm a stal se masovì pou¾ívaný.
+
+Skype toti¾ vyøe¹il øadu problémù, které mìly tehdej¹í multimediální programy
+a telefony. Tento problém byl a i dnes je pøítomnost pøekladu adres na 
+smìrovaèích\footnote{Anglicky Network Address Translation, bì¾nì znám pod 
+zkratkou NAT}. 
+
+Skype se toti¾ li¹í v celé øadì vìcí od ostatních programù podobného úèelu.
+První výraznou odli¹ností je zpùsob pøenosu dat a pøihla¹ování k síti.
+Skype pou¾ívá plnì decentralizovanou topologii, kde nejen ¾e audio data, 
+pøípadnì video data, putují pøímo mezi poèítaèi bez serveru, který by je 
+opakoval, ale stejnì posílá zprávy textové svým u¾ivatelùm, pøená¹í soubory
+a pøihla¹uje se k síti. Je zøejmé, ¾e neexistence jakékoliv formy serveru
+by neumo¾òovala fungující spojení mezi rùznými poèítaèi, které o sobì je¹tì 
+neví. A právì tohle je unikátní vlastnost Skype. 
+
+Sí» programu skype se skládá z poèítaèù jednotlivých u¾ivatelù - bì¾ný bod
+a speciální bod - supernode \citation{skypeprotocol}. Supernode je významný bod,
+který se mù¾e stát ze keréhokoliv poèítaèe pøipojeného do sítì skype. Tímto 
+bodem se stanou poèítaèe s dostateèným výkonem a dostateènì kvalitním pøipojením
+do internetu. Takové body se spojí s ostatními supernody, jejich¾ adresy jim 
+sdìlí ostatní supernody. Ka¾dý klient má v sobì zakódovaný seznam nìkolika 
+orientaèních supernodù, navíc si pamatuje ty, je¾ mu byly sdìleny pøi posledním
+spojení. Supernody slou¾í jako servery pro omezený poèet koncových obyèejných 
+klientù, kteøí pøes nì oznamují pøítomnost v síti a stavy sítì. Pøes tyto
+význaèné body posílají bì¾né body informace s ¾ádostmi o pøímé pøopojení, 
+vyhledávají pøihla¹ovací údaje. Pokud se dva bì¾ní klienti nemohou spojit pøímo
+mezi sebou, jsou audio data hovorù pøená¹eny také pøes tyto supernody. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=8cm,keepaspectratio]{skypenet}
+  \caption{Architektura sítì Skype}
+  \label{pic_skypenet}
+\end{center}
+\end{figure}
+
+Proto¾e témìø ve¹kerá zátì¾ sítì probíhá pøímo me¾i u¾ivateli mimo jakékoliv
+servery spoleènosti, mohl nabídnout skype jako jeden z prvních neomezenì dlouhé
+hovory zdarma mezi 2 poèítaèi. Navíc program má nìkolik mo¾ností, jak projít
+i pøes restriktivní filtry. Program sice bì¾nì komunikuje pomocí UDP\footnote{User Datagram Protocol} protokolu,
+ale je schopen fungovat i v sítích, kde je z jakéhokoliv dùvodu zakázán UDP 
+provoz. Program tak funguje a umo¾òuje volání i v sítích, kde si to jejich 
+správcové nepøejí a sna¾í se takovou komunikaci blokovat. Program si získal
+oblíbenost i tím, ¾e fungoval ve firemních sítích, kde byla bì¾ná komunikace 
+omezena a existující programy nefungovaly. Tento pøístup má ale i nevýhody.
+U¾ivatel není schopen zvolit, zda se chce stát supernodem èi ne. Mù¾e se tak 
+stát, ¾e bude pøená¹et kromì dat vlastního hovoru i data nìkolika hovorù 
+dal¹ích -- cizích -- i v pøípadì, ¾e platí za jednotku pøenesených dat.
+
+Od verze Skype 2 podporuje skype i pøenos videa pomocí webové kamery. Dal¹í ze
+zajímavých vlastností je i existence oficiálního programu pro jinou platformu,
+ne¾ jenom Microsoft Windows. Z bì¾nì dostupných a známých programù je jediným 
+komerèním programem, který má oficiální verzi programu i pro GNU/Linux.
+
+Na rozdíl od ostatních sítí ale nemá ¾ádnou rozumnì funkèní alternativní 
+implementaci -- neoriginálního klienta. Nejen, ¾e program nemá vìøejnì dostupný
+popis protokolu, ale jeho autoøi velmi aktivnì brání pochopení a zji¹tìní 
+fungování protokolu rùznými technikami. Skype sice podporuje i ¹ifrování, 
+nicménì to není ¹ifrování na jaké jsme zvyklí napøíklad u zabezpeèeného 
+pøístupu k bance -- chybí certifikáty, které by ovìøily pravost protìj¹ku, není
+znám ani algoritmus ¹ifrování, ani velikost klíèe. Toto ¹ifrování má mimo jiné
+ztí¾it analýzu protokolu, aby znemo¾nilo nasazení klientù jiných, ne¾ od
+oficiálního výrobce.
+
+\subsection{Windows Live Messenger}
+
+\subsection{Inkscape}
+
+
+\chapter{bc.}
 
 \section{Seznámení s pojmy}
 
