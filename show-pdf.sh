@@ -3,7 +3,7 @@
 ssh server-i.cipis.net << EOF
 cd diplomka-work
 git pull
-make
+make xmensi06.pdf < /dev/null
 exit
 EOF
 
