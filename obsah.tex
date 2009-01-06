@@ -272,8 +272,69 @@ ztí¾it analýzu protokolu, nutnou pro tvorbu vlastního klientského programu.
 
 \subsection{Windows Live Messenger}
 
+Microsoft nabízí u¾ivatelùm svého operaèního vlastní øe¹ení pro rychlou 
+komunikaci, MSN Messenger service. Slu¾by jsou pomìrnì dobøe provázané s rùznými
+nástroji ve windows. Slu¾ba byla uvedena u¾ v roce 1999 \citation{msnlaunch}.
+Audio a video pøenos zaji¹»oval program Netmeeting, uvedený ve Windows 2000
+jako nový software. Program pro pøipojení se v dobì uvedení jmenoval MSN Messenger, pozdìji se nìkolikrát pøejmenoval. S vydáním Windows XP byla vydána novìj¹í verze programu pod názvem Windows Messenger.
+
+Windows Messenger obsahoval øadu pomìrnì zajímavých vlastností. Kromì bì¾ného 
+psaní zpráv nabízí pøenos øeèi a videa pomocí webkamery. Windows Messenger asi
+nejvíce roz¹íøil pou¾ívání bì¾ných internetových kamer mezi bì¾nými u¾ivateli,
+ostatní slu¾by doplnily pøenos videa a¾ pozdìji. 
+
+Program nabízel øadu funkcí, které nejsou bì¾nì implementované ani v dne¹ních 
+slu¾bách jiných výrobcù. Za zmínku stojí urèitì mo¾nost sdílení aplikací nebo
+podpora sdílené tabule (podobné té, kterou implementuje Makneto). Dal¹í 
+zvlá¹tností je mo¾nost vzdálené pomoci napojené na slu¾bu pøímo ve Windows.
+Slu¾ba taky nabízela jednodu¹e fungující pøenos souborù.
+
+Problémem slu¾by MSN byla ale nefunkènost vìt¹iny slu¾eb pøi absenci pøímého
+propojení mezi poèítaèi. To obvykle znamená, ¾e u¾ivatelé pøipojení smìrovaèem
+pou¾ívajícím pøeklad adres (NAT) nemohli tìchto vymo¾eností s kontakty na
+internetu, ale pouze v lokální síti. Vìt¹ina pokroèilej¹ích slu¾eb
+je toti¾ navázaná na Netmeeting, který práci s pøekladem adres neumí a nemá 
+mo¾nost, jak i s pøekladem adres navázat spojení, pokud smerovaè neumí povolit
+pøesmìrování TCP nebo UDP portu na poèítaè v privátní síti, napøíklad protokolem
+UPnP.
+
+Poslední vydaná verze klienta pro sí» .NET Messenger service, jak byla slu¾ba 
+pøejmenovaná pozdìji, nese oznaèení Windows Live Messenger. Souèasná verze 
+obsahuje novinky jako podporu vestavìných her, mo¾nost zmìny vzhledu, ale jinak
+nenabízí nìjaké zásadní rozdíly proti pøedchozím verzím. Proti pøedchozím 
+verzím se zmìnila sdílená tabule, funguje spí¹ jako výmìna obrázku, do kterého
+oba u¾ivatelé støídavì dokreslují dal¹í vìci. Sice nejde o øe¹ení pøímo 
+interaktivní, ale funguje i na poèítaèích pøipojených za NAT. I Windows Live 
+Messenger podporuje sdílení aplikací a vzálenou pomoc, ale ta nefunguje
+za firewallem nebo natem, jako u pøedchozích verzích.
+
+Ani Windows Messenger nabízí na rozdíl od Skype zvolit si velikost snímku 
+pøená¹eného videa a nastavovat tak kvalitu a tedy i zátì¾. 
+
+Na rozdíl od Skype ke slu¾bám Live existují i alternativní klienti, obvykle
+open source aplikace. Sí» Live Messengeru je pøíli¹ úzce navazaná na Windows a 
+v GNU/Linuxu nefunguje. Existuje ale celá øada programù, která se umí do sítì
+MSN pøipojit. Vìt¹ina ale neumí ¾ádné multimediální funkce, jako pøenos videa
+z webkamery ani pøenos hlasu. 
+
 \subsection{Inkscape}
 
+Inkscape neumí ¾ádné pøenosy videa ani hlasu. Uvádím jej zde proto, mù¾e plnit
+podobnou funkci jako makneto - sdílenou plochu. Inkscape je zdaøilý editor
+vektorových obrázkù ve formátu SVG. SVG je formát s otevøenou specifikací 
+spravovanou konsorciem W3C. Inkscape je propracovaný kreslící nástroj a celá
+øada ikon a témat pou¾ívaných v linuxu je tvoøeno právì v nìm.
+
+Inkscape má i mo¾nost sdílené plochy. Proto¾e i XMPP je zalo¾ený na XML, pou¾ívá
+pro komunikaci mezi vzdálenou plochou právì tento protokol. Inkscape je ale 
+stále spí¹e editorem, funkce sdílené plochy sice existuje, ale implementace
+není nejlep¹í a z funkcí chybí témìø v¹e. Program má sice seznam kontaktù tak,
+jak ukládá XMPP-IM standard, ale má zcela nedoøe¹ené napøíklad skupiny kontaktù.
+Ka¾dý kontakt mù¾e patøit do jedné nebo více skupin a má seznam jmen skupin, do
+kterých nále¾í. Plugin Inkscapu ani neseskupuje kontakty do skupin, pouze
+pøidává kontakty do skupiny, pokud pou¾íváme stále stejnou skupinu. Ve výsledku
+tak mù¾eme mít jednu skupinu v seznamu tøeba osmkrát nebo více. Zkrátka plugin
+tam je, ale pøíli¹ pou¾itelný (alespoò zatím) není.
 
 \chapter{bc.}
 
