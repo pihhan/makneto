@@ -164,7 +164,15 @@ tak snadno k tomu, ¾e by u¾ivatel kreslil do jiné plochy, ne¾ zamý¹lel.
 Bohu¾el aplikace neumí samostatnou kreslící plochu vyjmout, pokud by u¾ivatel
 radìji samostatná okna mìl.
 
-\subsection{Kreslící plocha}
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{makneto-plocha}
+  \caption{Hlavní okno aplikace Makneto}
+  \label{pic_makneto_workplace}
+\end{center}
+\end{figure}
+
+\subsection*{Kreslící plocha}
 
 Zahajování sezení se provádí pøes seznam kontaktù v boèním panelu. Program
 pøedem nekontroluje, zda cílový kontakt umí stejný protokol kreslící plochy,
@@ -188,19 +196,12 @@ obrázek v podporovaných formátech jpeg a png.
 Se v¹emi objekty jdou provádìt základní operace - zvìt¹ení, posunutí a rotace.
 Objekty lze samozøejmì z plochy vyjmout. 
 
-\begin{figure}[ht]
-\begin{center}
-  \includegraphics[width=10cm,keepaspectratio]{makneto-plocha}
-  \caption{Hlavní okno aplikace Makneto}
-  \label{pic_makneto_workplace}
-\end{center}
-\end{figure}
  
 \chapter{Existující komunikaèní programy}
 
 \section{Komunikaèní programy}
 
-\subsection{Skype}
+\subsection*{Skype}
 V na¹ich krajinách asi nejbì¾nìji pou¾ívaným programem je Skype. 
 
 Skype byl zalo¾en v roce 2003 pány Niklas Zennström a Janus Friis.
@@ -270,7 +271,7 @@ pøístupu k bance -- chybí certifikáty, které by ovìøily pravost protìj¹ku, není
 znám ani algoritmus ¹ifrování, ani velikost klíèe. Toto ¹ifrování má mimo jiné
 ztí¾it analýzu protokolu, nutnou pro tvorbu vlastního klientského programu.
 
-\subsection{Windows Live Messenger}
+\subsection*{Windows Live Messenger}
 
 Microsoft nabízí u¾ivatelùm svého operaèního vlastní øe¹ení pro rychlou 
 komunikaci, MSN Messenger service. Slu¾by jsou pomìrnì dobøe provázané s rùznými
@@ -322,7 +323,7 @@ Sí» .NET Messenger pou¾ívá internì protokol textovì orientovaný protokol podobný
 HTTP pro posílání zpráv a stavù. Pro dojednání sezení s podporou multimédií
 pou¾ívá pøizpùsobenou variantu protokolu SIP pøes TCP spojení se serverem.
 
-\subsection{Inkscape}
+\subsection*{Inkscape}
 
 Inkscape neumí ¾ádné pøenosy videa ani hlasu. Uvádím jej zde proto, mù¾e plnit
 podobnou funkci jako makneto - sdílenou plochu. Inkscape je zdaøilý editor
@@ -341,7 +342,10 @@ pøidává kontakty do skupiny, pokud pou¾íváme stále stejnou skupinu. Ve výsledku
 tak mù¾eme mít jednu skupinu v seznamu tøeba osmkrát nebo více. Zkrátka plugin
 tam je, ale pøíli¹ pou¾itelný (alespoò zatím) není.
 
-\subsection{Session Initialization Protocol}
+
+\section{Standartizované protokoly}
+
+\subsection*{Session Initialization Protocol}
 
 Session initialization protocol\cite{sip} je protokol pro ustavení sezení 
 pro výmìnu multimediálních dat. SIP je standartizován skupinou IETF a poslední
@@ -379,7 +383,7 @@ Content-Length: 142
 Vlastní audio nebo video data se vymìòují na spojení, s ustavenými parametry
 a cílovým IP adresami a porty, pomocí RTP.
 
-\subsection{Real-Time Transport Protocol}
+\subsection*{Real-Time Transport Protocol}
 
 Real-Time Transport Protocol\cite{rtp} je protokolem urèeným k pøenosu 
 ¾ivých dat, pro které je dùle¾ité minimální zpo¾dìní. Zpravidla jsou takovými
@@ -435,11 +439,11 @@ posílání kontrolního paketu pøeddefinován staticky. Pøi vìt¹ím poètu pøíjemcù
 je nutné prodlu¾ovat interval podle zji¹tìného poètu posluchaèù, aby kontrolní 
 tok nebyl ve výsledku vy¹¹í, ne¾ tok vlastních dat.
 
-\chapter{bc.}
+\chapter{XMPP}
 
 \section{Seznámení s pojmy}
 
-\subsection{Instant Messanging}
+\subsection*{Instant Messanging}
 Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. Je to elektronická obdoba
 po¹ty s mnoha jejími problémy a \uv{ne¹vary}. 
 Je sice nìkolikanásobnì rychlej¹í ne¾ jakýkoliv po¹»ák, který po¹tu 
@@ -467,7 +471,7 @@ do jejich sítì s jiným programem, ne¾ je jejich vlastním. Tím pádem jsou v¹echny
 druhé a jejich u¾ivatelé musí být v¹ichni na té stejné síti, pokud spolu chtìjí komunikovat. Tuto mezeru 
 vyplòuje právì protokol Jabber.
 
-\subsection{Jabber/XMPP}
+\subsection*{Jabber/XMPP}
 Prvním neznámým pojmem je \verb|Jabber/XMPP|. Slovo Jabber znamená v pøekladu brebentit nebo breptat. 
 Jako protokol
 vnikl v roce 1999 a za jeho vznikem a prvotní implementací stojí Jerremie Miller. Jednou z~jeho unikátních 
@@ -493,7 +497,7 @@ tak starý protokol nahrazuje a pokud se bavíme dnes o protokolu Jabber, máme na 
 následníka protokol XMPP. Detaily protokolu budou popsány v dal¹ích kapitolách.
 
 \section{XML}
-\subsection{Extensible Markup Language}
+\subsection*{Extensible Markup Language}
 \verb|XML| \cite{xmlWeb} je jednoduchý hierarchický znaèkovací jazyk. Je odvozen od 
 pùvodního slo¾itìj¹ího znaè\-ko\-va\-cí\-ho jazyka \verb|SGML| (\verb_ISO_~8879). Zámìrem 
 XML bylo vyvinou dostateènì
@@ -527,14 +531,14 @@ pro strojové zpracování informací. Jednak umo¾ní platformnì nezávislou výmìnu, a
 transformaci jednoho \verb|XML| souboru do jiného \verb|XML| souboru pomocí transformaèního jazyka \verb|XSLT|.
 Zajímavostí je, ¾e i definice tohoto jazyka jsou vlastnì dal¹ím XML dokumentem.
 
-\subsection{Práce s XML}
+\subsection*{Práce s XML}
 Aèkoliv u¾ jsem uvedl, ¾e znaè\-ko\-va\-cí jazyk \verb|XML| je jednoduchý jazyk, práce s ním má svoje zvlá¹tnosti.
 I pøesto, ¾e formát dat je ryze textový, pro ètení \verb|XML| souborù se zpravidla pou¾ívá knihoven. 
 Soubory mají na pohled jednoduchou strukturu, ale ke správnému ètení a zápisu se zpravidla pou¾ívá 
 specializovaných knihoven. Text mù¾e obsahovat znakové entity, které je pøed zobrazením u¾ivateli pøevést.
 Knihovny pro zpracování XML najdeme dnes snad pro kterýkoliv pou¾ívaný jazyk a platformu.
 
-\subsection{Streaming XML}
+\subsection*{Streaming XML}
 Pøi pou¾ití \verb_XML_ pøes sí» je problematické ètení do¹lých tagù, dokud je¹tì nejsou zcela kompletní.
 Jestli¾e Jabber/XMPP pou¾ívá pro pøenos ve¹kerých zpráv XML, musí být schopen dekódovat XML je¹tì pøed 
 uzavøením kompletního spojení. Jinak bychom mohli hodnì tì¾ko mluvit o rychlém zasílání zpráv, pokud by pøi 
@@ -547,7 +551,7 @@ od sítì nebo po chybì syntaxe XML.
 
 
 \section{Fungování XMPP/Jabber}
-\subsection{XMPP Core}
+\subsection*{XMPP Core}
 \verb_XMPP Core_ \cite{xmppCoreWeb} je základní mno¾inou protokolu XMPP. Tato èást definuje základní prvky 
 protokolu. I kdy¾ to není pøikázáno, obvyklá je architektura klient-server a spojení pomocí TCP protokolu.
 Jednou z nejvìt¹ích pøedností je {\em decentralizace}. Neexistuje ¾ádný centrální server sítì 
@@ -582,7 +586,7 @@ kódování base64.
 \end{center}
 \end{figure}
 
-\subsubsection{Ukázka pøipojení k serveru}
+\subsubsection*{Ukázka pøipojení k serveru}
 Pøipojující se posílá hlavièku bez \verb|id|.
 \begin{verbatim}
 <?xml version='1.0'?>
@@ -600,7 +604,7 @@ Server na ni odpoví tagem stream ji¾ s identifkátorem.
    id='r9o2mxpyygr5h7t3nzuwl873vrvytfgko5ma3c91'>
 \end{verbatim}
 
-\subsubsection{Zpìtné volání}
+\subsubsection*{Zpìtné volání}
 Zpìtným voláním, neboli {\em dialbackem}, se ovìøuje toto¾nost vzdáleného serveru. 
 Proto¾e sí» je decentralizovaná, neexistuje ¾ádná centrální autorita, která by posuzovala bezpeènost a identitu
 serveru, se kterým se navazuje spojení. Jediná mo¾nost je tak spolehnout se na prostøedky ovìøení, které 
@@ -656,7 +660,7 @@ obrázku \ref{pic_dialback}.
 \end{center}
 \end{figure}
 
-\subsection{Stanzy}
+\subsection*{Stanzy}
 Stanzy jsou jednotlivé datové tagy XML, které se mohou vyskytovat v hlavním tagu spojení \texttt{<stream>}.
 Èasto se také popisují slovem XML paket.
 Stanzami nejsou nìkteré xml zprávy pøi navazování spojení, jako parametry \verb|SASL| autorizace nebo ¾ádost
@@ -667,7 +671,7 @@ závislosti na jejím typu nemusí mít ani jedno z nich. Potom mají takové pakety z
 který s nimi zachází speciálnì. Server ale pøi doruèování tìchto stanz dal¹ím entitám v síti tyto informace
 automaticky doplní.
 
-\subsubsection{Zpráva}
+\subsubsection*{Zpráva}
 První stanzou je textová zpráva.
 Textové zprávy pro bì¾ného u¾ivatele cestují v síti XMPP v tagu \texttt{<message>}
 
@@ -689,7 +693,7 @@ Zprávy mohou být 4. typù
 Jednoduchá zpráva je obdobou emailu v síti XMPP. Tato zpráva mù¾e mít volitelnì i pøedmìt ve vnoøeném tagu
 \verb_<subject>_. Text zprávy je obsa¾en v tagu \verb_<body>_.
 
-\subsubsection{Informace o dostupnosti}
+\subsubsection*{Informace o dostupnosti}
 Dal¹í stanzou je \verb|presence|.
 Sí» nedovoluje nikomu zaslat stav o dostupnosti bez toho, aby to ten daný èlovìk schválil. Pokud chcete
 vìdìt, jestli je pøítel online, napøed vám to musí povolit. Pro zaslání informace o stavu dostupnosti
@@ -713,7 +717,7 @@ pøipojen.
 
 Anglicky se autorizaci dostupnosti v systému \verb|XMPP| øíká subscription. Pøesný pøeklad by znìl spí¹e "zápis", ale proto¾e jsou u¾ivatelé zvyklí napøíklad z ICQ na termín \uv{autorizace}, obvykle se pou¾ívá v èeských pøekladech termín \uv{autorizace}.
 
-\subsubsection{Obecné dotazy}
+\subsubsection*{Obecné dotazy}
 Pro v¹echny ostatní akce slou¾í obecné dotazy pomocí \verb_iq_ paketù. Iq packet slou¾í pro obecné dotazování
 typu dotaz a odpovìï, které mù¾e pøi komunikaci nastat. Slou¾í ke zji¹»ování schopností klientù, k získávání
 verze klienta, atd. 
@@ -750,7 +754,7 @@ Následuje pøíklad iq packetu.
 \end{verbatim}
 
 
-\subsection{XMPP IM}
+\subsection*{XMPP IM}
 \verb_XMPP IM_ \cite{xmppImWeb} definuje roz¹íøené vlastnosti specifické pro výmìnu zpráv a výmìnu 
 dostupnosti. Jedna z hlavních èástí je také popis práce se seznamem kontaktù -- {\em rosteru}.
 
@@ -776,7 +780,7 @@ Blokování komunikace mezi urèitými u¾ivateli není v XMPP IM definováno pøesnì. B
 zaji¹»ují klienti ve vlastní re¾ii, nebo ji blokuje server podle pravidel roz¹íøení {\em Privacy Lists}
 \cite{xepPrivacyWeb}
 
-\subsection{Jabber ID}
+\subsection*{Jabber ID}
 Jabber ID nebo zkrácenì \verb_JID_ je jednoznaèný identifikátor v síti XMPP. Identifikátor má 3 èásti.
 První je u¾ivatelská èást, která urèuje jednoznaènì u¾ivatele na jeho serveru. Druhá èást je plné doménové
 jméno serveru, která jej jednoznaènì urèuje v síti. 
@@ -787,12 +791,12 @@ daného u¾ivatele. Plné \verb_JID_ mù¾e vypadat napøíklad následovnì.
 pihhan@jabber.cz/Psi
 \end{verbatim}
 
-\subsection{XEP}
+\subsection*{XEP}
 {\em XMPP Extensions} \cite{xepWeb} jsou dal¹í zdokumentovaná roz¹íøení XMPP IM, která pøidávají dal¹í 
 funkcionalitu nad rámec základního protokolu \verb|XMPP|. Bez nich je \verb|XMPP IM| pouhý systém zasílání
 zpráv s velmi omezenými vlastnostmi. 
 
-\subsection{Service Discovery}
+\subsection*{Service Discovery}
 Jedním z dùle¾itých roz¹íøení je {\em XEP-0030}, Service Discovery. Toto roz¹íøení slou¾í ke zji¹tování 
 dostupných slu¾eb a jejich podporovaných vlastností. Tuto úlohu mìlo dnes ji¾ historické roz¹íøení 
 Jabber Browsing (XEP--0011) a Agent Information (XEP-0094). Obì tyto roz¹íøení nahrazuje plnì a mnohem lépe.
@@ -800,7 +804,7 @@ Proto¾e jabber má velké mno¾ství roz¹íøení, je èasto potøeba zjistit, která roz¹
 Toto roz¹íøení nejenom ¾e umí zobrazit dostupné slu¾by pomocí dotazu na polo¾ky -- namespace 'http://jabber.org/protocol/disco\#items', ale také jejich vlastnosti pomocí namespace 'http://jabber.org/protocol/disco\#info'.
 
 % FIXME: Pøedìlat, pøí¹ernì nepochopitelné
-\subsubsection{Discovery Info}
+\subsubsection*{Discovery Info}
 Ka¾dá entita má svoje vlastnosti a schopnosti. Entitou rozumíme buï slu¾bu, kontakt nebo vnoøený objekt 
 nìjaké slu¾by, napøíklad místnost v diskuzní skupinì. Entita je jedineènì urèená svým \verb|JID|, tedy u¾ivatelskou èástí, jménem serveru a zdrojem (resource), pøípadnì mù¾e být urèena i pomocí \verb|node|. 
 U¾ivatelská èást i zdroj mù¾e chybìt. Ka¾dá entita podporující
@@ -816,7 +820,7 @@ pøedtím, ne¾ ode¹leme ¾ádost o provedení. To se hodí napøíklad pøi vytváøení nab
 nemá smysl u¾ivateli nabízet tucet vlastností, pøi jejich¾ vykonání na nìj stejnì vyskoèí chyba 
 neimplementováno.
 
-\subsubsection{Discovery Items}
+\subsubsection*{Discovery Items}
 Ka¾dé entita mù¾e mít nìkolik dal¹ích entit. Jejich zji¹tìní provádí klient dotazem s namespace 'http://jabber.org/protocol/disco\#info'. Entita mù¾e vrátit nìkolik dal¹ích entit, které mohou být znovu prohlí¾eny.
 Lze tak vytvoøit stromovou strukturu s rùznými polo¾kami.
 
@@ -889,7 +893,81 @@ Zahájení spojení mù¾e vypadat napøíklad takto\cite{XmppJingle}:
 </iq>
 \end{verbatim}
 
+\chapter{Implementace}
 
+\section{Phonon}
+
+Makneto je aplikace implementovaná pro systém KDE verze 4. Je tedy ¾ádoucí 
+vyu¾ít multimediální framework KDE/Qt, je¾ se nazývá Phonon. Framework má
+usnadnit vývoj multimediálních aplikací pro KDE a zjednodu¹it pøidání
+multimediálních vlastností do existujících aplikací.
+
+Phonon má tøi základní pøístupy -- media objekty, cesty a výstupy. Media 
+objekty øídí pøehrávání èi záznam a poskytují data médií. K výstupùm se 
+pøipojují pomocí cest, mezi které lze vsunou je¹tì dal¹í objekty, napøíklad 
+efekty. 
+
+Phonon je implementován pøímo v Qt a vyu¾ívá systému slotù a signálù a zaèlenit
+jej do aplikace v tomto toolkitu je pomìrnì jednoduché. Jako dekodér multimédií 
+mù¾e vyu¾ít nìkterý z existujících frameworkù k tomu urèených, jako napøíklad
+Gstreamer nebo Helix. Phonon není platformnì závislý a mù¾e fungovat i na jiných
+platoformách ne¾ linux.
+
+Nevýhodou Phononu je, ¾e je pomìrnì nový a má implementováno pomìrnì málo tøíd.
+Neexistuje napøíklad vùbec návrh pro nahrávací zaøízení nebo objekt pro zdroj
+obrazu z webkamery. Obecnì vstup ze zaøízení není stále implementován, jsou 
+dostupné pouze vstupy ze souborù a sítì, nutné pro sestrojení pøehrávaèe. Proto
+nebudu spoléhat pøi implementaci vstupu pouze na Phonon a spí¹e budu 
+implementovat vstup pomocí Gstreameru, který vstup z webkamery ovládá pøímo.
+
+\section{Gstreamer}
+Podobnì jako Phonon je Gstreamer frameworkem pro práci s multimédii. Na rozdíl
+od Phononu u¾ má ale lecos za sebou a má celou øadu vstupních i výstupních 
+modulù, které lze øetìzit za sebe podle potøeby. Podobnì jako phonon má objekty
+a jejich propojení, i kdy¾ terminologie pou¾ívané u gstreameru se pomìrnì li¹í.
+
+Gstreamer øadí jednotlivé objekty za sebe jako filtry do øetìzu. Dle tvrzení 
+autorù \cite{gstreamer} si vypùjèuje to nejlep¹í z OGI media pipeline a Microsoft DirectShow.
+Systém je navr¾en tak, aby minimalizoval poèet kopírování mezi moduly, kde
+to není naprosto nutné. Zøetìzením objektù lze dosáhnout nejen pøehrávaèe
+médií, ale napøíklad i konvertoru do jiného formátu nebo streamování do sítì.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{gstreamer-overview}
+  \caption{Architektura gstreameru.}
+  \label{pic_gstreamer_overview}
+\end{center}
+\end{figure}
+
+Objekty frameworku lze rozdìlit do nìkolika skupin. Asi nejdùle¾itìj¹í jsou
+zdroje dat a jejich výstupy, zvané sink (doslovnì pøelo¾eno umyvadlo). Ka¾dý 
+objekt v øetìzci mù¾e mít jeden nebo více výstupù a jeden nebo více vstupù.
+Jednotlivé vstupy lze propojovat do sinkù jiných objektù, a jejich øetìzením
+tam vznikne posloupnost napøíklad z webkamery pøes sí» a¾ na výstup monitoru.
+Mohou být zøejmì objekty, které nemají ¾ádný výstup (objekt xvideosink pro
+zobrazování videa data u¾ zpìt do gstreameru neposílá) nebo ¾ádný vstup 
+(zdroj ze souboru sice data ète, ale 
+z~pohledu gstreameru je prvním vstupem v øadì).
+
+Velkou výhodou gstreameru je øada ji¾ existujících a ozkou¹ených pluginù. 
+Existuje také pøehrávaè, který u¾ je jako výchozí pøehrávaè v distribuci 
+Ubuntu - pøehrávaè totem, který pøehrává pouze pomocí gstreameru. Gstreamer
+má také existující implementaci zdroje z Video4linux, co¾ je rozhraní pro vstup
+videa na linuxových systémech. Je tedy mo¾né pøímo pomocí gstreameru zobrazit 
+obraz z kamery na obrazovku nebo poslat do sítì. Existují dokonce 2 implementace
+RTP protokolu pro gstreamer. Jedna star¹í implementace vyu¾ívající knihovnu 
+jRTP, druhá novìj¹í, implementovaná s vyu¾itím knihovny Farsight2. K první verzi
+dokonce existuje funkèní rtpjitterbuffer, který øe¹í i poøadí pøíchozích paketù
+v nesprávném poøadí. 
+
+Pøesto pøedpokládám, ¾e RTP budu dìlat implementovat vlastní, takté¾ za pomoci
+knihovny farshight2 v kombinaci s knihovnou nice, která implementuje ICE 
+protokol, který by mìl pomoci pøekonat v¹echny bì¾né druhy firewallu a NATu.
+Mým cílem je, aby aplikace mohla fungovat v ka¾dé bì¾nì nastavené síti, tedy
+musí zvládnout fungování i v pøípadì, ¾e jsou oba u¾ivatelé schovaní za 
+pøekladem adres a ani jeden z nich nemá veøejnou IP adresu, se kterou by ¹lo
+navázat pøímo spojení.
 
 \chapter{Závìr}
 
