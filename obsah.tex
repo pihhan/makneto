@@ -493,60 +493,6 @@ XMPP je kompatibilní protokol s pùvodními specifikacemi Jabber protokolu, ale za
 tak starý protokol nahrazuje a pokud se bavíme dnes o protokolu Jabber, máme na mysli spí¹e jeho
 následníka protokol XMPP. Detaily protokolu budou popsány v dal¹ích kapitolách.
 
-\section{XML}
-\subsection*{Extensible Markup Language}
-\verb|XML| \cite{xmlWeb} je jednoduchý hierarchický znaèkovací jazyk. Je odvozen od 
-pùvodního slo¾itìj¹ího znaè\-ko\-va\-cí\-ho jazyka \verb|SGML| (\verb_ISO_~8879). Zámìrem 
-XML bylo vyvinou dostateènì
-jednoduchý jazyk pro pøenos strukturovaných dat. Data jsou v textovém formátu a nejsou tedy ovlivnìna 
-nekompatibilitou mezi rùznými platformami. Jazyk byl zamý¹len k výmìnì velkých objemù dat mezi archivy textù,
-na¹el si ale cestu do v¹ech odvìtví poèítaèové techniky jako nesmírnì univerzální formát pro výmìnu 
-hierarchických dat. 
-
-Následuje malá ukázka XML.
-
-\begin{verbatim}
-<?xml version='1.0'?>
-<hlavni-tag>
-  <prvni-potomek/>
-  <druhy-potomek/>
-  <treti-potomek ma='atribut'>
-  	<potomstvo>Pøípadný dal¹í obsah není obsa¾en</potomstvo>
-  </treti-potomek><!-- komentar -->
-</hlavni-tag>
-\end{verbatim}
-
-Elementy jazyka nazýváme tagy. Tag je hierarchický jednotka, která mù¾e mít svoje atributy, tedy parametry
-s hodnotou uzavøenou v jednoduchých uvozovkách. Mù¾e mít také potomky--tagy, nebo vlastní hodnotu uzavøenou
-mezi poèáteèním a koncovým tagem. Koncový tag je uvozen lomítken /. 
-
-Jazyk XML není jenom jednoduchým jazykem pro pøenos prosté informace. Existuje napøíklad roz¹íøení \verb|XLink|,
-neboli \emph{XML Linking Language}, které definuje propojování a odkazování na jiné XML dokumenty nebo 
-jejich èásti. Dále napøíklad \verb|XPath| odkazuje na èásti dokumentu samého, tedy do jiného místa ve 
-stejném souboru. Pro \verb|XML| existuje velké mno¾ství mo¾ností a pou¾ití, ale hlavní význam má jeho existence
-pro strojové zpracování informací. Jednak umo¾ní platformnì nezávislou výmìnu, ale mimo jiné také umo¾òuje
-transformaci jednoho \verb|XML| souboru do jiného \verb|XML| souboru pomocí transformaèního jazyka \verb|XSLT|.
-Zajímavostí je, ¾e i definice tohoto jazyka jsou vlastnì dal¹ím XML dokumentem.
-
-\subsection*{Práce s XML}
-Aèkoliv u¾ jsem uvedl, ¾e znaè\-ko\-va\-cí jazyk \verb|XML| je jednoduchý jazyk, práce s ním má svoje zvlá¹tnosti.
-I pøesto, ¾e formát dat je ryze textový, pro ètení \verb|XML| souborù se zpravidla pou¾ívá knihoven. 
-Soubory mají na pohled jednoduchou strukturu, ale ke správnému ètení a zápisu se zpravidla pou¾ívá 
-specializovaných knihoven. Text mù¾e obsahovat znakové entity, které je pøed zobrazením u¾ivateli pøevést.
-Knihovny pro zpracování XML najdeme dnes snad pro kterýkoliv pou¾ívaný jazyk a platformu.
-
-\subsection*{Streaming XML}
-Pøi pou¾ití \verb_XML_ pøes sí» je problematické ètení do¹lých tagù, dokud je¹tì nejsou zcela kompletní.
-Jestli¾e Jabber/XMPP pou¾ívá pro pøenos ve¹kerých zpráv XML, musí být schopen dekódovat XML je¹tì pøed 
-uzavøením kompletního spojení. Jinak bychom mohli hodnì tì¾ko mluvit o rychlém zasílání zpráv, pokud by pøi 
-ka¾dé zprávì bylo potøeba navázat a zase ukonèit spojení. Navíc ka¾dé navazování a ru¹ení spojení je zbyteèná 
-zátì¾ sítì i systému v pøípadì, ¾e zprávy jsou odesílány èasto. U systému pro rozhovor lidí se nìco takového 
-oèekává poka¾dé, kdy¾ spolu zaènou komunikovat. Je jisté, ¾e zpracovat pøijímaný text pomocí modelu \verb_DOM_
-není mo¾né, proto¾e za ¾ádných okolností nebude k dispozici kompletní \verb_XML_ strom, který by bylo
-mo¾né naèíst. Po pøipojení XMPP server otevírá tag \texttt{<stream>}, který se uzavírá a¾ po ohlá¹ení 
-od sítì nebo po chybì syntaxe XML. 
-
-
 \section{Fungování XMPP/Jabber}
 \subsection*{XMPP Core}
 \verb_XMPP Core_ \cite{xmppCoreWeb} je základní mno¾inou protokolu XMPP. Tato èást definuje základní prvky 
