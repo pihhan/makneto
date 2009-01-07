@@ -315,7 +315,12 @@ Na rozdíl od Skype ke slu¾bám Live existují i alternativní klienti, obvykle
 open source aplikace. Sí» Live Messengeru je pøíli¹ úzce navazaná na Windows a 
 v GNU/Linuxu nefunguje. Existuje ale celá øada programù, která se umí do sítì
 MSN pøipojit. Vìt¹ina ale neumí ¾ádné multimediální funkce, jako pøenos videa
-z webkamery ani pøenos hlasu. 
+z webkamery ani pøenos hlasu. Jediná neoficiální implementace zvládající i 
+webkameru je program aMSN napsaná v Tcl/Tk.
+
+Sí» .NET Messenger pou¾ívá internì protokol textovì orientovaný protokol podobný
+HTTP pro posílání zpráv a stavù. Pro dojednání sezení s podporou multimédií
+pou¾ívá pøizpùsobenou variantu protokolu SIP pøes TCP spojení se serverem.
 
 \subsection{Inkscape}
 
@@ -335,6 +340,95 @@ kterých nále¾í. Plugin Inkscapu ani neseskupuje kontakty do skupin, pouze
 pøidává kontakty do skupiny, pokud pou¾íváme stále stejnou skupinu. Ve výsledku
 tak mù¾eme mít jednu skupinu v seznamu tøeba osmkrát nebo více. Zkrátka plugin
 tam je, ale pøíli¹ pou¾itelný (alespoò zatím) není.
+
+\subsection{Session Initialization Protocol}
+
+Session initialization protocol\citation{sip} je protokol pro ustavení sezení 
+pro výmìnu multimediálních dat. SIP je standartizován skupinou IETF a poslední
+vydanou verzí je RFC~3261. Protokol je pou¾íván pøedev¹ím pro internetouvou 
+telefonii (VoIP) s voláním do standartní telefonní sítì pevných linek. 
+Úèelem tohoto protokolu není pøímo pøená¹et jakákoliv vlastní multimediální 
+data v jakémkoliv kódování, ale pouze dohodnout parametry pøenosového kanálu
+pro vlastní multimediální pøenos. Pøesnìji zaji¹tuje tyto úlohy:
+
+\begin{itemize}
+\item{polohu -- rozhodnutí, který systém bude pou¾it pro komunikaci}
+\item{dostupnost -- rozhodnutí, za je volaná strana ochotná se podílet na komunikaci}
+\item{schopnosti -- výbìr média a jeho parametrù}
+\item{sestavení -- zvonìní a ustavení spojení na stranì volajícího i volaného}
+\item{správa -- zahrnuje pøedání, ukonèení sezení, zmìnu parametrù sezení}
+\end{itemize}
+
+Standartním portem pøiøazeným skupinou IANA je port 5060, zpravidla se pou¾ívá 
+pouze UDP protokol. Protokol pøená¹í data textovì a má podobnou syntaxi, jako
+má HTTP. Následuje pøíklad paketu:
+
+\begin{verbatim}
+INVITE sip:bob@biloxi.com SIP/2.0
+Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: Bob <sip:bob@biloxi.com>
+From: Alice <sip:alice@atlanta.com>;tag=1928301774
+Call-ID: a84b4c76e66710@pc33.atlanta.com
+CSeq: 314159 INVITE
+Contact: <sip:alice@pc33.atlanta.com>
+Content-Type: application/sdp
+Content-Length: 142
+\end{verbatim}
+
+Vlastní audio nebo video data se vymìòují na spojení, s ustavenými parametry
+a cílovým IP adresami a porty, pomocí RTP.
+
+\subsection{Real-Time Transport Protocol}
+
+Real-Time Transport Protocol\citation{rtp} je protokolem urèeným k pøenosu 
+¾ivých dat, pro které je dùle¾ité minimální zpo¾dìní. Zpravidla jsou takovými
+daty hlas nebo obecnìji zvuk nebo obrazová informace ve formì videa. RTP 
+nezaji¹»uje ¾ádným zpùsobem minimální zpo¾dìní, bezchybovost nebo pøenos dat 
+ve správném poøadí. To je úkolem ni¾¹ích a vy¹¹ích vrstev sí»ových protokolù.
+RTP mù¾e pøená¹et i v¹esmìrovì pomocí multicastu, pokud to sí» dovoluje. 
+Protokol má dvì èásti:
+
+První je real-time transport protocol (RTP), který zapouzdøuje jeden kanál 
+multimediálních dat.
+
+Druhým je RTP control protocol (RTCP), který sleduje kvalitu slu¾by a zaji¹»uje
+základním zpùsobem informace o poètu úèastníkù vysílání. Protokol se mù¾e 
+pou¾ívat nejen pro volání jednoho èlovìka s jiným, ale mù¾e takté¾ pøená¹et
+data i celé konference a¾ o stovkách úèastníkù.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=8cm,keepaspectratio]{rtp}
+  \caption{Hlavièka Real-time transport protokolu}
+  \label{pic_rtp_head}
+\end{center}
+\end{figure}
+
+Hlavièka RTP protokolu \ref{pic_rtp_head} obsahuje dvoubitové oznaèení èísla 
+verze, aktuální je 2. Následuje pøíznak vyplnìní P, který znaèí, ¾e paket 
+obsahuje výplò, je¾ není souèástí pøená¹ených dat. Pøíznak roz¹íøení informuje
+o pøítomnosti právì jedné hlavièky roz¹íøení za fixní hlavièkou. Následuje 
+ètyøbitové èíslo udávající poèet CSRC identifikátorù, které následují za fixní 
+hlavièkou. Dùle¾itou polo¾kou je sedmibitový typ pøená¹ených dat - payload type (PT), jeho¾ hodnotu urèuje RFC 3551. Následuje sestnáctibitový èítaè, který 
+se pou¾ije pro detekci zahozených datagramù. Následuje 32 bitový údaj o èase
+získání vzorku, podle kterého se pozdìji mohou synchronizovat pøená¹ená data 
+s~jinými proudy dat. SSRC je náhodnì zvolený identifikátor oznaèující 
+skuteèného pùvodce dat. CSRC je seznam podobných identifikátorù, které oznaèují
+èísla mixovacích zdrojù, které mohou napøíklad z pùvodního zdroje pøevádìt
+záznam na jiný formát. Roz¹iøující hlavièka se skládá z ¹estnáctibitového
+èísla definovaného profilem, následující délkou takté¾ o délce ¹estnácti bitù
+a následující vlastní hlavièce roz¹íøení.
+
+Hlavièka RTCP se li¹í podle typu zprávy, je¾ je posílaná. Základní typy jsou 
+Sender report (SR), kterou posílají pouze aktivní vysílající. Receiver report
+(RR) vysílají v¹ichni pøíjemci, kteøí zároveò nejsou aktivnì vysílající.
+Source description items (SDES) párují jednotlivé proudy pomocí CNAME ke
+kontrolnímu kanálu. Zprávy BYE oznaèují ukonèení úèasti na pøíjmu. Posledním
+typem mohou být aplikaènì specifické (APP) zprávy. Proto¾e øídící kanál datovì
+nenároèný, mù¾e být nìkolik typù zpráv v jediném paketu posílaném do sítì.
+Kontrolní kanál je tøeba ¹kálovat podle poètu pøíjemcù, objem komunikace 
+kontrolního kanálu by nemìl pøesáhnout 5 setin objemu datového kanálu.
 
 \chapter{bc.}
 
@@ -392,17 +486,6 @@ názvem \verb|XMPP| byl protokol uznán jako doporuèení {\tt IETF} pod oznaèením
 XMPP je kompatibilní protokol s pùvodními specifikacemi Jabber protokolu, ale zavádí nové povinnosti. V podstatì
 tak starý protokol nahrazuje a pokud se bavíme dnes o protokolu Jabber, máme na mysli spí¹e jeho
 následníka protokol XMPP. Detaily protokolu budou popsány v dal¹ích kapitolách.
-
-\subsection{IRC}
-Protokol \verb|IRC| \cite{rfcIrc} je protokol urèený pøedev¹ím k diskuzím více lidí ve virtuálních místnostech. Pøesto¾e
-nemá mnoho spoleèného se systémem \verb_XMPP_, je jedním z mála otevøených standardizovaných protokolù, 
-které se hojnì 
-pou¾ívají. Na tomto protokolu jsou pìknì vidìt ne¹vary zpùsobené vìkem tohoto protokolu. Je sice otevøený,
-veøejnì zdokumentovaný a poèet programù jej podporujících lze na rukou tì¾ko spoèítat, ale je zalo¾ený
-na posílání textových zpráv v textovém tvaru. Jedna zpráva zaèíná pøíkazem, jejich parametry a konèí novým 
-øádkem. Z toho plyne omezení protokolu --- zprávu obsahující odøádkovaný text se na jediný pokus podaøit 
-nikdy nepodaøí. Navíc má problémy s urèováním kódové stránky, tak¾e lidé na rùzných platformách vidí 
-text s chybnými znaky místo diakritiky.
 
 \section{XML}
 \subsection{Extensible Markup Language}
@@ -583,28 +666,6 @@ obrázku \ref{pic_dialback}.
   \label{pic_dialback}
 \end{center}
 \end{figure}
-
-\subsubsection{XML RPC}
-XMPP Core je zámìrnì oprostìn od konkrétních mechanismù fungování klienta pro zasílání zpráv. Standard je 
-pøipraven i pro pou¾ití v jiných oblastech, kde se nebudou zasílat zprávy stejným zpùsobem, jako v klasické 
-síti Jabber. Tím, ¾e protokol je zalo¾en na XML, nabízí se mnoho dal¹ích mo¾ností, jak vyu¾ít spolehlivou 
-základnu pro rychlé doruèení èástí XML dokumentù. Infrastruktura umo¾òuje plnou decentralizaci, pøitom ale 
-nabízí také vysokou bezpeènost. Jednou z vítaných vlastností je pou¾ití XML--RPC pøes sí» XMPP \cite{xepXmlRpc}. 
-
-RPC chápeme jako {\em Remote Procedure Call}, tedy vzdálené volání procedur. Volání funguje tak, ¾e vzdálené 
-slu¾bì nìkde na internetu po¹lu parametry a název operace, a ona mi vrátí výsledné hodnoty zpìt. V její 
-specifikaci \cite{xmlrpcWeb} se explicitnì poèítá s nasazením této technologie pomocí protokolu HTTP.
-Malým problémem ale je, ¾e funkce musí vrátit nìjaký výsledek v urèeném èase. HTTP protokol umí jedinì zadat
-dotaz a dostat na ni odpovìï. Pøi èekání na ni nemù¾e na stejném spojení dostat odpovìï jinou. HTTP servery
-mají omezenou dobu, po kterou podr¾í spojení s klientem. Pokud by slu¾ba pøesáhla tuto dobu, webový server
-zru¹í spojení a celý dotaz je tak nenávratnì ztracen. U \verb_HTTP_ protokolu není jiná mo¾nost, ne¾ po¾ádat
-si znovu se stejnými parametry o stejný dotaz a doufat, ¾e tentokrát si slu¾ba ulo¾ila rozpracované dílo
-nebo jej stihne vypracovat rychleji.
-
-U \verb_XMPP_ naopak ¾ádné takové omezení není. Na jediném spojení si mù¾e slu¾ba po¾ádat o nìkolik po¾adavkù
-naráz rùzným entitám, a pøitom obsluhovat pouze jedno jediné spojení. Slu¾ba si po¹le ¾ádost, a dokud zùstane
-pøipojena k XMPP serveru, mù¾e èekat, jak dlouho pova¾uje za potøebné. Server sám ji neodpojí. Tazatel se mù¾e 
-v klidu vìnovat obsluze jiných výsledkù, dokud nedorazí odpovìï. 
 
 \subsection{Stanzy}
 Stanzy jsou jednotlivé datové tagy XML, které se mohou vyskytovat v hlavním tagu spojení \texttt{<stream>}.
