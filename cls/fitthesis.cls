@@ -88,7 +88,7 @@ Práce je chránìna autorským zákonem a její u¾ití bez udìlení oprávnìní autorem j
  \ifEqString{#1}{DP}{Diplomová práce}{\@projecttype@CS}%
  \ifEqString{#1}{DP}{Master's thesis}{\@projecttype@EN}%
  \ifEqString{#1}{SP}{Semestrální práce}{\@projecttype@CS}%
- \ifEqString{#1}{SP}{Master's thesis}{\@projecttype@EN}%
+ \ifEqString{#1}{SP}{Semester Paper}{\@projecttype@EN}%
  \ifnasel
  \else
    \typeout{Spatny typ projektu! Moznosti: BP, DP, SP}\set@project{BP}
