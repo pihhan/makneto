@@ -69,7 +69,7 @@ nejen psaní, ale i jednoduchého grafického vyjádøení v reálném èase mezi
 lidmi na dálku, elektronickou formou. Ke komunikaci po internetu je vyu¾it 
 XMPP protokol a jeho roz¹íøení pro pokroèilej¹í vìci. 
 
-\section{Grafický kabátek}
+\section{Grafické u¾ivatelské rozhraní}
 
 Aplikace je napsána pouze pro operaèní systém Linux, resp. systémy typu POSIX.
 Grafický kabátek je napsán v pomìrnì novém toolkitu Qt verze 4 a KDE také 
@@ -102,7 +102,8 @@ správu projektù Qt je nástroj Qmake dodávaný spolu s knihovnou. V projektu
 Makneto se v¹ak pou¾ívá systém CMake, který je pomìrnì bì¾ný v KDE 4.
 
 Desktopové prostøedí KDE je jedním ze dvou nejroz¹íøenìj¹ích grafických 
-prostøedí na systémech GNU/Linux. Projekt KDE zalo¾il v roce 1996 Matthias 
+prostøedí na systémech GNU/Linux. Projekt KDE\cite{kdehistory} zalo¾il 
+v~roce 1996 Matthias 
 Ettricht. Jeho poslední øada 4 byla vydána 11. ledna 2008, zhruba v dobì psaní
 této aplikace Jaroslavem Øezníkem. KDE~4 pøiná¹í pomìrnì revoluèní zmìny 
 v ovládání a práce s desktopem. Pøiná¹í kromì nového grafického tématu nového
@@ -114,7 +115,9 @@ zapadne a pou¾ívá i systémové téma KDE.
 
 Aplikace je jednookenní aplikace s hlavní kreslící plochou a boèní li¹tou.
 V boèní li¹tì najdeme seznam kontaktù (v prostøedí Jabberu s ustáleným 
-jménem roster) pøepínatelný s nastavováním stavù. Aplikace má korektnì 
+jménem roster) pøepínatelný s nastavováním stavù. Ukázka aplikace se
+zahájením sezení je vidìt na obrázku \ref{pic_makneto_workplace}. 
+Aplikace má korektnì 
 naimplementován roster, se synchronizací kontaktù na server, ètením pøezdívek 
 a zobrazování stavu u¾ivatele. Funguje také správnì sdru¾ování kontaktù do 
 skupin. I kdy¾ aplikace nenabízí nìjak velké mno¾ství funkcí, má pomìrnì
@@ -122,6 +125,15 @@ intuituvní ovládání s celkem vydaøeným vzhledem a nechybí ani vestavìná
 nápovìda. Pro lep¹í pøehlednost obsahuje aplikace systém zálo¾ek, pomocí nich¾
 lze pøepínat mezi jednotlivými zobrazeními boèních panelù. Program umí i re¾im práce pøes celou obrazovku, co¾ se pro demostraèní
 úèely mù¾e celkem hodit. 
+
+Makneto má implementováno spojení do sítì XMPP pomocí knihovny Iris\cite{iris}.
+Iris je knihovna psaná v Qt, proto je propojení s nativními aplikacemi v Qt
+jednoduché a bezproblémové. Knihovna Iris vznikla oddìlením rutin obsluhujících
+pøipojení k XMPP serveru z open-source klienta Psi\cite{psi}. I kdy¾ se Iris
+hodí pro psaní Qt aplikací pøipojujících se k XMPP serveru, jejím pomìrnì
+velkým nedostatkem je velmi øídce komentovaný kód a neexistence fungujících
+návodù na její pou¾ívání. Jako jedina referenèní pøíruèka tak obvykle slou¾í
+zdrojový kód klienta Psi.
 
 Jedna instance aplikace mù¾e mít zároveò nìkolik sezení se sdílenou plochou
 mezi rùznými u¾ivateli. Jejich pøepínání se provádí pomocí zálo¾ek, které tak
@@ -142,17 +154,19 @@ radìji samostatná okna mìl.
 
 Zahajování sezení se provádí pøes seznam kontaktù v boèním panelu. Program
 pøedem nekontroluje, zda cílový kontakt umí stejný protokol kreslící plochy,
-jako aplikace Makneto. Výhoda je, ¾e si mù¾ete vyzkou¹et ovládání aplikace
-naneèisto a
-seznámit se s aplikací je¹tì pøed tím, ne¾ zaèneme ukazovat nìjakému èlovìku,
-¾e vám práce s aplikací je¹tì moc nejde.
+jako aplikace Makneto. 
+Na aplikace je poznat, ¾e není star¹í jednoho roku a pracoval na ní jediný 
+vývojáø. Sestavení spojení lze provést na jakýkoliv kontakt, vèetnì kontaktù
+odpojených. Navíc aplikace nehlásí u¾ivateli, pokud protìj¹í aplikace neumí 
+stejný protokol a u¾ivatel tak zùstane v pøesvìdèení, ¾e protìj¹í strana
+vidí to, co on kreslí.
 
-Nevýhoda je, ¾e u¾ivatel sám musí ruènì vybrat správný kontakt pro èlovìka, 
-se kterým chce sdílenou plochu otevøít, pokud má fungovat. To pova¾uji celkem 
-za nevýhodu, zvlá¹» pro u¾ivatele s úètem, kde má poèet kontaktù a¾ trojciferné
-èíslo nebo více. Program pomáhá alespoò èásteènì mo¾ností vypnutí zobrazení 
-offline kontaktù a nabídnutí jenom právì dostupnách lidí, nicménì zobrazení
-ikony nebo vyznaèení jinou barvou pro kontakty by se celkem hodilo.
+Nefunkèní kontrola úspì¹ného nebo neúspì¹ného zahájení sezení citelnì chybí,
+u¾ivatelé musí pou¾ít externí prostøedek, nebo alespoò rozhovor integrovaný 
+do Makneta ke kontrole, za jim sdílená tabule ji¾ funguje. Tato chyba mù¾e 
+umo¾nit vyzkou¹ení aplikace i u¾ivateli, který nemá v kontaktech ¾ádný 
+kontakt, který by podporoval protokol sdílené plochy. Pøesto se jedná zjevì 
+o~chybu programu a ne zámìr tvùrce.
 
 Program pou¾ívá pro kreslení vektorový model dat a v¹echna data jsou kreslená
 pomocí vektorovì definovaných èar. V nabídce je kreslení tu¾kou volnou rukou,
@@ -168,7 +182,9 @@ Objekty lze samozøejmì z plochy vyjmout.
 \section{Komunikaèní programy}
 
 \subsection*{Skype}
-V na¹ich krajinách asi nejbì¾nìji pou¾ívaným programem je Skype. 
+V èeské republice je jedním z nejbì¾nìji pou¾ívaných programù pro
+hlasovou komunikaci Skype. Program lze stáhnou zdarma z WWW stránek 
+na adrese {\tt http://www.skype.com/}.
 
 Skype byl zalo¾en v roce 2003 pány Niklas Zennström a Janus Friis.
 Není sice v ¾ádném pøípadì prvním softwarem, které by umo¾òoval hlasovou
@@ -187,10 +203,10 @@ pøípadnì video data, putují pøímo mezi poèítaèi bez serveru, který by je
 opakoval, ale stejnì posílá zprávy textové svým u¾ivatelùm, pøená¹í soubory
 a pøihla¹uje se k síti. Je zøejmé, ¾e neexistence jakékoliv formy serveru
 by neumo¾òovala fungující spojení mezi rùznými poèítaèi, které o sobì je¹tì 
-neví. A právì tohle je unikátní vlastnost Skype. 
+neví. A právì øe¹ení tohoto problému je unikátní vlastností Skype. 
 
-Sí» programu skype se skládá z poèítaèù jednotlivých u¾ivatelù - bì¾ný bod
-a speciální bod - supernode \cite{skypeprotocol}. Supernode je významný bod,
+Sí» programu skype\cite{skypeprotocol} se skládá z poèítaèù jednotlivých u¾ivatelù - bì¾ný bod
+a speciální bod - supernode. Supernode je významný bod,
 který se mù¾e stát ze keréhokoliv poèítaèe pøipojeného do sítì skype. Tímto 
 bodem se stanou poèítaèe s dostateèným výkonem a dostateènì kvalitním pøipojením
 do internetu. Takové body se spojí s ostatními supernody, jejich¾ adresy jim 
@@ -230,10 +246,11 @@ zajímavých vlastností je i existence oficiálního programu pro jinou platformu,
 ne¾ jenom Microsoft Windows. Z bì¾nì dostupných a známých programù je jediným 
 komerèním programem, který má oficiální verzi programu i pro GNU/Linux.
 
-Na rozdíl od ostatních sítí ale nemá ¾ádnou rozumnì funkèní alternativní 
+Na rozdíl od ostatních sítí, ale nemá ¾ádnou rozumnì funkèní alternativní 
 implementaci -- neoriginálního klienta. Nejen, ¾e program nemá vìøejnì dostupný
 popis protokolu, ale jeho autoøi velmi aktivnì brání pochopení a zji¹tìní 
-fungování protokolu rùznými technikami. Skype sice podporuje i ¹ifrování, 
+fungování protokolu rùznými 
+technikami\cite{skypeprotocol}. Skype sice podporuje i ¹ifrování, 
 nicménì to není ¹ifrování na jaké jsme zvyklí napøíklad u zabezpeèeného 
 pøístupu k bance -- chybí certifikáty, které by ovìøily pravost protìj¹ku, není
 znám ani algoritmus ¹ifrování, ani velikost klíèe. Toto ¹ifrování má mimo jiné
@@ -258,7 +275,7 @@ podpora sdílené tabule (podobné té, kterou implementuje Makneto). Dal¹í
 zvlá¹tností je mo¾nost vzdálené pomoci napojené na slu¾bu pøímo ve Windows.
 Slu¾ba taky nabízela jednodu¹e fungující pøenos souborù.
 
-Problémem slu¾by MSN byla ale nefunkènost vìt¹iny slu¾eb pøi absenci pøímého
+Problémem slu¾by MSN byla nefunkènost vìt¹iny slu¾eb pøi absenci pøímého
 propojení mezi poèítaèi. To obvykle znamená, ¾e u¾ivatelé pøipojení smìrovaèem
 pou¾ívajícím pøeklad adres (NAT) nemohli tìchto vymo¾eností s kontakty na
 internetu, ale pouze v lokální síti. Vìt¹ina pokroèilej¹ích slu¾eb
@@ -272,15 +289,15 @@ pøejmenovaná pozdìji, nese oznaèení Windows Live Messenger. Souèasná verze
 obsahuje novinky jako podporu vestavìných her, mo¾nost zmìny vzhledu, ale jinak
 nenabízí nìjaké zásadní rozdíly proti pøedchozím verzím. Proti pøedchozím 
 verzím se zmìnila sdílená tabule, funguje spí¹ jako výmìna obrázku, do kterého
-oba u¾ivatelé støídavì dokreslují dal¹í vìci. Sice nejde o øe¹ení pøímo 
-interaktivní, ale funguje i na poèítaèích pøipojených za NAT. I Windows Live 
+oba u¾ivatelé støídavì dokreslují dal¹í vìci. Sice nejde o~øe¹ení pøímo 
+interaktivní, ale funguje i~na poèítaèích pøipojených za NAT. I Windows Live 
 Messenger podporuje sdílení aplikací a vzálenou pomoc, ale ta nefunguje
 za firewallem nebo natem, jako u pøedchozích verzích.
 
 Ani Windows Messenger nabízí na rozdíl od Skype zvolit si velikost snímku 
 pøená¹eného videa a nastavovat tak kvalitu a tedy i zátì¾. 
 
-Na rozdíl od Skype ke slu¾bám Live existují i alternativní klienti, obvykle
+Na rozdíl od Skype, ke slu¾bám Live existují i alternativní klienti, obvykle
 open source aplikace. Sí» Live Messengeru je pøíli¹ úzce navazaná na Windows a 
 v GNU/Linuxu nefunguje. Existuje ale celá øada programù, která se umí do sítì
 MSN pøipojit. Vìt¹ina ale neumí ¾ádné multimediální funkce, jako pøenos videa
@@ -303,7 +320,7 @@ Coccinelou zase jenom u¾ivatelùm stejného programu.
 
 \subsection*{Google Talk}
 
-Google Talk je slu¾ba provozovaná firmou Google, je integrovaná spolu s úètem
+Google Talk\cite{gtalk} je slu¾ba provozovaná firmou Google, je integrovaná spolu s úètem
 na Gmail.com. Gmail nabízí ¹ikovné propojení emailu a IM, internì pou¾ívá 
 XMPP protokol, ale neumí v¹echna bì¾nì pou¾ívaná roz¹íøení, jako napøíklad
 vizitky. Google ve svém programu má podporu pøenosu hlasu, pomìrnì nový je 
@@ -315,7 +332,7 @@ snad v¹ichni, kdo zkou¹eli knihovnu libjingle pou¾ít, nepochodili. Knihovna jde
 pøelo¾it pouze s hodnì starou verzí ortp, kterou ov¹em na bì¾né distribuci 
 nenajdeme. Napøíklad vývojová verze Psi obsahuje verzi pro sestavení s libjigle,
 nicménì ani ta tefunguje a s podporou libjingle je hodnì nestabilní. Navíc tato
-knihovna pochází z doby pøed vydáním XEP-166\cite{xmppJingle} a není
+knihovna pochází z doby pøed vydáním XEP-166 (Jingle)\cite{xmppJingle} a není
 asi se specifikací plnì kompatibilní.
 
 \subsection*{Inkscape}
@@ -411,7 +428,8 @@ verze, aktuální je 2. Následuje pøíznak vyplnìní P, který znaèí, ¾e paket
 obsahuje výplò, je¾ není souèástí pøená¹ených dat. Pøíznak roz¹íøení informuje
 o pøítomnosti právì jedné hlavièky roz¹íøení za fixní hlavièkou. Následuje 
 ètyøbitové èíslo udávající poèet CSRC identifikátorù, které následují za fixní 
-hlavièkou. Dùle¾itou polo¾kou je sedmibitový typ pøená¹ených dat - payload type (PT), jeho¾ hodnotu urèuje RFC 3551. Následuje sestnáctibitový èítaè, který 
+hlavièkou. Dùle¾itou polo¾kou je sedmibitový typ pøená¹ených dat - payload type (PT), jeho¾ hodnotu urèuje RFC 3551\cite{rctp_profile}. Následuje 
+¹estnáctibitový èítaè, který 
 se pou¾ije pro detekci zahozených datagramù. Následuje 32 bitový údaj o èase
 získání vzorku, podle kterého se pozdìji mohou synchronizovat pøená¹ená data 
 s~jinými proudy dat. SSRC je náhodnì zvolený identifikátor oznaèující 
@@ -438,9 +456,6 @@ tok nebyl ve výsledku vy¹¹í, ne¾ tok vlastních dat.
 
 \chapter{XMPP}
 
-\section{Seznámení s pojmy}
-
-\subsection*{Instant Messanging}
 Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. Je to elektronická obdoba
 po¹ty s mnoha jejími problémy a \uv{ne¹vary}. 
 Je sice nìkolikanásobnì rychlej¹í ne¾ jakýkoliv po¹»ák, který po¹tu 
@@ -468,7 +483,7 @@ do jejich sítì s jiným programem, ne¾ je jejich vlastním. Tím pádem jsou v¹echny
 druhé a jejich u¾ivatelé musí být v¹ichni na té stejné síti, pokud spolu chtìjí komunikovat. Tuto mezeru 
 vyplòuje právì protokol Jabber.
 
-\subsection*{Jabber/XMPP}
+\subsection*{Co je Jabber/XMPP}
 Prvním neznámým pojmem je \verb|Jabber/XMPP|. Slovo Jabber znamená v pøekladu brebentit nebo breptat. 
 Jako protokol
 vnikl v roce 1999 a za jeho vznikem a prvotní implementací stojí Jerremie Miller. Jednou z~jeho unikátních 
@@ -493,7 +508,7 @@ XMPP je kompatibilní protokol s pùvodními specifikacemi Jabber protokolu, ale za
 tak starý protokol nahrazuje a pokud se bavíme dnes o protokolu Jabber, máme na mysli spí¹e jeho
 následníka protokol XMPP. Detaily protokolu budou popsány v dal¹ích kapitolách.
 
-\section{Fungování XMPP/Jabber}
+\section{Jak funguje XMPP/Jabber}
 \subsection*{XMPP Core}
 \verb_XMPP Core_ \cite{xmppCoreWeb} je základní mno¾inou protokolu XMPP. Tato èást definuje základní prvky 
 protokolu. I kdy¾ to není pøikázáno, obvyklá je architektura klient-server a spojení pomocí TCP protokolu.
@@ -595,10 +610,11 @@ o úspì¹ném pøijetí dialbacku do pùvodního spojení a platnost tohoto spojení potv
 odesílání i pøijímaní xml paketù z tohoto spojení. Schematický princip dialbacku je lépe vidìt na 
 obrázku \ref{pic_dialback}.
 
+% http://mpavus.wz.cz/uml/uml-sequence-7.php pou¾ívá termín sekvenèní diagram
 \begin{figure}[ht]
 \begin{center}
   \includegraphics[width=10cm,keepaspectratio]{dialback}
-  \caption{Princip zpìtného volání}
+  \caption{Sekvenèní diagram zpìtného volání}
   \label{pic_dialback}
 \end{center}
 \end{figure}
@@ -851,6 +867,28 @@ Zahájení spojení mù¾e vypadat napøíklad takto\cite{xmppJingle}:
 
 \chapter{Implementace}
 
+K implementaci aplikací pracujících s multimédii je tøeba pracovat 
+s~jednotlivými zdroji a výstupy. Ka¾dý typ zdroje má svoje specifika~a 
+obecnì je nutné pro podporu v¹ech zaøízení naprogramovat do aplikace,
+aby program mohl fungovat na ka¾démo poèítaèi, jak pøedpokládá u¾ivatel.
+
+Z nízkoúroòových rozhraní jmenujme napøíklad {\em Advanced Linux Sound Architecture} (ALSA),
+stejný úèel má i Open Sound System, který je jednodu¹¹í a na nìkterých zvukových
+kartách funguje lépe, na nìkterých hùø. Neøe¹í ale souèasné pøehrávání více 
+zvukù zaráz, to øe¹í zvukové démony jako esd nebo novìj¹í pulse. Pro pouhé
+pøehrání zvuku je tak potøeba naimplementovat hned 4 rozhraní, má-li aplikace
+fungovat v¹ude.
+Se situací s pøehráváním videa to není o mnoho jednodu¹¹í, existuje 
+neakcelerovaný výstup, akcelerovaný výstup roz¹íøením Xv nebo výstup pomocí
+OpenGL akcelerace, který jediný bude fungovat na desktopu s kompozitním 
+mana¾erem.
+
+Proto¾e implementovat v¹echny detaily je pøíli¹ nároèné a na jiných platformách mù¾e být potøeba implementovat dal¹í rozhraní, hodí se pro práci s multimédii
+pou¾ít framework, který skryje implementaèní detaily a usnadní jak prvnotní
+vývoj, tak pøízpùsobení stávajících aplikací na nové rozhraní hardware, které
+pùvodní aplikace nepodporovala. Takovými frameworky v linuxu jsou napøíklad
+Phonon v KDE a GStreamer g GNOME.
+
 \section{Phonon}
 
 Makneto je aplikace implementovaná pro systém KDE verze 4. Je tedy ¾ádoucí 
@@ -897,7 +935,8 @@ médií, ale napøíklad i konvertoru do jiného formátu nebo streamování do sítì.
 \end{center}
 \end{figure}
 
-Objekty frameworku lze rozdìlit do nìkolika skupin. Asi nejdùle¾itìj¹í jsou
+Objekty frameworku lze rozdìlit do nìkolika skupin, seznam skupin je zobrazen
+na obrázku \ref{pic_gstreamer_overview}. Asi nejdùle¾itìj¹í jsou
 zdroje dat a jejich výstupy, zvané sink (doslovnì pøelo¾eno umyvadlo). Ka¾dý 
 objekt v øetìzci mù¾e mít jeden nebo více výstupù a jeden nebo více vstupù.
 Jednotlivé vstupy lze propojovat do sinkù jiných objektù, a jejich øetìzením
@@ -928,8 +967,11 @@ navázat pøímo spojení.
 
 \chapter{Závìr}
 
-Aplikace Makneto je velmi zajímavý program, i kdy¾ na nìkterých místech je
-je¹tì nutné pracovat a nìkteré vlastnosti vypilovat. Byla odstranìna chyba 
+Aplikace Makneto je program s mnoha mo¾nostmi, i kdy¾ na nìkterých místech je
+je¹tì nutné pracovat a nìkteré vlastnosti vypilovat. Cílem práce je pøidat
+do aplikace u¾ivatelsky pøívìtivou podporu multimediální komunikace.
+
+Byla odstranìna chyba 
 v~aplikaci, která se projevovala zdánlivì jenom na nìkterých distribucích. 
 Problém se ukázal být ve skrytých vlastnostech knihovny a neúplném pochopení
 parametrù knihovny, kde bylo vynuceno v¾dy provádìt oboustrannou autentizaci
