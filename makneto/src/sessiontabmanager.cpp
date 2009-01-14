@@ -41,6 +41,9 @@ SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(mak
 
 	// connect tab bar with widgets
 	connect(m_tab, SIGNAL(currentChanged(int)), m_widgets, SLOT(setCurrentIndex(int)));
+  
+  // Close tab on request
+  connect(m_tab, SIGNAL(closeRequest(int)), this, SLOT(closeTab(int)));
 
 	// we want to receive messages
 	connect(makneto->getConnection(), SIGNAL(connMessageReceived(const Message &)), this, SLOT(messageReceived(const Message &)));
@@ -143,6 +146,14 @@ void SessionTabManager::incomingFileTransfer(FileTransfer *ft)
 
 	// bring to front
 	bringToFront(session);
+}
+
+void SessionTabManager::closeTab(int tabIndex)
+{
+  std::cout << "SessionTabManager::closeTab" << std::endl;
+  
+  m_widgets->removeWidget(m_widgets->widget(tabIndex));
+  m_tab->removeTab(tabIndex);
 }
 
 void SessionTabManager::newSession(const QString &text)

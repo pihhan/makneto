@@ -9,6 +9,8 @@
 #include "connection.h"
 #include "xmpp_tasks.h"
 
+#include "contactdetaildialog.h"
+
 #include <iostream>
 
 #include <QObject>
@@ -51,7 +53,17 @@ void Makneto::actionNewSession()
 
 void Makneto::contactTriggered(QAction *action)
 {
-	emit newSession(action->data().toString() + "/Makneto");
+  switch (action->actionGroup()->actions().indexOf(action))
+  {
+    case 0:
+      emit newSession(action->data().toString() + "/Makneto");
+      break;
+    case 1:
+      std::cout << "Makneto::contactDetail()" << std::endl;
+      contactDetailDialog *contactDetail = new contactDetailDialog(0, action->data().toString());
+      contactDetail->show();
+      break;
+  }
 }
 
 void Makneto::addUser(const XMPP::Jid &jid, const QString &group, bool requestAuth)

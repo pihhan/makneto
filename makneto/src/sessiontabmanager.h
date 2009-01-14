@@ -45,6 +45,7 @@ public slots:
 	void messageReceived(const Message &message);
 	void newSession(const QString &text);
 	void incomingFileTransfer(FileTransfer *ft);
+  void closeTab(int tabIndex);
 
 private:
 	QVBoxLayout *m_mainlayout;

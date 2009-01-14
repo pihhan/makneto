@@ -57,10 +57,14 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 	// create contact menu
 	QAction *newSession = new QAction(i18n("New &session"), m_contactActions);
 	newSession->setData(QVariant(jid));
+  
+  QAction *contactDetails = new QAction(i18n("&Contact details"), m_contactActions);
+  contactDetails->setData(QVariant(jid));
 
-	//connect(newSession, SIGNAL(triggered()), m_makneto, SLOT(actionNewSession()));
+	//connect(contactDetails, SIGNAL(triggered()), this, SLOT(contactDetails()));
 
 	contactMenu->addAction(newSession);
+  contactMenu->addAction(contactDetails);
 
 	new MaknetoContact(name, jid, groupItem, contactMenu);
 }
@@ -92,5 +96,4 @@ void MaknetoContactList::setAvailability(const QString& jid, const XMPP::Status&
 
 	emitDataChanged();
 }
-
 #include "maknetocontactlist.moc"

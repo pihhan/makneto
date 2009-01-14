@@ -52,7 +52,7 @@ void MaknetoMainWindow::setupActions()
 {
 	KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
 	KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
-	KStandardAction::quit(this, SLOT(quit()), actionCollection());
+	KStandardAction::quit(this, SLOT(close()), actionCollection());
 	
 	KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 }

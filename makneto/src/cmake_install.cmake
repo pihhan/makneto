@@ -1,4 +1,4 @@
-# Install script for directory: /home/radek/app/trunk/makneto/src
+# Install script for directory: /home/radek/app/makneto/src
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -12,7 +12,7 @@ IF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     STRING(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   ELSE(BUILD_TYPE)
-    SET(CMAKE_INSTALL_CONFIG_NAME "Debugfull")
+    SET(CMAKE_INSTALL_CONFIG_NAME "Debug")
   ENDIF(BUILD_TYPE)
   MESSAGE(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 ENDIF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
@@ -33,31 +33,50 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
-  IF("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg][Ff][Uu][Ll][Ll])$")
-    FILE(INSTALL DESTINATION "/usr/local/bin" TYPE EXECUTABLE FILES "/home/radek/app/trunk/makneto/src/makneto")
+  IF("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
     IF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
+      FILE(RPATH_CHECK
+           FILE "$ENV{DESTDIR}/usr/local/bin/makneto"
+           RPATH "/usr/local/lib:/usr/lib/kde4/devel")
+    ENDIF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
+    FILE(INSTALL DESTINATION "/usr/local/bin" TYPE EXECUTABLE FILES "/home/radek/app/makneto/src/makneto")
+    IF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
+      FILE(RPATH_CHANGE
+           FILE "$ENV{DESTDIR}/usr/local/bin/makneto"
+           OLD_RPATH "/usr/lib/kde4/devel:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/iris/libidn:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/iris/xmpp-core:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/iris/xmpp-im:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/iris/jabber:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/cutestuff/network:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/cutestuff/util:/home/radek/app/makneto/src/CMakeFiles/makneto.dir/cutestuff/legacy"
+           NEW_RPATH "/usr/local/lib:/usr/lib/kde4/devel")
       IF(CMAKE_INSTALL_DO_STRIP)
         EXECUTE_PROCESS(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/usr/local/bin/makneto")
       ENDIF(CMAKE_INSTALL_DO_STRIP)
     ENDIF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
-  ENDIF("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg][Ff][Uu][Ll][Ll])$")
+  ENDIF("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
-  FILE(INSTALL DESTINATION "/usr/local/share/applications/kde4" TYPE FILE FILES "/home/radek/app/trunk/makneto/src/makneto.desktop")
+  FILE(INSTALL DESTINATION "/usr/local/share/applications/kde4" TYPE FILE FILES "/home/radek/app/makneto/src/makneto.desktop")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
-  FILE(INSTALL DESTINATION "/usr/local/share/config.kcfg" TYPE FILE FILES "/home/radek/app/trunk/makneto/src/makneto.kcfg")
+  FILE(INSTALL DESTINATION "/usr/local/share/config.kcfg" TYPE FILE FILES "/home/radek/app/makneto/src/makneto.kcfg")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
-  FILE(INSTALL DESTINATION "/usr/local/share/apps/makneto" TYPE FILE FILES "/home/radek/app/trunk/makneto/src/maknetoui.rc")
+  FILE(INSTALL DESTINATION "/usr/local/share/apps/makneto" TYPE FILE FILES "/home/radek/app/makneto/src/maknetoui.rc")
 ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
 
 IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  INCLUDE("/home/radek/app/trunk/makneto/src/icons/cmake_install.cmake")
+  INCLUDE("/home/radek/app/makneto/src/icons/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 
+IF(CMAKE_INSTALL_COMPONENT)
+  SET(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
+ELSE(CMAKE_INSTALL_COMPONENT)
+  SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
+ENDIF(CMAKE_INSTALL_COMPONENT)
+
+FILE(WRITE "/home/radek/app/makneto/src/${CMAKE_INSTALL_MANIFEST}" "")
+FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
+  FILE(APPEND "/home/radek/app/makneto/src/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+ENDFOREACH(file)
