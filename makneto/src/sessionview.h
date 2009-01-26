@@ -56,8 +56,9 @@ class SessionView : public QWidget
 public:
 	/**
 	* Default constructor
+  * @param type Type of the session 0 = Chat, 1 = MUC
 	*/
-	SessionView(QWidget *parent, const QString &jid, const int id);
+	SessionView(QWidget *parent, const QString &jid, const int id, int type = 0);
 
 	/**
 	* Destructor
@@ -67,12 +68,14 @@ public:
 	QString session() { return m_session; }
 	QString jid() { return m_jid; }
 	int const id() { return m_id; }
-
+  
 	void createToolBar();
 	void chatMessage(const Message &message); 
 	void whiteboardMessage(const Message &message);
 	void fileTransfer(FileTransfer *ft);
 
+  int type(void) { return m_type; }
+  void setType(int type) { m_type = type; }
 public slots:
 	void sendClicked();
 	void sendWhiteboard(const QDomElement &wb);
@@ -84,6 +87,8 @@ signals:
 	void sendMessage(const Message &);
 
 private:
+  int m_type;
+  
 	QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;
 	QHBoxLayout *m_bottomlayout;
@@ -105,7 +110,7 @@ private:
 	QString m_session;
 	QString m_jid;
 	int m_id;
-
+  
 	ChatState m_lastChatState;
 
 	// TODO: TEST ONLY!

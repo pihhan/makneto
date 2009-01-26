@@ -26,6 +26,7 @@
 #include <QtCore/QBuffer>
 #include <QtCore/QByteArray>
 #include <QtGui/QFrame>
+#include <QDebug>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
@@ -35,7 +36,7 @@
 #include <Phonon/VideoPlayer>
 
 
-SessionView::SessionView(QWidget *, const QString &jid, const int id): m_jid(jid), m_lastChatState(StateNone), m_id(id)
+SessionView::SessionView(QWidget *, const QString &jid, const int id, int type): m_jid(jid), m_lastChatState(StateNone), m_id(id), m_type(type)
 {
 	m_mainSplitter = new QSplitter(this);
 	m_mainSplitter->setOrientation(Qt::Vertical);
@@ -173,19 +174,25 @@ void SessionView::sendClicked()
 	// prepare message
 	message.setTo(m_jid);
 	message.setFrom(Settings::jabberID()+"/Makneto");
-	message.setType("chat");
+  if (type() == 0)
+    message.setType("chat");
+  else
+    message.setType("groupchat");
 	message.setChatState(StateActive);
 	message.setBody(m_chatinput->text());
 
 	emit sendMessage(message);
-
-	// format for chat window
-	text = "<b>Me</b>: "+m_chatinput->text();
-
-	m_chatinput->setText("");
-
-	// show text in chat window
-	m_chatoutput->append(text);
+  
+  // Show message in chat window only in chat, not in groupchat
+  if (type() == 0)
+  {
+    // format for chat window
+    text = "<b>Me</b>: "+m_chatinput->text();
+    // show text in chat window
+    m_chatoutput->append(text);
+  }
+  
+  m_chatinput->setText("");
 }
 
 void SessionView::sendWhiteboard(const QDomElement &wb)
@@ -193,6 +200,10 @@ void SessionView::sendWhiteboard(const QDomElement &wb)
 	Message message;
 
 	message.setTo(m_jid);
+  if (type() == 0)
+    message.setType("chat");
+  else
+    message.setType("groupchat");
 	message.setWhiteboard(wb);
 
 	emit sendMessage(message);
@@ -201,18 +212,25 @@ void SessionView::sendWhiteboard(const QDomElement &wb)
 void SessionView::chatMessage(const Message &message)
 {
 	QString text;
-
 	switch (message.chatState())
 	{
 		case StateComposing:
 			if (m_lastChatState != StateComposing)
-				text += "<i>"+message.from().bare()+" is composing message</i>";
+      {
+        if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0) // Is it a MUC ?
+          text += "<i>"+message.from().resource()+" is composing message</i>";
+        else
+          text += "<i>"+message.from().bare()+" is composing message</i>";
+      }
 			else
 				return;
 			break;
 
 		case StateGone:
-			text += "<i>"+message.from().bare()+" has gone</i>";
+      if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0)
+        text += "<i>"+message.from().resource()+" has gone</i>";
+      else
+        text += "<i>"+message.from().bare()+" has gone</i>";
 			break;
 
 		case StateInactive:
@@ -221,7 +239,12 @@ void SessionView::chatMessage(const Message &message)
 		case StateActive:
 		default:
 			if (!message.body().isEmpty())
-				text = "<b>"+message.from().bare()+"</b>: "+message.body();
+      {
+        if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0) // Is it a MUC ?
+          text = "<b>"+message.from().resource()+"</b>: "+message.body();
+        else
+          text = "<b>"+message.from().bare()+"</b>: "+message.body();
+      }
 			else
 			{
 				m_lastChatState = message.chatState();

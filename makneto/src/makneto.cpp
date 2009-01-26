@@ -37,18 +37,18 @@ void Makneto::conn_messageReceived(const Message &)
 	std::cout << "Makneto::conn_messageReceived" << std::endl;
 }
 
-void Makneto::actionNewSession(const QString &text)
+void Makneto::actionNewSession(const QString &text, ChatType type)
 {
 	std::cout << "Makneto::actionNewSession" << std::endl;
 	
-	emit newSession(text);
+	emit newSession(text, type);
 }
 
 void Makneto::actionNewSession()
 {
 	std::cout << "Makneto::actionNewSession-" << std::endl;
 	
-	emit newSession("rezzabuh@jabber.cz/Makneto");
+	emit newSession("rezzabuh@jabber.cz/Makneto", Chat);
 }
 
 void Makneto::contactTriggered(QAction *action)
@@ -56,7 +56,7 @@ void Makneto::contactTriggered(QAction *action)
   switch (action->actionGroup()->actions().indexOf(action))
   {
     case 0:
-      emit newSession(action->data().toString() + "/Makneto");
+      emit newSession(action->data().toString(), Chat);
       break;
     case 1:
       std::cout << "Makneto::contactDetail()" << std::endl;

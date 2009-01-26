@@ -63,6 +63,7 @@ public:
 	bool logout();
 	void setStatus(Status);
 	bool isOnline();
+  bool groupChatJoin(const QString &host, const QString &room, const QString &nick, const QString& password = QString(), int maxchars = -1, int maxstanzas = -1, int seconds = -1, const Status& = Status());
 
 private slots:
 	void connected();
@@ -87,9 +88,12 @@ private slots:
 	void client_xmlIncoming(const QString &);
 	void client_xmlOutgoing(const QString &);
 	void client_incomingFileTransfer();
+  void client_groupChatJoined(const Jid &);
+  void client_groupChatLeft(const Jid &);
+  void client_groupChatPresence(const Jid &, const Status &);
+  void client_groupChatError(const Jid &, int, const QString &);
 
 	void sendMessage(const Message &);
-
 public slots:
 	void addUser(const Jid &jid, const QString &group, bool requestAuth);
 
@@ -99,6 +103,11 @@ signals:
 	void connDisconnected(void);
 	void connIncomingFileTransfer(FileTransfer *);
 	void connStatusChanged(const XMPP::Status &);
+  void groupChatJoined(const Jid &);
+  void groupChatLeft(void);
+  void groupChatPresence(const Status &);
+  void groupChatError(const QString &);
+  
 
 private:
 	Client *m_client;

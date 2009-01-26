@@ -43,7 +43,7 @@ public:
 	void bringToFront(SessionView *session);
 public slots:
 	void messageReceived(const Message &message);
-	void newSession(const QString &text);
+  void newSession(const QString &text, ChatType type);
 	void incomingFileTransfer(FileTransfer *ft);
   void closeTab(int tabIndex);
 

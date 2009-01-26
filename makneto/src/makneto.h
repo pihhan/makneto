@@ -30,6 +30,8 @@ using namespace XMPP;
 
 class MaknetoContactList;
 
+enum ChatType { Chat = 0, GroupChat };
+
 class Makneto : public QObject
 {
 	Q_OBJECT
@@ -48,13 +50,13 @@ public:
 	MaknetoContactList *getContactList() { return m_cl; }
 
 signals:
-	void newSession(const QString &text);
+	void newSession(const QString &text, ChatType type);
 	void statusChanged(const XMPP::Status &);
 
 public slots:
 	void conn_messageReceived(const Message &);
 // 	void conn_statusChanged(const XMPP::Status &);
-	void actionNewSession(const QString &);
+  void actionNewSession(const QString &, ChatType type = Chat);
 	void actionNewSession();
 	void contactTriggered(QAction *action);
 	void addUser(const XMPP::Jid &, const QString &, bool requestAuth);

@@ -57,6 +57,10 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	//connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
 	//connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
 	connect(m_client->fileTransferManager(), SIGNAL(incomingReady()), SLOT(client_incomingFileTransfer()));
+  connect(m_client, SIGNAL(groupChatJoined(const Jid &)), SLOT(client_groupChatJoined(const Jid &)));
+  connect(m_client, SIGNAL(groupChatLeft(const Jid &)), SLOT(client_groupChatLeft(const Jid &)));
+  connect(m_client, SIGNAL(groupChatPresence(const Jid &, const Status &)), SLOT(client_groupChatPresence(const Jid &, const Status &)));
+  connect(m_client, SIGNAL(groupChatError(const Jid &, int, const QString &)), SLOT(client_groupChatError(const Jid &, int, const QString &)));
 }
 
 Connection::~Connection()
@@ -377,6 +381,11 @@ bool Connection::isOnline()
 		return m_stream->isAuthenticated();
 }
 
+bool Connection::groupChatJoin(const QString &host, const QString &room, const QString &nick, const QString& password, int maxchars, int maxstanzas, int seconds, const Status& status)
+{
+  m_client->groupChatJoin(host, room, nick, password, maxchars, maxstanzas, seconds, status);
+}
+
 void Connection::client_rosterRequestFinished(bool success, int, const QString &)
 {
 	qDebug() << "Connection::client_rosterRequestFinished()";
@@ -467,6 +476,32 @@ void Connection::client_incomingFileTransfer()
 	// process incoming file transfer
 	emit connIncomingFileTransfer(ft);
 }
+
+void Connection::client_groupChatJoined(const Jid &jid)
+{
+  qDebug() << "Connection::client_groupChatJoined(" << jid.bare() << ")";
+  emit groupChatJoined(jid);
+
+}
+
+void Connection::client_groupChatLeft(const Jid &jid)
+{
+  qDebug() << "Connection::client_groupChatLeft(" << jid.bare() << ")";
+  emit groupChatLeft();
+}
+
+void Connection::client_groupChatPresence(const Jid &jid, const Status &status)
+{
+  qDebug() << "Connection::client_groupChatPresence(" << jid.bare() << ": " << status.status() << ")";
+  emit groupChatPresence(status);
+}
+
+void Connection::client_groupChatError(const Jid &jid, int, const QString &error)
+{
+  qDebug() << "Connection::client_groupChatError(" << jid.bare() << ": " << error << ")";
+  emit groupChatError(error);
+}
+
 
 void Connection::sendMessage(const Message &message)
 {

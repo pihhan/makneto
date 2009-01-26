@@ -52,7 +52,7 @@ void MaknetoMainWindow::setupActions()
 {
 	KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
 	KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
-	KStandardAction::quit(this, SLOT(close()), actionCollection());
+	KStandardAction::quit(this, SLOT(quit()), actionCollection());
 	
 	KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 }
@@ -60,7 +60,10 @@ void MaknetoMainWindow::setupActions()
 void
  MaknetoMainWindow::quit()
 {
-	m_makneto->getConnection()->clientDisconnect();
+  if(m_makneto->getConnection()->isOnline())
+    m_makneto->getConnection()->logout();
+  close();
+	//m_makneto->getConnection()->clientDisconnect();
 }
 
 void MaknetoMainWindow::optionsPreferences()

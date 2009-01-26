@@ -48,7 +48,7 @@ SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(mak
 	// we want to receive messages
 	connect(makneto->getConnection(), SIGNAL(connMessageReceived(const Message &)), this, SLOT(messageReceived(const Message &)));
 	connect(makneto->getConnection(), SIGNAL(connIncomingFileTransfer(FileTransfer *)), this, SLOT(incomingFileTransfer(FileTransfer *)));
-	connect(makneto, SIGNAL(newSession(const QString &)), this, SLOT(newSession(const QString &)));
+  connect(makneto, SIGNAL(newSession(const QString &, ChatType)), this, SLOT(newSession(const QString &, ChatType)));
 
 	// TODO: and status (from contact list?)
 
@@ -113,13 +113,16 @@ void SessionTabManager::messageReceived(const Message &message)
 	SessionView *session;
 
 	// check for existing session
-	session = findSession(message.from().full());
+	session = findSession(message.from().bare());
 
 	// no existing session - create new one
 	if (!session)
-		session = newSessionTab(message.from().full());
-
-	// send proper message type to session
+		session = newSessionTab(message.from().bare());
+  
+  if (message.type().compare("groupchat") == 0)
+    session->setType(1);
+	
+  // send proper message type to session
 	if (!message.whiteboard().tagName().isEmpty())
 		session->whiteboardMessage(message);
 	else
@@ -136,11 +139,11 @@ void SessionTabManager::incomingFileTransfer(FileTransfer *ft)
 	SessionView *session;
 
 	// check for existing session for peer
-	session = findSession(ft->peer().full());
+	session = findSession(ft->peer().bare());
 
 	// no existing session - create new one
 	if (!session)
-		session = newSessionTab(ft->peer().full());
+		session = newSessionTab(ft->peer().bare());
 
 	session->fileTransfer(ft);
 
@@ -156,7 +159,7 @@ void SessionTabManager::closeTab(int tabIndex)
   m_tab->removeTab(tabIndex);
 }
 
-void SessionTabManager::newSession(const QString &text)
+void SessionTabManager::newSession(const QString &text, ChatType type)
 {
 	std::cout << "SessionTabManager::newSession << std::endl";
 
@@ -164,6 +167,7 @@ void SessionTabManager::newSession(const QString &text)
 
 	// create new session
 	session = newSessionTab(text);
+  session->setType(type);
 
 	// bring to front
 	bringToFront(session);
