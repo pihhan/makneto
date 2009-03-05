@@ -38,12 +38,13 @@ public:
 	*/
 	virtual ~SessionTabManager();
 
-	SessionView *newSessionTab(const QString &text);
+  SessionView *newSessionTab(const QString &text, ChatType type, const QString &nick = QString());
 	SessionView *findSession(const QString &jid);
 	void bringToFront(SessionView *session);
+  Makneto *makneto() { return m_makneto; }
 public slots:
 	void messageReceived(const Message &message);
-  void newSession(const QString &text, ChatType type);
+  void newSession(const QString &text, ChatType type, const QString &nick = QString());
 	void incomingFileTransfer(FileTransfer *ft);
   void closeTab(int tabIndex);
 

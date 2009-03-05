@@ -39,6 +39,8 @@ public:
      * Destructor
      */
     virtual ~MaknetoView();
+    
+    SessionTabManager *getSessionTabManager(void) { return m_sessiontabmanager; }
 
 signals:
     /**

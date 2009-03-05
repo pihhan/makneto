@@ -23,7 +23,7 @@
 RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 {
 	m_mainlayout = new QVBoxLayout(this);
-	m_buttonslayout = new QHBoxLayout(this);
+	m_buttonslayout = new QHBoxLayout();
 
 	// buttons
 	m_addcontact = new QPushButton(KIconLoader::global()->loadIcon("list-add-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Add contact"), this);
@@ -67,7 +67,7 @@ void RoasterView::search(const QString& search)
 	
 }
 
-void RoasterView::addContactClicked(bool toggled)
+void RoasterView::addContactClicked(bool /*toggled*/)
 {
 	AddContactDialog *addContact = new AddContactDialog(this);
 	addContact->show();

@@ -48,7 +48,7 @@ SessionTabManager::SessionTabManager(Makneto *makneto, QWidget *): m_makneto(mak
 	// we want to receive messages
 	connect(makneto->getConnection(), SIGNAL(connMessageReceived(const Message &)), this, SLOT(messageReceived(const Message &)));
 	connect(makneto->getConnection(), SIGNAL(connIncomingFileTransfer(FileTransfer *)), this, SLOT(incomingFileTransfer(FileTransfer *)));
-  connect(makneto, SIGNAL(newSession(const QString &, ChatType)), this, SLOT(newSession(const QString &, ChatType)));
+  connect(makneto, SIGNAL(newSession(const QString &, ChatType, const QString &)), this, SLOT(newSession(const QString &, ChatType, const QString &)));
 
 	// TODO: and status (from contact list?)
 
@@ -66,13 +66,13 @@ SessionTabManager::~SessionTabManager()
 
 }
 
-SessionView* SessionTabManager::newSessionTab(const QString &text)
+SessionView* SessionTabManager::newSessionTab(const QString &text, ChatType type, const QString &nick)
 {
 	// add new tab
 	m_tab->addTab(text);
 	
 	// create new session view and add to widgets
-	SessionView *session = new SessionView(this, text, m_tab->count()-1);
+	SessionView *session = new SessionView(this, text, m_tab->count()-1, type, nick);
 	m_widgets->addWidget(session);
 
 	connect(session, SIGNAL(sendMessage(const Message &)), m_makneto->getConnection(), SLOT(sendMessage(const Message &)));
@@ -117,11 +117,13 @@ void SessionTabManager::messageReceived(const Message &message)
 
 	// no existing session - create new one
 	if (!session)
-		session = newSessionTab(message.from().bare());
-  
-  if (message.type().compare("groupchat") == 0)
-    session->setType(1);
-	
+  {
+    if (message.type().compare("groupchat") == 0)
+      session = newSessionTab(message.from().bare(), GroupChat);
+    else
+      session = newSessionTab(message.from().bare(), Chat);
+  }
+
   // send proper message type to session
 	if (!message.whiteboard().tagName().isEmpty())
 		session->whiteboardMessage(message);
@@ -143,7 +145,7 @@ void SessionTabManager::incomingFileTransfer(FileTransfer *ft)
 
 	// no existing session - create new one
 	if (!session)
-		session = newSessionTab(ft->peer().bare());
+		session = newSessionTab(ft->peer().bare(), Chat);
 
 	session->fileTransfer(ft);
 
@@ -154,20 +156,23 @@ void SessionTabManager::incomingFileTransfer(FileTransfer *ft)
 void SessionTabManager::closeTab(int tabIndex)
 {
   std::cout << "SessionTabManager::closeTab" << std::endl;
-  
-  m_widgets->removeWidget(m_widgets->widget(tabIndex));
-  m_tab->removeTab(tabIndex);
+  // If closing tab has class SessionView, closeRequest method will be called
+  if (QString(m_widgets->widget(tabIndex)->metaObject()->className()).compare("SessionView") != 0
+      || dynamic_cast<SessionView *> (m_widgets->widget(tabIndex))->closeRequest())
+  {
+    m_widgets->removeWidget(m_widgets->widget(tabIndex));
+    m_tab->removeTab(tabIndex);
+  }
 }
 
-void SessionTabManager::newSession(const QString &text, ChatType type)
+void SessionTabManager::newSession(const QString &text, ChatType type, const QString &nick)
 {
-	std::cout << "SessionTabManager::newSession << std::endl";
+	std::cout << "SessionTabManager::newSession" << std::endl;
 
 	SessionView *session;
 
 	// create new session
-	session = newSessionTab(text);
-  session->setType(type);
+	session = newSessionTab(text, type, nick);
 
 	// bring to front
 	bringToFront(session);

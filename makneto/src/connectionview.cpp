@@ -5,8 +5,8 @@
  */
 
 #include "connectionview.h"
-#include "kiconloader.h"
-#include "klocale.h"
+#include <kiconloader.h>
+#include <klocale.h>
 #include "connection.h"
 #include "makneto.h"
 #include "settings.h"
@@ -21,9 +21,9 @@ ConnectionView::ConnectionView(QWidget *, Makneto *makneto): m_makneto(makneto)
 {
 	m_mainlayout = new QVBoxLayout(this);
 
-	m_stateLayout = new QHBoxLayout(this);
+	m_stateLayout = new QHBoxLayout();
 
-	m_buttonslayout = new QVBoxLayout(this);
+	m_buttonslayout = new QVBoxLayout();
 	m_buttonslayout->setMargin(0);
 	m_buttonslayout->setSpacing(0);
 

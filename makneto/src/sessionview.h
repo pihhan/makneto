@@ -14,6 +14,7 @@
 
 class QVBoxLayout;
 class QHBoxLayout;
+class QGridLayout;
 class QPushButton;
 class QTextEdit;
 class WbWidget;
@@ -23,7 +24,8 @@ class KToolBar;
 class QBuffer;
 class QFrame;
 class FTStream;
-
+class MUCControl;
+class Makneto;
 #include "xmpp_chatstate.h"
 
 #include "settings.h"
@@ -58,7 +60,7 @@ public:
 	* Default constructor
   * @param type Type of the session 0 = Chat, 1 = MUC
 	*/
-	SessionView(QWidget *parent, const QString &jid, const int id, int type = 0);
+  SessionView(QWidget *parent, const QString &jid, const int id, int type = 0, const QString &nick = QString());
 
 	/**
 	* Destructor
@@ -67,15 +69,20 @@ public:
 
 	QString session() { return m_session; }
 	QString jid() { return m_jid; }
-	int const id() { return m_id; }
+  int id() const { return m_id; }
   
 	void createToolBar();
-	void chatMessage(const Message &message); 
+	void chatMessage(const Message &message);
+  void infoMessage(const QString &text);
 	void whiteboardMessage(const Message &message);
 	void fileTransfer(FileTransfer *ft);
 
   int type(void) { return m_type; }
   void setType(int type) { m_type = type; }
+  
+  MUCControl *getMUCControl(void) { return m_muccontrol; }
+  bool closeRequest();
+  void setEnabled(bool enabled);
 public slots:
 	void sendClicked();
 	void sendWhiteboard(const QDomElement &wb);
@@ -87,9 +94,17 @@ signals:
 	void sendMessage(const Message &);
 
 private:
-  int m_type;
+  Makneto *m_makneto;
+  QVBoxLayout *m_topLayout;
+  QWidget *m_leftWidget, *m_chatWidget;
+  QVBoxLayout *m_leftLayout;
+  QSplitter *m_leftSplitter;
+  QSplitter *m_topSplitter;
+  QStringList messages;
   
-	QVBoxLayout *m_mainlayout;
+  MUCControl *m_muccontrol;
+  
+  QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;
 	QHBoxLayout *m_bottomlayout;
 
@@ -107,11 +122,12 @@ private:
 
 	QPushButton *m_sendmsg;
 	
+  QString m_jid;
+  ChatState m_lastChatState;
+  int m_id;
 	QString m_session;
-	QString m_jid;
-	int m_id;
-  
-	ChatState m_lastChatState;
+  int m_type;
+  QString m_nick;
 
 	// TODO: TEST ONLY!
 	QBuffer *m_testbuffer;

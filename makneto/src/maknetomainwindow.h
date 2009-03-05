@@ -30,6 +30,8 @@ class MaknetoMainWindow : public KXmlGuiWindow
 	Q_OBJECT
 public:
 	MaknetoMainWindow(Makneto *makneto);
+  
+  MaknetoView *getMaknetoView(void) { return m_view; }
 	
 	virtual ~MaknetoMainWindow();
 	

@@ -10,10 +10,13 @@
 #include <QWidget>
 #include <QListWidget>
 #include <QMetaType>
+
 #include "makneto.h"
+#include "maknetoview.h"
 
 class QPushButton;
 class QListWidgetItem;
+class SessionView;
 
 class tMUC
 {
@@ -39,6 +42,7 @@ public:
   
   void loadBookmarks(void);
   void saveBookmarks(void);
+  SessionView *getSessionByJid(const Jid &);
   
 public slots:
   void createMUCClicked(bool toggled);
@@ -48,6 +52,18 @@ public slots:
   void groupChatLeft(const Jid &);
   void groupChatPresence(const Jid &, const Status &);
   void groupChatError(const Jid &, int, const QString &);
+  
+  void voiceGranted(const Jid &jid, const QString &nick, const QString &reason = QString());
+  void voiceRevoked(const Jid &jid, const QString &nick, const QString &reason = QString());
+  void voiceRequested(const Jid &jid, const QString &nick);
+  void subjectChanged(const Jid &jid, const QString &subject);
+  void userKicked(const Jid &jid, const QString &nick, const QString &reason, const QString &actor);
+  void userBanned(const Jid &jid, const QString &nick, const QString &reason, const QString &actor);
+  void userRemovedAsNonMember(const Jid &jid, const QString &nick);
+  void membershipGranted(const Jid &jid, const Jid &userJid, const QString &reason);
+  void membershipRevoked(const Jid &jid, const Jid &userJid, const QString &reason);
+  void moderationGranted(const Jid &jid, const QString &nick, const QString &reason = QString());
+  void moderationRevoked(const Jid &jid, const QString &nick, const QString &reason = QString());
   
 private:
   QVBoxLayout *m_mainlayout;

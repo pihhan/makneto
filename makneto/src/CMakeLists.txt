@@ -56,6 +56,8 @@ set(makneto_SRCS
 	addcontactdialog.cpp
   contactdetaildialog.cpp
   mucview.cpp
+  muccontrol.cpp
+  mucuserlist.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp

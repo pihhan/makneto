@@ -37,18 +37,18 @@ void Makneto::conn_messageReceived(const Message &)
 	std::cout << "Makneto::conn_messageReceived" << std::endl;
 }
 
-void Makneto::actionNewSession(const QString &text, ChatType type)
+void Makneto::actionNewSession(const QString &text, ChatType type, const QString &nick)
 {
 	std::cout << "Makneto::actionNewSession" << std::endl;
 	
-	emit newSession(text, type);
+	emit newSession(text, type, nick);
 }
 
 void Makneto::actionNewSession()
 {
 	std::cout << "Makneto::actionNewSession-" << std::endl;
 	
-	emit newSession("rezzabuh@jabber.cz/Makneto", Chat);
+	emit newSession(getConnection()->jid().full(), Chat);
 }
 
 void Makneto::contactTriggered(QAction *action)

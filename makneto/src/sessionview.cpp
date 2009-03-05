@@ -5,6 +5,7 @@
  */
 
 #include "sessionview.h"
+#include "muccontrol.h"
 #include "mediaplayer.h"
 #include "kiconloader.h"
 #include "klocale.h"
@@ -27,62 +28,78 @@
 #include <QtCore/QByteArray>
 #include <QtGui/QFrame>
 #include <QDebug>
+#include <QMessageBox>
+#include <QSettings>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
 #include "xmpp_jid.h"
 #include "filetransfer.h"
+#include "sessiontabmanager.h"
+#include "makneto.h"
 
 #include <Phonon/VideoPlayer>
 
 
-SessionView::SessionView(QWidget *, const QString &jid, const int id, int type): m_jid(jid), m_lastChatState(StateNone), m_id(id), m_type(type)
+SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int type, const QString &nick)
+  : m_jid(jid), m_lastChatState(StateNone), m_id(id), m_type(type), m_nick(nick)
 {
-	m_mainSplitter = new QSplitter(this);
-	m_mainSplitter->setOrientation(Qt::Vertical);
+  m_makneto = (dynamic_cast<SessionTabManager *> (parent))->makneto();
+  m_topLayout = new QVBoxLayout(this);
+  m_topSplitter = new QSplitter(this);
+  m_topLayout->addWidget(m_topSplitter);
+  m_topSplitter->setOrientation(Qt::Horizontal);
+  m_leftWidget = new QWidget(this);
+  
+  m_leftLayout = new QVBoxLayout(m_leftWidget);
+  m_leftWidget->setLayout(m_leftLayout);
+  
+  m_leftLayout->setMargin(0);
+  m_leftLayout->setSpacing(0);
+  
+  // Add Toolbar to the layout
+  createToolBar();
+  
+  m_leftSplitter = new QSplitter(Qt::Vertical, m_leftWidget);
+  m_leftLayout->addWidget(m_leftSplitter);
+  
+  // Create WhiteBoard widget
+  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
+  m_leftSplitter->addWidget(m_wbwidget);
+  
+  connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
+  m_wbwidget->setMode(WbWidget::DrawPath);
+  m_wbwidget->setMinimumSize(300, 400);
 
-	m_chatFrame = new QFrame;
+  m_chatSplitter = new QSplitter(Qt::Vertical, m_leftSplitter);
+  
+  m_leftSplitter->addWidget(m_chatSplitter);
+  
+  m_chatoutput = new QTextEdit(m_chatSplitter);
+  m_chatinput = new QTextEdit(m_chatSplitter);
+  m_sendmsg = new QPushButton("&Send", m_leftWidget);
+  connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
 
-	m_chatSplitter = new QSplitter(m_chatFrame);
-	m_chatSplitter->setOrientation(Qt::Vertical);
+  // output chat text edit props
+  m_chatoutput->setTextFormat(Qt::RichText);
+  m_chatoutput->setReadOnly(true);
+  
+  m_chatSplitter->addWidget(m_chatoutput);
+  m_chatSplitter->addWidget(m_chatinput);
+  
+  m_leftLayout->addWidget(m_sendmsg);
+  
+  m_topSplitter->addWidget(m_leftWidget);
+  
+  if (type == 1)
+  {
+    m_muccontrol = new MUCControl(this, m_makneto, m_jid, m_nick);
+    m_topSplitter->addWidget(m_muccontrol);
+    QSettings settings;
+    m_topSplitter->restoreState(settings.value("m_topSplitter").toByteArray());
+  }
 
-	m_mainlayout = new QVBoxLayout(this);
-	m_mainlayout->setMargin(0);
-	m_mainlayout->setSpacing(0);
-
-	createToolBar();
-
-	// add whiteboard widget
-	m_wbwidget = new WbWidget("s1", "rezza@jabber.cz", QSize(300, 400), this);
-	//m_mainlayout->addWidget(m_wbwidget, 1000);
-	connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
-	m_wbwidget->setMode(WbWidget::DrawPath);
-	m_wbwidget->setMinimumSize(300, 400);
-
-	m_chatlayout = new QVBoxLayout();
-
-	m_chatoutput = new QTextEdit(this);
-	m_chatinput = new QTextEdit(this);
-	m_sendmsg = new QPushButton("&Send", this);
-	connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
-
-	// output chat text edit props
-	m_chatoutput->setTextFormat(Qt::RichText);
-	m_chatoutput->setReadOnly(true);
-
-	m_chatSplitter->addWidget(m_chatoutput);
-	m_chatSplitter->addWidget(m_chatinput);
-	m_chatSplitter->addWidget(m_sendmsg);
-
-
-	m_mainSplitter->addWidget(m_wbwidget);
-	m_mainSplitter->addWidget(m_chatSplitter);
-
-	m_mainlayout->addWidget(m_mainSplitter);
-	m_mainlayout->addWidget(m_chatFrame);
-
-	setLayout(m_mainlayout);
-
+  
 	// TODO: test only!!!
 	ba = new QByteArray;
 	m_testbuffer = new QBuffer(ba, this);
@@ -92,7 +109,8 @@ SessionView::SessionView(QWidget *, const QString &jid, const int id, int type):
 
 SessionView::~SessionView()
 {
-
+  QSettings settings;
+  settings.setValue("m_topSplitter", m_topSplitter->saveState());
 }
 
 void SessionView::createToolBar()
@@ -102,7 +120,7 @@ void SessionView::createToolBar()
 	m_wbtoolbar->setIconDimensions(16);
 	m_wbtoolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
-	m_mainlayout->addWidget(m_wbtoolbar);
+  m_leftLayout->addWidget(m_wbtoolbar);
 
 	QActionGroup *groupMode = new QActionGroup(this);
 	connect(groupMode, SIGNAL(triggered(QAction*)), this, SLOT(setMode(QAction*)));
@@ -204,7 +222,10 @@ void SessionView::sendWhiteboard(const QDomElement &wb)
     message.setType("chat");
   else
     message.setType("groupchat");
+  QString id = m_makneto->getConnection()->genUniqueId();
+  message.setId(id);
 	message.setWhiteboard(wb);
+  messages << id;
 
 	emit sendMessage(message);
 }
@@ -257,9 +278,16 @@ void SessionView::chatMessage(const Message &message)
 	m_lastChatState = message.chatState();
 }
 
+void SessionView::infoMessage(const QString &text)
+{
+  m_chatoutput->append("<i>" + text + "</i>");
+}
+
 void SessionView::whiteboardMessage(const Message &message)
 {
-	m_wbwidget->processWb(message.whiteboard());
+  // During MUC when you send message you will obtain the same message from server - so if it have known id, we will throw it away...
+  if (!messages.contains(message.id()))
+    m_wbwidget->processWb(message.whiteboard());
 }
 
 void SessionView::fileTransfer(FileTransfer *ft)
@@ -287,6 +315,29 @@ void SessionView::fileTransfer(FileTransfer *ft)
 	bytes = 0;
 	//player->load(m_testbuffer);
 	//player->play();
+}
+
+bool SessionView::closeRequest()
+{
+  if (m_type == 1) // Is it a groupchat ?
+  {
+    if (m_muccontrol->connected() && QMessageBox::question(this, "Makneto", tr("Do you really want to close the tab?\nYou won't be able to recieve new messages from this conference!"),
+        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+    {
+      m_muccontrol->doDisconnect(m_jid);
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+void SessionView::setEnabled(bool enabled)
+{
+  m_sendmsg->setEnabled(enabled);
 }
 
 void SessionView::setMode(QAction *action)

@@ -17,10 +17,16 @@ MaknetoHTMLBrowser::MaknetoHTMLBrowser(QWidget *)
 	mainLayout = new QVBoxLayout;
 
   KUrl url("http://makneto.sourceforge.net/");
-	KHTMLPart *homeTabBrowser = new KHTMLPart;
+	homeTabBrowser = new KHTMLPart;
 	homeTabBrowser->openUrl(url);
 
 	mainLayout->addWidget(homeTabBrowser->view());
 
 	setLayout(mainLayout);
+}
+
+MaknetoHTMLBrowser::~MaknetoHTMLBrowser()
+{
+  homeTabBrowser->closeUrl();
+  delete homeTabBrowser;
 }
