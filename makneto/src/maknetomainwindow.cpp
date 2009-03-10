@@ -57,13 +57,9 @@ void MaknetoMainWindow::setupActions()
 	KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 }
 
-void
- MaknetoMainWindow::quit()
+void MaknetoMainWindow::quit()
 {
-  if(m_makneto->getConnection()->isOnline())
-    m_makneto->getConnection()->logout();
   close();
-	//m_makneto->getConnection()->clientDisconnect();
 }
 
 void MaknetoMainWindow::optionsPreferences()
@@ -96,6 +92,12 @@ void MaknetoMainWindow::fullScreen()
 void MaknetoMainWindow::showMenubar()
 {
 	menuBar()->setVisible(!menuBar()->isVisible());
+}
+
+void MaknetoMainWindow::closeEvent(QCloseEvent *event)
+{
+  if (m_makneto->getConnection()->isOnline())
+    m_makneto->getConnection()->logout();
 }
 
 #include "maknetomainwindow.moc"

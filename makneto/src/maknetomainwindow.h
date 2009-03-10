@@ -51,6 +51,8 @@ private:
 	
 	KToggleAction *m_toolbarAction;
 	KToggleAction *m_statusbarAction;
+  
+  void closeEvent(QCloseEvent *event);
 };
 
 #endif // _MAKNETOMAINWINDOW_H_
