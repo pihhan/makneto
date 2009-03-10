@@ -200,15 +200,15 @@ bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick
   dialog->setSizeGripEnabled(true);
   QGridLayout *layout = new QGridLayout(dialog);
   
-  QLabel *lRoom = new QLabel(dialog, tr("&Room:"));
+  QLabel *lRoom = new QLabel(tr("Room:"), dialog);
   QLineEdit *eRoom = new QLineEdit(dialog);
   lRoom->setBuddy(eRoom);
   
-  QLabel *lServer = new QLabel(dialog, tr("&Server:"));
+  QLabel *lServer = new QLabel(tr("Server:"), dialog);
   QLineEdit *eServer = new QLineEdit(dialog);
   lRoom->setBuddy(eServer);
   
-  QLabel *lNick = new QLabel(dialog, tr("&Nickname:"));
+  QLabel *lNick = new QLabel(tr("Nickname:"), dialog);
   QLineEdit *eNick = new QLineEdit(dialog);
   lRoom->setBuddy(eNick);
 
