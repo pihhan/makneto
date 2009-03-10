@@ -48,7 +48,7 @@ public:
 
 private:
 	Makneto *m_makneto;
-	QActionGroup *m_contactActions;
+  QActionGroup *m_contactNewSessionActions, *m_contactDetailsActions;
 };
 
 #endif // MAKNETOCONTACTLIST_H

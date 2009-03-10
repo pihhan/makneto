@@ -21,8 +21,10 @@
 
 MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makneto(makneto) 
 { 
-	m_contactActions = new QActionGroup(0);
-	connect(m_contactActions, SIGNAL(triggered(QAction *)), makneto, SLOT(contactTriggered(QAction *)));
+  m_contactNewSessionActions = new QActionGroup(this);
+  m_contactDetailsActions = new QActionGroup(this);
+	connect(m_contactNewSessionActions, SIGNAL(triggered(QAction *)), makneto, SLOT(contactNewSession(QAction *)));
+  connect(m_contactDetailsActions, SIGNAL(triggered(QAction *)), makneto, SLOT(contactDetails(QAction *)));
 }
 
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QString& group = QString())
@@ -55,10 +57,10 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 	}
 
 	// create contact menu
-	QAction *newSession = new QAction(i18n("New &session"), m_contactActions);
+  QAction *newSession = new QAction(i18n("New &session"), m_contactNewSessionActions);
 	newSession->setData(QVariant(jid));
   
-  QAction *contactDetails = new QAction(i18n("&Contact details"), m_contactActions);
+  QAction *contactDetails = new QAction(i18n("&Contact details"), m_contactDetailsActions);
   contactDetails->setData(QVariant(jid));
 
 	//connect(contactDetails, SIGNAL(triggered()), this, SLOT(contactDetails()));

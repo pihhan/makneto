@@ -51,19 +51,17 @@ void Makneto::actionNewSession()
 	emit newSession(getConnection()->jid().full(), Chat);
 }
 
-void Makneto::contactTriggered(QAction *action)
+void Makneto::contactNewSession(QAction *action)
 {
-  switch (action->actionGroup()->actions().indexOf(action))
-  {
-    case 0:
-      emit newSession(action->data().toString(), Chat);
-      break;
-    case 1:
-      std::cout << "Makneto::contactDetail()" << std::endl;
-      contactDetailDialog *contactDetail = new contactDetailDialog(0, action->data().toString());
-      contactDetail->show();
-      break;
-  }
+  emit newSession(action->data().toString(), Chat);
+}
+
+void Makneto::contactDetails(QAction *action)
+{
+  std::cout << "Makneto::contactDetail()" << std::endl;
+  contactDetailDialog *contactDetail = new contactDetailDialog(0, action->data().toString());
+  contactDetail->show();
+  delete contactDetail;
 }
 
 void Makneto::addUser(const XMPP::Jid &jid, const QString &group, bool requestAuth)

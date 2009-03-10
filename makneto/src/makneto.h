@@ -60,7 +60,8 @@ public slots:
 // 	void conn_statusChanged(const XMPP::Status &);
   void actionNewSession(const QString &, ChatType type = Chat, const QString &nick = QString());
 	void actionNewSession();
-	void contactTriggered(QAction *action);
+  void contactNewSession(QAction *action);
+  void contactDetails(QAction *action);
 	void addUser(const XMPP::Jid &, const QString &, bool requestAuth);
   
   void setMaknetoMainWindow(MaknetoMainWindow *mainwindow) { m_mainwindow = mainwindow; }
