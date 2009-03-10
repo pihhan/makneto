@@ -11,6 +11,7 @@
 #include "contactlist/contactlistgroup.h"
 #include "contactlist/contactlistgroupitem.h"
 #include "contactlist/status.h"
+#include "featurelist.h"
 
 #include <QtGui/QMenu>
 
@@ -51,6 +52,7 @@ private:
 	QString m_jid;
 	ContactListStatus m_status;
 	QMenu *m_contactMenu;
+        FeatureList features;
 };
 
 class MaknetoGroup : public ContactListGroup

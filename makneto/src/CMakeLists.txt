@@ -11,15 +11,34 @@ include(${QT_USE_FILE})
 
 include (KDE4Defaults)
 
-set(IRIS_TREE "../../iris")
-set(IRIS_LIB_PATH ${IRIS_TREE}/lib)
-set(IRIS_LIBS 
-    iris
-    irisnet
-    )
-set(IRIS_INCLUDE ${IRIS_TREE}/include/iris ${IRIS_TREE}/src)
+find_package(BZip2)
 
-include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDE} 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/iris")
+message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
+#set(Iris_DIR "../iris")
+find_package(Iris)
+
+# Pihhanovy pokusy s IRIS
+# FIND_LIBRARY(LIB_IRIS NAMES iris irisnet
+#     PATHS /usr/lib /usr/local/lib ../../iris 
+#     ENV IRIS_TREE 
+#     PATH_SUFFIXES lib)
+# MESSAGE(STATUS "Iris is at: ${LIB_IRIS}")
+# 
+# Check_Include_Files("xmpp.h" IRIS_INCLUDE)
+# MESSAGE(STATUS "Iris include: ${IRIS_INCLUDE}")
+# 
+# 
+# 
+# set(IRIS_TREE "../../iris")
+# set(IRIS_LIB_PATH ${IRIS_TREE}/lib)
+# set(IRIS_LIBS 
+#     iris
+#     irisnet
+#     )
+# set(IRIS_INCLUDE ${IRIS_TREE}/include/iris ${IRIS_TREE}/src)
+
+include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
 cutestuff/util cutestuff/network cutestuff/legacy )
 
 
@@ -83,7 +102,7 @@ kde4_add_executable(makneto ${makneto_SRCS})
 
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g")
 
-target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS} ${IRIS_LIBS})
+target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS} ${IRIS_LIBRARIES})
 
 install(TARGETS makneto DESTINATION ${BIN_INSTALL_DIR} )
 
