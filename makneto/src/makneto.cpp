@@ -59,9 +59,8 @@ void Makneto::contactNewSession(QAction *action)
 void Makneto::contactDetails(QAction *action)
 {
   std::cout << "Makneto::contactDetail()" << std::endl;
-  contactDetailDialog *contactDetail = new contactDetailDialog(0, action->data().toString());
+  contactDetailDialog *contactDetail = new contactDetailDialog(m_mainwindow, action->data().toString());
   contactDetail->show();
-  delete contactDetail;
 }
 
 void Makneto::addUser(const XMPP::Jid &jid, const QString &group, bool requestAuth)
