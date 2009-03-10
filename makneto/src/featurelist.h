@@ -13,6 +13,7 @@
 
 #include <QHash>
 #include <QDomElement>
+#include <QtAlgorithms>
 #include <xmpp_stanza.h>
 
 /*! \brief Helper class implementing requested order of sorting for multiple identities */
@@ -29,7 +30,7 @@ class IdentityHelper
         }
 
         IdentityHelper(const QString &category, const QString &type, const QString &name, const QString &lang) 
-            : category(category), type(type), name(name), lang(lang)
+            : category(category), name(name),  lang(lang), type(type)
         {
         }
 
@@ -109,8 +110,8 @@ class XFormFieldHelper
         {
             QStringList values;
             for (QDomElement child = m_element.firstChildElement("value");
-                !child.isNull(); child = child.getNextSibling()) {
-                if (!child.text().empty())
+                !child.isNull(); child = child.nextSiblingElement()) {
+                if (!child.text().isEmpty())
                     values.append(child.text());
 
             }
@@ -145,7 +146,7 @@ class XFormFieldHelper
         QString capsHashable()
         {
             QString result = m_var + "<";
-            result.append( valuesHashable() );
+            result.append( capsHashableValues() );
             return result;
         }
 
@@ -184,7 +185,7 @@ class XFormHelper
         QString lookupFormType(const QDomElement &parent) const
         {
             for (QDomElement e=parent.firstChildElement("field");
-                        !e.isNull(); e=e.getNextSibling("field")) {
+                        !e.isNull(); e=e.nextSiblingElement("field")) {
                 if (e.attribute("var")== "FORM_TYPE") {
                     QDomElement value = e.firstChildElement("value");
                     if (!value.isNull()) {
@@ -216,16 +217,23 @@ class XFormHelper
 
 
 /*! \brief Identity sorter with helper to output. */
-class IdentitySorter : QList<IdentityHelper>
+class IdentitySorter 
 {
     public:
+        typedef QList<IdentityHelper>   IdentityList;
+
         IdentitySorter()
         {}
 
         /*! \brief Creates structure with passed argument as first element. */
         IdentitySorter(const IdentityHelper &identity)
         {
-            append(identity);
+            m_list.append(identity);
+        }
+
+        void add(IdentityHelper &identity)
+        {
+            m_list.append(identity);
         }
 
         /*! \brief Returns one string with all identities formated to in caps format in proper order. 
@@ -233,27 +241,30 @@ class IdentitySorter : QList<IdentityHelper>
         QString capsHashable() const 
         {
             QString hash;
-            sort();
-            for (IdentitySorter::const_iterator it = begin(); it != end(); it++) {
+            qSort(m_list.begin(), m_list.end());
+            for (IdentityList::const_iterator it = m_list.begin(); it != m_list.end(); it++) {
                 hash += it->capsHashable();
             }
             return hash;
         }
-}
+
+    private:
+        IdentityList    m_list;
+};
 
 
 
 class FeatureList : public QHash<QString, bool>
 {
     public:
-        FeatureList() : QHash(),m_known(true)
+        FeatureList() : m_known(true)
         {
         }
 
         /*! \brief Do we know features of this owner? */
         bool known()
         {
-            returm m_known;
+            return m_known;
         }
 
         /*! \brief Is feature supported?
@@ -277,7 +288,7 @@ class FeatureList : public QHash<QString, bool>
             }
         }
 
-        QString computeHashSha1(Stanza *stanza) const
+        QString computeHashSha1(XMPP::Stanza *stanza) const
         {
             QString appended;
             QStringList identities;
@@ -288,7 +299,7 @@ class FeatureList : public QHash<QString, bool>
 
             query = stanza->doc().firstChildElement("query");
             for (QDomElement child = query.firstChildElement();
-                    !child.isNull(); child = child.getNextSibling()) {
+                    !child.isNull(); child = child.nextSiblingElement()) {
                 if (child.tagName() == "identity") {
                     QString si;
                     si = child.attribute("category") + "/";
