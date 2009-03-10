@@ -11,9 +11,8 @@ include(${QT_USE_FILE})
 
 include (KDE4Defaults)
 
-find_package(BZip2)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/iris")
+list(APPEND CMAKE_MODULE_PATH "../iris")
 message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
 #set(Iris_DIR "../iris")
 find_package(Iris)
