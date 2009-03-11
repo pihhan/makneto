@@ -152,8 +152,17 @@ void MUCView::bookmarkedMUC(QListWidgetItem *item)
   }
   tMUC *muc = qVariantValue<tMUC *>(item->data(Qt::UserRole));
   qDebug() << "Bookmarked MUC: " << muc->room + '@' + muc->server + '/' + muc->nick;
-  m_makneto->getConnection()->groupChatJoin(muc->server, muc->room, muc->nick, QString(), -1, -1, time(NULL));
-  m_makneto->actionNewSession(muc->room + '@' + muc->server, GroupChat, muc->nick);
+  
+  SessionView *session = getSessionByJid(Jid(muc->room + '@' + muc->server));
+  if (!session)
+  {
+    m_makneto->getConnection()->groupChatJoin(muc->server, muc->room, muc->nick, QString(), -1, -1, time(NULL));
+    m_makneto->actionNewSession(muc->room + '@' + muc->server, GroupChat, muc->nick);
+  }
+  else
+  {
+    m_makneto->getMaknetoMainWindow()->getMaknetoView()->getSessionTabManager()->bringToFront(session);
+  }
 }
 
 void MUCView::groupChatJoined(const Jid &jid)

@@ -42,6 +42,7 @@ RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	// roster
 	m_roster = new ContactListView(this);
 	m_roster->setModel(m_model);
+  m_roster->setIndentation(-3);
 
 	// search button for roster
 	m_search = new KLineEdit(this);
