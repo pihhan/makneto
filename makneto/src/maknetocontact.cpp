@@ -15,14 +15,6 @@
 
 #include <iostream>
 
-//KIcon MaknetoContact::statusIcons[7] =
-KIcon MaknetoContact::statusIconOnline = KIcon("maknetoonline");
-KIcon MaknetoContact::statusIconAway = KIcon("maknetoaway");
-KIcon MaknetoContact::statusIconFFC = KIcon("maknetoonline");
-KIcon MaknetoContact::statusIconDND = KIcon("maknetodnd");
-KIcon MaknetoContact::statusIconXA = KIcon("maknetoxa");
-KIcon MaknetoContact::statusIconOffline = KIcon("maknetooffline");
-KIcon MaknetoContact::statusIconInvisible = KIcon("maknetoinvisible");
 
 MaknetoContact::MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent, QMenu *contactMenu) : ContactListContact(parent), m_name(name), m_jid(jid), m_status(ContactListStatus::Offline, "Offline"), m_contactMenu(contactMenu)
 {
@@ -97,29 +89,36 @@ void MaknetoContact::showContextMenu(const QPoint &where)
 
 QIcon MaknetoContact::statusIcon() const
 {
-  switch (status().type())
-  {
-    case ContactListStatus::Offline:
-      return statusIconOffline;
-      break;
-    case ContactListStatus::Online:
-      return statusIconOnline;
-      break;
-    case ContactListStatus::FFC:
-      return statusIconOnline;
-      break;
-    case ContactListStatus::Away:
-      return statusIconAway;
-      break;
-    case ContactListStatus::XA:
-      return statusIconXA;
-      break;
-    case ContactListStatus::DND:
-      return statusIconDND;
-      break;
-    case ContactListStatus::Invisible:
-      return statusIconInvisible;
-      break;
-  }
-  return QIcon();
+	switch (status().type())
+	{
+		case XMPP::Status::Offline:
+			return KIcon("maknetooffline");;
+			break;
+
+		case XMPP::Status::Online:
+			return KIcon("maknetoonline");
+			break;
+
+		case XMPP::Status::Away:
+			return KIcon("maknetoaway");;
+			break;
+
+		case XMPP::Status::XA:
+			return KIcon("maknetoxa");
+			break;
+
+		case XMPP::Status::DND:
+			return KIcon("maknetodnd");
+			break;
+
+		case XMPP::Status::Invisible:
+			return KIcon("maknetoinvisible");
+			break;
+
+		case XMPP::Status::FFC:
+			return KIcon("maknetoffc");
+			break;
+	}
+
+	return QIcon();
 }
