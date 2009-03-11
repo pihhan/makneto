@@ -37,6 +37,7 @@
 #include "filetransfer.h"
 #include "sessiontabmanager.h"
 #include "makneto.h"
+#include "chatinput.h"
 
 #include <Phonon/VideoPlayer>
 
@@ -76,9 +77,10 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   m_leftSplitter->addWidget(m_chatSplitter);
   
   m_chatoutput = new QTextEdit(m_chatSplitter);
-  m_chatinput = new QTextEdit(m_chatSplitter);
+  m_chatinput = new ChatInput(m_chatSplitter);
   m_sendmsg = new QPushButton("&Send", m_leftWidget);
   connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
+  connect(m_chatinput, SIGNAL(send()), this, SLOT(sendClicked()));
 
   // output chat text edit props
   m_chatoutput->setTextFormat(Qt::RichText);

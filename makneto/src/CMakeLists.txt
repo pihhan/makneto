@@ -58,6 +58,7 @@ set(makneto_SRCS
   mucview.cpp
   muccontrol.cpp
   mucuserlist.cpp
+	chatinput.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp
