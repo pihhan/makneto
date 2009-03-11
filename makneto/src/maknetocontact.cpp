@@ -15,11 +15,14 @@
 
 #include <iostream>
 
-KIcon MaknetoContact::statusIcons[7] =
-{ KIcon("maknetoonline"), KIcon("maknetoaway"),
-  KIcon("maknetoonline"), KIcon("maknetodnd"),
-  KIcon("maknetoxa"), KIcon("maknetooffline"),
-  KIcon("invisible") };
+//KIcon MaknetoContact::statusIcons[7] =
+KIcon MaknetoContact::statusIconOnline = KIcon("maknetoonline");
+KIcon MaknetoContact::statusIconAway = KIcon("maknetoaway");
+KIcon MaknetoContact::statusIconFFC = KIcon("maknetoonline");
+KIcon MaknetoContact::statusIconDND = KIcon("maknetodnd");
+KIcon MaknetoContact::statusIconXA = KIcon("maknetoxa");
+KIcon MaknetoContact::statusIconOffline = KIcon("maknetooffline");
+KIcon MaknetoContact::statusIconInvisible = KIcon("maknetoinvisible");
 
 MaknetoContact::MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent, QMenu *contactMenu) : ContactListContact(parent), m_name(name), m_jid(jid), m_status(ContactListStatus::Offline, "Offline"), m_contactMenu(contactMenu)
 {
@@ -94,5 +97,29 @@ void MaknetoContact::showContextMenu(const QPoint &where)
 
 QIcon MaknetoContact::statusIcon() const
 {
-  return statusIcons[status().type()];
+  switch (status().type())
+  {
+    case ContactListStatus::Offline:
+      return statusIconOffline;
+      break;
+    case ContactListStatus::Online:
+      return statusIconOnline;
+      break;
+    case ContactListStatus::FFC:
+      return statusIconOnline;
+      break;
+    case ContactListStatus::Away:
+      return statusIconAway;
+      break;
+    case ContactListStatus::XA:
+      return statusIconXA;
+      break;
+    case ContactListStatus::DND:
+      return statusIconDND;
+      break;
+    case ContactListStatus::Invisible:
+      return statusIconInvisible;
+      break;
+  }
+  return QIcon();
 }

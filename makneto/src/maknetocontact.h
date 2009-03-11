@@ -53,7 +53,7 @@ private:
 	ContactListStatus m_status;
 	QMenu *m_contactMenu;
   QIcon statusIcon() const;
-  static KIcon statusIcons[7];
+  static KIcon statusIconOnline, statusIconAway, statusIconFFC, statusIconDND, statusIconXA, statusIconOffline, statusIconInvisible;
 };
 
 class MaknetoGroup : public ContactListGroup
