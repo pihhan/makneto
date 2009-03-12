@@ -58,7 +58,7 @@ class IdentityHelper
         }
 
         /*! \brief Operator needed for sorting order according to XEP-115 */
-        bool operator<(const IdentityHelper &other) 
+        bool operator<(const IdentityHelper &other) const
         {
             if (category == other.category) {
                 if (type == other.type) {
@@ -236,12 +236,17 @@ class IdentitySorter
             m_list.append(identity);
         }
 
+        void sort()
+        {
+            qSort(m_list.begin(), m_list.end());
+        }
+
         /*! \brief Returns one string with all identities formated to in caps format in proper order. 
          * It does sort for you also. */
-        QString capsHashable() const 
+        QString capsHashable()
         {
             QString hash;
-            qSort(m_list.begin(), m_list.end());
+            sort();
             for (IdentityList::const_iterator it = m_list.begin(); it != m_list.end(); it++) {
                 hash += it->capsHashable();
             }

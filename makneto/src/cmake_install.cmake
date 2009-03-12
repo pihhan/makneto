@@ -7,7 +7,7 @@ ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
 # Set the install configuration name.
-IF(NOT CMAKE_INSTALL_CONFIG_NAME)
+IF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
   IF(BUILD_TYPE)
     STRING(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
@@ -15,7 +15,7 @@ IF(NOT CMAKE_INSTALL_CONFIG_NAME)
     SET(CMAKE_INSTALL_CONFIG_NAME "Debug")
   ENDIF(BUILD_TYPE)
   MESSAGE(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
-ENDIF(NOT CMAKE_INSTALL_CONFIG_NAME)
+ENDIF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
 
 # Set the component getting installed.
 IF(NOT CMAKE_INSTALL_COMPONENT)
@@ -32,20 +32,41 @@ IF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
   SET(CMAKE_INSTALL_SO_NO_EXE "1")
 ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
-FILE(INSTALL DESTINATION "/usr/local/bin" TYPE EXECUTABLE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/makneto")
-FILE(INSTALL DESTINATION "/usr/local/share/applications/kde4" TYPE FILE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/makneto.desktop")
-FILE(INSTALL DESTINATION "/usr/local/share/config.kcfg" TYPE FILE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/makneto.kcfg")
-FILE(INSTALL DESTINATION "/usr/local/share/apps/makneto" TYPE FILE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/maknetoui.rc")
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+  IF("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+    FILE(INSTALL DESTINATION "/usr/local/bin" TYPE EXECUTABLE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/makneto")
+    IF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
+      IF(CMAKE_INSTALL_DO_STRIP)
+        EXECUTE_PROCESS(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/usr/local/bin/makneto")
+      ENDIF(CMAKE_INSTALL_DO_STRIP)
+    ENDIF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
+  ENDIF("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+  FILE(INSTALL DESTINATION "/usr/local/share/applications/kde4" TYPE FILE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/makneto.desktop")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+  FILE(INSTALL DESTINATION "/usr/local/share/config.kcfg" TYPE FILE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/makneto.kcfg")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+
+IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+  FILE(INSTALL DESTINATION "/usr/local/share/apps/makneto" TYPE FILE FILES "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/maknetoui.rc")
+ENDIF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspecified)$")
+
 IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   INCLUDE("/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/icons/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
+
 IF(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
 ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
+
 FILE(WRITE "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
   FILE(APPEND "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
