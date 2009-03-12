@@ -37,6 +37,7 @@ WbWidget::WbWidget(const QString &session, const QString &ownJid, const QSize &s
 	strokeWidth_ = 1;
 
 //	setCacheMode(CacheBackground);
+  setContextMenuPolicy(Qt::DefaultContextMenu);
 	setRenderHint(QPainter::Antialiasing);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 

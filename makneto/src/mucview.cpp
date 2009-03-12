@@ -207,18 +207,19 @@ bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick
   dialog->setCaption("Join chat room");
   dialog->setModal(true);
   dialog->setSizeGripEnabled(true);
-  QGridLayout *layout = new QGridLayout(dialog);
+  QWidget *w = new QWidget(dialog);
+  QGridLayout *layout = new QGridLayout(w);
   
-  QLabel *lRoom = new QLabel(tr("Room:"), dialog);
-  QLineEdit *eRoom = new QLineEdit(dialog);
+  QLabel *lRoom = new QLabel(tr("Room:"), w);
+  QLineEdit *eRoom = new QLineEdit(w);
   lRoom->setBuddy(eRoom);
   
-  QLabel *lServer = new QLabel(tr("Server:"), dialog);
-  QLineEdit *eServer = new QLineEdit(dialog);
+  QLabel *lServer = new QLabel(tr("Server:"), w);
+  QLineEdit *eServer = new QLineEdit(w);
   lRoom->setBuddy(eServer);
   
-  QLabel *lNick = new QLabel(tr("Nickname:"), dialog);
-  QLineEdit *eNick = new QLineEdit(dialog);
+  QLabel *lNick = new QLabel(tr("Nickname:"), w);
+  QLineEdit *eNick = new QLineEdit();
   lRoom->setBuddy(eNick);
 
   layout->addWidget(lRoom, 0, 0);
@@ -227,11 +228,9 @@ bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick
   layout->addWidget(eServer, 1, 1);
   layout->addWidget(lNick, 2, 0);
   layout->addWidget(eNick, 2, 1);
-  QHBoxLayout *buttonLayout = new QHBoxLayout(dialog);
-  buttonLayout->addWidget(dialog->button(KDialog::Ok));
-  buttonLayout->addWidget(dialog->button(KDialog::Cancel));
-  layout->addLayout(buttonLayout, 3, 0, 1, 2, Qt::AlignRight);
-  dialog->setLayout(layout);
+  dialog->setMainWidget(w);
+  dialog->setButtons(KDialog::Ok | KDialog::Cancel);
+
   
   bool result = false;
   if (dialog->exec() == QDialog::Accepted)

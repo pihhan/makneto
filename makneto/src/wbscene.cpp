@@ -26,9 +26,9 @@ WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent
 	highestId_ = 0;
 	session_ = session;
 	ownJid_ = ownJid;
-
+  
 	WbRoot* w = new WbRoot(this);
-	QDomElement *svg = new QDomElement(w->svg());
+	QDomElement *svg = new QDomElement(w->svg().cloneNode().toElement());
 	// Default values
 	svg->setAttribute("viewBox", "0 0 600 600");
 	svg->setAttribute("xmlns", "http://www.w3.org/2000/svg");
@@ -36,7 +36,7 @@ WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent
 	svg->setAttribute("baseProfile", "tiny");
 	w->parseSvg(*svg, false);
 	elements_.insert("root", w);
-//	delete svg; // FIXME: crash? wtf?
+	delete svg; // FIXME: crash? wtf?
 };
 
 QString WbScene::session() {
