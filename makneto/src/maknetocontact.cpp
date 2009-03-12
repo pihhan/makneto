@@ -91,31 +91,31 @@ QIcon MaknetoContact::statusIcon() const
 {
 	switch (status().type())
 	{
-		case XMPP::Status::Offline:
+    case ContactListStatus::Offline:
 			return KIcon("maknetooffline");;
 			break;
 
-		case XMPP::Status::Online:
+    case ContactListStatus::Online:
 			return KIcon("maknetoonline");
 			break;
 
-		case XMPP::Status::Away:
+    case ContactListStatus::Away:
 			return KIcon("maknetoaway");;
 			break;
 
-		case XMPP::Status::XA:
+    case ContactListStatus::XA:
 			return KIcon("maknetoxa");
 			break;
 
-		case XMPP::Status::DND:
+    case ContactListStatus::DND:
 			return KIcon("maknetodnd");
 			break;
 
-		case XMPP::Status::Invisible:
+    case ContactListStatus::Invisible:
 			return KIcon("maknetoinvisible");
 			break;
 
-		case XMPP::Status::FFC:
+    case ContactListStatus::FFC:
 			return KIcon("maknetoffc");
 			break;
 	}
