@@ -28,14 +28,15 @@ WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent
 	ownJid_ = ownJid;
 
 	WbRoot* w = new WbRoot(this);
-	QDomElement svg = w->svg();
+	QDomElement *svg = new QDomElement(w->svg());
 	// Default values
-	svg.setAttribute("viewBox", "0 0 600 600");
-	svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-	svg.setAttribute("version", "1.1");
-	svg.setAttribute("baseProfile", "tiny");
-	w->parseSvg(svg, false);
+	svg->setAttribute("viewBox", "0 0 600 600");
+	svg->setAttribute("xmlns", "http://www.w3.org/2000/svg");
+	svg->setAttribute("version", "1.1");
+	svg->setAttribute("baseProfile", "tiny");
+	w->parseSvg(*svg, false);
 	elements_.insert("root", w);
+//	delete svg; // FIXME: crash? wtf?
 };
 
 QString WbScene::session() {
