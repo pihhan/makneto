@@ -128,6 +128,7 @@ private:
 	QString m_session;
   int m_type;
   QString m_nick;
+  KAction *actionSelect;
 
 	// TODO: TEST ONLY!
 	QBuffer *m_testbuffer;

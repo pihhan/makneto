@@ -127,45 +127,56 @@ void SessionView::createToolBar()
 	QActionGroup *groupMode = new QActionGroup(this);
 	connect(groupMode, SIGNAL(triggered(QAction*)), this, SLOT(setMode(QAction*)));
  
-	KAction *actionSelect = new KAction(KIcon("select-rectangular"), i18n("Selection"), groupMode);
+	actionSelect = new KAction(KIcon("select-rectangular"), i18n("Selection"), groupMode);
 	m_wbtoolbar->addAction(actionSelect);
 	actionSelect->setData(QVariant(WbWidget::Select));
+  actionSelect->setCheckable(true);
 
 	KAction *actionTransformMove = new KAction(KIcon("transform-move"), i18n("Transform - move"), groupMode);
 	m_wbtoolbar->addAction(actionTransformMove);
 	actionTransformMove->setData(QVariant(WbWidget::Translate));
+  actionTransformMove->setCheckable(true);
 
 	KAction *actionRotate = new KAction(KIcon("transform-rotate"), i18n("Transform - rotate"), groupMode);
 	m_wbtoolbar->addAction(actionRotate);
 	actionRotate->setData(QVariant(WbWidget::Rotate));
+  actionRotate->setCheckable(true);
 
 	KAction *actionScale = new KAction(KIcon("zoom-fit-best"), i18n("Transform - scale"), groupMode);
 	m_wbtoolbar->addAction(actionScale);
 	actionScale->setData(QVariant(WbWidget::Scale));
+  actionScale->setCheckable(true);
 
 	KAction *actionErase = new KAction(KIcon("draw-eraser"), i18n("Erase"), groupMode);
 	m_wbtoolbar->addAction(actionErase);
 	actionErase->setData(QVariant(WbWidget::Erase));
+  actionErase->setCheckable(true);
 
 	KAction *actionPencil = new KAction(KIcon("draw-freehand"), i18n("Freehand"), groupMode);
 	m_wbtoolbar->addAction(actionPencil);
 	actionPencil->setData(QVariant(WbWidget::DrawPath));
+  actionPencil->setCheckable(true);
+  actionPencil->setChecked(true);
 
 	KAction *actionLine = new KAction(KIcon("draw-line"), i18n("Line"), groupMode);
 	m_wbtoolbar->addAction(actionLine);
 	actionLine->setData(QVariant(WbWidget::DrawLine));
+  actionLine->setCheckable(true);
 
 	KAction *actionRectangle = new KAction(KIcon("draw-rectangle"), i18n("Rectangle"), groupMode);
 	m_wbtoolbar->addAction(actionRectangle);
 	actionRectangle->setData(QVariant(WbWidget::DrawRectangle));
+  actionRectangle->setCheckable(true);
 
 	KAction *actionEllipse = new KAction(KIcon("draw-ellipse"), i18n("Ellipse"), groupMode);
 	m_wbtoolbar->addAction(actionEllipse);
 	actionEllipse->setData(QVariant(WbWidget::DrawEllipse));
+  actionEllipse->setCheckable(true);
 
 	KAction *actionCircle = new KAction(KIcon("draw-circle"), i18n("Circle"), groupMode);
 	m_wbtoolbar->addAction(actionCircle);
 	actionCircle->setData(QVariant(WbWidget::DrawCircle));
+  actionCircle->setCheckable(true);
 
 // 	KAction *actionPolyline = new KAction(KIcon("draw-polyline"), i18n("Polyline"), groupMode);
 // 	m_wbtoolbar->addAction(actionPolyline);
@@ -344,6 +355,8 @@ void SessionView::setEnabled(bool enabled)
 
 void SessionView::setMode(QAction *action)
 {
+  if (WbWidget::Mode(action->data().toInt()) == WbWidget::DrawImage)
+    actionSelect->setChecked(true);
 	m_wbwidget->setMode(WbWidget::Mode(action->data().toInt()));
 }
 
