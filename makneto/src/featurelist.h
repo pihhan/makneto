@@ -14,6 +14,7 @@
 #include <QHash>
 #include <QDomElement>
 #include <QtAlgorithms>
+#include <QStringList>
 #include <xmpp_stanza.h>
 
 /*! \brief Helper class implementing requested order of sorting for multiple identities */
@@ -40,40 +41,10 @@ class IdentityHelper
             return category + "/" + type + "/" + lang + "/" + name + "<";
         }
 
-        bool operator>(const IdentityHelper &other) 
-        {
-            if (category == other.category) {
-                if (type == other.type) {
-                    if (lang == other.lang) {
-                        return (name > other.name);
-                    } else {
-                        return (lang > other.lang);
-                    } // lang
-                } else {
-                    return (type > other.type);
-                } // type
-            } else {
-                return (category > other.category);
-            } // category
-        }
+        bool operator>(const IdentityHelper &other) const;
 
         /*! \brief Operator needed for sorting order according to XEP-115 */
-        bool operator<(const IdentityHelper &other) const
-        {
-            if (category == other.category) {
-                if (type == other.type) {
-                    if (lang == other.lang) {
-                        return (name < other.name);
-                    } else {
-                        return (lang < other.lang);
-                    } // lang
-                } else {
-                    return (type < other.type);
-                } // type
-            } else {
-                return (category < other.category);
-            } // category
-        }
+        bool operator<(const IdentityHelper &other) const;
 
     private:
         QString category;
@@ -99,24 +70,14 @@ class XFormFieldHelper
 
         }
 
-        bool operator<(const XFormFieldHelper &other)
+        bool operator<(const XFormFieldHelper &other) const
         {
             return (m_var < other.m_var);
         }
 
         /*! \brief Returns all values of added field. 
          * It does not sort, it returns strings in original order. */
-        QStringList values()
-        {
-            QStringList values;
-            for (QDomElement child = m_element.firstChildElement("value");
-                !child.isNull(); child = child.nextSiblingElement()) {
-                if (!child.text().isEmpty())
-                    values.append(child.text());
-
-            }
-            return values;
-        }
+        QStringList values();
 
         /*! \brief Returns only first value for this field.
          *
@@ -130,25 +91,10 @@ class XFormFieldHelper
 
         /*! \brief Returns string for caps hashing for this field's values.
          * No fieldname is included. */
-        QString capsHashableValues()
-        {
-            QString result;
-            QStringList list = values();
-            list.sort();
-            for (QStringList::const_iterator it=list.begin(); it!=list.end();
-                it++) {
-                result.append( *it + "<" );
-            }
-            return result;
-        }
+        QString capsHashableValues();
 
         /*! \brief Returns string hashing for whole field, with values and keyname included. */
-        QString capsHashable()
-        {
-            QString result = m_var + "<";
-            result.append( capsHashableValues() );
-            return result;
-        }
+        QString capsHashable();
 
         /*! \brief Returns keyword for this field. */
         QString key()
@@ -182,26 +128,40 @@ class XFormHelper
             m_element = QDomElement(element);
         }
 
-        QString lookupFormType(const QDomElement &parent) const
+        QString lookupFormType(const QDomElement &parent) const;
+
+        void loadFields(const QDomElement &parent) 
         {
             for (QDomElement e=parent.firstChildElement("field");
                         !e.isNull(); e=e.nextSiblingElement("field")) {
-                if (e.attribute("var")== "FORM_TYPE") {
-                    QDomElement value = e.firstChildElement("value");
-                    if (!value.isNull()) {
-                        return QString(value.text());
-                    }
-                }
+                m_fields.append(XFormFieldHelper(e));
             }
-            return QString();
+
         }
 
-        QString capsHashableFormType()
+        void sortFields()
+        {
+            qSort(m_fields.begin(), m_fields.end());
+        }
+
+        QString capsHashableFormType() const
         {
             return m_form_type + "<";
         }
 
-        bool operator<(const XFormHelper &other)
+        /*! \brief Returns part of string to hash for whole form. */
+        QString capsHashable()
+        {
+            QString hash(capsHashableFormType());
+            sortFields();
+            for (XFormFieldHelper::List::iterator it= m_fields.begin();
+                    it != m_fields.end(); it++) {
+                hash.append( it->capsHashable() );
+            }
+            return hash;
+        }
+
+        bool operator<(const XFormHelper &other) const
         {
             return m_form_type < other.m_form_type;
         }
@@ -212,6 +172,7 @@ class XFormHelper
     private:
         QString m_form_type;
         QDomElement m_element;
+        XFormFieldHelper::List  m_fields;
 };
 
 
@@ -241,6 +202,11 @@ class IdentitySorter
             qSort(m_list.begin(), m_list.end());
         }
 
+        void add(const IdentityHelper &identity)
+        {
+            m_list.append(identity);
+        }
+
         /*! \brief Returns one string with all identities formated to in caps format in proper order. 
          * It does sort for you also. */
         QString capsHashable()
@@ -258,12 +224,24 @@ class IdentitySorter
 };
 
 
-
+/*! \brief Class for managing capabilites of one client. */
 class FeatureList : public QHash<QString, bool>
 {
     public:
         FeatureList() : m_known(true)
         {
+        }
+
+        /*! \brief Create Feature list from Disco#identity reply. */
+        FeatureList(QDomElement &query)
+            : m_known(true)
+        {
+            m_query = QDomElement(query);
+            m_hash = computeHashString(query);
+            for (QDomElement e=query.firstChildElement("feature"); !e.isNull();
+                    e.nextSiblingElement("feature")) {
+                addFeature(e.text());
+            }
         }
 
         /*! \brief Do we know features of this owner? */
@@ -291,41 +269,39 @@ class FeatureList : public QHash<QString, bool>
             for (it= features.begin(); it!=features.end(); it++) {
                 addFeature(*it);
             }
+            m_known = true;
         }
 
-        QString computeHashSha1(XMPP::Stanza *stanza) const
+        void setHash(const QString &hash)
         {
-            QString appended;
-            QStringList identities;
-            QStringList features;
-            QDomDocument doc;
-            QDomNode query;
-            QDomElement identity;
-
-            query = stanza->doc().firstChildElement("query");
-            for (QDomElement child = query.firstChildElement();
-                    !child.isNull(); child = child.nextSiblingElement()) {
-                if (child.tagName() == "identity") {
-                    QString si;
-                    si = child.attribute("category") + "/";
-                    si += child.attribute("type") + "/";
-                    si += child.attribute("xml:lang") + "/";
-                    si += child.attribute("name") + "<";
-                    identities.append(si);
-                } else if (child.tagName() == "feature") {
-                    QString sf = child.text() + "<";
-                    features.append(sf);
-                } // do not try to understand other childen, we dont need them now
-            }
-
-            identities.sort();
-            features.sort();
-
+            m_hash = hash;
         }
+
+        QString capsHash() const
+        {
+            return m_hash;
+        }
+
+        QDomElement query()
+        {
+            return m_query;
+        }
+
+        static QString capsHashableStringList(const QStringList &list);
+
+        /*! \brief Create part of XEP-155 verify string from forms included in list.
+         * list is sorted in this method, it is modified then. */
+        static QString capsHashableForms(XFormHelper::List &list);
+
+        /*! \brief Create XEP-115 hash string from iq:query element.
+         * \param query Child of iq stanza query, with xmlns of disco#info */
+        static QString computeHashString(QDomElement &query);
 
     private:
 
     bool m_known; ///<! Are features of this client known?
+    QString m_hash;
+    QDomElement m_query;
     
 };
 
@@ -339,6 +315,19 @@ class FeatureListManager
         {}
 
         FeatureList * getFeaturesByHash( const QString &hash);
+
+        void addFeatures(const FeatureList &fl)
+        {
+            FeatureList *flp = new FeatureList(fl);
+        }
+
+        /*! \brief Reads features cache from xml file. */
+        void readFromFile(const QString &path);
+
+        /*! \brief Create XML database structure for saving cache. */
+        QDomDocument createXMLDatabase();
+
+        void writeToFile(const QString &path);
 
 
     private:

@@ -52,7 +52,7 @@ private:
 	QString m_jid;
 	ContactListStatus m_status;
 	QMenu *m_contactMenu;
-        FeatureList features;
+        FeatureList m_features;
 };
 
 class MaknetoGroup : public ContactListGroup

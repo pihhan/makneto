@@ -117,7 +117,7 @@ bool Connection::login()
 	connect(m_stream, SIGNAL(error(int)), SLOT(error(int)));
 	connect(m_stream, SIGNAL(authenticated()), SLOT(authenticated()));
 
-	Jid j = m_jid.withResource("Makneto");
+	Jid j = m_jid;
 
 	m_client->connectToServer(m_stream, j, true);
 
@@ -328,7 +328,7 @@ void Connection::authenticated()
 {
 	qDebug() << "Connection::authenticated()";
 
-	m_client->start(m_jid.domain(), m_jid.node(), "test", "Makneto");
+	m_client->start(m_jid.domain(), m_jid.node(), "test", m_jid.resource());
 
 	if (!m_stream->old())
 	{

@@ -87,6 +87,8 @@ set(makneto_SRCS
 	contactlist/contactlistview.cpp
 	contactlist/status.h
 
+        featurelist.h
+        featurelist.cpp
 
  )
 
