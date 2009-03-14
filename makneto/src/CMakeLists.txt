@@ -1,10 +1,12 @@
+cmake_minimum_required(VERSION 2.6)
+
 project(makneto)
 
 SET(CMAKE_BUILD_TYPE Debug)
 
+find_package(Qt4 REQUIRED)
 find_package(KDE4 REQUIRED)
 find_package(QCA2 REQUIRED)
-# find_package(Qt4 REQUIRED)
 
 #set(QT_USE_QT3SUPPORT TRUE)
 include(${QT_USE_FILE})
@@ -75,6 +77,11 @@ set(makneto_SRCS
 	mediaplayer.cpp
 	ftstream.cpp
 	addcontactdialog.cpp
+  contactdetaildialog.cpp
+  mucview.cpp
+  muccontrol.cpp
+  mucuserlist.cpp
+	chatinput.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp
@@ -96,7 +103,7 @@ kde4_moc_headers(makneto
 
 )
 
-kde4_add_ui_files(makneto_SRCS maknetoview_base.ui prefs_base.ui add_contact.ui)
+kde4_add_ui_files(makneto_SRCS maknetoview_base.ui prefs_base.ui add_contact.ui contact_detail.ui)
 kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})

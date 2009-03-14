@@ -42,9 +42,9 @@ QVariant ContactListModel::data(const QModelIndex &index, int role) const
 			QString txt;
 			if (showStatus_ && !contact->status().message().isEmpty()) {
 				if (contact->name().isEmpty())
-					txt = QString("<%1> (%2)").arg(contact->jid()).arg(contact->status().message());
+					txt = QString("<%1>").arg(contact->jid());
 				else
-					txt = QString("%1 (%2)").arg(contact->name()).arg(contact->status().message());
+					txt = QString("%1").arg(contact->name());
 			}
 			else
 				txt = contact->name();

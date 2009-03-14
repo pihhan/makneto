@@ -11,8 +11,10 @@
 #include "xmpp_status.h"
 
 #include <QtGui/QMenu>
+#include <KIcon>
 
 #include <iostream>
+
 
 MaknetoContact::MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent, QMenu *contactMenu) : ContactListContact(parent), m_name(name), m_jid(jid), m_status(ContactListStatus::Offline, "Offline"), m_contactMenu(contactMenu)
 {
@@ -84,3 +86,40 @@ void MaknetoContact::showContextMenu(const QPoint &where)
 {
 	m_contactMenu->exec(where);
 }
+
+QIcon MaknetoContact::statusIcon() const
+{
+	switch (status().type())
+	{
+    case ContactListStatus::Offline:
+			return KIcon("maknetooffline");;
+			break;
+
+    case ContactListStatus::Online:
+			return KIcon("maknetoonline");
+			break;
+
+    case ContactListStatus::Away:
+			return KIcon("maknetoaway");;
+			break;
+
+    case ContactListStatus::XA:
+			return KIcon("maknetoxa");
+			break;
+
+    case ContactListStatus::DND:
+			return KIcon("maknetodnd");
+			break;
+
+    case ContactListStatus::Invisible:
+			return KIcon("maknetoinvisible");
+			break;
+
+    case ContactListStatus::FFC:
+			return KIcon("maknetoffc");
+			break;
+	}
+
+	return QIcon();
+}
+

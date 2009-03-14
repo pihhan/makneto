@@ -10,6 +10,7 @@
 #include <QtGui/QWidget>
 
 class QVBoxLayout;
+class KHTMLPart;
 
 /**
  * This is the a Makneto HTML Browser for "Home tab".
@@ -30,10 +31,11 @@ public:
 	/**
 	* Destructor
 	*/
-	virtual ~MaknetoHTMLBrowser() { }
+	virtual ~MaknetoHTMLBrowser();
 	
 private:
 	QVBoxLayout *mainLayout;
+  KHTMLPart *homeTabBrowser;
 };
 
 #endif //MAKNETOHTMLBROWSER_H

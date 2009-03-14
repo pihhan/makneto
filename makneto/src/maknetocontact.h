@@ -27,6 +27,7 @@ namespace XMPP
 {
 	class Status;
 }
+class KIcon;
 
 class MaknetoContact : public ContactListContact
 {
@@ -52,6 +53,8 @@ private:
 	QString m_jid;
 	ContactListStatus m_status;
 	QMenu *m_contactMenu;
+        QIcon statusIcon() const;
+        static KIcon statusIconOnline, statusIconAway, statusIconFFC, statusIconDND, statusIconXA, statusIconOffline, statusIconInvisible;
         FeatureList m_features;
 };
 

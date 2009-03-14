@@ -24,6 +24,7 @@ int main(int argc, char **argv)
 	// Makneto main
 	Makneto *makneto = new Makneto;
 	MaknetoMainWindow *mainWindow = new MaknetoMainWindow(makneto);
+  makneto->setMaknetoMainWindow(mainWindow);
     
 	mainWindow->show();
 

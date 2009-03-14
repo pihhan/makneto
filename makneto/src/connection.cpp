@@ -44,7 +44,7 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
         //m_tlsHandler = new XMPP::QCATLSHandler(m_tls);
 
 	QStringList features;
-	features << "http://jabber.org/protocol/commands";
+        features << "http://jabber.org/protocol/commands" << "http://www.w3.org/2000/svg";
 	m_client->setFeatures(Features(features));
 
 	m_client->setFileTransferEnabled(true);
@@ -59,13 +59,27 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	connect(m_client, SIGNAL(resourceUnavailable(const Jid &, const Resource &)), SLOT(client_resourceUnavailable(const Jid &, const Resource &)));
 	connect(m_client, SIGNAL(presenceError(const Jid &, int, const QString &)), SLOT(client_presenceError(const Jid &, int, const QString &)));
 	connect(m_client, SIGNAL(subscription(const Jid &, const QString &, const QString&)), SLOT(client_subscription(const Jid &, const QString &, const QString&)));
-	//connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
-	//connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
+	connect(m_client, SIGNAL(xmlIncoming(const QString &)), this, SLOT(client_xmlIncoming(const QString &)));
+	connect(m_client, SIGNAL(xmlOutgoing(const QString &)), this, SLOT(client_xmlOutgoing(const QString &)));
 	connect(m_client->fileTransferManager(), SIGNAL(incomingReady()), SLOT(client_incomingFileTransfer()));
+  connect(m_client, SIGNAL(groupChatJoined(const Jid &)), SLOT(client_groupChatJoined(const Jid &)));
+  connect(m_client, SIGNAL(groupChatLeft(const Jid &)), SLOT(client_groupChatLeft(const Jid &)));
+  connect(m_client, SIGNAL(groupChatPresence(const Jid &, const Status &)), SLOT(client_groupChatPresence(const Jid &, const Status &)));
+  connect(m_client, SIGNAL(groupChatError(const Jid &, int, const QString &)), SLOT(client_groupChatError(const Jid &, int, const QString &)));
+  
+  
+  // TODO: Remove logging when not necessary
+  QFile *logFile = new QFile("message.log");
+  logFile->open(QIODevice::WriteOnly);
+  log.setDevice(logFile);
 }
 
 Connection::~Connection()
 {
+  // TODO: Remove logging when not necessary
+  log.flush();
+  log.device()->close();
+  
 	logout();
 
 
@@ -399,6 +413,139 @@ void Connection::client_rosterRequestFinished(bool success, int, const QString &
 	setStatus(XMPP::Status::Online);
 }
 
+bool Connection::groupChatJoin(const QString &host, const QString &room, const QString &nick, const QString& password, int maxchars, int maxstanzas, int seconds, const Status& status)
+  {
+  return m_client->groupChatJoin(host, room, nick, password, maxchars, maxstanzas, seconds, status);
+}
+
+void Connection::groupChatLeave(const Jid &jid)
+{
+  m_client->groupChatLeave(jid.domain(), jid.node());
+}
+
+void Connection::setRole(const Jid &jid, const QString &nick, const QString &role, const QString &reason)
+{
+  QString message;
+  message = QString(
+"<iq from='%1' id='%2' to='%3' type='set'>\n\
+  <query xmlns='http://jabber.org/protocol/muc#admin'>\n\
+    <item nick='%4' role='%5'").arg(m_jid.full(), m_client->genUniqueId(), jid.bare(), nick, role);
+  if (reason.isEmpty())
+    message += "/>\n";
+  else
+    message += QString(">\n      <reason>%1</reason>\n    </item>\n").arg(reason);
+  message += "  </query>\n</iq>\n";
+  send(message);
+
+}
+
+void Connection::setAffiliation(const Jid &jid, const Jid &userJid, const QString &affiliation, const QString &reason)
+{
+  QString message;
+  message = QString(
+"<iq from='%1' id='%2' to='%3' type='set'>\n\
+  <query xmlns='http://jabber.org/protocol/muc#admin'>\n\
+    <item affiliation='%4' jid='%5'").arg(m_jid.full(), m_client->genUniqueId(), jid.bare(), affiliation, userJid.bare());
+  if (reason.isEmpty())
+    message += "/>\n";
+  else
+    message += QString(">\n      <reason>%1</reason>\n    </item>\n").arg(reason);
+  message += "  </query>\n</iq>\n";
+  send(message);
+}
+
+QString Connection::genUniqueId()
+{
+  return m_client->genUniqueId();
+}
+
+void Connection::groupChatGrantVoice(const Jid &jid, const QString &nick, const QString &reason)
+{
+  setRole(jid, nick, "participant", reason);
+}
+
+void Connection::groupChatGrantModeration(const Jid &jid, const QString &nick, const QString &reason)
+{
+  setRole(jid, nick, "moderator", reason);
+}
+
+void Connection::groupChatGrantMembership(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "member", reason);
+}
+
+void Connection::groupChatGrantAdministration(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "admin", reason);
+}
+
+void Connection::groupChatGrantOwnership(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "owner", reason);
+}
+
+void Connection::groupChatRevokeOwnership(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "admin", reason);
+}
+
+void Connection::groupChatRevokeAdministration(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "member", reason);
+}
+
+void Connection::groupChatRevokeMembership(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "none", reason);
+}
+
+void Connection::groupChatRevokeModeration(const Jid &jid, const QString &nick, const QString &reason)
+{
+  setRole(jid, nick, "participant", reason);
+}
+
+void Connection::groupChatRevokeVoice(const Jid &jid, const QString &nick, const QString &reason)
+{
+  setRole(jid, nick, "visitor", reason);
+}
+
+void Connection::groupChatRequestVoice(const Jid &jid)
+{
+  QString message;
+  message = QString(
+"<message from='%1' to='%2'>\n\
+  <x xmlns='jabber:x:data' type='submit'>\n\
+    <field var='FORM_TYPE'>\n\
+      <value>http://jabber.org/protocol/muc#request</value>\n\
+    </field>\n\
+    <field var='muc#role' type='text-single' label='Requested role'>\n\
+      <value>participant</value>\n\
+    </field>\n\
+  </x>\n\
+</message>\n").arg(m_jid.full(), jid.bare());
+  send(message);
+}
+
+void Connection::groupChatSubjectChange(const Jid &jid, const QString &subject)
+{
+  QString message;
+  message = QString(
+"<message from='%1' to='%2' type='groupchat'>\n\
+  <subject>%3</subject>\n\
+</message>\n").arg(m_jid.full(), jid.bare(), subject);
+  send(message);
+}
+
+void Connection::groupChatKickUser(const Jid &jid, const QString &nick, const QString &reason)
+{
+  setRole(jid, nick, "none", reason);
+}
+
+void Connection::groupChatBanUser(const Jid &jid, const Jid &userJid, const QString &reason)
+{
+  setAffiliation(jid, userJid, "outcast", reason);
+}
+
 void Connection::client_rosterItemAdded(const RosterItem &item)
 {
 	qDebug() << "Connection::client_rosterItemAdded(item)";
@@ -458,13 +605,165 @@ void Connection::client_debugText(const QString &debugText)
 	qDebug() << debugText;	
 }
 
-void Connection::client_xmlIncoming(const QString &)
-{
-}
+void Connection::client_xmlIncoming(const QString &text)
+  {
+  log << "----- INCOMING -----\n" << text << endl;
+  // Here will be processed all messages that is not part of iris library (mainly MUC)
+  QDomDocument doc;
+  if (!doc.setContent(text, false))
+    return;
+  QDomElement docElem = doc.documentElement(), child;
+  if (docElem.isNull())
+    return;
+  // <presence from="a@b/c" type="unavailable" to="x@y/z" >
+  if (docElem.tagName().compare("presence") == 0)
+  {
+    QString from, to, type;
+    from = docElem.attribute("from");
+    to = docElem.attribute("to");
+    type = docElem.attribute("type");
+    
+    // <x xmlns='http://jabber.org/protocol/muc#user'>
+    child = docElem.firstChildElement("x");
+    if (!child.isNull() && child.attribute("xmlns").compare("http://jabber.org/protocol/muc#user") == 0)
+    {
+      QString actor, reason, nick, affiliation, role, jid;
+      child = docElem.firstChildElement("item");
+      if (!child.isNull())
+      {
+        role = child.attribute("role");
+        affiliation = child.attribute("affiliation");
+        jid = child.attribute("jid");
+        
+        QDomElement child2 = child.firstChildElement("actor");
+        if (!child2.isNull())
+        {
+          actor = child2.attribute("jid");
+        }
+        child2 = child.firstChildElement("reason");
+        if (!child2.isNull())
+        {
+          reason = child2.text();
+        }
+        if (affiliation.compare("none") == 0)
+        {
+          Jid jid(Jid(from).bare());
+          // deprecated, create bare jid using bare() method
+//          jid.setResource(QString());
+          Jid userJid(jid);
+          emit groupChatMembershipRevoked(jid, userJid, reason);
+        }
+        else if (affiliation.compare("member") == 0)
+        {
+          Jid jid(Jid(from).bare());
+          Jid userJid(jid);
+          emit groupChatMembershipGranted(jid, userJid, reason);
+        }
+        if (role.compare("participant") == 0)
+        {
+          Jid jfrom(from);
+          Jid jid(jfrom.bare());
+          QString nick = jfrom.resource();
+          emit groupChatVoiceGranted(jid, nick, reason);
+          return;
+        }
+        else if (role.compare("visitor") == 0)
+        {
+          Jid jfrom(from);
+          Jid jid(jfrom.bare());
+          QString nick = jfrom.resource();
+          emit groupChatVoiceRevoked(jid, nick, reason);
+          return;
+        }
+      }
+      child = docElem.firstChildElement("status");
+      if (!child.isNull())
+      {
+        if (type.compare("unavailable") == 0)
+        {
+          if (child.attribute("code").compare("307") == 0)
+          {
+            Jid jfrom = Jid(from);
+            QString nick = jfrom.resource();
+            Jid jid(jfrom.bare());
+            emit groupChatUserKicked(jid, nick, reason, actor);
+            return;
+          }
+          else if (child.attribute("code").compare("301") == 0)
+          {
+            Jid jfrom = Jid(from);
+            QString nick = jfrom.resource();
+            Jid jid(jfrom.bare());
+            emit groupChatUserBanned(jid, nick, reason, actor);
+            return;
+          }
+          else if (child.attribute("code").compare("301") == 0)
+          {
+            Jid jfrom = Jid(from);
+            QString nick = jfrom.resource();
+            Jid jid(jfrom.bare());
+            emit groupChatUserRemovedAsNonMember(jid, nick);
+            return;
+          }
+        }
+      }
+    }
+  }
+  else if (docElem.tagName().compare("iq") == 0)
+  {
+    
+  }
+  else if (docElem.tagName().compare("message") == 0)
+  {
+    QString from, to;
+    from = docElem.attribute("from");
+    to = docElem.attribute("to");
+    
+    child = docElem.firstChildElement("subject");
+    if (!child.isNull())
+    {
+      Jid jid(Jid(to).bare());
+      emit groupChatSubjectChanged(jid, child.text());
+    }
+    
+    child = docElem.firstChildElement("x");
+    if (!child.isNull() && child.attribute("xmlns").compare("jabber:x:data") == 0 && child.attribute("type").compare("submit") == 0)
+    {
+      QString role, nick;
+      QDomElement child2 = child.firstChildElement("field"), child3;
+      while (!child2.isNull())
+      {
+        if (child2.attribute("var").compare("muc#role") == 0)
+        {
+          child3 = child2.firstChildElement("value");
+          if (!child3.isNull())
+            role = child3.text();
+        }
+        if (child2.attribute("var").compare("muc#roomnick") == 0)
+        {
+          child3 = child2.firstChildElement("value");
+          if (!child3.isNull())
+            nick = child3.text();
+        }
+        child2 = child2.nextSiblingElement("field");
+      }
+      if (!nick.isEmpty() && role.compare("participant") == 0)
+      {
+        Jid jfrom(from);
+        QString nick = jfrom.resource();
+        Jid jid(jfrom.bare());
+        emit groupChatVoiceRequested(jid, nick);
+        return;
+      }
+    }
+  }
+  }
+  
+void Connection::client_xmlOutgoing(const QString &text)
+  {
+  log << "----- OUTGOING -----\n" << text << endl;
+  }
 
-void Connection::client_xmlOutgoing(const QString &)
-{
-}
 
 void Connection::client_incomingFileTransfer()
 {
@@ -478,6 +777,32 @@ void Connection::client_incomingFileTransfer()
 	// process incoming file transfer
 	emit connIncomingFileTransfer(ft);
 }
+
+void Connection::client_groupChatJoined(const Jid &jid)
+{
+  qDebug() << "Connection::client_groupChatJoined(" << jid.bare() << ")";
+  emit groupChatJoined(jid);
+
+}
+
+void Connection::client_groupChatLeft(const Jid &jid)
+{
+  qDebug() << "Connection::client_groupChatLeft(" << jid.bare() << ")";
+  emit groupChatLeft(jid);
+}
+
+void Connection::client_groupChatPresence(const Jid &jid, const Status &status)
+{
+  qDebug() << "Connection::client_groupChatPresence(" << jid.bare() << ": " << status.status() << ")";
+  emit groupChatPresence(jid, status);
+}
+
+void Connection::client_groupChatError(const Jid &jid, int i, const QString &error)
+{
+  qDebug() << "Connection::client_groupChatError(" << jid.bare() << ": " << error << ")";
+  emit groupChatError(jid, i, error);
+}
+
 
 void Connection::sendMessage(const Message &message)
 {
@@ -493,5 +818,16 @@ void Connection::addUser(const Jid &jid, const QString &group, bool requestAuth)
 	if (requestAuth)
 		m_client->sendSubscription(jid, "subscribe");
 }
+
+void Connection::send(const QDomElement &e)
+{
+  m_client->send(e);
+}
+
+void Connection::send(const QString &s)
+{
+  m_client->send(s);
+}
+
 
 #include "connection.moc"

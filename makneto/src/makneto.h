@@ -29,6 +29,9 @@ using namespace XMPP;
  */
 
 class MaknetoContactList;
+class MaknetoMainWindow;
+
+enum ChatType { Chat = 0, GroupChat = 1 };
 
 class Makneto : public QObject
 {
@@ -46,22 +49,27 @@ public:
 
 	Connection *getConnection() { return m_conn; }
 	MaknetoContactList *getContactList() { return m_cl; }
+  MaknetoMainWindow *getMaknetoMainWindow() { return m_mainwindow; }
 
 signals:
-	void newSession(const QString &text);
+	void newSession(const QString &text, ChatType type, const QString &nick = QString());
 	void statusChanged(const XMPP::Status &);
 
 public slots:
 	void conn_messageReceived(const Message &);
 // 	void conn_statusChanged(const XMPP::Status &);
-	void actionNewSession(const QString &);
+  void actionNewSession(const QString &, ChatType type = Chat, const QString &nick = QString());
 	void actionNewSession();
-	void contactTriggered(QAction *action);
+  void contactNewSession(QAction *action);
+  void contactDetails(QAction *action);
 	void addUser(const XMPP::Jid &, const QString &, bool requestAuth);
+  
+  void setMaknetoMainWindow(MaknetoMainWindow *mainwindow) { m_mainwindow = mainwindow; }
 
 private:
 	Connection *m_conn;
 	MaknetoContactList *m_cl;
+  MaknetoMainWindow *m_mainwindow;
 };
 
 #endif // MAKNETO_H

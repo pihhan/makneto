@@ -30,6 +30,8 @@ class MaknetoMainWindow : public KXmlGuiWindow
 	Q_OBJECT
 public:
 	MaknetoMainWindow(Makneto *makneto);
+  
+  MaknetoView *getMaknetoView(void) { return m_view; }
 	
 	virtual ~MaknetoMainWindow();
 	
@@ -49,6 +51,8 @@ private:
 	
 	KToggleAction *m_toolbarAction;
 	KToggleAction *m_statusbarAction;
+  
+  void closeEvent(QCloseEvent *event);
 };
 
 #endif // _MAKNETOMAINWINDOW_H_
