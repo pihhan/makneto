@@ -48,7 +48,7 @@ MaknetoContact* MaknetoGroup::findContactByJid(const QString& jid)
 		return 0;
 }
 
-void MaknetoContact::setStatus(const XMPP::Status &status)
+void MaknetoContactResource::setStatus(const XMPP::Status &status)
 {
 	switch (status.type())
 	{
@@ -122,4 +122,47 @@ QIcon MaknetoContact::statusIcon() const
 
 	return QIcon();
 }
+
+
+/*! \brief Create resource from first incoming presence. */
+MaknetoContactResource::MaknetoContactResource(XMPP:Status &status)
+    : m_resource(0)
+{
+    m_resource = status.from().resource();
+    setStatus(status);
+    // TODO: caps hash checking a inicializace features.
+}
+
+MaknetoContactResource * MaknetoContact::bestResource()
+{
+    MaknetoContactResource *p = NULL;
+    ResourcesHash::iterator it;
+    for (it= m_resources.begin(); it != m_resources.end(); it++) {
+        if (!p || *p < *it) {
+            p = &(*it);
+        }
+    }
+    return p;
+}
+
+ContactListStatus MaknetoContact::status() const 
+{ 
+    MaknetoContactResource *resource;
+    resource = bestResource();
+    if (resource != NULL) {
+        return resource->status();
+    } else {
+        return ContactListStatus(Offline); 
+    }
+}
+
+void MaknetoContact::setStatus(const XMPP::Status &status)
+{
+    MaknetoContactResource *resource;
+    resource = bestResource();
+    if (resource != NULL) {
+        resource->setStatus(status);
+    }
+}
+
 

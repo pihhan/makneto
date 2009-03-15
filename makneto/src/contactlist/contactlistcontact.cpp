@@ -72,3 +72,5 @@ void ContactListContact::updateParent()
 	if (newParent != parent())
 		setParent(newParent);
 }
+
+
