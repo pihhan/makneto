@@ -39,6 +39,13 @@ class KIcon;
 class MaknetoContactResource : public ContactListContact
 {
 public:
+        MaknetoContactResource()
+            : ContactListContact(NULL),m_status(ContactListStatus::Offline),
+              m_contactMenu(NULL), 
+              m_priority(0)
+        {
+        }
+
         MaknetoContactResource(const QString &resource, int priority = 0)
             : ContactListContact(NULL),m_status(ContactListStatus::Offline),
               m_contactMenu(NULL), 
@@ -47,7 +54,7 @@ public:
 
         }
 
-        MaknetoContactResource(const XMPP::Status &status);
+        MaknetoContactResource(const XMPP::Status &status, const QString &resource);
 
         virtual QString jid() const { return ""; }
         virtual QString resource() const { return m_resource; }
@@ -57,7 +64,12 @@ public:
         /*! \brief only compatibility with ContactListContact, name is the same for all resources, no need to store it for every single resource. */
         virtual const QString & name() const { return QString(); } 
 	void setStatus(const XMPP::Status& status);
-        void setPriority(int prio) { m_priority = prio; }
+        void setPriority(int prio) { m_priority = prio; 
+
+        bool operator<(const MaknetoContactResource &other) const
+        {
+            return (m_resource < other.m_resource);
+        }
 private: 
 	ContactListStatus m_status;
 	QMenu *m_contactMenu;
@@ -86,13 +98,32 @@ public:
 	virtual QString jid() const { return m_jid; }
 	virtual ContactListStatus status() const;
 	virtual void showContextMenu(const QPoint &where);
+
+        virtual QString resource() const
+        {
+            QString r;
+//            MaknetoContactResource *br = bestResource();
+//            if (br)
+//                r = br->resource();
+            return r;
+        }
+
+        virtual int priority() const
+        {
+            int r = 0;
+//            MaknetoContactResource *br = bestResource();
+//            if (br)
+//                r = br->priority();
+            return r;
+        }
+
         virtual MaknetoContactResource resource( const QString &resource) 
         {
             return m_resources.value(resource);
         }
         /*! \brief Return resource with highest priority. 
          * \return Pointer to best resource class or NULL, if none is present - offline contact. */
-        virtual MaknetoContactResource *bestResource();
+        virtual MaknetoContactResource *bestResource() ;
         int resourcesNumber() const { return m_resources.size(); }
 
 	void setName(const QString& name) { m_name = name; } 

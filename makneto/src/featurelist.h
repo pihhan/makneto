@@ -316,9 +316,13 @@ class FeatureListManager
 
         FeatureList * getFeaturesByHash( const QString &hash);
 
+        /* FIXME: tohle nebude fungovat spravne. nemam jeste pocitani skutecneho hashe. */
         void addFeatures(const FeatureList &fl)
         {
             FeatureList *flp = new FeatureList(fl);
+            QString hash;
+            hash = flp->capsHash();
+            m_database.insert(hash, flp);
         }
 
         /*! \brief Reads features cache from xml file. */

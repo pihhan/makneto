@@ -125,15 +125,15 @@ QIcon MaknetoContact::statusIcon() const
 
 
 /*! \brief Create resource from first incoming presence. */
-MaknetoContactResource::MaknetoContactResource(XMPP:Status &status)
-    : m_resource(0)
+MaknetoContactResource::MaknetoContactResource(const XMPP::Status &status, const QString &resource)
+    : ContactListContact(NULL),m_status(ContactListStatus::Offline),m_resource(0)
 {
-    m_resource = status.from().resource();
+    m_resource = resource;
     setStatus(status);
     // TODO: caps hash checking a inicializace features.
 }
 
-MaknetoContactResource * MaknetoContact::bestResource()
+MaknetoContactResource * MaknetoContact::bestResource() 
 {
     MaknetoContactResource *p = NULL;
     ResourcesHash::iterator it;
