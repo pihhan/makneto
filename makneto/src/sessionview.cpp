@@ -100,6 +100,10 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
     QSettings settings;
     m_topSplitter->restoreState(settings.value("m_topSplitter").toByteArray());
   }
+  else
+  {
+    m_muccontrol = 0;
+  }
 
   
 	// TODO: test only!!!
@@ -328,6 +332,44 @@ void SessionView::fileTransfer(FileTransfer *ft)
 	bytes = 0;
 	//player->load(m_testbuffer);
 	//player->play();
+}
+
+void SessionView::showHideMUCControl()
+{
+  if (m_muccontrol)
+  {
+    QList<int> l = m_topSplitter->sizes();
+    
+    if (l[1] == 0)
+    {
+      QSettings settings;
+      m_topSplitter->restoreState(settings.value("m_topSplitter").toByteArray());
+    }
+    else
+    {
+      QSettings settings;
+      settings.setValue("m_topSplitter", m_topSplitter->saveState());
+      l[1] = 0;
+      m_topSplitter->setSizes(l);
+    }
+  }
+}
+
+void SessionView::showHideChat()
+{
+  QList<int> l = m_leftSplitter->sizes();
+  if (l[1] == 0)
+  {
+    QSettings settings;
+    l[1] = settings.value("m_leftSplitter_size").toInt();
+  }
+  else
+  {
+    QSettings settings;
+    settings.setValue("m_leftSplitter_size", l[1]);
+    l[1] = 0;
+  }
+  m_leftSplitter->setSizes(l);
 }
 
 bool SessionView::closeRequest()

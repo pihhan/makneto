@@ -16,6 +16,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <KPushButton>
+#include <KStatusBar>
 
 MUCView::MUCView(QWidget */*parent*/, Makneto *makneto) : m_makneto(makneto)
 {
@@ -172,8 +173,7 @@ void MUCView::groupChatJoined(const Jid &jid)
   {
     emit session->getMUCControl()->setConnected(true);
   }
-  // TODO: Transform to better form (maybe status bar ?)
-  QMessageBox::information(this, "Connected", "You have been connected to \"" + jid.bare() + "\".");
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been connected to \"") + jid.bare() + "\".", 2000);
 }
 
 void MUCView::groupChatLeft(const Jid &jid)
@@ -183,7 +183,7 @@ void MUCView::groupChatLeft(const Jid &jid)
   {
     emit session->getMUCControl()->setConnected(false);
   }
-  QMessageBox::information(this, "Disconnected", "You have been disconnected from \"" + jid.bare() + "\".");
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been disconnected from \"") + jid.bare() + "\".", 2000);
 }
 
 void MUCView::groupChatPresence(const Jid &jid, const Status &status)

@@ -108,6 +108,11 @@ void SessionTabManager::bringToFront(SessionView *session)
 	m_tab->setCurrentIndex(session->id());	
 }
 
+SessionView *SessionTabManager::activeSession()
+{
+  return dynamic_cast<SessionView *> (m_widgets->currentWidget());
+}
+
 void SessionTabManager::messageReceived(const Message &message)
 {
 	SessionView *session;

@@ -7,6 +7,9 @@
 #include "maknetoview.h"
 #include "settings.h"
 #include "mediaplayer.h"
+#include "sessiontabmanager.h"
+#include "sessionview.h"
+#include "sidebarwidget.h"
 
 #include <QtGui/QDropEvent>
 #include <QtGui/QPainter>
@@ -20,6 +23,7 @@
 #include <kaction.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
+#include <ktogglefullscreenaction.h>
 
 #include <KDE/KLocale>
 #include <KDE/KMenuBar>
@@ -42,6 +46,10 @@ MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto) : KXmlGuiWindow(), m_view
 	statusBar()->show();
 	
 	setupGUI();
+  
+  QList<QAction *> a = menuBar()->actions();
+  if (a.size() > 1 && a[1]->menu())
+    a[1]->menu()->insertAction(m_fullScreenAction, hideAllAction);
 }
 
 MaknetoMainWindow::~MaknetoMainWindow()
@@ -50,7 +58,12 @@ MaknetoMainWindow::~MaknetoMainWindow()
 
 void MaknetoMainWindow::setupActions()
 {
-	KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
+  hideAllAction = actionCollection()->addAction("hideAll");
+  hideAllAction->setText("Hide All");
+  hideAllAction->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_F);
+  hideAllAction->setMenuRole(QAction::PreferencesRole);
+  connect(hideAllAction, SIGNAL(triggered()), this, SLOT(hideAll()));
+  m_fullScreenAction = KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
 	KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
 	KStandardAction::quit(this, SLOT(quit()), actionCollection());
 	
@@ -83,6 +96,19 @@ void MaknetoMainWindow::optionsPreferences()
 	dialog->show();
 }
 
+void MaknetoMainWindow::hideAll()
+{
+  SessionView *session = m_view->getSessionTabManager()->activeSession();
+  if (session)
+  {
+    session->showHideMUCControl();
+    session->showHideChat();
+  }
+  m_view->getSidebarWidget()->hideAll();
+  showMenubar();
+  statusBar()->setVisible(!statusBar()->isVisible());
+}
+
 void MaknetoMainWindow::fullScreen()
 {
 	// set fullscreen state
@@ -96,8 +122,7 @@ void MaknetoMainWindow::showMenubar()
 
 void MaknetoMainWindow::closeEvent(QCloseEvent *event)
 {
-  if (m_makneto->getConnection()->isOnline())
-    m_makneto->getConnection()->logout();
+  m_makneto->getConnection()->logout();
 }
 
 #include "maknetomainwindow.moc"

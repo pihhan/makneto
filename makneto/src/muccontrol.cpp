@@ -85,11 +85,11 @@ void MUCControl::setConnected(bool connected)
 {
   if (connected)
   {
-    m_sessionView->infoMessage("You have been connected to this room");
+    m_sessionView->infoMessage(tr("You have entered this room"));
   }
   else
   {
-    m_sessionView->infoMessage("You have been disconnected from this room");
+    m_sessionView->infoMessage(tr("You have left this room"));
   }
   m_connected = connected;
   m_sessionView->setEnabled(connected);

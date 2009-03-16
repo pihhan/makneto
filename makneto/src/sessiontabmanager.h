@@ -42,6 +42,7 @@ public:
 	SessionView *findSession(const QString &jid);
 	void bringToFront(SessionView *session);
   Makneto *makneto() { return m_makneto; }
+  SessionView *activeSession();
 public slots:
 	void messageReceived(const Message &message);
   void newSession(const QString &text, ChatType type, const QString &nick = QString());

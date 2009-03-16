@@ -81,6 +81,8 @@ public:
   void setType(int type) { m_type = type; }
   
   MUCControl *getMUCControl(void) { return m_muccontrol; }
+  void showHideMUCControl();
+  void showHideChat();
   bool closeRequest();
   void setEnabled(bool enabled);
 public slots:
