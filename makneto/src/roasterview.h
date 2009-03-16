@@ -48,6 +48,7 @@ public slots:
 	void search(const QString& search);
 	void offlineClicked(bool toggled);
 	void addContactClicked(bool toggled);
+  void itemDoubleClicked(const QString &);
 
 private:
 	Ui::AddContact ui_add_contact;

@@ -51,10 +51,6 @@ public:
 	MaknetoContactList *getContactList() { return m_cl; }
   MaknetoMainWindow *getMaknetoMainWindow() { return m_mainwindow; }
 
-signals:
-	void newSession(const QString &text, ChatType type, const QString &nick = QString());
-	void statusChanged(const XMPP::Status &);
-
 public slots:
 	void conn_messageReceived(const Message &);
 // 	void conn_statusChanged(const XMPP::Status &);
@@ -66,6 +62,11 @@ public slots:
   
   void setMaknetoMainWindow(MaknetoMainWindow *mainwindow) { m_mainwindow = mainwindow; }
 
+signals:
+  void newSession(const QString &text, ChatType type, const QString &nick = QString());
+  void statusChanged(const XMPP::Status &);
+
+  
 private:
 	Connection *m_conn;
 	MaknetoContactList *m_cl;

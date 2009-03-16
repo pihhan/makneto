@@ -36,7 +36,7 @@ WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent
 	svg->setAttribute("baseProfile", "tiny");
 	w->parseSvg(*svg, false);
 	elements_.insert("root", w);
-	delete svg; // FIXME: crash? wtf?
+        //delete svg; // FIXME: crash? wtf?
 };
 
 QString WbScene::session() {

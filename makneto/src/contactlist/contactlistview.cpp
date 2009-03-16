@@ -4,6 +4,7 @@
 
 #include "contactlistmodel.h"
 #include "contactlistview.h"
+#include "contactlistcontact.h"
 
 ContactListView::ContactListView(QWidget* parent) : QTreeView(parent)
 {
@@ -73,6 +74,13 @@ void ContactListView::doItemsLayout()
 void ContactListView::contextMenuEvent(QContextMenuEvent* e)
 {
 	model()->setData(indexAt(e->pos()),QVariant(mapToGlobal(e->pos())),ContactListModel::ContextMenuRole);
+}
+
+void ContactListView::mouseDoubleClickEvent(QMouseEvent *e)
+{
+  QModelIndex index = indexAt(e->pos());
+  if (index.isValid())
+    emit itemDoubleClicked(static_cast<ContactListContact *> (index.internalPointer())->jid());
 }
 
 void ContactListView::resizeColumns()
