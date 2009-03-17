@@ -133,6 +133,20 @@ MaknetoContactResource::MaknetoContactResource(const XMPP::Status &status, const
     // TODO: caps hash checking a inicializace features.
 }
 
+MaknetoContactResource MaknetoContact::bestResourceR() const
+{
+    MaknetoContactResource p;
+    ResourcesHash::const_iterator it;
+    bool notused = true;
+    for (it= m_resources.begin(); it != m_resources.end(); it++) {
+        if (notused || p < *it) {
+            p = *it;
+            notused=false;
+        }
+    }
+    return p;
+}
+
 MaknetoContactResource * MaknetoContact::bestResource() 
 {
     MaknetoContactResource *p = NULL;
@@ -147,12 +161,12 @@ MaknetoContactResource * MaknetoContact::bestResource()
 
 ContactListStatus MaknetoContact::status() const 
 { 
-    MaknetoContactResource *resource;
-    resource = bestResource();
-    if (resource != NULL) {
-        return resource->status();
+    MaknetoContactResource resource;
+    resource = bestResourceR();
+    if (!resource.isNull()) {
+        return resource.status();
     } else {
-        return ContactListStatus(Offline); 
+        return ContactListStatus(ContactListStatus::Offline); 
     }
 }
 

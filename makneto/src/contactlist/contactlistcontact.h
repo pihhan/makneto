@@ -16,7 +16,7 @@ public:
 	ContactListContact(ContactListGroupItem* defaultParent);
 	virtual ~ContactListContact();
 
-	virtual const QString& name() const = 0;
+	virtual const QString name() const = 0;
 	// FIXME: Change this into Jid
 	virtual QString jid() const = 0;
 	virtual ContactListStatus status() const = 0;

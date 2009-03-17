@@ -4,12 +4,13 @@
  * Copyright (C) 2008 Jaroslav Reznik <rezzabuh@gmail.com>
  */
 
+#include "xmpp_status.h"
+
 #include "maknetocontactlist.h"
 #include "maknetocontact.h"
 #include "contactlist/contactlistgroupitem.h"
 #include "contactlist/contactlistrootitem.h"
 
-#include "xmpp_status.h"
 
 #include "makneto.h"
 

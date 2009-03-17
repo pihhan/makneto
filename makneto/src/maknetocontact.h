@@ -15,18 +15,8 @@
 
 #include <QtGui/QMenu>
 
-/**
- * This is contact for Makneto
- *
- * @short Contact class
- * @author Jaroslav Reznik <rezzabuh@gmail.com>
- * @version 0.1
- */
+#include <xmpp_status.h>
 
-namespace XMPP
-{
-	class Status;
-}
 class KIcon;
 
 /*! \brief Small class for one resource of one contact.
@@ -42,17 +32,14 @@ public:
         MaknetoContactResource()
             : ContactListContact(NULL),m_status(ContactListStatus::Offline),
               m_contactMenu(NULL), 
-              m_priority(0)
-        {
-        }
+              m_priority(0), m_null(true)
+        {}
 
         MaknetoContactResource(const QString &resource, int priority = 0)
             : ContactListContact(NULL),m_status(ContactListStatus::Offline),
               m_contactMenu(NULL), 
-              m_resource(resource),m_priority(priority)
-        {
-
-        }
+              m_resource(resource),m_priority(priority), m_null(false)
+        {}
 
         MaknetoContactResource(const XMPP::Status &status, const QString &resource);
 
@@ -62,9 +49,11 @@ public:
         virtual FeatureList features() { return m_features; } 
 	virtual ContactListStatus status() const { return m_status; }
         /*! \brief only compatibility with ContactListContact, name is the same for all resources, no need to store it for every single resource. */
-        virtual const QString & name() const { return QString(); } 
+        virtual const QString name() const { return QString(); } 
 	void setStatus(const XMPP::Status& status);
-        void setPriority(int prio) { m_priority = prio; 
+        void setPriority(int prio) { m_priority = prio; }
+        void setResource(const QString &resource) { m_resource = resource; m_null=true; }
+        bool isNull() const { return m_null; }
 
         bool operator<(const MaknetoContactResource &other) const
         {
@@ -78,7 +67,17 @@ private:
         QIcon statusIcon() const;
         FeatureList m_features;
         QString m_clientname;
+        bool m_null;
 };
+
+
+/**
+ * This is contact for Makneto
+ *
+ * @short Contact class
+ * @author Jaroslav Reznik <rezzabuh@gmail.com>
+ * @version 0.1
+ */
 
 class MaknetoContact : public ContactListContact
 {
@@ -94,7 +93,7 @@ public:
 	* Destructor
 	*/
 	virtual ~MaknetoContact();
-	virtual const QString& name() const { return m_name; }
+	virtual const QString name() const { return m_name; }
 	virtual QString jid() const { return m_jid; }
 	virtual ContactListStatus status() const;
 	virtual void showContextMenu(const QPoint &where);
@@ -124,6 +123,7 @@ public:
         /*! \brief Return resource with highest priority. 
          * \return Pointer to best resource class or NULL, if none is present - offline contact. */
         virtual MaknetoContactResource *bestResource() ;
+        virtual MaknetoContactResource bestResourceR() const;
         int resourcesNumber() const { return m_resources.size(); }
 
 	void setName(const QString& name) { m_name = name; } 
