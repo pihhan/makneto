@@ -43,7 +43,7 @@ public:
 	virtual ~MaknetoContactList() { }
 
 	void addContact(const QString& name, const QString& jid, const QString& group);
-	void setAvailability(const QString& jid, const XMPP::Status& status);
+	void setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status);
 	//void setUnavailability(const QString& jid);
 
 private:

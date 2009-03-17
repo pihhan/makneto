@@ -76,7 +76,7 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 	new MaknetoContact(name, jid, groupItem, contactMenu);
 }
 
-void MaknetoContactList::setAvailability(const QString& jid, const XMPP::Status& status)
+void MaknetoContactList::setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status)
 {
 	std::cout << "setAvailability(" << jid.toUtf8().data() << ")" << std::endl;
 
@@ -96,7 +96,7 @@ void MaknetoContactList::setAvailability(const QString& jid, const XMPP::Status&
 
 			if (item)
 			{
-				item->setStatus(status);
+				item->setStatus(resource, status);
 			}
 		}
 	}

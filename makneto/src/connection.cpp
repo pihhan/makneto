@@ -573,13 +573,15 @@ void Connection::client_rosterItemRemoved(const RosterItem &)
 void Connection::client_resourceAvailable(const Jid &jid, const Resource &resource)
 {
 	qDebug() << "Connection::client_resourceAvailable()";
-	m_makneto->getContactList()->setAvailability(jid.bare(), resource.status());
+	m_makneto->getContactList()->setAvailability(jid.bare(), 
+            resource.name(), resource.status());
 }
 
 void Connection::client_resourceUnavailable(const Jid &jid, const Resource &resource)
 {
 	qDebug() << "Connection::client_resourceUnavailable()";
-	m_makneto->getContactList()->setAvailability(jid.bare(), resource.status());
+	m_makneto->getContactList()->setAvailability(jid.bare(), 
+                resource.name(), resource.status());
 }
 
 void Connection::client_presenceError(const Jid &, int, const QString &)

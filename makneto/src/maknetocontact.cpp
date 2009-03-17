@@ -11,6 +11,7 @@
 #include "xmpp_status.h"
 
 #include <QtGui/QMenu>
+#include <QtDebug>
 #include <KIcon>
 
 #include <iostream>
@@ -87,12 +88,12 @@ void MaknetoContact::showContextMenu(const QPoint &where)
 	m_contactMenu->exec(where);
 }
 
-QIcon MaknetoContact::statusIcon() const
+QIcon MaknetoContactResource::statusIcon() const
 {
 	switch (status().type())
 	{
     case ContactListStatus::Offline:
-			return KIcon("maknetooffline");;
+			return KIcon("maknetooffline");
 			break;
 
     case ContactListStatus::Online:
@@ -100,7 +101,7 @@ QIcon MaknetoContact::statusIcon() const
 			break;
 
     case ContactListStatus::Away:
-			return KIcon("maknetoaway");;
+			return KIcon("maknetoaway");
 			break;
 
     case ContactListStatus::XA:
@@ -123,10 +124,21 @@ QIcon MaknetoContact::statusIcon() const
 	return QIcon();
 }
 
+QIcon MaknetoContact::statusIcon() const
+{
+    MaknetoContactResource r;
+    r = bestResourceR();
+    if (!r.isNull())
+        return r.statusIcon();
+    else
+        return QIcon();
+}
+
+
 
 /*! \brief Create resource from first incoming presence. */
 MaknetoContactResource::MaknetoContactResource(const XMPP::Status &status, const QString &resource)
-    : ContactListContact(NULL),m_status(ContactListStatus::Offline),m_resource(0)
+    : ContactListContact(NULL),m_status(ContactListStatus::Offline),m_resource(0), m_null(false)
 {
     m_resource = resource;
     setStatus(status);
@@ -176,6 +188,39 @@ void MaknetoContact::setStatus(const XMPP::Status &status)
     resource = bestResource();
     if (resource != NULL) {
         resource->setStatus(status);
+    }
+}
+
+void MaknetoContact::createResource(const QString &resource, const XMPP::Status &status)
+{
+    MaknetoContactResource r;
+    r = MaknetoContactResource(status, resource);
+    m_resources.insert(resource, r);
+    qDebug() << "Creating resource " << resource << " for contact "
+        << jid();
+}
+
+void MaknetoContact::removeResource(const QString &resource)
+{
+    m_resources.remove(resource);
+    qDebug() << "Removing resource " << resource << " for contact "
+        << jid();
+}
+
+void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &status)
+{
+    MaknetoContactResource r;
+    r = this->resource(resource);
+    if (!r.isNull()) {
+        r.setStatus(status);
+        if (status.type() == XMPP::Status::Offline) {
+            removeResource(resource);
+        }
+    } else {
+        // takove resource neexistuje, pokud neni offline, musim ho udelat
+        if (status.type() != XMPP::Status::Offline) {
+            createResource(resource, status);
+        }
     }
 }
 

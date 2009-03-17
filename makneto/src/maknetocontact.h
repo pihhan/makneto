@@ -50,21 +50,22 @@ public:
 	virtual ContactListStatus status() const { return m_status; }
         /*! \brief only compatibility with ContactListContact, name is the same for all resources, no need to store it for every single resource. */
         virtual const QString name() const { return QString(); } 
-	void setStatus(const XMPP::Status& status);
-        void setPriority(int prio) { m_priority = prio; }
-        void setResource(const QString &resource) { m_resource = resource; m_null=true; }
+	virtual void setStatus(const XMPP::Status& status);
+        virtual void setPriority(int prio) { m_priority = prio; }
+        virtual void setResource(const QString &resource) { m_resource = resource; m_null=true; }
         bool isNull() const { return m_null; }
 
         bool operator<(const MaknetoContactResource &other) const
         {
             return (m_resource < other.m_resource);
         }
+
+        QIcon statusIcon() const;
 private: 
 	ContactListStatus m_status;
 	QMenu *m_contactMenu;
         QString m_resource;
         int m_priority;
-        QIcon statusIcon() const;
         FeatureList m_features;
         QString m_clientname;
         bool m_null;
@@ -128,6 +129,14 @@ public:
 
 	void setName(const QString& name) { m_name = name; } 
 	void setStatus(const XMPP::Status& status);
+        /*! \brief Set status for specified resource.
+         * Create new one if it does not exist and status is not offline,
+         * or dispose existing one if status is offline. */
+        void setStatus(const QString &resource, const XMPP::Status &status);
+        /*! \brief Create new resource entry using its name na incoming status. */
+        void createResource(const QString &resource, const XMPP::Status &status);
+        void removeResource(const QString &resource);
+
 private:
 	QString m_name;
 	QString m_jid;
