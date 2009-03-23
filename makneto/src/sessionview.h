@@ -26,6 +26,8 @@ class QFrame;
 class FTStream;
 class MUCControl;
 class Makneto;
+class PaletteWidget;
+class ChatOutput;
 #include "xmpp_chatstate.h"
 
 #include "settings.h"
@@ -91,6 +93,9 @@ public slots:
 	void setMode(QAction *);
 	void transferRead(const QByteArray &a);
 	void actionSendFileTriggered();
+  void fgColorChanged(const QColor &c);
+  void bgColorChanged(const QColor &c);
+  void penSizeChanged(int size);
 
 signals:
 	void sendMessage(const Message &);
@@ -99,6 +104,7 @@ private:
   Makneto *m_makneto;
   QVBoxLayout *m_topLayout;
   QWidget *m_leftWidget, *m_chatWidget;
+  PaletteWidget *m_paletteWidget;
   QVBoxLayout *m_leftLayout;
   QSplitter *m_leftSplitter;
   QSplitter *m_topSplitter;
@@ -119,7 +125,7 @@ private:
 
 	WbWidget *m_wbwidget;
 	
-	QTextEdit *m_chatoutput;
+  ChatOutput *m_chatoutput;
 	QTextEdit *m_chatinput;
 
 	QPushButton *m_sendmsg;

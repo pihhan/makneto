@@ -22,14 +22,14 @@
 #include <QtGui/QLabel>
 #include <QtGui/QTextEdit>
 #include <QtGui/QSplitter>
-#include <QDomElement>
+#include <QtXml/QDomElement>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QBuffer>
 #include <QtCore/QByteArray>
 #include <QtGui/QFrame>
-#include <QDebug>
-#include <QMessageBox>
-#include <QSettings>
+#include <QtCore/QDebug>
+#include <QtGui/QMessageBox>
+#include <QtCore/QSettings>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
@@ -38,6 +38,8 @@
 #include "sessiontabmanager.h"
 #include "makneto.h"
 #include "chatinput.h"
+#include "chatoutput.h"
+#include "palettewidget.h"
 
 #include <Phonon/VideoPlayer>
 
@@ -60,12 +62,28 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   
   // Add Toolbar to the layout
   createToolBar();
+  QHBoxLayout *m_toolLayout = new QHBoxLayout();
+  m_toolLayout->addWidget(m_wbtoolbar);
+
+  // Create WhiteBoard widget
+  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
+
+  // Create palette widget
+  m_paletteWidget = new PaletteWidget(this);
+  connect(m_paletteWidget, SIGNAL(fgColorChanged(const QColor &)), SLOT(fgColorChanged(const QColor &)));
+  connect(m_paletteWidget, SIGNAL(bgColorChanged(const QColor &)), SLOT(bgColorChanged(const QColor &)));
+  connect(m_paletteWidget, SIGNAL(penSizeChanged(int)), SLOT(penSizeChanged(int)));
+  m_paletteWidget->setFgColor(QColor(0, 0, 0));
+  m_paletteWidget->setBgColor(Qt::transparent);
+  m_paletteWidget->setPenSize(1);
+
+  m_toolLayout->addWidget(m_paletteWidget);
+
+  m_leftLayout->addLayout(m_toolLayout);
   
   m_leftSplitter = new QSplitter(Qt::Vertical, m_leftWidget);
   m_leftLayout->addWidget(m_leftSplitter);
   
-  // Create WhiteBoard widget
-  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
   m_leftSplitter->addWidget(m_wbwidget);
   
   connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
@@ -76,7 +94,8 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   
   m_leftSplitter->addWidget(m_chatSplitter);
   
-  m_chatoutput = new QTextEdit(m_chatSplitter);
+  m_chatoutput = new ChatOutput(m_chatSplitter);
+
   m_chatinput = new ChatInput(m_chatSplitter);
   m_sendmsg = new QPushButton("&Send", m_leftWidget);
   connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
@@ -85,6 +104,7 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   // output chat text edit props
   m_chatoutput->setTextFormat(Qt::RichText);
   m_chatoutput->setReadOnly(true);
+  m_chatoutput->setNick(nick);
   
   m_chatSplitter->addWidget(m_chatoutput);
   m_chatSplitter->addWidget(m_chatinput);
@@ -125,8 +145,6 @@ void SessionView::createToolBar()
 	m_wbtoolbar = new KToolBar(this);
 	m_wbtoolbar->setIconDimensions(16);
 	m_wbtoolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-
-  m_leftLayout->addWidget(m_wbtoolbar);
 
 	QActionGroup *groupMode = new QActionGroup(this);
 	connect(groupMode, SIGNAL(triggered(QAction*)), this, SLOT(setMode(QAction*)));
@@ -221,10 +239,8 @@ void SessionView::sendClicked()
   // Show message in chat window only in chat, not in groupchat
   if (type() == 0)
   {
-    // format for chat window
-    text = "<b>Me</b>: "+m_chatinput->text();
     // show text in chat window
-    m_chatoutput->append(text);
+    m_chatoutput->myMessage(m_chatinput->text());
   }
   
   m_chatinput->setText("");
@@ -249,6 +265,7 @@ void SessionView::sendWhiteboard(const QDomElement &wb)
 
 void SessionView::chatMessage(const Message &message)
 {
+  int type = 0; // Type of the message (0 = message, 1 = information)
 	QString text;
 	switch (message.chatState())
 	{
@@ -256,9 +273,10 @@ void SessionView::chatMessage(const Message &message)
 			if (m_lastChatState != StateComposing)
       {
         if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0) // Is it a MUC ?
-          text += "<i>"+message.from().resource()+" is composing message</i>";
+          text = message.from().resource() + " is composing message";
         else
-          text += "<i>"+message.from().bare()+" is composing message</i>";
+          text = message.from().bare() + " is composing message";
+        type = 1;
       }
 			else
 				return;
@@ -266,9 +284,10 @@ void SessionView::chatMessage(const Message &message)
 
 		case StateGone:
       if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0)
-        text += "<i>"+message.from().resource()+" has gone</i>";
+        text = message.from().resource() + " has gone";
       else
-        text += "<i>"+message.from().bare()+" has gone</i>";
+        text = message.from().bare() + " has gone";
+      type = 1;
 			break;
 
 		case StateInactive:
@@ -282,6 +301,7 @@ void SessionView::chatMessage(const Message &message)
           text = "<b>"+message.from().resource()+"</b>: "+message.body();
         else
           text = "<b>"+message.from().bare()+"</b>: "+message.body();
+        type = 0;
       }
 			else
 			{
@@ -290,14 +310,17 @@ void SessionView::chatMessage(const Message &message)
 			}
 	}
 
-	m_chatoutput->append(text);
+  if (type == 0)
+    m_chatoutput->incomingMessage(text);
+  else
+    m_chatoutput->infoMessage(text);
 
 	m_lastChatState = message.chatState();
 }
 
 void SessionView::infoMessage(const QString &text)
 {
-  m_chatoutput->append("<i>" + text + "</i>");
+  m_chatoutput->infoMessage(text);
 }
 
 void SessionView::whiteboardMessage(const Message &message)
@@ -315,7 +338,7 @@ void SessionView::fileTransfer(FileTransfer *ft)
 
 	text = "<b>" + transfer->peer().bare()+"</b> Incoming file '" + transfer->fileName() +"'";
 
-	m_chatoutput->append(text);
+  m_chatoutput->incomingMessage(text);
 
 	connect(transfer, SIGNAL(readyRead(const QByteArray &)), this, SLOT(transferRead(const QByteArray &)));
 
@@ -399,7 +422,13 @@ void SessionView::setMode(QAction *action)
 {
   if (WbWidget::Mode(action->data().toInt()) == WbWidget::DrawImage)
     actionSelect->setChecked(true);
+
 	m_wbwidget->setMode(WbWidget::Mode(action->data().toInt()));
+  // If user selects freehand pen, we should disable the brush
+  if (WbWidget::Mode(action->data().toInt()) == WbWidget::DrawPath)
+    m_wbwidget->setFillColor(Qt::transparent);
+  else
+    m_wbwidget->setFillColor(m_paletteWidget->bgColor());
 }
 
 void SessionView::transferRead(const QByteArray &a)
@@ -425,6 +454,21 @@ void SessionView::transferRead(const QByteArray &a)
  	if (bytes==4456448)
 		mediap->setCurrentSource(m_ftstream);
 
+}
+
+void SessionView::fgColorChanged(const QColor &c)
+{
+  m_wbwidget->setStrokeColor(c);
+}
+
+void SessionView::bgColorChanged(const QColor &c)
+{
+  m_wbwidget->setFillColor(c);
+}
+
+void SessionView::penSizeChanged(int size)
+{
+  m_wbwidget->setStrokeWidth(size);
 }
 
 void SessionView::actionSendFileTriggered()

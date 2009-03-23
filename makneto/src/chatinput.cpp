@@ -8,7 +8,7 @@
 
 #include <Qt>
 
-ChatInput::ChatInput(QWidget *parent)
+ChatInput::ChatInput(QWidget *parent) : QTextEdit(parent)
 {
 	setFocusPolicy(Qt::StrongFocus);
 }
