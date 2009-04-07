@@ -30,6 +30,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QMessageBox>
 #include <QtCore/QSettings>
+#include <QtGui/QGraphicsProxyWidget>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
@@ -40,6 +41,8 @@
 #include "chatinput.h"
 #include "chatoutput.h"
 #include "palettewidget.h"
+#include "plugins/pollplugin.h"
+#include "wbforeign.h"
 
 #include <Phonon/VideoPlayer>
 
@@ -216,7 +219,9 @@ void SessionView::createToolBar()
 	m_wbtoolbar->addAction(actionSendFile);
 	connect(actionSendFile, SIGNAL(triggered()), this, SLOT(actionSendFileTriggered()));
 
-
+  KAction *actionPoll = new KAction(KIcon("maknetopoll"), i18n("Create poll"), this);
+  m_wbtoolbar->addAction(actionPoll);
+  connect(actionPoll, SIGNAL(triggered()), this, SLOT(actionCreatePollTriggered()));
 }
 
 void SessionView::sendClicked()
@@ -258,7 +263,6 @@ void SessionView::sendWhiteboard(const QDomElement &wb)
   QString id = m_makneto->getConnection()->genUniqueId();
   message.setId(id);
 	message.setWhiteboard(wb);
-  messages << id;
 
 	emit sendMessage(message);
 }
@@ -325,8 +329,8 @@ void SessionView::infoMessage(const QString &text)
 
 void SessionView::whiteboardMessage(const Message &message)
 {
-  // During MUC when you send message you will obtain the same message from server - so if it have known id, we will throw it away...
-  if (!messages.contains(message.id()))
+  // During MUC when you send message you will obtain the same message from server - so if I'm the sender, we will throw it away...
+  if (message.from().resource().compare(m_nick))
     m_wbwidget->processWb(message.whiteboard());
 }
 
@@ -474,4 +478,18 @@ void SessionView::penSizeChanged(int size)
 void SessionView::actionSendFileTriggered()
 {
 
+}
+
+void SessionView::actionCreatePollTriggered()
+{
+  QDomElement dom;  
+  PollPlugin *plugin = new PollPlugin();
+  if (!plugin->getQuestions())
+    return;
+
+  WbForeign *wbf = new WbForeign(plugin, dom, m_wbwidget->scene->newId(), m_wbwidget->scene->newIndex(), QString("root"), static_cast<QGraphicsScene *> (m_wbwidget->scene));
+  m_wbwidget->scene->update(wbf->graphicsItem()->boundingRect());
+  m_wbwidget->scene->queueNew(wbf->id(), wbf->index(), wbf->svg());
+  m_wbwidget->scene->addWbItem(wbf);
+  plugin->graphicsItem()->ensureVisible(QRectF(), 0, 0);
 }

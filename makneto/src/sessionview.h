@@ -8,7 +8,7 @@
 #define SESSIONVIEW_H
 
 #include <QtGui/QWidget>
-#include <QByteArray>
+#include <QtCore/QByteArray>
 
 #include "mediaplayer.h"
 
@@ -93,6 +93,7 @@ public slots:
 	void setMode(QAction *);
 	void transferRead(const QByteArray &a);
 	void actionSendFileTriggered();
+  void actionCreatePollTriggered();
   void fgColorChanged(const QColor &c);
   void bgColorChanged(const QColor &c);
   void penSizeChanged(int size);

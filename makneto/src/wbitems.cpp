@@ -32,7 +32,8 @@
 
 Edit::Edit(Type _type, const QDomElement &_xml) {
 	type = _type;
-	xml = _xml.cloneNode().toElement();
+  if (!_xml.isNull())
+    xml = _xml.cloneNode().toElement();
 }
 
 Edit::Edit(Type _type, const QString &_target, const QDomElement &edit, const QString &_oldValue) {
@@ -316,6 +317,9 @@ QDomElement WbItem::svg() {
 		case 87654201:
 			_svg.setTagName("g");
 			break;
+    case 87654998:
+      _svg.setTagName("foreignObject");
+      break;
 	}
 	return _svg;
 };

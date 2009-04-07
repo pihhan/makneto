@@ -1,6 +1,6 @@
 project(makneto)
 
-SET(CMAKE_BUILD_TYPE Debug)
+SET(CMAKE_BUILD_TYPE DebugFull)
 
 find_package(KDE4 REQUIRED)
 find_package(QCA2 REQUIRED)
@@ -61,6 +61,13 @@ set(makneto_SRCS
 	chatinput.cpp
   chatoutput.cpp
   palettewidget.cpp
+  wbforeign.cpp
+  qgraphicswidgetitem.cpp
+
+#plugins
+  plugins/plugin.cpp
+  plugins/pollplugin.cpp
+  plugins/pollplugincreate.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp
@@ -118,6 +125,8 @@ set(makneto_SRCS
         cutestuff/legacy/servsock.cpp
         cutestuff/legacy/srvresolver.cpp
 
+  # You can delete this, its only workaround for some qtcreator bug
+  /home/radek/qtcreator-1.0.80-5/share/qtcreator/gdbmacros/gdbmacros.cpp
  )
 
 kde4_moc_headers(makneto
@@ -157,7 +166,7 @@ kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})
 
-SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g -O2")
+SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g")
 
 target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS})
 

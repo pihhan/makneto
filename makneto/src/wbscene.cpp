@@ -20,6 +20,9 @@
 
 #include "wbscene.h"
 
+#include "wbforeign.h"
+#include <QtCore/QDebug>
+
 WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent) : QGraphicsScene(parent) {
 	importing = false;
 	highestIndex_ = 0;
@@ -37,7 +40,7 @@ WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent
 	w->parseSvg(*svg, false);
 	elements_.insert("root", w);
         //delete svg; // FIXME: crash? wtf?
-};
+}
 
 QString WbScene::session() {
 	return session_;
@@ -343,6 +346,7 @@ void WbScene::sendWb() {
 }
 
 void WbScene::queueNew(const QString &id, const qreal &index, const QDomElement &svg) {
+  qDebug() << "queueNew: " << svg.text();
 	QDomDocument d;
 	QDomElement n = d.createElement("new");
 	n.setAttribute("id", id);
@@ -456,6 +460,8 @@ bool WbScene::setElement(QDomElement &element, const QString &parent, const QStr
 			target = new WbImage(element, id, index, parent, this);
 		else if(element.tagName() == "g")
 			target = new WbGroup(element, id, index, parent, this);
+    else if(element.tagName() == "foreignObject")
+      target = new WbForeign(0, element, id, index, parent, this);
 		else
 			target = new WbUnknown(element, id, index, parent, this);
 		// Add the element pointer to the hash of elements_
@@ -538,8 +544,10 @@ bool WbScene::processConfigure(const QDomElement &configure) {
 						wbitem->undos.append(EditUndo(configure.attribute("version").toInt(), oldContent));
 						while(_svg.hasChildNodes())
 							_svg.removeChild(_svg.firstChild());
-						for(uint j=0; j < edit.childNodes().length(); j++)
-							_svg.appendChild(edit.childNodes().at(j));
+            while(edit.hasChildNodes())
+              _svg.appendChild(edit.childNodes().at(0));
+            //for (uint j = 0; j < edit.childNodes().length(); j++)
+            //  _svg.appendChild(edit.childNodes().at(j));
 					} else if(edit.nodeName() == "parent") {
 						QString oldParent = newParent;
 						// Remove queued <configure>s that had the same target and attribute and retrieve the correct oldvalue
@@ -595,7 +603,7 @@ bool WbScene::processConfigure(const QDomElement &configure) {
 		} else if (configure.attribute("version").toInt() > wbitem->version) {
 			// This should never happen given the seriality condition.
 			// Reason to worry about misfunction of infrastructure but not much to do from here.
-			qWarning(QString("Configure to wbitem '%1' version '%1' arrived when the wbitem had version '%3'.").arg(configure.attribute("target")).arg(configure.attribute("version")).arg(wbitem->version-1).toAscii());
+      qWarning(QString("Configure to wbitem '%1' version '%2' arrived when the wbitem had version '%3'.").arg(configure.attribute("target")).arg(configure.attribute("version")).arg(wbitem->version-1).toAscii());
 			wbitem->version--;
 			return false;
 		}
