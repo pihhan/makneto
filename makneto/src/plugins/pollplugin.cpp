@@ -9,9 +9,55 @@
 #include <QtGui/QCheckBox>
 #include <QtGui/QPushButton>
 #include <QtGui/QLineEdit>
+#include <QtGui/QMenu>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsView>
 #include <QtCore/QTextStream>
 #include <QtCore/QDebug>
-#include <kde4/kicon.h>
+#include <kicon.h>
+
+PollMainButton::PollMainButton(const QIcon &icon, const QString &text, QWidget *parent) : QPushButton(icon, text, parent)
+{
+  setMouseTracking(true);
+}
+
+void PollMainButton::mouseMoveEvent(QMouseEvent *event)
+{
+  if (event->buttons() & Qt::LeftButton)
+  {
+    QPointF diff = event->globalPos() - lastPos;
+    lastPos = event->globalPos();
+    emit moved(diff);
+  }
+
+  QPushButton::mouseMoveEvent(event);
+}
+
+void PollMainButton::mousePressEvent(QMouseEvent *event)
+{
+  if (event->buttons() & Qt::LeftButton)
+  {
+    lastPos = event->globalPos();
+    startPos = event->globalPos();
+  }
+  QPushButton::mousePressEvent(event);
+}
+
+void PollMainButton::mouseReleaseEvent(QMouseEvent *event)
+{
+  if (event->globalPos() != startPos)
+  {
+    emit positionChanged(event->globalPos());
+    startPos = event->globalPos();
+    QPushButton::mouseReleaseEvent(event);
+  }
+  else
+  {
+    QPushButton::mouseReleaseEvent(event);
+    emit pushed();
+  }
+
+}
 
 PollPlugin::PollPlugin(QStringList list) : Plugin()
 {
@@ -34,11 +80,20 @@ PollPlugin::PollPlugin() : Plugin()
   init();
 }
 
+PollPlugin::~PollPlugin()
+{
+  if (w)
+    delete w;
+}
+
 void PollPlugin::init()
 {
   w = new QWidget(0);
   layout = new QGridLayout(w);
   m_graphicsItem = new QGraphicsWidgetItem();
+  m_contextMenu = new QMenu(0);
+  //m_contextMenu->addAction(KIcon("transform-move"), "Move", this, SLOT(move()));
+  m_contextMenu->addAction(KIcon("draw-eraser"), "Delete", this, SLOT(remove()));
   m_minimized = false;
 }
 
@@ -73,8 +128,12 @@ void PollPlugin::recreateWidget()
   w = new QWidget(0);
   layout = new QGridLayout();
   // Create top button
-  m_button = new QPushButton(KIcon("maknetopoll"), QString(), w);
-  connect(m_button, SIGNAL(clicked()), this, SLOT(buttonClicked()));
+  m_button = new PollMainButton(KIcon("maknetopoll"), QString(), w);
+  m_button->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(m_button, SIGNAL(pushed()), this, SLOT(buttonClicked()));
+  connect(m_button, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(contextMenu(const QPoint &)));
+  connect(m_button, SIGNAL(moved(const QPointF &)), this, SLOT(moved(const QPointF &)));
+  connect(m_button, SIGNAL(positionChanged(const QPointF &)), this, SLOT(positionChanged(const QPointF &)));
   layout->addWidget(m_button);
   // Don't create widget when minimized
   if (!m_minimized)
@@ -110,9 +169,9 @@ void PollPlugin::recreateWidget()
         if (!m_answerList[i].contains(index))
           label->setText("?");
         else if (m_answerList[i].value(index))
-          label->setText("YES");
+          label->setText("<font color=green>YES</font>");
         else
-          label->setText("NO");
+          label->setText("<font color=red>NO</font>");
         layout->addWidget(label, i + 1, j + 2);
       }
     }
@@ -123,6 +182,7 @@ void PollPlugin::recreateWidget()
       layout->addWidget(label, i + 1, 0);
     }
     m_respondent = new QLineEdit();
+    m_respondent->setText("");//TODO: Current user JID
     m_allWidgets.append(m_respondent);
     layout->addWidget(m_respondent, m_answerList.size() + 1, 0, 1, 2);
     QPushButton *send = new QPushButton("Send");
@@ -178,6 +238,8 @@ QDomElement PollPlugin::svg()
   QDomText text;
   svg = doc.createElement("foreignObject");
   svg.setAttribute("requiredExtensions", "http://makneto.org/plugins/poll");
+  svg.setAttribute("x", graphicsItem()->x());
+  svg.setAttribute("y", graphicsItem()->y());
   xml = doc.createElement("poll");
   xml.setAttribute("name", m_pollName);
   svg.appendChild(xml);
@@ -219,7 +281,21 @@ void PollPlugin::parseSvg(const QDomNode &svg)
 {
   QDomElement root;
   if (svg.nodeName().compare("foreignObject") == 0)
+  {
     root = svg.firstChildElement().toElement();
+    double x = 0.0, y = 0.0;
+    if (svg.toElement().hasAttribute("x"))
+    {
+      QString s = svg.toElement().attribute("x", "0");
+      x = s.toDouble();
+    }
+    if (svg.toElement().hasAttribute("y"))
+    {
+      y = svg.toElement().attribute("y", "0").toDouble();
+
+    }
+    graphicsItem()->setPos(x, y);
+  }
   else
     root = svg.toElement();
 
@@ -303,4 +379,42 @@ void PollPlugin::parseSvg(const QDomNode &svg)
     }
   }
   recreateWidget();
+}
+
+void PollPlugin::contextMenu(const QPoint &pos)
+{
+  m_contextMenu->popup(m_button->mapToGlobal(pos));
+}
+
+void PollPlugin::moved(const QPointF &by)
+{
+  QPointF pt = by;
+  if (graphicsItem() && graphicsItem()->scene())
+  {
+    if (graphicsItem()->scene()->views().size() > 0)
+      pt = graphicsItem()->scene()->views()[0]->mapToScene(by.toPoint());
+  }
+  graphicsItem()->setPos(graphicsItem()->pos() + pt);
+}
+
+void PollPlugin::positionChanged(const QPointF &newLocalPos)
+{
+  QPointF pt = newLocalPos;
+  if (graphicsItem()->scene())
+  {
+    if (graphicsItem()->scene()->views().size() > 0)
+    {
+      pt = graphicsItem()->scene()->views()[0]->mapToScene(newLocalPos.toPoint());
+      emit sendChanges();
+      return;
+    }
+  }
+  // This shouldn't happened
+  qDebug() << "Error in changing position of the widget";
+}
+
+void PollPlugin::remove()
+{
+  emit removed();
+  delete this;
 }

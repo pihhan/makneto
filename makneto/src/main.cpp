@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	KCmdLineArgs::init(argc, argv, &about);
 
 	KApplication app;
+  app.setWindowIcon(KIcon("makneto"));
 
 	// Makneto main
 	Makneto *makneto = new Makneto;

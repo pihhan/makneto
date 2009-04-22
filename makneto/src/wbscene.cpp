@@ -542,12 +542,17 @@ bool WbScene::processConfigure(const QDomElement &configure) {
 						// Remove queued <configure>s that had the same target and attribute and retrieve the correct oldvalue
 						removeFromQueue(configure.attribute("target"), oldContent);
 						wbitem->undos.append(EditUndo(configure.attribute("version").toInt(), oldContent));
-						while(_svg.hasChildNodes())
-							_svg.removeChild(_svg.firstChild());
+            if (_svg.nodeName().compare("foreignObject") == 0)
+            {
+              QDomElement el = edit.cloneNode().toElement();
+              QDomElement el2 = el.firstChildElement();              
+              if (setElement(el2, newParent, wbitem->id(), wbitem->index()))
+                return true;
+            }
+            while(_svg.hasChildNodes())
+              _svg.removeChild(_svg.firstChild());
             while(edit.hasChildNodes())
               _svg.appendChild(edit.childNodes().at(0));
-            //for (uint j = 0; j < edit.childNodes().length(); j++)
-            //  _svg.appendChild(edit.childNodes().at(j));
 					} else if(edit.nodeName() == "parent") {
 						QString oldParent = newParent;
 						// Remove queued <configure>s that had the same target and attribute and retrieve the correct oldvalue

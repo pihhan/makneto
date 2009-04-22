@@ -488,8 +488,10 @@ void SessionView::actionCreatePollTriggered()
     return;
 
   WbForeign *wbf = new WbForeign(plugin, dom, m_wbwidget->scene->newId(), m_wbwidget->scene->newIndex(), QString("root"), static_cast<QGraphicsScene *> (m_wbwidget->scene));
-  m_wbwidget->scene->update(wbf->graphicsItem()->boundingRect());
+  //scene->update(wbf->graphicsItem()->boundingRect());
   m_wbwidget->scene->queueNew(wbf->id(), wbf->index(), wbf->svg());
   m_wbwidget->scene->addWbItem(wbf);
   plugin->graphicsItem()->ensureVisible(QRectF(), 0, 0);
+  setMode(actionSelect);
+  actionSelect->setChecked(true);
 }

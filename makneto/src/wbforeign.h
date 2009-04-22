@@ -7,13 +7,14 @@ class Plugin;
 
 class WbForeign : public WbItem
 {
-  enum Types { Poll, Other };
   Q_OBJECT;
+  enum Types { Poll, Other };
   private:
     QDomElement svgElement_;
     Types _type;
     QGraphicsItem *m_graphicsItem;
     Plugin *m_plugin;
+    QGraphicsScene *m_scene;
   public:
     WbForeign(Plugin *plugin, QDomElement &svg, const QString &id, const qreal &index, const QString &parent = "root", QGraphicsScene *scene = 0);
 
@@ -30,8 +31,13 @@ class WbForeign : public WbItem
     WbItem* clone();
 
     QGraphicsItem* graphicsItem();
+  protected:
+    virtual QRectF boundingRect() const;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+
   public slots:
-    void sendChanges();    
+    void sendChanges();
+    void remove();
 };
 
 #endif // WBFOREIGN_H

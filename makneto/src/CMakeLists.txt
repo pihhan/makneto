@@ -126,7 +126,7 @@ set(makneto_SRCS
         cutestuff/legacy/srvresolver.cpp
 
   # You can delete this, its only workaround for some qtcreator bug
-  /home/radek/qtcreator-1.0.80-5/share/qtcreator/gdbmacros/gdbmacros.cpp
+  /home/radek/qtcreator-1.0.90/share/qtcreator/gdbmacros/gdbmacros.cpp
  )
 
 kde4_moc_headers(makneto

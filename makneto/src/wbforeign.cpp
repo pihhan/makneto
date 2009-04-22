@@ -27,7 +27,19 @@ WbForeign::WbForeign(Plugin *plugin, QDomElement &svg, const QString &id, const 
     }
   }
   connect(m_plugin, SIGNAL(sendChanges()), this, SLOT(sendChanges()));
+  connect(m_plugin, SIGNAL(removed()), this, SLOT(remove()));
   scene->addItem(m_plugin->graphicsItem());
+  m_scene = scene;
+}
+
+QRectF WbForeign::boundingRect() const
+{
+  return m_plugin->graphicsItem()->boundingRect();
+}
+
+void WbForeign::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+  //WbItem::paint(painter, option, widget);
 }
 
 QGraphicsItem* WbForeign::graphicsItem()
@@ -56,7 +68,11 @@ QList<QString> WbForeign::parseSvg(QDomElement &_svg, bool emitChanges)
 
 void WbForeign::sendChanges()
 {
-  emit contentChanged(id(), svg().childNodes(), QDomNodeList());
+  QDomDocument doc;
+  QDomElement el = doc.createElement("content");
+  el.appendChild(svg());
+
+  emit contentChanged(id(), el.childNodes(), QDomNodeList());
   //QDomElement _svg = svg();
   //parseSvg(_svg, true);
 }
@@ -67,4 +83,9 @@ WbItem* WbForeign::clone()
   WbItem* cloned = new WbForeign(0, _svg, id(), index(), parentWbItem(), 0);
   cloned->undos = undos;
   return cloned;
+}
+
+void WbForeign::remove()
+{
+  static_cast<WbScene *> (m_scene)->removeElement(id(), true);
 }

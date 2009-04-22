@@ -23,12 +23,10 @@ class Plugin : public QObject
 
     virtual void setGraphicsItem(QGraphicsItem *graphicsItem) { m_graphicsItem = graphicsItem; }
     QGraphicsItem *graphicsItem() { return m_graphicsItem; }
-    virtual void resized(const QSize &);
-  public slots:
-    void viewResized(const QSize &);
   signals:
     /** Emit this signal when you want to send data to the server */
-    void sendChanges(const QDomNodeList &value, const QDomNodeList &oldvalue);
+    void sendChanges();
+    void removed();
 };
 
 #endif // PLUGIN_H
