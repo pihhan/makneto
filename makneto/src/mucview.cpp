@@ -1,204 +1,366 @@
-/*
- * mucview.cpp
- *
- * Copyright (C) 2008 Radek Novacek <rad.n@centrum.cz>
- */
 
 #include "mucview.h"
 
-#include "sessiontabmanager.h"
-#include "sessionview.h"
 #include "muccontrol.h"
-
-#include <iostream>
-#include <ctime>
-#include <QInputDialog>
-#include <QDebug>
-#include <QMessageBox>
-#include <KPushButton>
+#include <QtGui/QTreeWidget>
+#include <QtGui/QTreeWidgetItem>
 #include <KStatusBar>
+#include <KIconEffect>
+#include <QtGui/QColor>
+#include <QtGui/QMenu>
+#include <QtGui/QAction>
 
-MUCView::MUCView(QWidget */*parent*/, Makneto *makneto) : m_makneto(makneto)
+MUCView::MUCView(MaknetoView *view, Makneto *makneto) : QWidget(), m_makneto(makneto), m_maknetoview(view)
 {
-  m_mainlayout = new QVBoxLayout(this);
-  m_buttonslayout = new QHBoxLayout();
+  m_control = new MUCControl(makneto);
+  QVBoxLayout *layout = new QVBoxLayout();
+  QPushButton *connectButton = new QPushButton(KIcon("list-add-user"), "Join or create MUC", this);
+  layout->addWidget(connectButton);
+  connect(connectButton, SIGNAL(pressed()), this, SLOT(joinMUC()));
+  tree = new QTreeWidget(this);
+  connect(tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), SLOT(itemDoubleClicked(QTreeWidgetItem *, int)));
+  layout->addWidget(tree);
+  setLayout(layout);
+  tree->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(tree, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(contextMenu(const QPoint &)));
 
-  // buttons
-  m_createMUC = new QPushButton(KIconLoader::global()->loadIcon("list-add-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Create MUC"), this);
-  m_buttonslayout->addWidget(m_createMUC);
-  connect(m_createMUC, SIGNAL(clicked(bool)), SLOT(createMUCClicked(bool)));
+  connect(m_control, SIGNAL(addMUC(MUC *)), SLOT(addMUC(MUC *)));
+  connect(m_control, SIGNAL(connectedToMUC(MUC *)), SLOT(connectedToMUC(MUC *)));
+  connect(m_control, SIGNAL(disconnectedFromMUC(MUC *)), SLOT(disconnectedFromMUC(MUC *)));
+  connect(m_control, SIGNAL(error(MUC *, const QString &)), SLOT(error(MUC *, const QString &)));
+  connect(m_control, SIGNAL(setUserStatus(User *)), SLOT(setUserStatus(User *)));
 
-  m_joinMUC = new QPushButton(KIconLoader::global()->loadIcon("edit-find-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Join MUC"), this);
-  m_buttonslayout->addWidget(m_joinMUC);
-  connect(m_joinMUC, SIGNAL(clicked(bool)), SLOT(joinMUCClicked(bool)));
+  connect(this, SIGNAL(connectToMUC(MUC*)), m_control, SLOT(groupChatJoin(MUC *)));
+  connect(this, SIGNAL(disconnectFromMUC(MUC*)), m_control, SLOT(groupChatLeave(MUC *)));
 
-  m_MUCbookmarks = new QListWidget(this);
-  connect(m_MUCbookmarks, SIGNAL(itemDoubleClicked(QListWidgetItem *)), SLOT(bookmarkedMUC(QListWidgetItem *)));
-  // finally add to layout
-  m_mainlayout->addLayout(m_buttonslayout);
-  m_mainlayout->addWidget(m_MUCbookmarks);
 
-  setLayout(m_mainlayout);
-  
-  connect(m_makneto->getConnection(), SIGNAL(groupChatJoined(const Jid &)), 
-          SLOT(groupChatJoined(const Jid &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatLeft(const Jid &)), 
-          SLOT(groupChatLeft(const Jid &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatPresence(const Jid &, const Status &)), 
-          SLOT(groupChatPresence(const Jid &, const Status &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatError(const Jid &, int, const QString &)), 
-          SLOT(groupChatError(const Jid &, int, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatVoiceGranted(const Jid &, const QString &, const QString &)),
-          SLOT(voiceGranted(const Jid &, const QString &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatVoiceRevoked(const Jid &, const QString &, const QString &)),
-          SLOT(voiceRevoked(const Jid &, const QString &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatVoiceRequested(const Jid &, const QString &)),
-          SLOT(voiceRequested(const Jid &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatSubjectChanged(const Jid &, const QString &)),
-          SLOT(subjectChanged(const Jid &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatUserKicked(const Jid &, const QString &, const QString &, const QString &)),
-          SLOT(userKicked(const Jid &, const QString &, const QString &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatUserBanned(const Jid &, const QString &, const QString &, const QString &)),
-          SLOT(userBanned(const Jid &, const QString &, const QString &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatUserRemovedAsNonMember(const Jid &, const QString &)),
-          SLOT(userRemovedAsNonMember(const Jid &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatMembershipGranted(const Jid &, const Jid &, const QString &)),
-          SLOT(membershipGranted(const Jid &, const Jid &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatMembershipRevoked(const Jid &, const Jid &, const QString &)),
-          SLOT(membershipRevoked(const Jid &, const Jid &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatModerationGranted(const Jid &, const QString &, const QString &)),
-          SLOT(moderationGranted(const Jid &, const QString &, const QString &)));
-  connect(m_makneto->getConnection(), SIGNAL(groupChatModerationRevoked(const Jid &, const QString &, const QString &)),
-          SLOT(moderationRevoked(const Jid &, const QString &, const QString &)));
+  m_control->loadMUCs();
 
-  loadBookmarks();
+  createIcons();
 }
 
-MUCView::~MUCView()
+void MUCView::createIcons()
 {
-  
+  iconOnline[0] = KIcon("maknetoonline");
+  iconOnline[1] = getColorizedIcon(iconOnline[0], Qt::blue);
+  iconOnline[2] = getColorizedIcon(iconOnline[0], Qt::gray);
+  iconAway[0] = KIcon("maknetoaway");
+  iconAway[1] = getColorizedIcon(iconAway[0], Qt::blue);
+  iconAway[2] = getColorizedIcon(iconAway[0], Qt::gray);
+  iconXA[0] = KIcon("maknetoxa");
+  iconXA[1] = getColorizedIcon(iconXA[0], Qt::blue);
+  iconXA[2] = getColorizedIcon(iconXA[0], Qt::gray);
+  iconDND[0] = KIcon("maknetodnd");
+  iconDND[1] = getColorizedIcon(iconDND[0], Qt::blue);
+  iconDND[2] = getColorizedIcon(iconDND[0], Qt::gray);
+  iconInvisible[0] = KIcon("maknetoinvisible");
+  iconInvisible[1] = getColorizedIcon(iconInvisible[0], Qt::blue);
+  iconInvisible[2] = getColorizedIcon(iconInvisible[0], Qt::gray);
+  iconFFC[0] = KIcon("maknetoffc");
+  iconFFC[1] = getColorizedIcon(iconFFC[0], Qt::blue);
+  iconFFC[2] = getColorizedIcon(iconFFC[0], Qt::gray);
+  iconOffline[0] = KIcon("maknetooffline");
+  iconOffline[1] = getColorizedIcon(iconOffline[0], Qt::blue);
+  iconOffline[2] = getColorizedIcon(iconOffline[0], Qt::gray);
 }
 
-void MUCView::loadBookmarks(void)
+KIcon MUCView::getColorizedIcon(const KIcon &icon, QColor color)
 {
-  KConfig config("maknetorc");
-  KConfigGroup bookmarks(&config, "MUC_Bookmarks");
-  QStringList list = bookmarks.readEntry("bookmarks", QStringList());
-  tMUC *muc;
-  QListWidgetItem *item;
-  for (int i = 0; i < list.count(); i++)
+  QImage img = icon.pixmap(32);
+  KIconEffect::colorize(img, color, 1.0);
+  return KIcon(QIcon(QPixmap::fromImage(img)));
+}
+
+void MUCView::contextMenu(const QPoint &point)
+{
+  QTreeWidgetItem *item = tree->itemAt(point);
+  if (item)
   {
-    muc = new tMUC;
-    muc->room = list[i].section('@', 0, 0);
-    muc->server = list[i].section(QRegExp("[@/]"), 1, 1);
-    muc->nick = list[i].section('/', 1, 1);
-    item = new QListWidgetItem(list[i]);
-    item->setData(Qt::UserRole, qVariantFromValue<tMUC *>(muc));
-    m_MUCbookmarks->addItem(item);
+    if (item->parent())
+    {
+      // User
+      MUC *muc = qVariantValue<MUC *> (item->parent()->data(0, Qt::UserRole));
+      User *user = qVariantValue<User *> (item->data(0, Qt::UserRole));
+      if (muc && user)
+      {
+        int actions = m_control->getUserActions(muc->me, user);
+        QMenu *menu = new QMenu(0);
+        if (actions & GrantOwnership)
+          menu->addAction(tr("Grant &Ownership"))->setData(GrantOwnership);
+        if (actions & RevokeOwnership)
+          menu->addAction(tr("Revoke &Ownership"))->setData(GrantOwnership);
+        if (actions & GrantAdmin)
+          menu->addAction(tr("Grant &Administration"))->setData(GrantAdmin);
+        if (actions & RevokeAdmin)
+          menu->addAction(tr("Revoke &Administration"))->setData(RevokeAdmin);
+        if (actions & GrantModeration)
+          menu->addAction(tr("Grant &Moderation"))->setData(GrantModeration);
+        if (actions & RevokeModeration)
+          menu->addAction(tr("Revoke &Moderation"))->setData(RevokeModeration);
+        if (actions & GrantMembership)
+          menu->addAction(tr("Grant M&embership"))->setData(GrantMembership);
+        if (actions & RevokeMembership)
+          menu->addAction(tr("Revoke M&embership"))->setData(RevokeMembership);
+        if (actions & Ban)
+          menu->addAction(tr("&Ban"))->setData(Ban);
+        if (actions & Kick)
+          menu->addAction(tr("&Kick"))->setData(Kick);
+        if (actions & GrantVoice)
+          menu->addAction(tr("Grant &Voice"))->setData(GrantVoice);
+        if (actions & RevokeVoice)
+          menu->addAction(tr("Revoke &Voice"))->setData(RevokeVoice);
+        QAction *result = menu->exec(tree->mapToGlobal(point));
+        if (result)
+        {
+          bool ok;
+          switch (result->data().toInt(&ok))
+          {
+            case GrantOwnership:
+              emit m_control->_grantOwnership(muc->jid, user->jid, QString());
+              break;
+            case RevokeOwnership:
+              emit m_control->_revokeOwnership(muc->jid, user->jid, QString());
+              break;
+            case GrantAdmin:
+              emit m_control->_grantAdministration(muc->jid, user->jid, QString());
+              break;
+            case RevokeAdmin:
+              emit m_control->_revokeAdministration(muc->jid, user->jid, QString());
+              break;
+            case GrantModeration:
+              emit m_control->_grantModeration(muc->jid, user->nick, QString());
+              break;
+            case RevokeModeration:
+              emit m_control->_revokeModeration(muc->jid, user->nick, QString());
+              break;
+            case GrantMembership:
+              emit m_control->_grantMembership(muc->jid, user->jid, QString());
+              break;
+            case RevokeMembership:
+              emit m_control->_revokeMembership(muc->jid, user->jid, QString());
+              break;
+            case Ban:
+              emit m_control->_banUser(muc->jid, user->jid, QString());
+              break;
+            case Kick:
+              emit m_control->_kickUser(muc->jid, user->nick, QString());
+              break;
+            case GrantVoice:
+              emit m_control->_grantVoice(muc->jid, user->nick, QString());
+              break;
+            case RevokeVoice:
+              emit m_control->_revokeVoice(muc->jid, user->nick, QString());
+              break;
+          }
+        }
+      }
+    }
+    else
+    {
+      // MUC
+      QMenu *menu = new QMenu(0);
+      if (!isMUCConnected(item->text(0)))
+      {
+        menu->addAction(tr("&Connect to MUC"))->setData(1);
+      }
+      else
+      {
+        menu->addAction(tr("&Disconnect from MUC"))->setData(2);
+      }
+      QAction *result = menu->exec(tree->mapToGlobal(point));
+      if (result)
+      {
+        bool ok;
+        MUC *muc;
+        switch (result->data().toInt(&ok))
+        {
+          case 1:
+            // Connect to the MUC
+            muc = qVariantValue<MUC *>(item->data(0, Qt::UserRole));
+            if (muc)
+              emit connectToMUC(muc);
+            break;
+          case 2:
+            // Disconnect from the MUC
+            muc = qVariantValue<MUC *>(item->data(0, Qt::UserRole));
+            if (muc)
+              emit disconnectFromMUC(muc);
+            break;
+        }
+      }
+    }
   }
 }
 
-void MUCView::saveBookmarks(void)
+void MUCView::addMUC(MUC *muc)
 {
-  KConfig config("maknetorc");
-  KConfigGroup bookmarks(&config, "MUC_Bookmarks");
-  QStringList list;
-  tMUC *muc;
-  for (int i = 0; i < m_MUCbookmarks->count(); i++)
+  QTreeWidgetItem *item = new QTreeWidgetItem(QStringList(muc->jid.full()), 0);
+  item->setData(0, Qt::UserRole, qVariantFromValue<MUC *>(muc));
+  tree->addTopLevelItem(item);
+}
+
+QTreeWidgetItem *MUCView::getMUCItem(MUC *muc)
+{
+  foreach (QTreeWidgetItem *item, tree->findItems(muc->jid.bare(), Qt::MatchStartsWith, 0))
   {
-    muc = qVariantValue<tMUC *>(m_MUCbookmarks->item(i)->data(Qt::UserRole));
-    list << muc->room + '@' + muc->server + '/' + muc->nick;
+    MUC *m = qVariantValue<MUC *> (item->data(0, Qt::UserRole));
+    if (m == muc)
+      return item;
   }
-  bookmarks.writeEntry("bookmarks", list);
+  return 0;
 }
 
-SessionView *MUCView::getSessionByJid(const Jid &jid)
+QTreeWidgetItem *MUCView::getUserItem(User *user)
 {
-  return m_makneto->getMaknetoMainWindow()->getMaknetoView()->getSessionTabManager()->findSession(jid.bare());
-}
-
-void MUCView::createMUCClicked(bool /*toggled*/)
-{
-  std::cout << "Create new MUC" << std::endl;
-}
-
-void MUCView::joinMUCClicked(bool /*toggled*/)
-{
-  std::cout << "Join MUC" << std::endl;
-  QString nick, server, room;
-  if (getConferenceSetting(room, server, nick))
+  foreach (QTreeWidgetItem *item, tree->findItems(user->nick, Qt::MatchExactly | Qt::MatchRecursive, 0))
   {
-    // Join to group chat
-    m_makneto->getConnection()->groupChatJoin(server, room, nick);
-    m_makneto->actionNewSession(room + '@' + server, GroupChat, nick);
-    
-    // Create bookmark and add it to list
-    tMUC *muc = new tMUC;
-    muc->room = room;
-    muc->server = server;
-    muc->nick = nick;
-    QListWidgetItem *item = new QListWidgetItem(room + '@' + server + '/' + nick);
-    item->setData(Qt::UserRole, qVariantFromValue<tMUC *>(muc));
-    m_MUCbookmarks->addItem(item);
-    saveBookmarks();
+    if (item->parent())
+    {
+      User *u = qVariantValue<User *> (item->data(0, Qt::UserRole));
+      if (u == user)
+        return item;
+    }
   }
+  return 0;
 }
 
-void MUCView::bookmarkedMUC(QListWidgetItem *item)
+void MUCView::setUserStatus(User *user)
 {
-  if (!m_makneto->getConnection()->isOnline())
+  QTreeWidgetItem *item = getUserItem(user);
+  if (item)
   {
-    QMessageBox::critical(this, "Makneto", tr("Connect to the Jabber server before opening MUC!"));
-    return;
-  }
-  tMUC *muc = qVariantValue<tMUC *>(item->data(Qt::UserRole));
-  qDebug() << "Bookmarked MUC: " << muc->room + '@' + muc->server + '/' + muc->nick;
-  
-  SessionView *session = getSessionByJid(Jid(muc->room + '@' + muc->server));
-  if (!session)
-  {
-    m_makneto->getConnection()->groupChatJoin(muc->server, muc->room, muc->nick, QString(), -1, -1, time(NULL));
-    m_makneto->actionNewSession(muc->room + '@' + muc->server, GroupChat, muc->nick);
+    if (user->status == Status::Offline)
+      delete item;
+    else
+      item->setIcon(0, getIcon(user->status, user->role));
   }
   else
   {
-    m_makneto->getMaknetoMainWindow()->getMaknetoView()->getSessionTabManager()->bringToFront(session);
+    item = new QTreeWidgetItem(QStringList(user->nick), 0);
+    item->setIcon(0, getIcon(user->status, user->role));
+    item->setData(0, Qt::UserRole, qVariantFromValue(user));
+    QTreeWidgetItem *muc = getMUCItem(user->muc);
+    if (muc)
+      muc->addChild(item);
   }
 }
 
-void MUCView::groupChatJoined(const Jid &jid)
+void MUCView::connectedToMUC(MUC *muc)
 {
-  SessionView *session = getSessionByJid(jid.bare());
-  if (session)
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been connected to \"%1\"").arg(muc->jid.bare()), 2000);
+  //TODO: Add info message
+  QTreeWidgetItem *item = getMUCItem(muc);
+  if (item)
   {
-    emit session->getMUCControl()->setConnected(true);
+    item->setIcon(0, iconOnline[0]);
   }
-  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been connected to \"") + jid.bare() + "\".", 2000);
+
 }
 
-void MUCView::groupChatLeft(const Jid &jid)
+void MUCView::disconnectedFromMUC(MUC *muc)
 {
-  SessionView *session = getSessionByJid(jid.bare());
-  if (session)
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been disconnected from \"%1\"").arg(muc->jid.bare()), 2000);
+  //TODO: Add info message
+  QTreeWidgetItem *item = getMUCItem(muc);
+  if (item)
   {
-    emit session->getMUCControl()->setConnected(false);
+    item->setIcon(0, KIcon());
+    item->takeChildren();
   }
-  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been disconnected from \"") + jid.bare() + "\".", 2000);
 }
 
-void MUCView::groupChatPresence(const Jid &jid, const Status &status)
+bool MUCView::isMUCConnected(MUC *muc)
 {
-  SessionView *session = getSessionByJid(jid.bare());
-  if (session)
+  QTreeWidgetItem *item = getMUCItem(muc);
+  if (item)
+    return item->childCount() != 0;
+  return false;
+}
+
+bool MUCView::isMUCConnected(const Jid &jid)
+{
+  MUC *muc = m_control->getMUC(jid.bare());
+  if (muc)
+    return muc->users.count() != 0;
+  return false;
+}
+
+void MUCView::error(MUC *muc, const QString &message)
+{
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("Error occured in MUC \"%1\": %2").arg(muc->jid.bare(), message));
+}
+
+void MUCView::joinMUC()
+{
+  QString nick, server, room;
+  if (getConferenceSetting(room, server, nick))
   {
-    emit session->getMUCControl()->setPresence(jid, status);
+    // Create bookmark and add it to list
+    MUC *muc = m_control->newMUC(QString("%1@%2/%3").arg(room, server, nick));
+    m_control->saveMUCs();
+
+    // Join to group chat
+    emit connectToMUC(muc);
   }
-  qDebug() << "MUC Presence: " << jid.full() << "; Status: " << status.typeString();
 }
 
-void MUCView::groupChatError(const Jid &, int, const QString &error)
+void MUCView::itemDoubleClicked(QTreeWidgetItem *item, int)
 {
-  QMessageBox::critical(this, "Error", error);
+  if (item->parent())
+  {
+    // User doubleclicked
+  }
+  else
+  {
+    // MUC doubleclicked
+    MUC *muc = qVariantValue<MUC *>(item->data(0, Qt::UserRole));
+    if (muc)
+      emit connectToMUC(muc);
+  }
+}
+
+KIcon MUCView::getIcon(const Status &status, const MUCItem::Role &role)
+{
+  KIcon *icon;
+  switch (status.type())
+  {
+    case Status::Online:
+      icon = iconOnline;
+      break;
+    case Status::Away:
+      icon = iconAway;
+      break;
+    case Status::XA:
+      icon = iconXA;
+      break;
+    case Status::DND:
+      icon = iconDND;
+      break;
+    case Status::Invisible:
+      icon = iconInvisible;
+      break;
+    case Status::FFC:
+      icon = iconFFC;
+      break;
+    case Status::Offline:
+      icon = iconOffline;
+      break;
+    default:
+      return KIcon();
+  }
+  switch (role)
+  {
+    case MUCItem::Moderator:
+      return icon[1];
+      break;
+    case MUCItem::Visitor:
+      return icon[2];
+      break;
+    default:
+      return icon[0];
+      break;
+  }
+  return KIcon();
 }
 
 bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick)
@@ -209,15 +371,15 @@ bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick
   dialog->setSizeGripEnabled(true);
   QWidget *w = new QWidget(dialog);
   QGridLayout *layout = new QGridLayout(w);
-  
+
   QLabel *lRoom = new QLabel(tr("Room:"), w);
   QLineEdit *eRoom = new QLineEdit(w);
   lRoom->setBuddy(eRoom);
-  
+
   QLabel *lServer = new QLabel(tr("Server:"), w);
   QLineEdit *eServer = new QLineEdit(w);
   lRoom->setBuddy(eServer);
-  
+
   QLabel *lNick = new QLabel(tr("Nickname:"), w);
   QLineEdit *eNick = new QLineEdit();
   lRoom->setBuddy(eNick);
@@ -231,7 +393,7 @@ bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick
   dialog->setMainWidget(w);
   dialog->setButtons(KDialog::Ok | KDialog::Cancel);
 
-  
+
   bool result = false;
   if (dialog->exec() == QDialog::Accepted)
   {
@@ -242,81 +404,4 @@ bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick
   }
   delete dialog;
   return result;
-}
-
-void MUCView::voiceGranted(const Jid &jid, const QString &nick, const QString &reason)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->voiceGranted(nick, reason);
-}
-
-void MUCView::voiceRevoked(const Jid &jid, const QString &nick, const QString &reason)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->voiceRevoked(nick, reason);
-}
-
-void MUCView::voiceRequested(const Jid &jid, const QString &nick)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->voiceRequested(nick);
-}
-
-void MUCView::subjectChanged(const Jid &jid, const QString &subject)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->subjectChanged(subject);
-}
-
-void MUCView::userKicked(const Jid &jid, const QString &nick, const QString &reason, const QString &actor)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->userKicked(nick, reason, actor);
-}
-
-void MUCView::userBanned(const Jid &jid, const QString &nick, const QString &reason, const QString &actor)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->userBanned(nick, reason, actor);
-}
-
-void MUCView::userRemovedAsNonMember(const Jid &jid, const QString &nick)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->userRemovedAsNonMember(nick);
-}
-
-void MUCView::membershipGranted(const Jid &jid, const Jid &userJid, const QString &reason)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->membershipGranted(userJid, reason);
-}
-
-void MUCView::membershipRevoked(const Jid &jid, const Jid &userJid, const QString &reason)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->membershipRevoked(userJid, reason);
-}
-
-void MUCView::moderationGranted(const Jid &jid, const QString &nick, const QString &reason)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->moderationGranted(nick, reason);
-}
-
-void MUCView::moderationRevoked(const Jid &jid, const QString &nick, const QString &reason)
-{
-  SessionView *session = getSessionByJid(jid);
-  if (session)
-    emit session->getMUCControl()->moderationRevoked(nick, reason);
 }

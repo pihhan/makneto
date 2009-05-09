@@ -24,7 +24,6 @@ class KToolBar;
 class QBuffer;
 class QFrame;
 class FTStream;
-class MUCControl;
 class Makneto;
 class PaletteWidget;
 class ChatOutput;
@@ -82,8 +81,7 @@ public:
   int type(void) { return m_type; }
   void setType(int type) { m_type = type; }
   
-  MUCControl *getMUCControl(void) { return m_muccontrol; }
-  void showHideMUCControl();
+  //MUCControl *getMUCControl(void) { return m_muccontrol; }
   void showHideChat();
   bool closeRequest();
   void setEnabled(bool enabled);
@@ -110,9 +108,7 @@ private:
   QSplitter *m_leftSplitter;
   QSplitter *m_topSplitter;
   QStringList messages;
-  
-  MUCControl *m_muccontrol;
-  
+   
   QVBoxLayout *m_mainlayout;
 	QVBoxLayout *m_chatlayout;
 	QHBoxLayout *m_bottomlayout;

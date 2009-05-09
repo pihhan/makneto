@@ -102,6 +102,7 @@ public:
 	 *  Constructs a ContentEdit undo with the given version and oldContent.
 	 */
 	EditUndo(const int &version, QDomNodeList oldContent);
+
 	/*! \brief The new version.*/
 	int version;
 	/*! \brief The type of undo.*/

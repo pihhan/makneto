@@ -101,7 +101,6 @@ void MaknetoMainWindow::hideAll()
   SessionView *session = m_view->getSessionTabManager()->activeSession();
   if (session)
   {
-    session->showHideMUCControl();
     session->showHideChat();
   }
   m_view->getSidebarWidget()->hideAll();

@@ -1,49 +1,15 @@
-/*
- * muccontrol.cpp
- *
- * GUI for managing MUCs
- *
- * Copyright (C) 2008 Radek Novacek <rad.n@centrum.cz>
- */
 
 #include "muccontrol.h"
-#include "settings.h"
-#include "mucuserlist.h"
-#include "sessionview.h"
 
-#include <QListWidget>
-#include <QInputDialog>
-#include <QToolButton>
-#include <QMessageBox>
+#include "mucview.h"
 
-QString AffiliationStr[] = { "Unknown", "Outcast", "None", "Member", "Admin", "Owner" };
-QString RoleStr[] = { "UnknownRole", "NoRole", "Visitor", "Participant", "Moderator" };
-
-MUCControl::MUCControl(SessionView *parent, Makneto *makneto, const QString &jid, const QString &nick)
-  : QWidget(parent), m_sessionView(parent), m_makneto(makneto), m_jid(Jid(jid)), m_nick(nick)
+MUCControl::MUCControl(Makneto *makneto) : m_makneto(makneto)
 {
-  m_makneto = makneto;
-  m_jid = Jid(jid);
-  
-  QVBoxLayout *layout = new QVBoxLayout(this);
-  QHBoxLayout *toolLayout = new QHBoxLayout(this);
-  
-  m_userlist = new MUCUserList(this);
-  
-  m_roleLabel = new QLabel(this);
-  m_roleLabel->setText(QString("<b>Role: </b>%1\t<b>Affiliation: </b>%2").arg("None", "None"));
-  toolLayout->addWidget(m_roleLabel);
-  QToolButton *btnRequestVoice = new QToolButton(this);
-  btnRequestVoice->setIcon(KIcon("maknetobubble"));
-  btnRequestVoice->setToolTip(tr("Request voice"));
-  toolLayout->addWidget(btnRequestVoice);
-  
-  layout->addLayout(toolLayout);
-  layout->addWidget(m_userlist);
-  setLayout(layout);
-  
-  connect(btnRequestVoice, SIGNAL(clicked(bool)), this, SLOT(_requestVoice()));
-  
+  connect(makneto->getConnection(), SIGNAL(groupChatJoined(const Jid &)), SLOT(groupChatJoined(const Jid &)));
+  connect(makneto->getConnection(), SIGNAL(groupChatLeft(const Jid &)), SLOT(groupChatLeft(const Jid &)));
+  connect(makneto->getConnection(), SIGNAL(groupChatPresence(const Jid &, const Status &)), SLOT(groupChatPresence(const Jid &, const Status &)));
+  connect(makneto->getConnection(), SIGNAL(groupChatError(const Jid &, int, const QString &)), SLOT(groupChatError(const Jid &, int, const QString &)));
+
   connect(this, SIGNAL(grantVoice(const Jid &, const QString &, const QString &)),
           m_makneto->getConnection(), SLOT(groupChatGrantVoice(const Jid &, const QString &, const QString &)));
   connect(this, SIGNAL(revokeVoice(const Jid &, const QString &, const QString &)),
@@ -76,196 +42,312 @@ MUCControl::MUCControl(SessionView *parent, Makneto *makneto, const QString &jid
           m_makneto->getConnection(), SLOT(groupChatLeave(const Jid &)));
 }
 
-void MUCControl::doDisconnect(const Jid &jid)
+MUC *MUCControl::newMUC(const QString &s)
 {
-  emit groupChatDisconnect(jid);
+  MUC *muc = new MUC;
+  muc->jid = Jid(s);
+  muc->room = muc->jid.node();
+  muc->server = muc->jid.domain();
+  muc->ownNick = muc->jid.resource();
+  muc->connected = false;
+  m_mucs << muc;
+  emit addMUC(muc);
+  return muc;
 }
 
-void MUCControl::setConnected(bool connected)
+MUC *MUCControl::getMUC(const QString &room, const QString &server)
 {
-  if (connected)
+  foreach (MUC *muc, m_mucs)
   {
-    m_sessionView->infoMessage(tr("You have entered this room"));
+    if (muc->room.compare(room) == 0 && muc->server.compare(server) == 0)
+    {
+      return muc;
+    }
+  }
+  return 0;
+}
+
+MUC *MUCControl::getMUC(const QString &roomJid)
+{
+  return getMUC(roomJid.section('@', 0, 0), roomJid.section("@", 1, 1));
+}
+
+User *MUCControl::getUser(const QString &room, const QString &server, const QString &nick)
+{
+  MUC *muc = getMUC(room, server);
+  if (muc)
+  {
+    foreach (User *user, muc->users)
+    {
+      if (user->nick.compare(nick) == 0)
+        return user;
+    }
+  }
+  return 0;
+}
+
+void MUCControl::deleteMUC(const QString &roomJid)
+{
+  for (int i = 0; i < m_mucs.count(); i++)
+  {
+    if (QString("%1@%2").arg(m_mucs[i]->room, m_mucs[i]->server).compare(roomJid) == 0)
+    {
+      while (!m_mucs[i]->users.empty())
+        delete m_mucs[i]->users.takeAt(0);
+      m_mucs.removeAt(i);
+    }
+  }
+}
+
+void MUCControl::deleteUser(User *user)
+{
+  for (int i = 0; i < user->muc->users.count(); i++)
+  {
+    if (user->muc->users[i] == user)
+      delete user->muc->users.takeAt(i);
+  }
+}
+
+int MUCControl::getUserActions(const QString &roomJid, const QString &nick)
+{
+  MUC *muc = getMUC(roomJid);
+  if (muc)
+  {
+    foreach (User *user, muc->users)
+    {
+      if (user->nick.compare(nick) == 0)
+      {          
+        return getUserActions(muc->me, user);
+      }
+    }
+  }
+  return 0;
+}
+
+int MUCControl::getUserActions(User *me, User *user)
+{
+  int result = None;
+  switch (me->aff)
+  {
+    case MUCItem::Owner:
+      result += Ban;
+
+      if (user->aff == MUCItem::Owner)
+        result += RevokeOwnership;
+      else
+        result += GrantOwnership;
+
+      if (user->aff == MUCItem::Admin)
+        result += RevokeAdmin;
+      else
+        result += GrantAdmin;
+
+    case MUCItem::Admin:
+
+      if (user->role != MUCItem::Moderator)
+        result += GrantModeration;
+      else
+      {
+        if (user->aff != MUCItem::Admin && user->aff != MUCItem::Owner && me->aff > user->aff)
+          result += RevokeModeration;
+      }
+
+      if (user->aff == MUCItem::NoAffiliation)
+        result += GrantMembership;
+      else
+        result += RevokeMembership;
+
+      if (user->aff < MUCItem::Admin)
+        if (!(result & Ban))
+          result += Ban;
+      break;
+    default:
+      break;
+  }
+  if (me->role == MUCItem::Moderator)
+  {
+    // Kicking
+    if (user->role == MUCItem::Visitor || user->role == MUCItem::Participant)
+      result += Kick;
+    if (user->role == MUCItem::Visitor)
+      result += GrantVoice;
+    if (user->role == MUCItem::Participant && user->aff < MUCItem::Admin)
+      result += RevokeVoice;
+  }
+  return result;
+}
+
+User *MUCControl::getUser(const QString &roomJid, const QString &nick)
+{
+  MUC *muc = getMUC(roomJid);
+  if (muc)
+  {
+    foreach (User *user, muc->users)
+    {
+      if (user->nick.compare(nick) == 0)
+        return user;
+    }
+  }
+  return 0;
+}
+
+void MUCControl::groupChatJoined(const Jid &jid)
+{
+  MUC *muc = getMUC(jid.bare());
+  if (muc)
+    emit connectedToMUC(muc);
+}
+
+void MUCControl::groupChatLeft(const Jid &jid)
+{
+  MUC *muc = getMUC(jid.bare());
+  if (muc)
+  {
+    emit disconnectedFromMUC(muc);
+    while (!muc->users.empty())
+    {
+      delete muc->users.takeAt(0);
+    }
+    muc->connected = false;
+    muc->me = 0;
+  }
+}
+
+void MUCControl::groupChatPresence(const Jid &jid, const Status &status)
+{
+  User *user = getUser(jid.bare(), jid.resource());
+  if (user)
+  {
+    if (status.type() != Status::Offline)
+    {
+      user->role = status.mucItem().role();
+      user->aff = status.mucItem().affiliation();
+      user->status = status.type();
+      user->jid = status.mucItem().jid();
+      emit setUserStatus(user);
+    }
+    else
+    {
+      user->status = Status::Offline;
+      emit setUserStatus(user);
+      deleteUser(user);
+    }
   }
   else
   {
-    m_sessionView->infoMessage(tr("You have left this room"));
+    MUC *muc = getMUC(jid.bare());
+    if (muc)
+    {
+      user = new User;
+      user->role = status.mucItem().role();
+      user->aff = status.mucItem().affiliation();
+      user->status = status.type();
+      user->jid = status.mucItem().jid();
+      user->nick = jid.resource();
+      user->muc = muc;
+      if (muc->ownNick.compare(user->nick) == 0)
+        muc->me = user;
+      muc->users << user;
+      emit setUserStatus(user);
+    }
   }
-  m_connected = connected;
-  m_sessionView->setEnabled(connected);
 }
 
-void MUCControl::setPresence(const Jid &jid, const Status &status)
+void MUCControl::groupChatError(const Jid &jid, int, const QString &message)
 {
-  if (jid.resource() == m_nick)
+  MUC *muc = getMUC(jid.bare());
+  if (muc)
+    emit error(muc, message);
+}
+
+void MUCControl::groupChatJoin(MUC *muc)
+{
+  m_makneto->getConnection()->groupChatJoin(muc->server, muc->room, muc->ownNick);
+  m_makneto->actionNewSession(muc->jid.bare(), GroupChat, muc->jid.resource());
+}
+
+void MUCControl::groupChatLeave(MUC *muc)
+{
+  m_makneto->getConnection()->groupChatLeave(muc->jid);
+}
+
+void MUCControl::loadMUCs()
+{
+  KConfig config("maknetorc");
+  KConfigGroup bookmarks(&config, "MUC_Bookmarks");
+  QStringList list = bookmarks.readEntry("bookmarks", QStringList());
+  for (int i = 0; i < list.count(); i++)
   {
-    m_roleLabel->setText(QString("<b>Affiliation: </b>%1\t<b>Role: </b>%2").arg(AffiliationStr[status.mucItem().affiliation()], RoleStr[status.mucItem().role()]));
-    m_role = status.mucItem().role();
-    m_affiliation = status.mucItem().affiliation();
+    newMUC(list[i]);
   }
-  m_userlist->updateUser(jid.resource(), status.mucItem().jid(), status.mucItem().affiliation(), status.mucItem().role(), status.type());
 }
 
-void MUCControl::voiceGranted(const QString &nick, const QString &reason)
+void MUCControl::saveMUCs()
 {
-  
+  KConfig config("maknetorc");
+  KConfigGroup bookmarks(&config, "MUC_Bookmarks");
+  QStringList list;
+  foreach (MUC *muc, m_mucs)
+    list << muc->jid.full();
+  bookmarks.writeEntry("bookmarks", list);
 }
 
-void MUCControl::voiceRevoked(const QString &nick, const QString &reason)
+void MUCControl::_grantVoice(const Jid &jid, const QString &nick, const QString &reason)
 {
-  
+  emit grantVoice(jid, nick, reason);
 }
 
-void MUCControl::voiceRequested(const QString &nick)
+void MUCControl::_revokeVoice(const Jid &jid, const QString &nick, const QString &reason)
 {
-  
+  emit revokeVoice(jid, nick, reason);
 }
 
-void MUCControl::subjectChanged(const QString &subject)
+void MUCControl::_kickUser(const Jid &jid, const QString &nick, const QString &reason)
 {
-  m_sessionView->infoMessage("Subject: " + subject);
+  emit kickUser(jid, nick, reason);
 }
 
-void MUCControl::userKicked(const QString &nick, const QString &reason, const QString &actor)
+void MUCControl::_banUser(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  QString message = QString(tr("been kicked from this room"));
-  if (!actor.isEmpty())
-    message += QString(tr(" by %1")).arg(actor);
-  if (!reason.isEmpty())
-    message += QString(tr(" (Reason: %1)")).arg(reason);
-  if (nick == m_nick)
-  {
-    message = tr("You have ") + message;
-    QMessageBox::critical(this, "Makneto", message);
-    setConnected(false);
-  }
-  else
-    message = QString(tr("%1 has ")).arg(nick) + message;
+  emit banUser(jid, userJid, reason);
 }
 
-void MUCControl::userBanned(const QString &nick, const QString &reason, const QString &actor)
+void MUCControl::_grantMembership(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  QString message = QString("User \"%1\" banned").arg(nick);
-  if (!reason.isEmpty())
-    message += QString(" (%2)").arg(reason);
-  if (!actor.isEmpty())
-    message += QString(" by %3").arg(actor);
-  m_sessionView->infoMessage(message);
+  emit grantMembership(jid, userJid, reason);
 }
 
-void MUCControl::userRemovedAsNonMember(const QString &nick)
+void MUCControl::_revokeMembership(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  
+  emit revokeMembership(jid, userJid, reason);
 }
 
-void MUCControl::membershipGranted(const Jid &userJid, const QString &reason)
+void MUCControl::_grantModeration(const Jid &jid, const QString &nick, const QString &reason)
 {
-  
+  emit grantModeration(jid, nick, reason);
 }
 
-void MUCControl::membershipRevoked(const Jid &userJid, const QString &reason)
+void MUCControl::_revokeModeration(const Jid &jid, const QString &nick, const QString &reason)
 {
-  
+  emit revokeModeration(jid, nick, reason);
 }
 
-void MUCControl::moderationGranted(const QString &nick, const QString &reason)
+void MUCControl::_grantAdministration(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  
+  emit grantAdministration(jid, userJid, reason);
 }
 
-void MUCControl::moderationRevoked(const QString &nick, const QString &reason)
+void MUCControl::_revokeAdministration(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  
+  emit revokeAdministration(jid, userJid, reason);
 }
 
-void MUCControl::_grantVoice()
+void MUCControl::_grantOwnership(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  emit grantVoice(m_jid, m_userlist->affectedUser());
+  emit grantOwnership(jid, userJid, reason);
 }
 
-void MUCControl::_revokeVoice()
+void MUCControl::_revokeOwnership(const Jid &jid, const Jid &userJid, const QString &reason)
 {
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for revoking voice"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit revokeVoice(m_jid, m_userlist->affectedUser(), reason);
+  emit revokeOwnership(jid, userJid, reason);
 }
-
-void MUCControl::_requestVoice()
-{
-  emit requestVoice(m_jid);
-}
-
-void MUCControl::_subjectChange()
-{
-  
-}
-
-void MUCControl::_kickUser()
-{
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for kicking"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit kickUser(m_jid, m_userlist->affectedUser(), reason);
-}
-
-void MUCControl::_banUser()
-{
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for banning user"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit banUser(m_jid, m_userlist->affectedUserJid(), reason);
-}
-
-void MUCControl::_grantMembership()
-{
-  emit grantMembership(m_jid, m_userlist->affectedUserJid());
-}
-
-void MUCControl::_revokeMembership()
-{
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for revoking membership"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit revokeMembership(m_jid, m_userlist->affectedUserJid(), reason);
-}
-
-void MUCControl::_grantModeration()
-{
-  emit grantModeration(m_jid, m_userlist->affectedUser());
-}
-
-void MUCControl::_revokeModeration()
-{
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for revoking moderation"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit revokeModeration(m_jid, m_userlist->affectedUser(), reason);
-}
-
-void MUCControl::_grantAdministration()
-{
-  emit grantAdministration(m_jid, m_userlist->affectedUserJid());
-}
-
-void MUCControl::_revokeAdministration()
-{
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for revoking moderation"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit revokeAdministration(m_jid, m_userlist->affectedUserJid(), reason);
-}
-
-void MUCControl::_grantOwnership()
-{
-  emit grantOwnership(m_jid, m_userlist->affectedUserJid());
-}
-
-void MUCControl::_revokeOwnership()
-{
-  bool ok;
-  QString reason = QInputDialog::getText(this, "Makneto", tr("Reason for revoking moderation"), QLineEdit::Normal, QString(), &ok);
-  if (ok)
-    emit revokeOwnership(m_jid, m_userlist->affectedUserJid(), reason);
-}
-

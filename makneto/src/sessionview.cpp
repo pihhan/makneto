@@ -5,7 +5,6 @@
  */
 
 #include "sessionview.h"
-#include "muccontrol.h"
 #include "mediaplayer.h"
 #include "kiconloader.h"
 #include "klocale.h"
@@ -13,6 +12,8 @@
 #include "ktoolbar.h"
 #include "kaction.h"
 #include "ftstream.h"
+#include "maknetoview.h"
+#include "mucview.h"
 
 #include <iostream>
 
@@ -115,19 +116,6 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   m_leftLayout->addWidget(m_sendmsg);
   
   m_topSplitter->addWidget(m_leftWidget);
-  
-  if (type == 1)
-  {
-    m_muccontrol = new MUCControl(this, m_makneto, m_jid, m_nick);
-    m_topSplitter->addWidget(m_muccontrol);
-    QSettings settings;
-    m_topSplitter->restoreState(settings.value("m_topSplitter").toByteArray());
-  }
-  else
-  {
-    m_muccontrol = 0;
-  }
-
   
 	// TODO: test only!!!
 	ba = new QByteArray;
@@ -361,27 +349,6 @@ void SessionView::fileTransfer(FileTransfer *ft)
 	//player->play();
 }
 
-void SessionView::showHideMUCControl()
-{
-  if (m_muccontrol)
-  {
-    QList<int> l = m_topSplitter->sizes();
-    
-    if (l[1] == 0)
-    {
-      QSettings settings;
-      m_topSplitter->restoreState(settings.value("m_topSplitter").toByteArray());
-    }
-    else
-    {
-      QSettings settings;
-      settings.setValue("m_topSplitter", m_topSplitter->saveState());
-      l[1] = 0;
-      m_topSplitter->setSizes(l);
-    }
-  }
-}
-
 void SessionView::showHideChat()
 {
   QList<int> l = m_leftSplitter->sizes();
@@ -403,15 +370,19 @@ bool SessionView::closeRequest()
 {
   if (m_type == 1) // Is it a groupchat ?
   {
-    if (m_muccontrol->connected() && QMessageBox::question(this, "Makneto", tr("Do you really want to close the tab?\nYou won't be able to recieve new messages from this conference!"),
-        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+    if (m_makneto->getMaknetoMainWindow()->getMaknetoView()->getMUCView()->isMUCConnected(m_jid))
     {
-      m_muccontrol->doDisconnect(m_jid);
-      return true;
-    }
-    else
-    {
-      return false;
+      if (QMessageBox::question(this, "Makneto",
+                              tr("Do you really want to close the tab?\nYou won't be able to recieve new messages from this conference!"),
+                              QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+      {
+        m_makneto->getConnection()->groupChatLeave(m_jid);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
     }
   }
   return true;

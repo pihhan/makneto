@@ -7,76 +7,51 @@
 #ifndef MUCVIEW_H
 #define MUCVIEW_H
 
-#include <QWidget>
-#include <QListWidget>
-#include <QMetaType>
+#include <QtGui/QWidget>
 
 #include "makneto.h"
-#include "maknetoview.h"
 
-class QPushButton;
-class QListWidgetItem;
-class SessionView;
+class QTreeWidget;
+class QTreeWidgetItem;
 
-class tMUC
-{
-  public:
-    QString server, room, nick;
-};
+class MUCControl;
 
-Q_DECLARE_METATYPE(tMUC *)
+class MUC;
+class User;
 
 class MUCView : public QWidget
 {
   Q_OBJECT
-public:
-  /**
-   * Default constructor
-   */
-  MUCView(QWidget *parent, Makneto *makneto);
+  private:
+    Makneto *m_makneto;
+    MaknetoView *m_maknetoview;
+    MUCControl *m_control;
+    QTreeWidget *tree;
+    KIcon iconOffline[3], iconOnline[3], iconAway[3], iconXA[3], iconDND[3], iconInvisible[3], iconFFC[3];
+    void createIcons();
+    KIcon getColorizedIcon(const KIcon &icon, QColor color);
+  public:
+    MUCView(MaknetoView *view, Makneto *makneto);
 
-  /**
-   * Destructor
-   */
-  virtual ~MUCView();
-  
-  void loadBookmarks(void);
-  void saveBookmarks(void);
-  SessionView *getSessionByJid(const Jid &);
-  
-public slots:
-  void createMUCClicked(bool toggled);
-  void joinMUCClicked(bool toggled);
-  void bookmarkedMUC(QListWidgetItem *item);
-  void groupChatJoined(const Jid &);
-  void groupChatLeft(const Jid &);
-  void groupChatPresence(const Jid &, const Status &);
-  void groupChatError(const Jid &, int, const QString &);
-  
-  void voiceGranted(const Jid &jid, const QString &nick, const QString &reason = QString());
-  void voiceRevoked(const Jid &jid, const QString &nick, const QString &reason = QString());
-  void voiceRequested(const Jid &jid, const QString &nick);
-  void subjectChanged(const Jid &jid, const QString &subject);
-  void userKicked(const Jid &jid, const QString &nick, const QString &reason, const QString &actor);
-  void userBanned(const Jid &jid, const QString &nick, const QString &reason, const QString &actor);
-  void userRemovedAsNonMember(const Jid &jid, const QString &nick);
-  void membershipGranted(const Jid &jid, const Jid &userJid, const QString &reason);
-  void membershipRevoked(const Jid &jid, const Jid &userJid, const QString &reason);
-  void moderationGranted(const Jid &jid, const QString &nick, const QString &reason = QString());
-  void moderationRevoked(const Jid &jid, const QString &nick, const QString &reason = QString());
-  
-private:
-  QVBoxLayout *m_mainlayout;
-  QHBoxLayout *m_buttonslayout;
+    KIcon getIcon(const Status &status, const MUCItem::Role &role);
+    bool getConferenceSetting(QString &room, QString &server, QString &nick);
 
-  QPushButton *m_createMUC;
-  QPushButton *m_joinMUC;
-  
-  QListWidget *m_MUCbookmarks;
-
-  Makneto *m_makneto;
-  
-  bool getConferenceSetting(QString &room, QString &server, QString &nick);
+    QTreeWidgetItem *getMUCItem(MUC *muc);
+    QTreeWidgetItem *getUserItem(User *user);
+    bool isMUCConnected(MUC *muc);
+    bool isMUCConnected(const Jid &jid);    
+  public slots:
+    void addMUC(MUC *muc);
+    void joinMUC();
+    void itemDoubleClicked(QTreeWidgetItem *, int);
+    void contextMenu(const QPoint &);
+    void connectedToMUC(MUC *muc);
+    void disconnectedFromMUC(MUC *muc);
+    void setUserStatus(User *user);
+    void error(MUC *muc, const QString &message);
+  signals:
+    void connectToMUC(MUC *);
+    void disconnectFromMUC(MUC *);
 };
 
 #endif // MUCVIEW_H

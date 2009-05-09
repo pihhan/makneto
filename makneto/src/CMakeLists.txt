@@ -57,7 +57,6 @@ set(makneto_SRCS
   contactdetaildialog.cpp
   mucview.cpp
   muccontrol.cpp
-  mucuserlist.cpp
 	chatinput.cpp
   chatoutput.cpp
   palettewidget.cpp
@@ -126,7 +125,7 @@ set(makneto_SRCS
         cutestuff/legacy/srvresolver.cpp
 
   # You can delete this, its only workaround for some qtcreator bug
-  /home/radek/qtcreator-1.0.90/share/qtcreator/gdbmacros/gdbmacros.cpp
+  #/home/radek/qtcreator-1.0.90/share/qtcreator/gdbmacros/gdbmacros.cpp
  )
 
 kde4_moc_headers(makneto

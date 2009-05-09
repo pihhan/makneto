@@ -31,7 +31,7 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 
 	ConnectionView *m_conn = new ConnectionView(this, makneto);
 	RoasterView *m_roaster = new RoasterView(this, makneto);
-  MUCView *m_muc = new MUCView(this, makneto);
+  m_muc = new MUCView(this, makneto);
 
 	m_sidebar->appendTabWidget(m_conn, KIconLoader::global()->loadIcon("konqueror", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 0, i18n("Network"));
 

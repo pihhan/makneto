@@ -540,15 +540,14 @@ bool WbScene::processConfigure(const QDomElement &configure) {
 					} else if(edit.nodeName() == "content") {
 						QDomNodeList oldContent = _svg.cloneNode().childNodes();
 						// Remove queued <configure>s that had the same target and attribute and retrieve the correct oldvalue
-						removeFromQueue(configure.attribute("target"), oldContent);
-						wbitem->undos.append(EditUndo(configure.attribute("version").toInt(), oldContent));
             if (_svg.nodeName().compare("foreignObject") == 0)
             {
               QDomElement el = edit.cloneNode().toElement();
               QDomElement el2 = el.firstChildElement();              
-              if (setElement(el2, newParent, wbitem->id(), wbitem->index()))
-                return true;
+              return setElement(el2, newParent, wbitem->id(), wbitem->index());
             }
+            removeFromQueue(configure.attribute("target"), oldContent);
+            wbitem->undos.append(EditUndo(configure.attribute("version").toInt(), oldContent));
             while(_svg.hasChildNodes())
               _svg.removeChild(_svg.firstChild());
             while(edit.hasChildNodes())
