@@ -91,6 +91,7 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   m_leftSplitter->addWidget(m_wbwidget);
   
   connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
+  connect(m_wbwidget, SIGNAL(modeChanged(WbWidget::Mode)), SLOT(modeChanged(WbWidget::Mode)));
   m_wbwidget->setMode(WbWidget::DrawPath);
   m_wbwidget->setMinimumSize(300, 400);
 
@@ -195,9 +196,10 @@ void SessionView::createToolBar()
 // 	m_wbtoolbar->addAction(actionPolyline);
 // 	actionPolyline->setData(QVariant(WbWidget::DrawPolyline));
 // 
-// 	KAction *actionText = new KAction(KIcon("insert-text"), i18n("Text"), groupMode);
-// 	m_wbtoolbar->addAction(actionText);
-// 	actionText->setData(QVariant(WbWidget::DrawText));
+  KAction *actionText = new KAction(KIcon("insert-text"), i18n("Text"), groupMode);
+  m_wbtoolbar->addAction(actionText);
+  actionText->setData(QVariant(WbWidget::DrawText));
+  actionText->setCheckable(true);
 
 	KAction *actionImage = new KAction(KIcon("insert-image"), i18n("Image"), groupMode);
 	m_wbtoolbar->addAction(actionImage);
@@ -395,15 +397,27 @@ void SessionView::setEnabled(bool enabled)
 
 void SessionView::setMode(QAction *action)
 {
-  if (WbWidget::Mode(action->data().toInt()) == WbWidget::DrawImage)
-    actionSelect->setChecked(true);
-
 	m_wbwidget->setMode(WbWidget::Mode(action->data().toInt()));
   // If user selects freehand pen, we should disable the brush
   if (WbWidget::Mode(action->data().toInt()) == WbWidget::DrawPath)
     m_wbwidget->setFillColor(Qt::transparent);
   else
     m_wbwidget->setFillColor(m_paletteWidget->bgColor());
+}
+
+void SessionView::modeChanged(WbWidget::Mode mode)
+{
+  switch (mode)
+  {
+    case WbWidget::Select:
+      actionSelect->setChecked(true);
+      break;
+    case WbWidget::DrawText:
+      //actionDrawText->setChecked(true);
+      break;
+    default:
+      break;
+  }
 }
 
 void SessionView::transferRead(const QByteArray &a)

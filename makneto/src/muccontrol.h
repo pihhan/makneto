@@ -60,8 +60,7 @@ class MUCControl : public QObject
     MUC *getMUC(const QString &roomJid);
     User *getUser(const QString &room, const QString &server, const QString &nick);
     User *getUser(const QString &roomJid, const QString &nick);
-    void deleteMUC(const QString &roomJid);
-    void deleteUser(User *user);
+
     int getUserActions(const QString &roomJid, const QString &nick);
     int getUserActions(User *me, User *user);
 
@@ -73,6 +72,8 @@ class MUCControl : public QObject
     void groupChatLeft(const Jid &jid);
     void groupChatPresence(const Jid &jid, const Status &status);
     void groupChatError(const Jid &, int, const QString &message);
+    void deleteMUC(MUC *);
+    void deleteUser(User *user);
 
     void groupChatJoin(MUC *muc);
     void groupChatLeave(MUC *muc);
@@ -123,6 +124,7 @@ class MUCControl : public QObject
     void disconnectedFromMUC(MUC *);
     void error(MUC *, const QString &);
     void setUserStatus(User *);
+    void deletedMUC(MUC *);
 };
 
 #endif

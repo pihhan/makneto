@@ -86,15 +86,16 @@ User *MUCControl::getUser(const QString &room, const QString &server, const QStr
   return 0;
 }
 
-void MUCControl::deleteMUC(const QString &roomJid)
+void MUCControl::deleteMUC(MUC *muc)
 {
   for (int i = 0; i < m_mucs.count(); i++)
   {
-    if (QString("%1@%2").arg(m_mucs[i]->room, m_mucs[i]->server).compare(roomJid) == 0)
+    if (muc == m_mucs[i])
     {
-      while (!m_mucs[i]->users.empty())
-        delete m_mucs[i]->users.takeAt(0);
-      m_mucs.removeAt(i);
+      emit deletedMUC(muc);
+      for (int j = 0; j < m_mucs[i]->users.count(); j++)
+        delete m_mucs[i]->users.takeAt(j);
+      delete m_mucs.takeAt(i);
     }
   }
 }

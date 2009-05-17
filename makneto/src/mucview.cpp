@@ -29,9 +29,11 @@ MUCView::MUCView(MaknetoView *view, Makneto *makneto) : QWidget(), m_makneto(mak
   connect(m_control, SIGNAL(disconnectedFromMUC(MUC *)), SLOT(disconnectedFromMUC(MUC *)));
   connect(m_control, SIGNAL(error(MUC *, const QString &)), SLOT(error(MUC *, const QString &)));
   connect(m_control, SIGNAL(setUserStatus(User *)), SLOT(setUserStatus(User *)));
+  connect(m_control, SIGNAL(deletedMUC(MUC *)), SLOT(deletedMUC(MUC *)));
 
-  connect(this, SIGNAL(connectToMUC(MUC*)), m_control, SLOT(groupChatJoin(MUC *)));
-  connect(this, SIGNAL(disconnectFromMUC(MUC*)), m_control, SLOT(groupChatLeave(MUC *)));
+  connect(this, SIGNAL(connectToMUC(MUC *)), m_control, SLOT(groupChatJoin(MUC *)));
+  connect(this, SIGNAL(disconnectFromMUC(MUC *)), m_control, SLOT(groupChatLeave(MUC *)));
+  connect(this, SIGNAL(deleteMUC(MUC *)), m_control, SLOT(deleteMUC(MUC *)));
 
 
   m_control->loadMUCs();
@@ -162,6 +164,7 @@ void MUCView::contextMenu(const QPoint &point)
       if (!isMUCConnected(item->text(0)))
       {
         menu->addAction(tr("&Connect to MUC"))->setData(1);
+        menu->addAction(tr("&Delete from bookmarks"))->setData(3);
       }
       else
       {
@@ -186,6 +189,11 @@ void MUCView::contextMenu(const QPoint &point)
             if (muc)
               emit disconnectFromMUC(muc);
             break;
+          case 3:
+            // Delete
+            muc = qVariantValue<MUC *>(item->data(0, Qt::UserRole));
+            if (muc)
+              emit deleteMUC(muc);
         }
       }
     }
@@ -288,6 +296,11 @@ bool MUCView::isMUCConnected(const Jid &jid)
 void MUCView::error(MUC *muc, const QString &message)
 {
   m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("Error occured in MUC \"%1\": %2").arg(muc->jid.bare(), message));
+}
+
+void MUCView::deletedMUC(MUC *muc)
+{
+  delete getMUCItem(muc);
 }
 
 void MUCView::joinMUC()

@@ -643,9 +643,15 @@ public:
 	/*! \brief Checks if the text has changed and emits a signal accordingly.*/
 	void checkTextChanges();
 
+  QFont font();
+
+  WbItemMenu* constructContextMenu();
+
 public slots:
-	/*! \brief Popsup a font dialog and sets the selected font.*/
+  /*! \brief Popup a font dialog and sets the selected font.*/
 	void setFont();
+
+  void setFont(QFont font);
 
 private:
 	/*! \brief The character data content of the element.*/

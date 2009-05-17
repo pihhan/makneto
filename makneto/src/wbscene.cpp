@@ -194,6 +194,33 @@ void WbScene::setStrokeWidth(QAction* a) {
 	}
 }
 
+void WbScene::setFont()
+{
+  QFont font;
+  WbText* text;
+  if (selectedItems().count() > 0)
+  {
+    text = dynamic_cast<WbText *> (selectedItems()[0]);
+    if (text)
+      font = text->font();
+  }
+  bool ok;
+  QFont newFont = QFontDialog::getFont(&ok, font, 0, tr("Get font"));
+  if (ok)
+  {
+    foreach(QGraphicsItem* selecteditem, selectedItems()) {
+      WbItem* selectedwbitem = findWbItem(selecteditem);
+      if(selectedwbitem)
+      {
+        WbText* text = dynamic_cast<WbText *> (selectedwbitem);
+        if (text)
+          text->setFont(newFont);
+      }
+    }
+  }
+
+}
+
 void WbScene::bringForward(int n) {
 	if(n == 0)
 		return;

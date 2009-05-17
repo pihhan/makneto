@@ -22,6 +22,7 @@
 #include "wbitems.h"
 #include "wbscene.h"
 #include <QDebug>
+#include <QFont>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -33,7 +34,7 @@
 Edit::Edit(Type _type, const QDomElement &_xml) {
 	type = _type;
   if (!_xml.isNull())
-    xml = _xml.cloneNode().toElement();
+    xml = _xml.cloneNode(true).toElement();
 }
 
 Edit::Edit(Type _type, const QString &_target, const QDomElement &edit, const QString &_oldValue) {
@@ -389,7 +390,7 @@ QList<QString> WbItem::parseSvg(QDomElement &_svg, bool emitChanges) {
 		// 'stroke' & stroke-dasharray & stroke-dashoffset & stroke-dashoffset & stroke-linecap & stroke-linejoin & stroke-miterlimit & stroke-opacity &
 		if(changed.contains("pen")) {
 			QPen pen;
-			pen = parseQPen(attributes["stroke"],
+      pen = parseQPen(attributes["stroke"],
 					attributes["stroke-dasharray"],
 					attributes["stroke-dashoffset"],
 					attributes["stroke-linecap"],
@@ -399,9 +400,23 @@ QList<QString> WbItem::parseSvg(QDomElement &_svg, bool emitChanges) {
 					attributes["opacity"],
 					attributes["stroke-width"]);
 			QAbstractGraphicsShapeItem* s = qgraphicsitem_cast<QAbstractGraphicsShapeItem*>(graphicsItem());
-			if(s) {
-				// Only set pens for items that implement it
-				s->setPen(pen);
+			if(s) {			
+        WbGraphicsTextItem *txt = dynamic_cast<WbGraphicsTextItem *>(graphicsItem());
+        if (txt)
+        {
+          QFont font;
+          if (pen.width() > 0)
+          {
+            font.setPointSize(pen.width() * 5);
+          }
+          txt->setDefaultTextColor(pen.color());
+          txt->setFont(font);
+        }
+        else
+        {
+          // Only set pens for items that implement it
+          s->setPen(pen);
+        }
 			}/* else if(typerange == 101) {
 				QGraphicsTextItem* s = dynamic_cast<QGraphicsTextItem*>(graphicsItem());
 				s->setPen(pen);
@@ -973,13 +988,14 @@ void WbGraphicsTextItem::contextMenuEvent (QGraphicsSceneContextMenuEvent * even
 	if(hasFocus())
 		QGraphicsTextItem::contextMenuEvent(event);
 	else {
+    setSelected(true);
 		WbItemMenu* menu = wbText_->constructContextMenu();
 		// Add the default actions
-		menu->addSeparator();
-		QActionGroup* group = new QActionGroup(menu);
+    //menu->addSeparator();
+    //QActionGroup* group = new QActionGroup(menu);
 		//IconAction* action = new IconAction(QObject::tr("Font..."), "psi/compact", QObject::tr("Font..."), 0, group);
 		//QObject::connect(action, SIGNAL(triggered()), wbText_, SLOT(setFont()));
-		menu->addActionGroup(group);
+    //menu->addActionGroup(group);
 	
 		menu->exec(event->screenPos());
 		event->accept();
@@ -1075,6 +1091,68 @@ QList<QString> WbText::parseSvg(QDomElement &_svg, bool emitChanges) {
 	return changed;
 }
 
+QFont WbText::font()
+{
+  return graphicsitem_->font();
+}
+
+
+WbItemMenu *WbText::constructContextMenu()
+{
+  WbItemMenu* menu = new WbItemMenu(0);
+  WbScene* wbscene = qobject_cast<WbScene*>(graphicsItem()->scene());
+  if(wbscene) {
+    // Add the default actions
+    QActionGroup* group = new QActionGroup(this);
+    QPixmap pixmap(2, 2);
+    pixmap.fill(QColor(Qt::black));
+    QAction* qaction = new QAction(QIcon(pixmap), tr("Small font"), group);
+    qaction->setData(QVariant(1));
+    pixmap = QPixmap(6, 6);
+    pixmap.fill(QColor(Qt::black));
+    qaction = new QAction(QIcon(pixmap), tr("Medium font"), group);
+    qaction->setData(QVariant(3));
+    pixmap = QPixmap(12, 12);
+    pixmap.fill(QColor(Qt::black));
+    qaction = new QAction(QIcon(pixmap), tr("Big font"), group);
+    qaction->setData(QVariant(6));
+    connect(group, SIGNAL(triggered(QAction*)), wbscene, SLOT(setStrokeWidth(QAction*)));
+    menu->addActionGroup(group);
+
+    menu->addSeparator();
+    group = new QActionGroup(this);
+    pixmap = QPixmap(16, 16);
+    pixmap.fill(QColor(Qt::darkCyan));
+    qaction = new QAction(QIcon(pixmap), tr("Change stroke color"), group);
+    connect(qaction, SIGNAL(triggered()), wbscene, SLOT(setStrokeColor()));
+    menu->addActionGroup(group);
+
+    menu->addSeparator();
+    group = new QActionGroup(this);
+    qaction = new QAction(tr("Font ..."), 0);
+    connect(qaction, SIGNAL(triggered()), wbscene, SLOT(setFont()));
+    menu->addAction(qaction);
+    /*IconAction* action = new IconAction(tr("Bring forward"), "psi/bringForwards", tr("Bring forward"), 0, group);
+    connect(action, SIGNAL(triggered()), wbscene, SLOT(bringForward()));
+    action = new IconAction(tr("Bring to front"), "psi/bringToFront", tr("Bring to front"), 0, group);
+    connect(action, SIGNAL(triggered()), wbscene, SLOT(bringToFront()));
+    action = new IconAction(tr("Send backwards"), "psi/sendBackwards", tr("Send backwards"), 0, group);
+    connect(action, SIGNAL(triggered()), wbscene, SLOT(sendBackwards()));
+    action = new IconAction(tr("Send to back"), "psi/sendToBack", tr("Send to back"), 0, group);
+    connect(action, SIGNAL(triggered()), wbscene, SLOT(sendToBack()));
+    menu->addActionGroup(group);
+
+    menu->addSeparator();
+    group = new QActionGroup(this);
+    action = new IconAction(tr("Group"), "psi/group", tr("Group"), 0, group);
+    connect(action, SIGNAL(triggered()), wbscene, SLOT(group()));
+    action = new IconAction(tr("Ungroup"), "psi/ungroup", tr("Ungroup"), 0, group);
+    connect(action, SIGNAL(triggered()), wbscene, SLOT(ungroup()));
+    menu->addActionGroup(group);*/
+  }
+  return menu;
+}
+
 WbItem* WbText::clone() {
 	QDomElement _svg = svg();
 	WbItem* cloned = new WbText(_svg, id(), index(), parentWbItem(), 0);
@@ -1098,58 +1176,67 @@ void WbText::checkTextChanges() {
 void WbText::setFont() {
 	bool ok;
 	QFont _font = QFontDialog::getFont(&ok, graphicsitem_->font());
-	if(ok) {
-		// Not supported features
-		_font.setUnderline(false);
-		_font.setOverline(false);
-		_font.setStrikeOut(false);
-		_font.setFixedPitch(false);
-		// end: Not supported features
-		if(_font != graphicsitem_->font()) {
-			if(_font.family() != graphicsitem_->font().family())
-				emit attributeChanged(id(), "font-family", _font.family(), graphicsitem_->font().family());
-			if(_font.pointSize() != graphicsitem_->font().pointSize())
-				emit attributeChanged(id(), "font-size", QString("%1").arg(_font.pointSize()), QString("%1").arg(graphicsitem_->font().pointSize()));
-			if(_font.style() != graphicsitem_->font().style()) {
-				QString oldStyle, newStyle;
-				switch(graphicsitem_->font().style()) {
-					case QFont::StyleNormal:
-						oldStyle = "normal";
-						break;
-					case QFont::StyleItalic:
-						oldStyle = "italic";
-						break;
-					case QFont::StyleOblique:
-						oldStyle = "oblique";
-						break;
-				}
-				switch(_font.style()) {
-					case QFont::StyleNormal:
-						newStyle = "normal";
-						break;
-					case QFont::StyleItalic:
-						newStyle = "italic";
-						break;
-					case QFont::StyleOblique:
-						newStyle = "oblique";
-						break;
-				}
-				emit attributeChanged(id(), "font-style", newStyle, oldStyle);
-			}
-			if(_font.weight() != graphicsitem_->font().weight()) {
-				int oldWeight = (graphicsitem_->font().weight() - (graphicsitem_->font().weight() % 10)) * 10;
-				int newWeight = (_font.weight() - (_font.weight() % 10)) * 10;
-				if(oldWeight < 100)
-					oldWeight = 100;
-				if(newWeight < 100)
-					newWeight = 100;
-				emit attributeChanged(id(), "font-weight", QString("%1").arg(newWeight), QString("%1").arg(oldWeight));
-				_font.setWeight(((newWeight - 100) / 800) * 99);
-			}
-			graphicsitem_->setFont(_font);
-		}
+  if(ok)
+  {
+    setFont(_font);
 	}
 }
+
+void WbText::setFont(QFont font)
+{
+  font.setUnderline(false);
+  font.setOverline(false);
+  font.setStrikeOut(false);
+  font.setFixedPitch(false);
+  // end: Not supported features
+  if(font != graphicsitem_->font())
+  {
+    if(font.family() != graphicsitem_->font().family())
+      emit attributeChanged(id(), "font-family", font.family(), graphicsitem_->font().family());
+    if(font.pointSize() != graphicsitem_->font().pointSize())
+      emit attributeChanged(id(), "font-size", QString("%1").arg(font.pointSize()), QString("%1").arg(graphicsitem_->font().pointSize()));
+    if(font.style() != graphicsitem_->font().style())
+    {
+      QString oldStyle, newStyle;
+      switch(graphicsitem_->font().style()) {
+        case QFont::StyleNormal:
+          oldStyle = "normal";
+          break;
+        case QFont::StyleItalic:
+          oldStyle = "italic";
+          break;
+        case QFont::StyleOblique:
+          oldStyle = "oblique";
+          break;
+      }
+      switch(font.style()) {
+        case QFont::StyleNormal:
+          newStyle = "normal";
+          break;
+        case QFont::StyleItalic:
+          newStyle = "italic";
+          break;
+        case QFont::StyleOblique:
+          newStyle = "oblique";
+          break;
+      }
+      emit attributeChanged(id(), "font-style", newStyle, oldStyle);
+    }
+    if(font.weight() != graphicsitem_->font().weight())
+    {
+      int oldWeight = (graphicsitem_->font().weight() - (graphicsitem_->font().weight() % 10)) * 10;
+      int newWeight = (font.weight() - (font.weight() % 10)) * 10;
+      if(oldWeight < 100)
+        oldWeight = 100;
+      if(newWeight < 100)
+        newWeight = 100;
+      emit attributeChanged(id(), "font-weight", QString("%1").arg(newWeight), QString("%1").arg(oldWeight));
+      font.setWeight(((newWeight - 100) / 800) * 99);
+    }
+  }
+  graphicsitem_->setFont(font);
+}
+
 
 /*
  *	WbImage

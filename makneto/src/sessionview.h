@@ -30,6 +30,7 @@ class ChatOutput;
 #include "xmpp_chatstate.h"
 
 #include "settings.h"
+#include "wbwidget.h"
 
 namespace XMPP 
 {
@@ -95,6 +96,7 @@ public slots:
   void fgColorChanged(const QColor &c);
   void bgColorChanged(const QColor &c);
   void penSizeChanged(int size);
+  void modeChanged(WbWidget::Mode);
 
 signals:
 	void sendMessage(const Message &);

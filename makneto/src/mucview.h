@@ -49,9 +49,11 @@ class MUCView : public QWidget
     void disconnectedFromMUC(MUC *muc);
     void setUserStatus(User *user);
     void error(MUC *muc, const QString &message);
+    void deletedMUC(MUC *muc);
   signals:
     void connectToMUC(MUC *);
     void disconnectFromMUC(MUC *);
+    void deleteMUC(MUC *);
 };
 
 #endif // MUCVIEW_H
