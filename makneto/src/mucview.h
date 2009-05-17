@@ -50,6 +50,7 @@ class MUCView : public QWidget
     void setUserStatus(User *user);
     void error(MUC *muc, const QString &message);
     void deletedMUC(MUC *muc);
+    void showInfoMessage(MUC *muc, const QString &message);
   signals:
     void connectToMUC(MUC *);
     void disconnectFromMUC(MUC *);

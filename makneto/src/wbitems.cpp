@@ -1103,27 +1103,10 @@ WbItemMenu *WbText::constructContextMenu()
   WbScene* wbscene = qobject_cast<WbScene*>(graphicsItem()->scene());
   if(wbscene) {
     // Add the default actions
-    QActionGroup* group = new QActionGroup(this);
-    QPixmap pixmap(2, 2);
-    pixmap.fill(QColor(Qt::black));
-    QAction* qaction = new QAction(QIcon(pixmap), tr("Small font"), group);
-    qaction->setData(QVariant(1));
-    pixmap = QPixmap(6, 6);
-    pixmap.fill(QColor(Qt::black));
-    qaction = new QAction(QIcon(pixmap), tr("Medium font"), group);
-    qaction->setData(QVariant(3));
-    pixmap = QPixmap(12, 12);
-    pixmap.fill(QColor(Qt::black));
-    qaction = new QAction(QIcon(pixmap), tr("Big font"), group);
-    qaction->setData(QVariant(6));
-    connect(group, SIGNAL(triggered(QAction*)), wbscene, SLOT(setStrokeWidth(QAction*)));
-    menu->addActionGroup(group);
-
-    menu->addSeparator();
-    group = new QActionGroup(this);
-    pixmap = QPixmap(16, 16);
+    QActionGroup *group = new QActionGroup(this);
+    QPixmap pixmap = QPixmap(16, 16);
     pixmap.fill(QColor(Qt::darkCyan));
-    qaction = new QAction(QIcon(pixmap), tr("Change stroke color"), group);
+    QAction *qaction = new QAction(QIcon(pixmap), tr("Change stroke color"), group);
     connect(qaction, SIGNAL(triggered()), wbscene, SLOT(setStrokeColor()));
     menu->addActionGroup(group);
 

@@ -2,6 +2,9 @@
 #include "mucview.h"
 
 #include "muccontrol.h"
+#include "maknetoview.h"
+#include "sessiontabmanager.h"
+#include "sessionview.h"
 #include <QtGui/QTreeWidget>
 #include <QtGui/QTreeWidgetItem>
 #include <KStatusBar>
@@ -255,8 +258,9 @@ void MUCView::setUserStatus(User *user)
 
 void MUCView::connectedToMUC(MUC *muc)
 {
-  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been connected to \"%1\"").arg(muc->jid.bare()), 2000);
-  //TODO: Add info message
+  QString msg(tr("You have been connected to \"%1\"").arg(muc->jid.bare()));
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(msg, 2000);
+  showInfoMessage(muc, msg);
   QTreeWidgetItem *item = getMUCItem(muc);
   if (item)
   {
@@ -267,8 +271,9 @@ void MUCView::connectedToMUC(MUC *muc)
 
 void MUCView::disconnectedFromMUC(MUC *muc)
 {
-  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("You have been disconnected from \"%1\"").arg(muc->jid.bare()), 2000);
-  //TODO: Add info message
+  QString msg(tr("You have been disconnected from \"%1\"").arg(muc->jid.bare()));
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(msg, 2000);
+  showInfoMessage(muc, msg);
   QTreeWidgetItem *item = getMUCItem(muc);
   if (item)
   {
@@ -295,12 +300,21 @@ bool MUCView::isMUCConnected(const Jid &jid)
 
 void MUCView::error(MUC *muc, const QString &message)
 {
-  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(tr("Error occured in MUC \"%1\": %2").arg(muc->jid.bare(), message));
+  QString msg(tr("Error occured in MUC \"%1\": %2").arg(muc->jid.bare(), message));
+  m_makneto->getMaknetoMainWindow()->statusBar()->showMessage(msg, 2000);
+  showInfoMessage(muc, msg);
 }
 
 void MUCView::deletedMUC(MUC *muc)
 {
   delete getMUCItem(muc);
+}
+
+void MUCView::showInfoMessage(MUC *muc, const QString &message)
+{
+  SessionView *session = m_maknetoview->getSessionTabManager()->findSession(muc->jid.bare());
+  if (session)
+    session->infoMessage(message);
 }
 
 void MUCView::joinMUC()
