@@ -17,6 +17,7 @@ int main(int argc, char **argv)
 	KAboutData about("makneto", 0, ki18n("Makneto"), version, ki18n(description),
                      KAboutData::License_GPL, ki18n("(C) 2007 Jaroslav Reznik"), KLocalizedString(), 0, "rezzabuh@gmail.com");
 	about.addAuthor( ki18n("Jaroslav Reznik"), KLocalizedString(), "rezzabuh@gmail.com" );
+  about.addAuthor( ki18n("Radek Novacek"), KLocalizedString(), "rad.n@centrum.cz" );
 	KCmdLineArgs::init(argc, argv, &about);
 
 	KApplication app;
