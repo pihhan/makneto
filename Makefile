@@ -4,7 +4,12 @@
 # asi budete chtit prejmenovat:
 CO=xmensi06
 
-all: $(CO).ps
+all: remote 
+#all: $(CO).pdf
+
+remote:
+	./show-pdf.sh
+
 
 pdf: $(CO).pdf
 
