@@ -66,6 +66,12 @@ void ContactList::emitDataChanged()
 	emit dataChanged();
 }
 
+/*! \brief Update only specified item. */
+void ContactList::emitDataChanged(ContactListItem *item) 
+{
+	emit dataChangedItem(item);
+}
+
 /*void ContactList::setShowGroups(bool showGroups)
 {
 	showGroups_ = showGroups;
@@ -76,6 +82,7 @@ void ContactList::setShowAccounts(bool showAccounts)
 	showAccounts_ = showAccounts;
 }*/
 
+/*! \brief Get root item of contact list, where all items are nested. */
 ContactListRootItem* ContactList::rootItem()
 {
 	return rootItem_;

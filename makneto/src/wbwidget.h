@@ -84,6 +84,8 @@ public:
 signals:
 	/*! \brief Emitted when a new whiteboard element is ready to be sent.*/
 	void newWb(const QDomElement &wb);
+  /*! \brief Emitted when mode is changed.*/
+  void modeChanged(WbWidget::Mode);
 
 public slots:
 	/*! \brief Clears the whiteboard.

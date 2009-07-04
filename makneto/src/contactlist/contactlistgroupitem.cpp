@@ -20,6 +20,10 @@ int ContactListGroupItem::indexOf(ContactListItem* item) const
 	return items_.indexOf(item);
 }
 
+/*! \brief Get item at specified position.
+    \param index Position of requested contact
+    \return Pointer to item or NULL, if not specified.
+    */
 ContactListItem* ContactListGroupItem::atIndex(int index) const
 {
 	if (index >= 0 && index < items_.size())
@@ -33,6 +37,7 @@ int ContactListGroupItem::items() const
 	return items_.size();
 }
 
+/*! \brief Add new contact to group. */
 void ContactListGroupItem::addItem(ContactListItem* item)
 {
 	QList<ContactListItem*>::Iterator it = items_.begin();
@@ -97,6 +102,7 @@ int ContactListGroupItem::countOnline() const
 	return count;
 }
 
+/*! \brief Move this item to hidden group or to real parent. */
 void ContactListGroupItem::updateParent()
 {
 	ContactListGroupItem* newParent = parent();
@@ -112,6 +118,7 @@ void ContactListGroupItem::updateParent()
 	}
 }
 
+/*! \brief Update parents of every item in this group, also group item itself. */
 void ContactListGroupItem::updateParents()
 {
 	QList<ContactListItem*> items(items_);

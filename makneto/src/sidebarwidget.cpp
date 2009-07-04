@@ -82,4 +82,12 @@ void SidebarWidget::tabClicked(int id)
 	}
 }
 
+void SidebarWidget::hideAll()
+{
+  m_widgets->setCurrentIndex(-1);
+  m_widgets->setVisible(false);
+  for (int i = 0; i < m_widgets->count(); i++)
+    m_multitab->setTab(i, false);
+}
+
 #include "sidebarwidget.moc"

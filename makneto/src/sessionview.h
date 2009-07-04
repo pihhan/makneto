@@ -8,7 +8,7 @@
 #define SESSIONVIEW_H
 
 #include <QtGui/QWidget>
-#include <QByteArray>
+#include <QtCore/QByteArray>
 
 #include "mediaplayer.h"
 
@@ -24,11 +24,14 @@ class KToolBar;
 class QBuffer;
 class QFrame;
 class FTStream;
-class MUCControl;
 class Makneto;
-#include "xmpp_chatstate.h"
+class PaletteWidget;
+class ChatOutput;
+
+#include <xmpp_chatstate.h>
 
 #include "settings.h"
+#include "wbwidget.h"
 
 namespace XMPP 
 {
@@ -80,15 +83,21 @@ public:
   int type(void) { return m_type; }
   void setType(int type) { m_type = type; }
   
-  MUCControl *getMUCControl(void) { return m_muccontrol; }
+  //MUCControl *getMUCControl(void) { return m_muccontrol; }
+  void showHideChat();
   bool closeRequest();
   void setEnabled(bool enabled);
 public slots:
-	void sendClicked();
-	void sendWhiteboard(const QDomElement &wb);
-	void setMode(QAction *);
-	void transferRead(const QByteArray &a);
-	void actionSendFileTriggered();
+  void sendClicked();
+  void sendWhiteboard(const QDomElement &wb);
+  void setMode(QAction *);
+  void transferRead(const QByteArray &a);
+  void actionSendFileTriggered();
+  void actionCreatePollTriggered();
+  void fgColorChanged(const QColor &c);
+  void bgColorChanged(const QColor &c);
+  void penSizeChanged(int size);
+  void modeChanged(WbWidget::Mode);
 
 signals:
 	void sendMessage(const Message &);
@@ -97,37 +106,37 @@ private:
   Makneto *m_makneto;
   QVBoxLayout *m_topLayout;
   QWidget *m_leftWidget, *m_chatWidget;
+  PaletteWidget *m_paletteWidget;
   QVBoxLayout *m_leftLayout;
   QSplitter *m_leftSplitter;
   QSplitter *m_topSplitter;
   QStringList messages;
-  
-  MUCControl *m_muccontrol;
-  
+   
   QVBoxLayout *m_mainlayout;
-	QVBoxLayout *m_chatlayout;
-	QHBoxLayout *m_bottomlayout;
+  QVBoxLayout *m_chatlayout;
+  QHBoxLayout *m_bottomlayout;
 
-	KToolBar *m_wbtoolbar;
+  KToolBar *m_wbtoolbar;
 
-	QSplitter *m_mainSplitter;
-	QSplitter *m_chatSplitter;
+  QSplitter *m_mainSplitter;
+  QSplitter *m_chatSplitter;
 
-	QFrame *m_chatFrame;
+  QFrame *m_chatFrame;
 
-	WbWidget *m_wbwidget;
+  WbWidget *m_wbwidget;
 	
-	QTextEdit *m_chatoutput;
-	QTextEdit *m_chatinput;
+  ChatOutput *m_chatoutput;
+  QTextEdit *m_chatinput;
 
-	QPushButton *m_sendmsg;
-	
-	QString m_jid;
-	ChatState m_lastChatState;
-	int m_id;
-	QString m_session;
-        int m_type;
-        QString m_nick;
+  QPushButton *m_sendmsg;
+  
+  QString m_jid;
+  ChatState m_lastChatState;
+  int m_id;
+  QString m_session;
+  int m_type;
+  QString m_nick;
+  KAction *actionSelect;
 
 
 	// TODO: TEST ONLY!

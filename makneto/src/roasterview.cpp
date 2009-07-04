@@ -10,6 +10,8 @@
 #include "contactlist/contactlistmodel.h"
 #include "contactlist/contactlistview.h"
 #include "contactlist/contactlist.h"
+#include "contactlist/contactlistrootitem.h"
+#include "contactlist/contactlistcontact.h"
 #include "addcontactdialog.h"
 
 #include <QtGui/QVBoxLayout>
@@ -44,6 +46,7 @@ RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	m_roster = new ContactListView(this);
 	m_roster->setModel(m_model);
   m_roster->setIndentation(-3);
+  connect(m_roster, SIGNAL(itemDoubleClicked(const QString &)), SLOT(itemDoubleClicked(const QString &)));
 
 	// search button for roster
 	m_search = new KLineEdit(this);
@@ -75,6 +78,11 @@ void RoasterView::addContactClicked(bool /*toggled*/)
 	addContact->show();
 
 	connect(addContact, SIGNAL(addUser(const XMPP::Jid &, const QString &, bool)), m_makneto, SLOT(addUser(const XMPP::Jid &, const QString &, bool)));
+}
+
+void RoasterView::itemDoubleClicked(const QString &jid)
+{
+  m_makneto->actionNewSession(jid, Chat);
 }
 
 void RoasterView::offlineClicked(bool toggled)

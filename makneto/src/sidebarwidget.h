@@ -38,6 +38,7 @@ public:
 	int appendTabWidget(QWidget *widget, const QPixmap &pic, int id, const QString &text); 
 	int currentIndex() const { return m_currentIndex; }
 	void setCurrentIndex(int index);
+  void hideAll();
 private slots:
 	void tabClicked(int id);
 private:

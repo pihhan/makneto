@@ -5,6 +5,11 @@ project(makneto)
 SET(CMAKE_BUILD_TYPE Debug)
 
 find_package(Qt4 REQUIRED)
+
+set(KDE4_FIND_QUIETLY false)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/iris")
+list(APPEND CMAKE_MODULE_PATH "../iris")
+
 find_package(KDE4 REQUIRED)
 find_package(QCA2 REQUIRED)
 
@@ -13,11 +18,9 @@ include(${QT_USE_FILE})
 
 include (KDE4Defaults)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/iris")
-list(APPEND CMAKE_MODULE_PATH "../iris")
 message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
 #set(Iris_DIR "../iris")
-find_package(Iris)
+find_package(Iris REQUIRED)
 
 # Pihhanovy pokusy s IRIS
 # FIND_LIBRARY(LIB_IRIS NAMES iris irisnet
@@ -80,8 +83,16 @@ set(makneto_SRCS
   contactdetaildialog.cpp
   mucview.cpp
   muccontrol.cpp
-  mucuserlist.cpp
 	chatinput.cpp
+  chatoutput.cpp
+  palettewidget.cpp
+  wbforeign.cpp
+  qgraphicswidgetitem.cpp
+
+#plugins
+  plugins/plugin.cpp
+  plugins/pollplugin.cpp
+  plugins/pollplugincreate.cpp
 
 #contactlist
 	contactlist/contactlistalphacomparator.cpp

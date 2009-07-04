@@ -26,7 +26,7 @@ ContactListModel::ContactListModel(ContactList* contactList) : contactList_(cont
 	connect(contactList_,SIGNAL(dataChanged()),this,SLOT(contactList_changed()));
 }
 
-
+/*! \brief Get text description of selected contact list item. */
 QVariant ContactListModel::data(const QModelIndex &index, int role) const
 {
 	if (!index.isValid())

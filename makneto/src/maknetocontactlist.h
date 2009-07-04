@@ -30,7 +30,6 @@ class QActionGroup;
 
 class MaknetoContactList : public ContactList
 {
-	Q_OBJECT
 public:
 	/**
 	* Default constructor

@@ -12,6 +12,7 @@
 
 class MaknetoView;
 class KToggleAction;
+class KAction;
 class KUrl;
 
 /**
@@ -36,6 +37,7 @@ public:
 	virtual ~MaknetoMainWindow();
 	
 private slots:
+  void hideAll();
 	void fullScreen();
 	void showMenubar();
 	void quit();
@@ -51,6 +53,8 @@ private:
 	
 	KToggleAction *m_toolbarAction;
 	KToggleAction *m_statusbarAction;
+  
+  KAction *m_fullScreenAction, *hideAllAction;
   
   void closeEvent(QCloseEvent *event);
 };

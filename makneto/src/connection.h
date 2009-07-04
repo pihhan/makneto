@@ -9,9 +9,9 @@
 
 #include <QObject>
 
-#include "xmpp_status.h"
-#include "xmpp_rosterx.h"
-#include "xmpp_jid.h"
+#include <xmpp_status.h>
+#include <xmpp_rosterx.h>
+#include <xmpp_jid.h>
 #include <QTextStream>
 /**
  * This is main connection class for Makneto

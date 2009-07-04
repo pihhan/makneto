@@ -6,6 +6,7 @@
 
 #include "contactlistitem.h"
 
+/*! \brief Class representing displayable group item in graphical contact list. */
 class ContactListGroupItem : public ContactListItem
 {
 public:

@@ -5,7 +5,6 @@
  */
 
 #include "sessionview.h"
-#include "muccontrol.h"
 #include "mediaplayer.h"
 #include "kiconloader.h"
 #include "klocale.h"
@@ -13,6 +12,8 @@
 #include "ktoolbar.h"
 #include "kaction.h"
 #include "ftstream.h"
+#include "maknetoview.h"
+#include "mucview.h"
 
 #include <iostream>
 
@@ -22,14 +23,15 @@
 #include <QtGui/QLabel>
 #include <QtGui/QTextEdit>
 #include <QtGui/QSplitter>
-#include <QDomElement>
+#include <QtXml/QDomElement>
 #include <QtCore/QSignalMapper>
 #include <QtCore/QBuffer>
 #include <QtCore/QByteArray>
 #include <QtGui/QFrame>
-#include <QDebug>
-#include <QMessageBox>
-#include <QSettings>
+#include <QtCore/QDebug>
+#include <QtGui/QMessageBox>
+#include <QtCore/QSettings>
+#include <QtGui/QGraphicsProxyWidget>
 
 #include "xmpp_message.h"
 #include "xmpp_chatstate.h"
@@ -38,6 +40,10 @@
 #include "sessiontabmanager.h"
 #include "makneto.h"
 #include "chatinput.h"
+#include "chatoutput.h"
+#include "palettewidget.h"
+#include "plugins/pollplugin.h"
+#include "wbforeign.h"
 
 #include <Phonon/VideoPlayer>
 
@@ -60,31 +66,49 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   
   // Add Toolbar to the layout
   createToolBar();
+  QHBoxLayout *m_toolLayout = new QHBoxLayout();
+  m_toolLayout->addWidget(m_wbtoolbar);
+
+  // Create WhiteBoard widget
+  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
+
+  // Create palette widget
+  m_paletteWidget = new PaletteWidget(this);
+  connect(m_paletteWidget, SIGNAL(fgColorChanged(const QColor &)), SLOT(fgColorChanged(const QColor &)));
+  connect(m_paletteWidget, SIGNAL(bgColorChanged(const QColor &)), SLOT(bgColorChanged(const QColor &)));
+  connect(m_paletteWidget, SIGNAL(penSizeChanged(int)), SLOT(penSizeChanged(int)));
+  m_paletteWidget->setFgColor(QColor(0, 0, 0));
+  m_paletteWidget->setBgColor(Qt::transparent);
+  m_paletteWidget->setPenSize(1);
+
+  m_toolLayout->addWidget(m_paletteWidget);
+
+  m_leftLayout->addLayout(m_toolLayout);
   
   m_leftSplitter = new QSplitter(Qt::Vertical, m_leftWidget);
   m_leftLayout->addWidget(m_leftSplitter);
   
-  // Create WhiteBoard widget
-  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
   m_leftSplitter->addWidget(m_wbwidget);
   
   connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
+  connect(m_wbwidget, SIGNAL(modeChanged(WbWidget::Mode)), SLOT(modeChanged(WbWidget::Mode)));
   m_wbwidget->setMode(WbWidget::DrawPath);
   m_wbwidget->setMinimumSize(300, 400);
 
   m_chatSplitter = new QSplitter(Qt::Vertical, m_leftSplitter);
   
   m_leftSplitter->addWidget(m_chatSplitter);
+
+  m_chatoutput = new ChatOutput(m_chatSplitter);
   
-  m_chatoutput = new QTextEdit(m_chatSplitter);
   m_chatinput = new ChatInput(m_chatSplitter);
   m_sendmsg = new QPushButton("&Send", m_leftWidget);
   connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
   connect(m_chatinput, SIGNAL(send()), this, SLOT(sendClicked()));
 
   // output chat text edit props
-  //m_chatoutput->setTextFormat(Qt::RichText);
   m_chatoutput->setReadOnly(true);
+  m_chatoutput->setNick(nick);
   
   m_chatSplitter->addWidget(m_chatoutput);
   m_chatSplitter->addWidget(m_chatinput);
@@ -93,13 +117,6 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   
   m_topSplitter->addWidget(m_leftWidget);
   
-  if (type == 1)
-  {
-    m_muccontrol = new MUCControl(this, m_makneto, m_jid, m_nick);
-    m_topSplitter->addWidget(m_muccontrol);
-    QSettings settings;
-    m_topSplitter->restoreState(settings.value("m_topSplitter").toByteArray());
-  }
 
 #ifdef DELETE_ME
 	m_mainlayout = new QVBoxLayout(this);
@@ -160,8 +177,6 @@ void SessionView::createToolBar()
 	m_wbtoolbar->setIconDimensions(16);
 	m_wbtoolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
-  m_leftLayout->addWidget(m_wbtoolbar);
-
 	QActionGroup *groupMode = new QActionGroup(this);
 	connect(groupMode, SIGNAL(triggered(QAction*)), this, SLOT(setMode(QAction*)));
  
@@ -209,9 +224,10 @@ void SessionView::createToolBar()
 // 	m_wbtoolbar->addAction(actionPolyline);
 // 	actionPolyline->setData(QVariant(WbWidget::DrawPolyline));
 // 
-// 	KAction *actionText = new KAction(KIcon("insert-text"), i18n("Text"), groupMode);
-// 	m_wbtoolbar->addAction(actionText);
-// 	actionText->setData(QVariant(WbWidget::DrawText));
+  KAction *actionText = new KAction(KIcon("insert-text"), i18n("Text"), groupMode);
+  m_wbtoolbar->addAction(actionText);
+  actionText->setData(QVariant(WbWidget::DrawText));
+  actionText->setCheckable(true);
 
 	KAction *actionImage = new KAction(KIcon("insert-image"), i18n("Image"), groupMode);
 	m_wbtoolbar->addAction(actionImage);
@@ -221,7 +237,9 @@ void SessionView::createToolBar()
 	m_wbtoolbar->addAction(actionSendFile);
 	connect(actionSendFile, SIGNAL(triggered()), this, SLOT(actionSendFileTriggered()));
 
-
+  KAction *actionPoll = new KAction(KIcon("maknetopoll"), i18n("Create poll"), this);
+  m_wbtoolbar->addAction(actionPoll);
+  connect(actionPoll, SIGNAL(triggered()), this, SLOT(actionCreatePollTriggered()));
 }
 
 void SessionView::sendClicked()
@@ -237,19 +255,16 @@ void SessionView::sendClicked()
     message.setType("chat");
   else
     message.setType("groupchat");
-    message.setChatState(StateActive);
-    // TODO: support xhtml using correct xep, for now, only plaintext
-    message.setBody(m_chatinput->toPlainText());
+  message.setChatState(StateActive);
+  // TODO: support xhtml using correct xep, for now, only plaintext
+  message.setBody(m_chatinput->toPlainText());
 
-    emit sendMessage(message);
+  emit sendMessage(message);
   
   // Show message in chat window only in chat, not in groupchat
   if (type() == 0)
   {
-    // format for chat window
-    text = "<b>Me</b>: "+m_chatinput->toPlainText();
     // show text in chat window
-    m_chatoutput->append(text);
   }
   
   m_chatinput->setText("");
@@ -268,13 +283,13 @@ void SessionView::sendWhiteboard(const QDomElement &wb)
   QString id = m_makneto->getConnection()->genUniqueId();
   message.setId(id);
 	message.setWhiteboard(wb);
-  messages << id;
 
 	emit sendMessage(message);
 }
 
 void SessionView::chatMessage(const Message &message)
 {
+  int type = 0; // Type of the message (0 = message, 1 = information)
 	QString text;
 	switch (message.chatState())
 	{
@@ -282,9 +297,10 @@ void SessionView::chatMessage(const Message &message)
 			if (m_lastChatState != StateComposing)
       {
         if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0) // Is it a MUC ?
-          text += "<i>"+message.from().resource()+" is composing message</i>";
+          text = message.from().resource() + " is composing message";
         else
-          text += "<i>"+message.from().bare()+" is composing message</i>";
+          text = message.from().bare() + " is composing message";
+        type = 1;
       }
 			else
 				return;
@@ -292,9 +308,10 @@ void SessionView::chatMessage(const Message &message)
 
 		case StateGone:
       if (message.type().compare(QString("groupchat"), Qt::CaseInsensitive) == 0)
-        text += "<i>"+message.from().resource()+" has gone</i>";
+        text = message.from().resource() + " has gone";
       else
-        text += "<i>"+message.from().bare()+" has gone</i>";
+        text = message.from().bare() + " has gone";
+      type = 1;
 			break;
 
 		case StateInactive:
@@ -308,6 +325,7 @@ void SessionView::chatMessage(const Message &message)
           text = "<b>"+message.from().resource()+"</b>: "+message.body();
         else
           text = "<b>"+message.from().bare()+"</b>: "+message.body();
+        type = 0;
       }
 			else
 			{
@@ -316,20 +334,23 @@ void SessionView::chatMessage(const Message &message)
 			}
 	}
 
-	m_chatoutput->append(text);
+  if (type == 0)
+    m_chatoutput->incomingMessage(text);
+  else
+    m_chatoutput->infoMessage(text);
 
 	m_lastChatState = message.chatState();
 }
 
 void SessionView::infoMessage(const QString &text)
 {
-  m_chatoutput->append("<i>" + text + "</i>");
+  m_chatoutput->infoMessage(text);
 }
 
 void SessionView::whiteboardMessage(const Message &message)
 {
-  // During MUC when you send message you will obtain the same message from server - so if it have known id, we will throw it away...
-  if (!messages.contains(message.id()))
+  // During MUC when you send message you will obtain the same message from server - so if I'm the sender, we will throw it away...
+  if (message.from().resource().compare(m_nick))
     m_wbwidget->processWb(message.whiteboard());
 }
 
@@ -341,7 +362,7 @@ void SessionView::fileTransfer(FileTransfer *ft)
 
 	text = "<b>" + transfer->peer().bare()+"</b> Incoming file '" + transfer->fileName() +"'";
 
-	m_chatoutput->append(text);
+  m_chatoutput->incomingMessage(text);
 
 	connect(transfer, SIGNAL(readyRead(const QByteArray &)), this, SLOT(transferRead(const QByteArray &)));
 
@@ -360,19 +381,40 @@ void SessionView::fileTransfer(FileTransfer *ft)
 	//player->play();
 }
 
+void SessionView::showHideChat()
+{
+  QList<int> l = m_leftSplitter->sizes();
+  if (l[1] == 0)
+  {
+    QSettings settings;
+    l[1] = settings.value("m_leftSplitter_size").toInt();
+  }
+  else
+  {
+    QSettings settings;
+    settings.setValue("m_leftSplitter_size", l[1]);
+    l[1] = 0;
+  }
+  m_leftSplitter->setSizes(l);
+}
+
 bool SessionView::closeRequest()
 {
   if (m_type == 1) // Is it a groupchat ?
   {
-    if (m_muccontrol->connected() && QMessageBox::question(this, "Makneto", tr("Do you really want to close the tab?\nYou won't be able to recieve new messages from this conference!"),
-        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+    if (m_makneto->getMaknetoMainWindow()->getMaknetoView()->getMUCView()->isMUCConnected(m_jid))
     {
-      m_muccontrol->doDisconnect(m_jid);
-      return true;
-    }
-    else
-    {
-      return false;
+      if (QMessageBox::question(this, "Makneto",
+                              tr("Do you really want to close the tab?\nYou won't be able to recieve new messages from this conference!"),
+                              QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+      {
+        m_makneto->getConnection()->groupChatLeave(m_jid);
+        return true;
+      }
+      else
+      {
+        return false;
+      }
     }
   }
   return true;
@@ -386,7 +428,28 @@ void SessionView::setEnabled(bool enabled)
 void SessionView::setMode(QAction *action)
 {
 	m_wbwidget->setMode(WbWidget::Mode(action->data().toInt()));
+  // If user selects freehand pen, we should disable the brush
+  if (WbWidget::Mode(action->data().toInt()) == WbWidget::DrawPath)
+    m_wbwidget->setFillColor(Qt::transparent);
+  else
+    m_wbwidget->setFillColor(m_paletteWidget->bgColor());
 }
+
+void SessionView::modeChanged(WbWidget::Mode mode)
+{
+  switch (mode)
+  {
+    case WbWidget::Select:
+      actionSelect->setChecked(true);
+      break;
+    case WbWidget::DrawText:
+      //actionDrawText->setChecked(true);
+      break;
+    default:
+      break;
+  }
+}
+
 
 void SessionView::transferRead(const QByteArray &a)
 {
@@ -413,7 +476,38 @@ void SessionView::transferRead(const QByteArray &a)
 
 }
 
+void SessionView::fgColorChanged(const QColor &c)
+{
+  m_wbwidget->setStrokeColor(c);
+}
+
+void SessionView::bgColorChanged(const QColor &c)
+{
+  m_wbwidget->setFillColor(c);
+}
+
+void SessionView::penSizeChanged(int size)
+{
+  m_wbwidget->setStrokeWidth(size);
+}
+
 void SessionView::actionSendFileTriggered()
 {
 
+}
+
+void SessionView::actionCreatePollTriggered()
+{
+  QDomElement dom;  
+  PollPlugin *plugin = new PollPlugin();
+  if (!plugin->getQuestions())
+    return;
+
+  WbForeign *wbf = new WbForeign(plugin, dom, m_wbwidget->scene->newId(), m_wbwidget->scene->newIndex(), QString("root"), static_cast<QGraphicsScene *> (m_wbwidget->scene));
+  //scene->update(wbf->graphicsItem()->boundingRect());
+  m_wbwidget->scene->queueNew(wbf->id(), wbf->index(), wbf->svg());
+  m_wbwidget->scene->addWbItem(wbf);
+  plugin->graphicsItem()->ensureVisible(QRectF(), 0, 0);
+  setMode(actionSelect);
+  actionSelect->setChecked(true);
 }

@@ -20,6 +20,9 @@
 
 #include "wbscene.h"
 
+#include "wbforeign.h"
+#include <QtCore/QDebug>
+
 WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent) : QGraphicsScene(parent) {
 	importing = false;
 	highestIndex_ = 0;
@@ -36,8 +39,8 @@ WbScene::WbScene(const QString &session, const QString &ownJid, QObject * parent
 	svg->setAttribute("baseProfile", "tiny");
 	w->parseSvg(*svg, false);
 	elements_.insert("root", w);
-	delete svg; // FIXME: crash? wtf?
-};
+        delete svg; // FIXME: crash? wtf?
+}
 
 QString WbScene::session() {
 	return session_;
@@ -191,6 +194,33 @@ void WbScene::setStrokeWidth(QAction* a) {
 	}
 }
 
+void WbScene::setFont()
+{
+  QFont font;
+  WbText* text;
+  if (selectedItems().count() > 0)
+  {
+    text = dynamic_cast<WbText *> (selectedItems()[0]);
+    if (text)
+      font = text->font();
+  }
+  bool ok;
+  QFont newFont = QFontDialog::getFont(&ok, font, 0, tr("Get font"));
+  if (ok)
+  {
+    foreach(QGraphicsItem* selecteditem, selectedItems()) {
+      WbItem* selectedwbitem = findWbItem(selecteditem);
+      if(selectedwbitem)
+      {
+        WbText* text = dynamic_cast<WbText *> (selectedwbitem);
+        if (text)
+          text->setFont(newFont);
+      }
+    }
+  }
+
+}
+
 void WbScene::bringForward(int n) {
 	if(n == 0)
 		return;
@@ -327,7 +357,10 @@ void WbScene::sendWb() {
 			configure.setAttribute("target", queue_.first().target);
 			configure.setAttribute("version", ++i->version);
 			// Lump all consequtive configure edits witht the same target into one <configure/>.
-			while(queue_.first().type == Edit::AttributeEdit || queue_.first().type == Edit::ParentEdit || queue_.first().type == Edit::ContentEdit && queue_.first().target == configure.attribute("target")) {
+			while(( (queue_.first().type == Edit::AttributeEdit) 
+                            || (queue_.first().type == Edit::ParentEdit) 
+                            || (queue_.first().type == Edit::ContentEdit) )
+                            && (queue_.first().target == configure.attribute("target"))) {
 				// Store the EditUndo's for each edit
 				Edit edit = queue_.takeFirst();
 				i->undos.append(EditUndo(i->version, edit));
@@ -343,6 +376,7 @@ void WbScene::sendWb() {
 }
 
 void WbScene::queueNew(const QString &id, const qreal &index, const QDomElement &svg) {
+  qDebug() << "queueNew: " << svg.text();
 	QDomDocument d;
 	QDomElement n = d.createElement("new");
 	n.setAttribute("id", id);
@@ -456,6 +490,8 @@ bool WbScene::setElement(QDomElement &element, const QString &parent, const QStr
 			target = new WbImage(element, id, index, parent, this);
 		else if(element.tagName() == "g")
 			target = new WbGroup(element, id, index, parent, this);
+    else if(element.tagName() == "foreignObject")
+      target = new WbForeign(0, element, id, index, parent, this);
 		else
 			target = new WbUnknown(element, id, index, parent, this);
 		// Add the element pointer to the hash of elements_
@@ -534,12 +570,18 @@ bool WbScene::processConfigure(const QDomElement &configure) {
 					} else if(edit.nodeName() == "content") {
 						QDomNodeList oldContent = _svg.cloneNode().childNodes();
 						// Remove queued <configure>s that had the same target and attribute and retrieve the correct oldvalue
-						removeFromQueue(configure.attribute("target"), oldContent);
-						wbitem->undos.append(EditUndo(configure.attribute("version").toInt(), oldContent));
-						while(_svg.hasChildNodes())
-							_svg.removeChild(_svg.firstChild());
-						for(uint j=0; j < edit.childNodes().length(); j++)
-							_svg.appendChild(edit.childNodes().at(j));
+            if (_svg.nodeName().compare("foreignObject") == 0)
+            {
+              QDomElement el = edit.cloneNode().toElement();
+              QDomElement el2 = el.firstChildElement();              
+              return setElement(el2, newParent, wbitem->id(), wbitem->index());
+            }
+            removeFromQueue(configure.attribute("target"), oldContent);
+            wbitem->undos.append(EditUndo(configure.attribute("version").toInt(), oldContent));
+            while(_svg.hasChildNodes())
+              _svg.removeChild(_svg.firstChild());
+            while(edit.hasChildNodes())
+              _svg.appendChild(edit.childNodes().at(0));
 					} else if(edit.nodeName() == "parent") {
 						QString oldParent = newParent;
 						// Remove queued <configure>s that had the same target and attribute and retrieve the correct oldvalue
@@ -595,7 +637,7 @@ bool WbScene::processConfigure(const QDomElement &configure) {
 		} else if (configure.attribute("version").toInt() > wbitem->version) {
 			// This should never happen given the seriality condition.
 			// Reason to worry about misfunction of infrastructure but not much to do from here.
-			qWarning(QString("Configure to wbitem '%1' version '%1' arrived when the wbitem had version '%3'.").arg(configure.attribute("target")).arg(configure.attribute("version")).arg(wbitem->version-1).toAscii());
+      qWarning(QString("Configure to wbitem '%1' version '%2' arrived when the wbitem had version '%3'.").arg(configure.attribute("target")).arg(configure.attribute("version")).arg(wbitem->version-1).toAscii());
 			wbitem->version--;
 			return false;
 		}

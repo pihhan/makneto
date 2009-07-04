@@ -7,6 +7,7 @@ ContactListItem::ContactListItem(ContactListGroupItem* parent) : parent_(NULL), 
 	setParent(parent);
 }
 
+/*! \brief Get contact list instance. */
 ContactList* ContactListItem::contactList() const
 {
 	if (parent()) {
@@ -18,16 +19,20 @@ ContactList* ContactListItem::contactList() const
 	}
 }
 
+/*! \brief Get item parent. */
 ContactListGroupItem* ContactListItem::parent() const
 {
 	return parent_;
 }
 
+/*! \brief Get default item parent. */
 ContactListGroupItem* ContactListItem::defaultParent() const
 {
 	return defaultParent_;
 }
 
+/*! \brief Set new item parent.
+    \param parent New parent item. */
 void ContactListItem::setParent(ContactListGroupItem* parent)
 {
 	if (parent_ != parent) {
@@ -44,6 +49,7 @@ void ContactListItem::setParent(ContactListGroupItem* parent)
 	}
 }
 
+/*! \brief Get this item index in parent structure. */
 int ContactListItem::index() 
 {
 	return (parent() ? parent()->indexOf(this) : 0);

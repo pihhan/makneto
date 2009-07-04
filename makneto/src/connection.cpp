@@ -811,10 +811,15 @@ void Connection::sendMessage(const Message &message)
 	m_client->sendMessage(message);
 }
 
+/*! \brief Add new jid to user's roster.
+    \param jid Bare jid of person we are adding.
+    \param group Name of group we want to add contact to.
+    \param requestAuth should we request subscription from that contact also?
+    */
 void Connection::addUser(const Jid &jid, const QString &group, bool requestAuth)
 {
 	JT_Roster *roster = new JT_Roster(m_client->rootTask());
-	roster->set(jid, "", QStringList());
+	roster->set(jid, "", QStringList(group));
 	roster->go(true);
 
 	if (requestAuth)

@@ -90,6 +90,8 @@ public slots:
 	void setFillColor();
 	/*! \brief Overload: Sets the width of selected items based on the QAction->data().*/
 	void setStrokeWidth(QAction*);
+
+  void setFont();
 	/*! \brief Brings the selected items \a n levels forward.
 	 *  If n < 0, the items are brought to the front.
 	 */

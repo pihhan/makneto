@@ -24,7 +24,11 @@ public slots:
 	void setLargeIcons(bool);
 	void resizeColumns();
 
+signals:
+  void itemDoubleClicked(const QString &);
+  
 protected:
+  void mouseDoubleClickEvent(QMouseEvent *);
 	void contextMenuEvent(QContextMenuEvent*);
 	virtual void doItemsLayout();
 	//void drawBranches(QPainter*, const QRect&, const QModelIndex&) const;

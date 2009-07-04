@@ -22,6 +22,7 @@
 
 #include <klocalizedstring.h>
 
+
 #include <klocalizedstring.h>
 
 MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makneto(makneto) 
@@ -32,6 +33,11 @@ MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makn
   connect(m_contactDetailsActions, SIGNAL(triggered(QAction *)), makneto, SLOT(contactDetails(QAction *)));
 }
 
+/** @brief Add new contact to roster.
+    @param name Nickname of contact added, that user choose for him.
+    @param jid JabberId to add.
+    @param group Group that contact will be member of. 
+*/
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QString& group = QString())
 {
 	ContactListGroupItem *groupItem = rootItem();

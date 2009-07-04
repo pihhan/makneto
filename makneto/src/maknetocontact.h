@@ -26,7 +26,7 @@ class KIcon;
  * TODO: Should it hold avatar, if supported? Can avatar differ between 
  * resources? 
  * \author Petr Mensik <pihhan@cipis.net> */
-class MaknetoContactResource : public ContactListContact
+class MaknetoContactResource : public ContactListContact 
 {
 public:
         MaknetoContactResource()
@@ -99,23 +99,9 @@ public:
 	virtual ContactListStatus status() const;
 	virtual void showContextMenu(const QPoint &where);
 
-        virtual QString resource() const
-        {
-            QString r;
-//            MaknetoContactResource *br = bestResource();
-//            if (br)
-//                r = br->resource();
-            return r;
-        }
+        virtual QString resource() const;
 
-        virtual int priority() const
-        {
-            int r = 0;
-//            MaknetoContactResource *br = bestResource();
-//            if (br)
-//                r = br->priority();
-            return r;
-        }
+        virtual int priority() const;
 
         virtual MaknetoContactResource resource( const QString &resource) 
         {
@@ -124,6 +110,8 @@ public:
         /*! \brief Return resource with highest priority. 
          * \return Pointer to best resource class or NULL, if none is present - offline contact. */
         virtual MaknetoContactResource *bestResource() ;
+        /*! \brief Return resource with highest priority.
+         * \return Copy of MaknetoContactResource. it will return isNull(), if not really online. */
         virtual MaknetoContactResource bestResourceR() const;
         int resourcesNumber() const { return m_resources.size(); }
 
@@ -148,6 +136,7 @@ private:
         ContactListGroupItem *m_parent;
 };
 
+/*! \brief Implementation of both graphical and logical part of group in roster. */
 class MaknetoGroup : public ContactListGroup
 {
 public:

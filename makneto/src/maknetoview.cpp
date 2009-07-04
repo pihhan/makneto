@@ -27,26 +27,26 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 	QHBoxLayout *layout = new QHBoxLayout;
 
 	// prepare sidebar
-	SidebarWidget *sidebar = new SidebarWidget(this);
+	m_sidebar = new SidebarWidget(this);
 
 	ConnectionView *m_conn = new ConnectionView(this, makneto);
 	RoasterView *m_roaster = new RoasterView(this, makneto);
-  MUCView *m_muc = new MUCView(this, makneto);
+  m_muc = new MUCView(this, makneto);
 
-	sidebar->appendTabWidget(m_conn, KIconLoader::global()->loadIcon("konqueror", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 0, i18n("Network"));
+	m_sidebar->appendTabWidget(m_conn, KIconLoader::global()->loadIcon("konqueror", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 0, i18n("Network"));
 
-	sidebar->appendTabWidget(m_roaster, KIconLoader::global()->loadIcon("system-users", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 1, i18n("Contacts"));
+	m_sidebar->appendTabWidget(m_roaster, KIconLoader::global()->loadIcon("system-users", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 1, i18n("Contacts"));
   
-  sidebar->appendTabWidget(m_muc, KIconLoader::global()->loadIcon("goto", KIconLoader::Toolbar, KIconLoader::SizeSmall), 2, i18n("MUC"));
+  m_sidebar->appendTabWidget(m_muc, KIconLoader::global()->loadIcon("goto", KIconLoader::Toolbar, KIconLoader::SizeSmall), 2, i18n("MUC"));
 
-	sidebar->setCurrentIndex(0);
-	sidebar->setMaximumWidth(250); 
+	m_sidebar->setCurrentIndex(0);
+	m_sidebar->setMaximumWidth(250); 
 
 	// session manager
 	m_sessiontabmanager = new SessionTabManager(makneto, this);
 
 	// add to layout
-	layout->addWidget(sidebar);
+	layout->addWidget(m_sidebar);
 	layout->addWidget(m_sessiontabmanager);
 
 	setLayout(layout);

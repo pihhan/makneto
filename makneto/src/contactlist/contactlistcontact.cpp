@@ -44,6 +44,11 @@ QIcon ContactListContact::statusIcon() const
 	return QIcon();
 }
 
+/*! \brief Update display status of this contact and move it to displaygroup.
+ * 
+ * Display group can be hidden, or instance of real roster group. It depends
+ * on offline contacts enable, search mode and other roster parameters. 
+ */
 void ContactListContact::updateParent()
 {
 	ContactListGroupItem* newParent = parent();

@@ -17,7 +17,12 @@
 #include <iostream>
 
 
-MaknetoContact::MaknetoContact(const QString& name, const QString& jid, ContactListGroupItem* parent, QMenu *contactMenu) : ContactListContact(parent), m_name(name), m_jid(jid), m_status(ContactListStatus::Offline, "Offline"), m_contactMenu(contactMenu)
+MaknetoContact::MaknetoContact(const QString& name, const QString& jid, 
+        ContactListGroupItem* parent, QMenu *contactMenu
+    ) :
+      ContactListContact(parent), m_name(name), m_jid(jid), 
+      m_status(ContactListStatus::Offline, "Offline"), 
+      m_contactMenu(contactMenu)
 {
 
 }
@@ -191,6 +196,7 @@ void MaknetoContact::setStatus(const XMPP::Status &status)
     }
 }
 
+/** \brief Create new resource based on incoming presence. */
 void MaknetoContact::createResource(const QString &resource, const XMPP::Status &status)
 {
     MaknetoContactResource r;
@@ -198,13 +204,38 @@ void MaknetoContact::createResource(const QString &resource, const XMPP::Status 
     m_resources.insert(resource, r);
     qDebug() << "Creating resource " << resource << " for contact "
         << jid();
+    if (!status.capsVersion().isEmpty()) {
+        qDebug() << "Contact has caps string " << status.capsVersion() << " and node " << status.capsNode();
+    }
+    if (m_contactMenu) {
+        QAction *action= new QAction(resource, m_contactMenu);
+        action->setData(QVariant(resource));
+
+        m_contactMenu->addAction((action));
+        QList<QAction *> actions = m_contactMenu->actions();
+        for (QList<QAction *>::iterator it= actions.begin();
+            it != actions.end(); it++) {
+            qDebug() << "Menu Action: " << (*it)->text() << endl;
+        }
+    }
 }
 
+/** \brief Remove resource from contact. */
 void MaknetoContact::removeResource(const QString &resource)
 {
     m_resources.remove(resource);
     qDebug() << "Removing resource " << resource << " for contact "
         << jid();
+
+    QAction *resourceAction = NULL;
+    QList<QAction *> actions = m_contactMenu->actions();
+    for (QList<QAction *>::iterator it= actions.begin();
+        it != actions.end(); it++) {
+        if ((*it)->text() == resource) {
+            m_contactMenu->removeAction((*it));
+            qDebug() << "Removing Menu Action: " << (*it)->text() << endl;
+        }
+    }
 }
 
 void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &status)
@@ -224,4 +255,22 @@ void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &stat
     }
 }
 
+
+QString MaknetoContact::resource() const
+{
+    QString r;
+//            MaknetoContactResource *br = bestResource();
+//            if (br)
+//                r = br->resource();
+    return r;
+}
+
+int MaknetoContact::priority() const
+{
+    int r = 0;
+//            MaknetoContactResource *br = bestResource();
+//            if (br)
+//                r = br->priority();
+    return r;
+}
 

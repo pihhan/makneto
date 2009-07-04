@@ -6,7 +6,9 @@
 class ContactListGroupItem;
 class ContactListRootItem;
 class ContactListItemComparator;
+class ContactListItem;
 
+/*! \brief Implementation of graphical contact list. */
 class ContactList : public QObject
 {
 	Q_OBJECT
@@ -24,12 +26,14 @@ public:
 
 signals:
 	void dataChanged();
+	void dataChangedItem(ContactListItem *item);
 
 public slots:
 	void setShowOffline(bool);
 	void setShowGroups(bool);
 	void setSearch(const QString&);
 	void emitDataChanged(); // Not wild about this one
+        void emitDataChanged(ContactListItem *item);
 
 protected:
 	void updateParents();

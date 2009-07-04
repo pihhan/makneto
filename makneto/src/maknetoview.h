@@ -25,6 +25,8 @@ class SessionTabManager;
  */
 
 class Makneto;
+class SidebarWidget;
+class MUCView;
 
 class MaknetoView : public QWidget
 {
@@ -41,6 +43,8 @@ public:
     virtual ~MaknetoView();
     
     SessionTabManager *getSessionTabManager(void) { return m_sessiontabmanager; }
+    SidebarWidget *getSidebarWidget(void) { return m_sidebar; }
+    MUCView *getMUCView() { return m_muc; }
 
 signals:
     /**
@@ -58,8 +62,10 @@ private slots:
 	void settingsChanged();
 
 private:
+  SidebarWidget *m_sidebar;
 	SessionView *m_sessionview;
 	SessionTabManager *m_sessiontabmanager;
+  MUCView *m_muc;
 };
 
 #endif // MaknetoVIEW_H

@@ -20,6 +20,7 @@
 
 #ifndef WBITEMS_H
 #define WBITEMS_H
+#include <QDomDocument>
 #include <QDomElement>
 #include <QHash>
 #include <QGraphicsPathItem>
@@ -102,6 +103,7 @@ public:
 	 *  Constructs a ContentEdit undo with the given version and oldContent.
 	 */
 	EditUndo(const int &version, QDomNodeList oldContent);
+
 	/*! \brief The new version.*/
 	int version;
 	/*! \brief The type of undo.*/
@@ -252,6 +254,9 @@ protected:
 	/*! \brief Contains the SVG attributes of the element.*/
 	QHash<QString, QString> attributes;
 
+        /*! \brief Get items document. */
+        QDomDocument & document() ;
+
 private:
 	/*! \brief The ID of the item.*/
 	QString id_;
@@ -259,6 +264,9 @@ private:
 	QString parent_;
 	/*! \brief The index of the item.*/
 	qreal index_;
+
+        /*! \brief Shared document for elements */
+        QDomDocument document_;
 };
 
 /*! \brief An item for storing the unkown SVG elements.
@@ -642,9 +650,15 @@ public:
 	/*! \brief Checks if the text has changed and emits a signal accordingly.*/
 	void checkTextChanges();
 
+  QFont font();
+
+  WbItemMenu* constructContextMenu();
+
 public slots:
-	/*! \brief Popsup a font dialog and sets the selected font.*/
+  /*! \brief Popup a font dialog and sets the selected font.*/
 	void setFont();
+
+  void setFont(QFont font);
 
 private:
 	/*! \brief The character data content of the element.*/

@@ -9,12 +9,14 @@ class ContactList;
 class ContactListGroupItem;
 class QMenu;
 
-class ContactListItem
+/*! \brief Unsecified type of item in contact list. */
+class ContactListItem 
 {
 public:
 	ContactListItem(ContactListGroupItem* parent);
 	virtual ~ContactListItem() {};
 
+        /*! \brief Get contact list instance. */
 	virtual ContactList* contactList() const;
 	virtual ContactListGroupItem* parent() const;
 	virtual ContactListGroupItem* defaultParent() const;

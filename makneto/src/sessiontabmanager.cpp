@@ -68,11 +68,16 @@ SessionTabManager::~SessionTabManager()
 
 SessionView* SessionTabManager::newSessionTab(const QString &text, ChatType type, const QString &nick)
 {
+  // There shouldn't be the same tab twice, so we won't create it
+  SessionView *session = findSession(text);
+  if (session)
+    return session;
+
 	// add new tab
 	m_tab->addTab(text);
 	
 	// create new session view and add to widgets
-	SessionView *session = new SessionView(this, text, m_tab->count()-1, type, nick);
+	session = new SessionView(this, text, m_tab->count()-1, type, nick);
 	m_widgets->addWidget(session);
 
 	connect(session, SIGNAL(sendMessage(const Message &)), m_makneto->getConnection(), SLOT(sendMessage(const Message &)));
@@ -106,6 +111,11 @@ void SessionTabManager::bringToFront(SessionView *session)
 	std::cout << "SessionTabManager::bringToFront(" << session->id() << ")" << std::endl;
 	
 	m_tab->setCurrentIndex(session->id());	
+}
+
+SessionView *SessionTabManager::activeSession()
+{
+  return dynamic_cast<SessionView *> (m_widgets->currentWidget());
 }
 
 void SessionTabManager::messageReceived(const Message &message)

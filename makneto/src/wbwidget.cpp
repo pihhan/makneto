@@ -20,8 +20,9 @@
  */
 
 #include "wbwidget.h"
-#include <QMouseEvent>
-#include <QApplication>
+#include <QtGui/QMouseEvent>
+#include <QtGui/QApplication>
+#include <QtGui/QInputDialog>
 
 /*
  *	WbWidget
@@ -68,6 +69,7 @@ WbWidget::Mode WbWidget::mode() {
 
 void WbWidget::setMode(Mode mode) {
 	mode_ = mode;
+        emit modeChanged(mode);
 	if(mode_ == DrawImage) {
 		QString filename = QFileDialog::getOpenFileName(this, "Choose an image", QString(), "Images (*.png *.jpg)");
 		QFile file(filename);
@@ -109,7 +111,7 @@ void WbWidget::setMode(Mode mode) {
 				return;
 			}
 		}
-		mode_ = Select;
+    setMode(Select);
 	}
 
 	if(mode_ < DrawPath) {
@@ -255,22 +257,31 @@ void WbWidget::mousePressEvent(QMouseEvent * event) {
 		adding_->start(30);
 		return;
 	} else if(mode_ == DrawText) {
-		QPointF startPoint = mapToScene(mapFromGlobal(event->globalPos()));
-		QDomDocument d;
-		QDomElement _svg = d.createElement("text");
-		_svg.appendChild(d.createTextNode("text"));
-		_svg.setAttribute("x", startPoint.x());
-		_svg.setAttribute("y", startPoint.y());
-		// Create the element
-		WbText* newText = new WbText(_svg, scene->newId(), scene->newIndex(), "root", scene);
-		newText->setStrokeColor(strokeColor_);
-		newWbItem_->setFillColor(fillColor_);
-		newText->setStrokeWidth(strokeWidth_);
-		// Send out the new item
-		scene->queueNew(newText->id(), newText->index(), newText->svg());
-		// Make it a "normal" item by adding it to the scene properly and by removing the pointer to it
-		scene->addWbItem(newText);
-		return;
+    bool ok;
+    QString str = QInputDialog::getText(this, tr("New text Maknet"), tr("Text:"), QLineEdit::Normal, QString(), &ok);
+    if (ok)
+    {
+      QPointF startPoint = mapToScene(mapFromGlobal(event->globalPos()));
+      QDomDocument d;
+      QDomElement _svg = d.createElement("text");
+
+      _svg.appendChild(d.createTextNode(str));
+      _svg.setAttribute("x", startPoint.x());
+      _svg.setAttribute("y", startPoint.y());
+      // Create the element
+      WbText* newText = new WbText(_svg, scene->newId(), scene->newIndex(), "root", scene);
+      newText->setStrokeColor(strokeColor_);
+      //newText->setFillColor(fillColor_);
+      //newWbItem_->setFillColor(fillColor_);
+      //newText->setStrokeWidth(strokeWidth_);
+      // Send out the new item
+      scene->queueNew(newText->id(), newText->index(), newText->svg());
+      // Make it a "normal" item by adding it to the scene properly and by removing the pointer to it
+      scene->addWbItem(newText);
+      setMode(Select);
+
+    }
+    return;
 	} else if(mode_ == DrawRectangle) {
 		QPointF startPoint = mapToScene(mapFromGlobal(event->globalPos()));
 		QDomDocument d;
