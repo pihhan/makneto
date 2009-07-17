@@ -11,248 +11,41 @@
 
 #include "contactlist/status.h"
 
+#include <QObject>
 #include <QHash>
 #include <QDomElement>
 #include <QtAlgorithms>
 #include <QStringList>
 #include <xmpp_stanza.h>
 
-/*! \brief Helper class implementing requested order of sorting for multiple identities */
-class IdentityHelper
-{
-    public:
-        /*! \brief Create structure using element with tagName == "identity" */
-        IdentityHelper(QDomElement &element)
-        {
-            category = element.attribute("category");
-            type = element.attribute("type");
-            lang = element.attribute("xml:lang");
-            name = element.attribute("name");
-        }
+#include "featurehelpers.h"
+#include "discorequest.h"
 
-        IdentityHelper(const QString &category, const QString &type, const QString &name, const QString &lang) 
-            : category(category), name(name),  lang(lang), type(type)
-        {
-        }
-
-        /*! \brief Returns string with format of one identity for caps hashing. */
-        QString capsHashable() const
-        {
-            return category + "/" + type + "/" + lang + "/" + name + "<";
-        }
-
-        bool operator>(const IdentityHelper &other) const;
-
-        /*! \brief Operator needed for sorting order according to XEP-115 */
-        bool operator<(const IdentityHelper &other) const;
-
-    private:
-        QString category;
-        QString name;
-        QString lang;
-        QString type;
-};
-
-/*! \brief Helper class for sorting single fields of form.
- * This class does containg one field with one class. It allows sorting
- * based on var attribute. */
-class XFormFieldHelper
-{
-    public:
-
-        typedef QList<XFormFieldHelper> List;
-        /*! \brief Create structure for one variable in form.
-         * \param element element with <field> tag. */
-        XFormFieldHelper(const QDomElement &element)
-        {
-            m_var = element.attribute("var");
-            m_element = QDomElement(element);
-
-        }
-
-        bool operator<(const XFormFieldHelper &other) const
-        {
-            return (m_var < other.m_var);
-        }
-
-        /*! \brief Returns all values of added field. 
-         * It does not sort, it returns strings in original order. */
-        QStringList values();
-
-        /*! \brief Returns only first value for this field.
-         *
-         * \return first value for this field.
-         * It is enough for most cases, as most forms have only one value for one variable. */
-        QString firstValue()
-        {
-            QDomElement value = m_element.firstChildElement("value");
-            return value.text();
-        }
-
-        /*! \brief Returns string for caps hashing for this field's values.
-         * No fieldname is included. */
-        QString capsHashableValues();
-
-        /*! \brief Returns string hashing for whole field, with values and keyname included. */
-        QString capsHashable();
-
-        /*! \brief Returns keyword for this field. */
-        QString key()
-        {
-            return m_var;
-        }
-
-        QDomElement element()
-        { return m_element; }
-
-    private:
-        QDomElement m_element;
-        QString m_var;
-};
-
-
-
-/*! \brief Helper class containing one form.
- * It allows sorting several forms by their type, as needed for XEP-115. */
-class XFormHelper
-{
-    public:
-        typedef QList<XFormHelper>  List;
-        
-        XFormHelper() {}
-
-        /*! \brief Create XFormHelper using "x" element with xmlns="form:x:data" */
-        XFormHelper(const QDomElement &element)
-        {
-            m_form_type = lookupFormType(element);
-            m_element = QDomElement(element);
-        }
-
-        QString lookupFormType(const QDomElement &parent) const;
-
-        void loadFields(const QDomElement &parent) 
-        {
-            for (QDomElement e=parent.firstChildElement("field");
-                        !e.isNull(); e=e.nextSiblingElement("field")) {
-                m_fields.append(XFormFieldHelper(e));
-            }
-
-        }
-
-        void sortFields()
-        {
-            qSort(m_fields.begin(), m_fields.end());
-        }
-
-        QString capsHashableFormType() const
-        {
-            return m_form_type + "<";
-        }
-
-        /*! \brief Returns part of string to hash for whole form. */
-        QString capsHashable()
-        {
-            QString hash(capsHashableFormType());
-            sortFields();
-            for (XFormFieldHelper::List::iterator it= m_fields.begin();
-                    it != m_fields.end(); it++) {
-                hash.append( it->capsHashable() );
-            }
-            return hash;
-        }
-
-        bool operator<(const XFormHelper &other) const
-        {
-            return m_form_type < other.m_form_type;
-        }
-
-        QDomElement element()
-        { return m_element; }
-
-    private:
-        QString m_form_type;
-        QDomElement m_element;
-        XFormFieldHelper::List  m_fields;
-};
-
-
-
-/*! \brief Identity sorter with helper to output. */
-class IdentitySorter 
-{
-    public:
-        typedef QList<IdentityHelper>   IdentityList;
-
-        IdentitySorter()
-        {}
-
-        /*! \brief Creates structure with passed argument as first element. */
-        IdentitySorter(const IdentityHelper &identity)
-        {
-            m_list.append(identity);
-        }
-
-        void add(IdentityHelper &identity)
-        {
-            m_list.append(identity);
-        }
-
-        void sort()
-        {
-            qSort(m_list.begin(), m_list.end());
-        }
-
-        void add(const IdentityHelper &identity)
-        {
-            m_list.append(identity);
-        }
-
-        /*! \brief Returns one string with all identities formated to in caps format in proper order. 
-         * It does sort for you also. */
-        QString capsHashable()
-        {
-            QString hash;
-            sort();
-            for (IdentityList::const_iterator it = m_list.begin(); it != m_list.end(); it++) {
-                hash += it->capsHashable();
-            }
-            return hash;
-        }
-
-    private:
-        IdentityList    m_list;
-};
-
+class Makneto;
 
 /*! \brief Class for managing capabilites of one client. */
 class FeatureList : public QHash<QString, bool>
 {
     public:
-        FeatureList() : m_known(true)
-        {
-        }
+        FeatureList();
 
         /*! \brief Create Feature list from Disco#identity reply. */
-        FeatureList(QDomElement &query)
-            : m_known(true)
-        {
-            m_query = QDomElement(query);
-            m_hash = computeHashString(query);
-            for (QDomElement e=query.firstChildElement("feature"); !e.isNull();
-                    e.nextSiblingElement("feature")) {
-                addFeature(e.text());
-            }
-        }
+        FeatureList(const QDomElement &query);
 
-        /*! \brief Do we know features of this owner? */
-        bool known()
+        /*! \brief Update this feature with new features from this reply. */
+        void update(const QDomElement &query);
+
+        /*! \brief Do we know features of this owner? 
+            \return false if these features were not initialized from cache or disco reply.
+            It means we do not know what client supports. */
+        bool known() const
         {
             return m_known;
         }
 
         /*! \brief Is feature supported?
          * \param xmlns XML namespace of feature, as registered at http://xmpp.org/registrar/namespaces.html */
-        bool supported(const QString & xmlns)
+        bool supported(const QString & xmlns) const
         {
             return contains(xmlns);
         }
@@ -263,28 +56,24 @@ class FeatureList : public QHash<QString, bool>
             m_known = true;
         }
 
-        void addFeatures(const QStringList &features)
-        {
-            QStringList::const_iterator it;
-            for (it= features.begin(); it!=features.end(); it++) {
-                addFeature(*it);
-            }
-            m_known = true;
-        }
+        void addFeatures(const QStringList &features);
 
-        void setHash(const QString &hash)
+        /*! \brief Set prepared string to make security hash from. */
+        void setHashable(const QString &hash)
         {
             m_hash = hash;
         }
 
-        QString capsHash() const
+        /*! \brief Return string object to be hashed as ver string .*/
+        QString capsHashable() const
         {
             return m_hash;
         }
 
+        /*! \brief Returns XML query element received as reply to disco#info request. */
         QDomElement query()
         {
-            return m_query;
+            return m_query.documentElement();
         }
 
         static QString capsHashableStringList(const QStringList &list);
@@ -295,47 +84,136 @@ class FeatureList : public QHash<QString, bool>
 
         /*! \brief Create XEP-115 hash string from iq:query element.
          * \param query Child of iq stanza query, with xmlns of disco#info */
-        static QString computeHashString(QDomElement &query);
+        static QString computeHashString(const QDomElement &query);
+
+        void setNode(const QString &node)
+        { m_node = node; }
+
+        QString node() const
+        { return m_node; }
+
+        QString ver() const
+        { return m_ver; }
+
+        QString hash() const
+        { return m_hash; }
+
+        QString ext() const
+        { return m_exthistory; }
+
+        void setHash(const QString &algo, const QString &hash);
+
+        void setVer(const QString &ver)
+        { m_ver = ver; }
+
+        void setCapsParams(const QString &node, const QString &ver, const QString &hash, const QString &ext);
+
+        /*! \brief Parse list of extensions from ext attribute.
+            \param extension list of extensions, delimited by spaces. */
+        void parseExtensions(const QString &extension);
+
+        bool hasExtension(const QString &extension);
+
+        /*! \brief Returns list of extensions. */
+        QStringList extensions()
+        { return m_extensions; }
+
+        bool hasFeaturesChanged(const QString &node, const QString &ver, const QString &hash=QString(), const QString &ext=QString());
+        bool hasExtensionsChanged(const QString &ext);
+
+        bool isLegacy() const;
+
+        QString sha1Hash() const;
+
+        QString computeHash(const QString &algo) const;
+
+        QStringList allFeatures() const;
+
+        QDomElement toXml(QDomDocument &doc) const;
+        bool fromXml(QDomElement &element);
+
 
     private:
 
     bool m_known; ///<! Are features of this client known?
-    QString m_hash;
-    QDomElement m_query;
-    
+    QString     m_hash;
+    QString     m_hashable;
+    QDomDocument m_query;
+    QStringList m_extensions; ///<! Legacy xep-115 extensions
+    QString     m_exthistory; ///<! Extension parameter, used for comparison if ext changed since last parsing.
+    QString     m_node;       ///<! XEP 115 node, something like client identifier
+    QString     m_ver;
 };
 
-/*! \brief Simple database for capabilities of clients and mapping to its hashes. */
-class FeatureListManager
+
+
+
+/*! \brief Simple database for capabilities of clients and mapping to its hashes. 
+    \author Petr Mensik <xmensi06@stud.fit.vutbr.cz>
+  */
+class FeatureListManager : public QObject
 {
+    Q_OBJECT
     public:
         typedef QHash<QString, FeatureList *> ListOfFeatures;
+        typedef QHash<QString, ListOfFeatures> HashedFeatures;
+        typedef QHash<QString, FeaturesUpdateRequest *> RequestsHash;
 
-        FeatureListManager()
-        {}
+        FeatureListManager(Makneto *makneto);
 
-        FeatureList * getFeaturesByHash( const QString &hash);
+        FeatureList * getFeaturesByHash( const QString &ver, const QString &hash= QString());
+
+        FeatureList * getFeatures( const QString &node, const QString &ver, const QString &hash=QString(), const QString &ext=QString());
+
 
         /* FIXME: tohle nebude fungovat spravne. nemam jeste pocitani skutecneho hashe. */
-        void addFeatures(const FeatureList &fl)
-        {
-            FeatureList *flp = new FeatureList(fl);
-            QString hash;
-            hash = flp->capsHash();
-            m_database.insert(hash, flp);
-        }
+        void addFeatures(const FeatureList &fl);
+        void addFeatures(FeatureList *fl);
 
         /*! \brief Reads features cache from xml file. */
-        void readFromFile(const QString &path);
+        bool readFromFile(const QString &path);
 
         /*! \brief Create XML database structure for saving cache. */
         QDomDocument createXMLDatabase();
 
-        void writeToFile(const QString &path);
+        bool writeToFile(const QString &path);
 
+        /*! \brief Check if manager knows features of specified client. */
+        bool isKnown(const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
+
+        /*! \brief Request feature update using specified JID.
+            It will send discovery requests to given JID, parse it results.
+            If successful, it will fire featuresUpdated() signal. */
+        void requestFeatureUpdate(XMPP::Client *client, const XMPP::Jid &jid, const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
+        void requestFeatureUpdate(const XMPP::Jid &jid, const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
+
+    signals:
+        void featuresUpdated(XMPP::Jid jid, FeatureList *features);
+
+    public slots:
+        /*! \brief Connect here finished signal of feature update request. */
+        void requestFinished(FeaturesUpdateRequest *ur);
+
+        /*! \brief Write current known clients to database. */
+        void writeDatabase();
+        bool readDatabase();
+
+        QString getDatabasePath();
+
+        bool modified()
+        { return m_modified; }
+    
+    protected:
+        void removeRequest(FeaturesUpdateRequest *ur);
+        FeaturesUpdateRequest *findRequest( const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
+        QString singleCaps( const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
 
     private:
-        ListOfFeatures m_database;
+
+        HashedFeatures m_database; ///<! One database per one hash function.
+        RequestsHash    m_requests;
+        Makneto         *m_makneto;
+        bool            m_modified;
         
 };
 

@@ -15,7 +15,6 @@ find_package(QCA2 REQUIRED)
 
 #set(QT_USE_QT3SUPPORT TRUE)
 include(${QT_USE_FILE})
-
 include (KDE4Defaults)
 
 message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
@@ -43,13 +42,14 @@ find_package(Iris REQUIRED)
 # set(IRIS_INCLUDE ${IRIS_TREE}/include/iris ${IRIS_TREE}/src)
 
 include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
-cutestuff/util cutestuff/network cutestuff/legacy )
+#cutestuff/util cutestuff/network cutestuff/legacy 
+)
 
 
 link_directories( 
-    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/network  
-    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/util
-    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/legacy
+#    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/network  
+#    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/util
+#    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/legacy
     ${IRIS_LIB_PATH}
 )
 
@@ -105,8 +105,11 @@ set(makneto_SRCS
 	contactlist/contactlistview.cpp
 	contactlist/status.h
 
+# Petr Mensik a jeho tvorba
         featurelist.h
         featurelist.cpp
+        discorequest.h
+        discorequest.cpp
 
  )
 

@@ -7,6 +7,7 @@
 #define MAKNETOMAINWINDOW_H
 
 #include <kxmlguiwindow.h>
+#include <kapplication.h>
 #include "ui_prefs_base.h"
 #include "makneto.h"
 
@@ -35,14 +36,16 @@ public:
   MaknetoView *getMaknetoView(void) { return m_view; }
 	
 	virtual ~MaknetoMainWindow();
-	
+
+protected:
+        virtual bool queryClose();
+
 private slots:
   void hideAll();
 	void fullScreen();
 	void showMenubar();
 	void quit();
 	void optionsPreferences();
-
 
 private:
 	void setupActions();
@@ -55,8 +58,8 @@ private:
 	KToggleAction *m_statusbarAction;
   
   KAction *m_fullScreenAction, *hideAllAction;
+  KAction *m_saveFeatures;
   
-  void closeEvent(QCloseEvent *event);
 };
 
 #endif // _MAKNETOMAINWINDOW_H_

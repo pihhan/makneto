@@ -23,8 +23,6 @@
 #include <klocalizedstring.h>
 
 
-#include <klocalizedstring.h>
-
 MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makneto(makneto) 
 { 
   m_contactNewSessionActions = new QActionGroup(this);
@@ -76,10 +74,10 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 
 	//connect(contactDetails, SIGNAL(triggered()), this, SLOT(contactDetails()));
 
-	contactMenu->addAction(newSession);
+  contactMenu->addAction(newSession);
   contactMenu->addAction(contactDetails);
 
-	new MaknetoContact(name, jid, groupItem, contactMenu);
+  new MaknetoContact(name, jid, groupItem, contactMenu);
 }
 
 void MaknetoContactList::setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status)
@@ -102,11 +100,18 @@ void MaknetoContactList::setAvailability(const QString& jid, const QString &reso
 
 			if (item)
 			{
-				item->setStatus(resource, status);
+
+				item->setStatus(resource, status, m_makneto->getFeatureManager());
 			}
 		}
 	}
 
 	emitDataChanged();
 }
+
+Makneto * MaknetoContactList::makneto()
+{
+    return m_makneto;
+}
+
 #include "maknetocontactlist.moc"

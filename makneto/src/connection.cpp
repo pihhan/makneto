@@ -837,4 +837,19 @@ void Connection::send(const QString &s)
 }
 
 
+  /*! \brief Get Iris client connection */
+Client * Connection::client() const
+{ 
+    return m_client; 
+}
+
+  /*! \brief Get root Task object to create new requests. */
+Task * Connection::rootTask() const
+{ 
+    if (m_client) 
+        return m_client->rootTask(); 
+    else return NULL;
+}
+
+
 #include "connection.moc"

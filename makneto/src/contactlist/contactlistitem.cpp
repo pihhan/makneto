@@ -2,9 +2,21 @@
 #include "contactlistitem.h"
 #include "contactlistgroupitem.h"
 
-ContactListItem::ContactListItem(ContactListGroupItem* parent) : parent_(NULL), defaultParent_(parent)
+ContactListItem::ContactListItem(ContactListGroupItem* parent) : QObject(), parent_(NULL), defaultParent_(parent)
 {
 	setParent(parent);
+}
+
+ContactListItem::ContactListItem(const ContactListItem &item)
+    : QObject(), parent_(NULL),defaultParent_(item.defaultParent_)
+{
+        setParent(item.parent_);
+}
+
+void ContactListItem::operator=(const ContactListItem &item)
+{
+    defaultParent_ = item.defaultParent_;
+    setParent(item.parent_);
 }
 
 /*! \brief Get contact list instance. */

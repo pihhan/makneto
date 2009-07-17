@@ -1,6 +1,7 @@
 #ifndef CONTACTLISTITEM_H
 #define CONTACTLISTITEM_H
 
+#include <QObject>
 #include <QString>
 #include <QPoint>
 #include <QList>
@@ -9,11 +10,14 @@ class ContactList;
 class ContactListGroupItem;
 class QMenu;
 
-/*! \brief Unsecified type of item in contact list. */
-class ContactListItem 
+/*! \brief Unspecified type of item in contact list. */
+class ContactListItem : public QObject
 {
+    Q_OBJECT
 public:
 	ContactListItem(ContactListGroupItem* parent);
+        ContactListItem(const ContactListItem &item);
+
 	virtual ~ContactListItem() {};
 
         /*! \brief Get contact list instance. */
@@ -37,6 +41,7 @@ public:
 	virtual void setParent(ContactListGroupItem* parent);
 	virtual void showContextMenu(const QPoint&);
 
+        void operator=(const ContactListItem &item);
 
 private:
 	ContactListGroupItem* parent_;

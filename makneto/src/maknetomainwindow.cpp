@@ -30,9 +30,11 @@
 
 #include <Phonon/MediaSource>
 #include "ftstream.h"
+#include "featurelist.h"
 
-MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto) : KXmlGuiWindow(), m_view(new MaknetoView(this, makneto))
+MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto) : KXmlGuiWindow()
 {
+        m_view = new MaknetoView(this, makneto);
 	m_makneto = makneto;
 	
 	setAcceptDrops(true);
@@ -48,8 +50,10 @@ MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto) : KXmlGuiWindow(), m_view
 	setupGUI();
   
   QList<QAction *> a = menuBar()->actions();
-  if (a.size() > 1 && a[1]->menu())
+  if (a.size() > 1 && a[1]->menu()) {
     a[1]->menu()->insertAction(m_fullScreenAction, hideAllAction);
+    a[1]->menu()->insertAction(hideAllAction, m_saveFeatures);
+  }
 }
 
 MaknetoMainWindow::~MaknetoMainWindow()
@@ -64,6 +68,13 @@ void MaknetoMainWindow::setupActions()
   hideAllAction->setMenuRole(QAction::PreferencesRole);
   connect(hideAllAction, SIGNAL(triggered()), this, SLOT(hideAll()));
   m_fullScreenAction = KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
+
+  m_saveFeatures = actionCollection()->addAction("writeFeatures");
+  m_saveFeatures->setText("Save features");
+  m_saveFeatures->setMenuRole(QAction::PreferencesRole);
+  connect(m_saveFeatures, SIGNAL(triggered()), m_makneto->getFeatureManager(), SLOT(writeDatabase()));
+
+
 	KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
 	KStandardAction::quit(this, SLOT(quit()), actionCollection());
 	
@@ -73,6 +84,11 @@ void MaknetoMainWindow::setupActions()
 void MaknetoMainWindow::quit()
 {
   close();
+  FeatureListManager *flm = m_makneto->getFeatureManager();
+  if (flm) {
+      if (flm->modified())
+          flm->writeDatabase();
+  }
 }
 
 void MaknetoMainWindow::optionsPreferences()
@@ -119,9 +135,11 @@ void MaknetoMainWindow::showMenubar()
 	menuBar()->setVisible(!menuBar()->isVisible());
 }
 
-void MaknetoMainWindow::closeEvent(QCloseEvent *event)
+
+bool MaknetoMainWindow::queryClose()
 {
   m_makneto->getConnection()->logout();
+  return true;
 }
 
 #include "maknetomainwindow.moc"

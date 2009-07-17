@@ -7,8 +7,10 @@
 #include "maknetocontact.h"
 #include "contactlist/contactlistgroupitem.h"
 #include "contactlist/status.h"
+#include "maknetocontactlist.h"
 
-#include "xmpp_status.h"
+#include <xmpp_status.h>
+#include <xmpp_jid.h>
 
 #include <QtGui/QMenu>
 #include <QtDebug>
@@ -88,6 +90,14 @@ void MaknetoContactResource::setStatus(const XMPP::Status &status)
 	}
 }
 
+/*! \brief Return full jid of contact, also with resource. */
+QString MaknetoContactResource::jid() const
+{
+    XMPP::Jid jid1(m_bare->jid());
+    XMPP::Jid jid2(jid1.node(), jid1.domain(), m_resource);
+    return jid2.full();
+}
+
 void MaknetoContact::showContextMenu(const QPoint &where)
 {
 	m_contactMenu->exec(where);
@@ -140,10 +150,27 @@ QIcon MaknetoContact::statusIcon() const
 }
 
 
+MaknetoContactResource::MaknetoContactResource()
+    : ContactListContact(NULL),m_bare(NULL),
+      m_status(ContactListStatus::Offline),
+      m_contactMenu(NULL), 
+      m_priority(0), m_features(0), m_feature_shared(false), m_null(true)
+{}
+
+MaknetoContactResource::MaknetoContactResource(MaknetoContact *bare, const QString &resource, int priority)
+    : ContactListContact(NULL),m_bare(bare), 
+      m_status(ContactListStatus::Offline),
+      m_contactMenu(NULL), 
+      m_resource(resource),m_priority(priority), m_features(0), m_feature_shared(false), m_null(false)
+{}
+
+
 
 /*! \brief Create resource from first incoming presence. */
-MaknetoContactResource::MaknetoContactResource(const XMPP::Status &status, const QString &resource)
-    : ContactListContact(NULL),m_status(ContactListStatus::Offline),m_resource(0), m_null(false)
+MaknetoContactResource::MaknetoContactResource(MaknetoContact *bare, const XMPP::Status &status, const QString &resource)
+    : ContactListContact(NULL), m_bare(bare),
+        m_status(ContactListStatus::Offline),m_resource(0), m_features(0),
+        m_feature_shared(false), m_null(false)
 {
     m_resource = resource;
     setStatus(status);
@@ -156,8 +183,8 @@ MaknetoContactResource MaknetoContact::bestResourceR() const
     ResourcesHash::const_iterator it;
     bool notused = true;
     for (it= m_resources.begin(); it != m_resources.end(); it++) {
-        if (notused || p < *it) {
-            p = *it;
+        if (notused || p < *(*it)) {
+            p = *(*it);
             notused=false;
         }
     }
@@ -169,8 +196,8 @@ MaknetoContactResource * MaknetoContact::bestResource()
     MaknetoContactResource *p = NULL;
     ResourcesHash::iterator it;
     for (it= m_resources.begin(); it != m_resources.end(); it++) {
-        if (!p || *p < *it) {
-            p = &(*it);
+        if (!p || *p < *(*it)) {
+            p = (*it);
         }
     }
     return p;
@@ -197,64 +224,104 @@ void MaknetoContact::setStatus(const XMPP::Status &status)
 }
 
 /** \brief Create new resource based on incoming presence. */
-void MaknetoContact::createResource(const QString &resource, const XMPP::Status &status)
+MaknetoContactResource * MaknetoContact::createResource(const QString &resource, const XMPP::Status &status)
 {
-    MaknetoContactResource r;
-    r = MaknetoContactResource(status, resource);
+    MaknetoContactResource *r;
+    r = new MaknetoContactResource(this, status, resource);
     m_resources.insert(resource, r);
-    qDebug() << "Creating resource " << resource << " for contact "
-        << jid();
+#ifdef CAPS_DEBUG
     if (!status.capsVersion().isEmpty()) {
         qDebug() << "Contact has caps string " << status.capsVersion() << " and node " << status.capsNode();
     }
+#endif
     if (m_contactMenu) {
         QAction *action= new QAction(resource, m_contactMenu);
-        action->setData(QVariant(resource));
+        action->setData(QVariant(r->jid()));
+        MaknetoContactList *list = dynamic_cast<MaknetoContactList *>(contactList());
+        if (list) {
+            qDebug("List is present");
+
+        }
 
         m_contactMenu->addAction((action));
         QList<QAction *> actions = m_contactMenu->actions();
         for (QList<QAction *>::iterator it= actions.begin();
             it != actions.end(); it++) {
-            qDebug() << "Menu Action: " << (*it)->text() << endl;
+#ifdef CAPS_DEBUG
+            qDebug() << "Menu Action: " << (*it)->text();
+#endif
         }
     }
+    return r;
 }
 
 /** \brief Remove resource from contact. */
 void MaknetoContact::removeResource(const QString &resource)
 {
-    m_resources.remove(resource);
+    MaknetoContactResource *r = m_resources.take(resource);
+    delete r;
     qDebug() << "Removing resource " << resource << " for contact "
         << jid();
 
-    QAction *resourceAction = NULL;
     QList<QAction *> actions = m_contactMenu->actions();
     for (QList<QAction *>::iterator it= actions.begin();
         it != actions.end(); it++) {
         if ((*it)->text() == resource) {
             m_contactMenu->removeAction((*it));
-            qDebug() << "Removing Menu Action: " << (*it)->text() << endl;
+            qDebug() << "Removing Menu Action: " << (*it)->text();
         }
     }
 }
 
-void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &status)
+void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &status, FeatureListManager *flm)
 {
-    MaknetoContactResource r;
+    MaknetoContactResource *r;
     r = this->resource(resource);
-    if (!r.isNull()) {
-        r.setStatus(status);
+    if (r && !r->isNull()) {
+        r->setStatus(status);
         if (status.type() == XMPP::Status::Offline) {
             removeResource(resource);
+            r = NULL;
         }
     } else {
         // takove resource neexistuje, pokud neni offline, musim ho udelat
         if (status.type() != XMPP::Status::Offline) {
-            createResource(resource, status);
+            r = createResource(resource, status);
         }
+    }
+
+    if (r != NULL) {
+            // TODO: \todo Iris nepodporuje capsHash, nebude aktualni capabilities
+            QString node = status.capsNode();
+            QString ver = status.capsVersion();
+            QString hash;
+            QString ext = status.capsExt();
+            FeatureList *origfl = r->features();
+            bool changed = (!origfl || origfl->hasFeaturesChanged(node, ver, hash, ext)); 
+            if (flm != NULL && changed && !ver.isEmpty()) {
+                qDebug() << "Features of " << m_jid << "/" << resource << " changed";
+                FeatureList *fl;
+                if (flm->isKnown(node,ver,hash,ext)) {
+                    fl = flm->getFeatures(node,ver,hash,ext);
+                    r->setFeatures( fl, true );
+                    qDebug() << "Features found in local cache";
+                } else {
+                    XMPP::Jid jid1(m_jid);
+                    XMPP::Jid jid2(jid1.node(), jid1.domain(), resource);
+                    flm->requestFeatureUpdate(jid2, node,ver,hash,ext);
+                    qDebug() << "Features not known and requested from " << jid2.full();
+                }
+                
+            }
+
     }
 }
 
+void MaknetoContactResource::setFeatures(FeatureList *fl, bool shared)
+{
+    m_feature_shared = shared;
+    m_features = fl;
+}
 
 QString MaknetoContact::resource() const
 {

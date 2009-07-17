@@ -10,15 +10,7 @@
 #include "contactlist/contactlist.h"
 #include "contactlist/status.h"
 
-#include <QObject>
-
-/**
- * This is contact list for Makneto
- *
- * @short Contact list class
- * @author Jaroslav Reznik <rezzabuh@gmail.com>
- * @version 0.1
- */
+#include "featurelist.h"
 
 namespace XMPP 
 {
@@ -27,6 +19,14 @@ namespace XMPP
 
 class Makneto;
 class QActionGroup;
+
+/**
+ * This is contact list for Makneto
+ *
+ * @short Contact list class
+ * @author Jaroslav Reznik <rezzabuh@gmail.com>
+ * @version 0.1
+ */
 
 class MaknetoContactList : public ContactList
 {
@@ -44,10 +44,12 @@ public:
 	void addContact(const QString& name, const QString& jid, const QString& group);
 	void setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status);
 	//void setUnavailability(const QString& jid);
+        Makneto *makneto();
 
 private:
 	Makneto *m_makneto;
   QActionGroup *m_contactNewSessionActions, *m_contactDetailsActions;
+        
 };
 
 #endif // MAKNETOCONTACTLIST_H

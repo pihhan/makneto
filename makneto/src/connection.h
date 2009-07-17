@@ -12,6 +12,7 @@
 #include <xmpp_status.h>
 #include <xmpp_rosterx.h>
 #include <xmpp_jid.h>
+#include <xmpp_task.h>
 #include <QTextStream>
 /**
  * This is main connection class for Makneto
@@ -70,6 +71,12 @@ public:
   void setRole(const Jid &jid, const QString &nick, const QString &role, const QString &reason = QString());
   void setAffiliation(const Jid &jid, const Jid &userJid, const QString &affiliation, const QString &reason = QString());
   QString genUniqueId();
+
+  /*! \brief Get Iris client connection */
+  Client * client() const;
+  /*! \brief Get root Task object to create new requests. */
+  Task * rootTask() const;
+
 private slots:
 	void connected();
 	void needAuthParams(bool, bool, bool);
@@ -343,6 +350,7 @@ signals:
    * @p reason Reason of granting voice
    **/
   void groupChatModerationRevoked(const Jid &jid, const QString &nick, const QString &reason = QString());
+
   
 private:
 	Client *m_client;

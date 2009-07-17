@@ -9,6 +9,7 @@
 
 #include "maknetomainwindow.h"
 #include "connection.h"
+#include "featurelist.h"
 
 #include <QObject>
 
@@ -50,6 +51,7 @@ public:
 	Connection *getConnection() { return m_conn; }
 	MaknetoContactList *getContactList() { return m_cl; }
   MaknetoMainWindow *getMaknetoMainWindow() { return m_mainwindow; }
+        FeatureListManager *getFeatureManager() { return m_flm; }
 
 public slots:
 	void conn_messageReceived(const Message &);
@@ -71,6 +73,7 @@ private:
 	Connection *m_conn;
 	MaknetoContactList *m_cl;
   MaknetoMainWindow *m_mainwindow;
+  FeatureListManager *m_flm;
 };
 
 #endif // MAKNETO_H

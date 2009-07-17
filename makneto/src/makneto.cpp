@@ -10,6 +10,7 @@
 #include "xmpp_tasks.h"
 
 #include "contactdetaildialog.h"
+#include "discorequest.h"
 
 #include <iostream>
 
@@ -25,11 +26,18 @@ Makneto::Makneto(QObject *parent) : QObject(parent)
 
 	// create contact list
 	m_cl = new MaknetoContactList(this);
+
+        m_flm = new FeatureListManager(this);
+        if (!m_flm->readDatabase()) {
+            qWarning("Capabilities cache reading was unsuccessful");
+        }
 }
 
 Makneto::~Makneto()
 {
-
+    if (m_flm) {
+        delete m_flm;
+    }
 }
 
 void Makneto::conn_messageReceived(const Message &)
@@ -61,6 +69,13 @@ void Makneto::contactDetails(QAction *action)
   std::cout << "Makneto::contactDetail()" << std::endl;
   contactDetailDialog *contactDetail = new contactDetailDialog(m_mainwindow, action->data().toString());
   contactDetail->show();
+
+  // pihhanovy hratky
+  QString jid = action->data().toString();
+  DiscoRequest *req = new DiscoRequest(m_conn->rootTask());
+  req->get(jid, "");
+  req->go(true);
+  
 }
 
 void Makneto::addUser(const XMPP::Jid &jid, const QString &group, bool requestAuth)

@@ -5,6 +5,7 @@
 #include <kcmdlineargs.h>
 #include <KDE/KLocale>
 #include <QtCrypto>
+#include <QDebug>
 
 static const char description[] = I18N_NOOP("A KDE 4 collaborative software");
 
@@ -18,6 +19,7 @@ int main(int argc, char **argv)
                      KAboutData::License_GPL, ki18n("(C) 2007 Jaroslav Reznik"), KLocalizedString(), 0, "rezzabuh@gmail.com");
 	about.addAuthor( ki18n("Jaroslav Reznik"), KLocalizedString(), "rezzabuh@gmail.com" );
   about.addAuthor( ki18n("Radek Novacek"), KLocalizedString(), "rad.n@centrum.cz" );
+  about.addAuthor( ki18n("Petr Menšík"), KLocalizedString(), "pihhan@cipis.net" );
 	KCmdLineArgs::init(argc, argv, &about);
 
 	KApplication app;
@@ -29,6 +31,11 @@ int main(int argc, char **argv)
   makneto->setMaknetoMainWindow(mainWindow);
     
 	mainWindow->show();
+
+        app.setQuitOnLastWindowClosed(true);
+        if (app.quitOnLastWindowClosed()) {
+            qDebug() << " will quit on close";
+        }
 
 	return app.exec();
 }

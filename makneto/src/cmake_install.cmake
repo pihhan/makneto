@@ -43,7 +43,7 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" MATCHES "^(Unspec
     IF(EXISTS "$ENV{DESTDIR}/usr/local/bin/makneto")
       FILE(RPATH_CHANGE
            FILE "$ENV{DESTDIR}/usr/local/bin/makneto"
-           OLD_RPATH "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/CMakeFiles/makneto.dir/cutestuff/network:/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/CMakeFiles/makneto.dir/cutestuff/util:/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/CMakeFiles/makneto.dir/cutestuff/legacy"
+           OLD_RPATH "::::::::::::::"
            NEW_RPATH "/usr/local/lib")
       IF(CMAKE_INSTALL_DO_STRIP)
         EXECUTE_PROCESS(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/usr/local/bin/makneto")
@@ -70,3 +70,13 @@ IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 
+IF(CMAKE_INSTALL_COMPONENT)
+  SET(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
+ELSE(CMAKE_INSTALL_COMPONENT)
+  SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
+ENDIF(CMAKE_INSTALL_COMPONENT)
+
+FILE(WRITE "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/${CMAKE_INSTALL_MANIFEST}" "")
+FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
+  FILE(APPEND "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/src/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+ENDFOREACH(file)

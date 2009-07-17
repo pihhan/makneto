@@ -18,6 +18,7 @@
 #include <xmpp_status.h>
 
 class KIcon;
+class MaknetoContact;
 
 /*! \brief Small class for one resource of one contact.
  *
@@ -29,24 +30,16 @@ class KIcon;
 class MaknetoContactResource : public ContactListContact 
 {
 public:
-        MaknetoContactResource()
-            : ContactListContact(NULL),m_status(ContactListStatus::Offline),
-              m_contactMenu(NULL), 
-              m_priority(0), m_null(true)
-        {}
+        MaknetoContactResource();
 
-        MaknetoContactResource(const QString &resource, int priority = 0)
-            : ContactListContact(NULL),m_status(ContactListStatus::Offline),
-              m_contactMenu(NULL), 
-              m_resource(resource),m_priority(priority), m_null(false)
-        {}
+        MaknetoContactResource(MaknetoContact *bare, const QString &resource, int priority = 0);
 
-        MaknetoContactResource(const XMPP::Status &status, const QString &resource);
+        MaknetoContactResource(MaknetoContact *bare, const XMPP::Status &status, const QString &resource);
 
-        virtual QString jid() const { return ""; }
+        virtual QString jid() const;
         virtual QString resource() const { return m_resource; }
         virtual int priority() const { return m_priority; }
-        virtual FeatureList features() { return m_features; } 
+        virtual FeatureList *features() { return m_features; } 
 	virtual ContactListStatus status() const { return m_status; }
         /*! \brief only compatibility with ContactListContact, name is the same for all resources, no need to store it for every single resource. */
         virtual const QString name() const { return QString(); } 
@@ -60,15 +53,19 @@ public:
             return (m_resource < other.m_resource);
         }
 
+        void setFeatures( FeatureList *fl, bool shared=true);
+
         QIcon statusIcon() const;
 private: 
+        MaknetoContact  *m_bare;
 	ContactListStatus m_status;
-	QMenu *m_contactMenu;
+	QMenu   *m_contactMenu;
         QString m_resource;
-        int m_priority;
-        FeatureList m_features;
+        int     m_priority;
+        FeatureList *m_features;
+        bool    m_feature_shared;
         QString m_clientname;
-        bool m_null;
+        bool    m_null;
 };
 
 
@@ -84,7 +81,7 @@ class MaknetoContact : public ContactListContact
 {
 public:
 
-        typedef QHash<QString, MaknetoContactResource>   ResourcesHash;
+        typedef QHash<QString, MaknetoContactResource *>   ResourcesHash;
 	/**
 	* Default constructor
 	*/
@@ -103,7 +100,7 @@ public:
 
         virtual int priority() const;
 
-        virtual MaknetoContactResource resource( const QString &resource) 
+        virtual MaknetoContactResource *resource( const QString &resource) 
         {
             return m_resources.value(resource);
         }
@@ -120,9 +117,9 @@ public:
         /*! \brief Set status for specified resource.
          * Create new one if it does not exist and status is not offline,
          * or dispose existing one if status is offline. */
-        void setStatus(const QString &resource, const XMPP::Status &status);
+        void setStatus(const QString &resource, const XMPP::Status &status, FeatureListManager *flm=NULL);
         /*! \brief Create new resource entry using its name na incoming status. */
-        void createResource(const QString &resource, const XMPP::Status &status);
+        MaknetoContactResource * createResource(const QString &resource, const XMPP::Status &status);
         void removeResource(const QString &resource);
 
 private:
