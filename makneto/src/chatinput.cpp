@@ -7,6 +7,7 @@
 #include "chatinput.h"
 
 #include <Qt>
+#include <QKeyEvent>
 
 ChatInput::ChatInput(QWidget *parent) : QTextEdit(parent)
 {

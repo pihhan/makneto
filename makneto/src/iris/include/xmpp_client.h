@@ -50,6 +50,9 @@ namespace XMPP {
 
 namespace XMPP
 {
+        /*!
+         * \brief Main class of XMPP client.
+         * */
 	class Client : public QObject
 	{
 		Q_OBJECT
@@ -58,6 +61,8 @@ namespace XMPP
 		Client(QObject *parent=0);
 		~Client();
 
+                /*! \brief Ask whether connection is active. 
+                 * \return True, if you are client is active - connecting or connected.*/
 		bool isActive() const;
 		void connectToServer(ClientStream *s, const Jid &j, bool auth=true);
 		void start(const QString &host, const QString &user, const QString &pass, const QString &resource);
@@ -77,6 +82,7 @@ namespace XMPP
 		QString resource() const;
 		Jid jid() const;
 
+                /*! \brief Request all items of roster. */
 		void rosterRequest();
 		void sendMessage(const Message &);
 		void sendSubscription(const Jid &, const QString &, const QString& nick = QString());
@@ -104,6 +110,7 @@ namespace XMPP
 		void setCapsVersion(const QString &);
 
 		void setIdentity(DiscoItem::Identity);
+                /*! \brief Get identity of client, which will be included in Disco#info query to us. */
 		DiscoItem::Identity identity();
 
 		void setFeatures(const Features& f);
@@ -115,6 +122,7 @@ namespace XMPP
 		QStringList extensions() const;
 		
 		S5BManager *s5bManager() const;
+                /*! \brief Get In-band connections Manager */
 		IBBManager *ibbManager() const;
 		JidLinkManager *jidLinkManager() const;
 

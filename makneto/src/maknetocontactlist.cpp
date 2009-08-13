@@ -19,6 +19,8 @@
 
 #include <iostream>
 
+#include <klocalizedstring.h>
+
 MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makneto(makneto) 
 { 
   m_contactNewSessionActions = new QActionGroup(this);

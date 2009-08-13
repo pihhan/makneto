@@ -1315,6 +1315,7 @@ bool CoreProtocol::normalStep(const QDomElement &e)
 				QDomNodeList l = m.elementsByTagNameNS(NS_SASL, "mechanism");
 				for(int n = 0; n < l.count(); ++n)
 					f.sasl_mechs += l.item(n).toElement().text();
+                                        qDebug("SASL Mech: %s\n", (f.sasl_mechs));
 			}
 			QDomElement c = e.elementsByTagNameNS(NS_COMPRESS_FEATURE, "compression").item(0).toElement();
 			if(!c.isNull()) {

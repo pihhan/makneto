@@ -20,6 +20,7 @@
 
 #include <klineedit.h>
 #include <kdialog.h>
+#include <klocalizedstring.h>
 
 
 RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
@@ -33,7 +34,7 @@ RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	connect(m_addcontact, SIGNAL(clicked(bool)), SLOT(addContactClicked(bool)));
 
 	m_offline = new QPushButton(KIconLoader::global()->loadIcon("edit-find-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Show all"), this);
-  m_offline->setCheckable(true);
+	m_offline->setCheckable(true);
 	m_offline->setChecked(true);
 	m_buttonslayout->addWidget(m_offline);
 	connect(m_offline, SIGNAL(clicked(bool)), SLOT(offlineClicked(bool)));

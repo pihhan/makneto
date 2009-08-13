@@ -107,7 +107,7 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   connect(m_chatinput, SIGNAL(send()), this, SLOT(sendClicked()));
 
   // output chat text edit props
-  m_chatoutput->setTextFormat(Qt::RichText);
+  //m_chatoutput->setTextFormat(Qt::RichText);
   m_chatoutput->setReadOnly(true);
   m_chatoutput->setNick(nick);
   
@@ -118,6 +118,7 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   
   m_topSplitter->addWidget(m_leftWidget);
   
+
 	// TODO: test only!!!
 	ba = new QByteArray;
 	m_testbuffer = new QBuffer(ba, this);
@@ -226,16 +227,17 @@ void SessionView::sendClicked()
     message.setType("chat");
   else
     message.setType("groupchat");
-	message.setChatState(StateActive);
-	message.setBody(m_chatinput->text());
+  message.setChatState(StateActive);
+  // TODO: support xhtml using correct xep, for now, only plaintext
+  message.setBody(m_chatinput->toPlainText());
 
-	emit sendMessage(message);
+  emit sendMessage(message);
   
   // Show message in chat window only in chat, not in groupchat
   if (type() == 0)
   {
     // show text in chat window
-    m_chatoutput->myMessage(m_chatinput->text());
+    m_chatoutput->myMessage(m_chatinput->toPlainText());
   }
   
   m_chatinput->setText("");

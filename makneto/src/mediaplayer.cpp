@@ -96,8 +96,10 @@ MediaPlayer::MediaPlayer(QWidget * parent)
 
 	QList<Phonon::AudioOutputDevice> caps = Phonon::BackendCapabilities::availableAudioOutputDevices();
 
-	for(int i = 0; i<caps.size(); i++)
-		qDebug(caps[i].name());
+	for(int i = 0; i<caps.size(); i++) {
+                QString name = caps[i].name(); 
+		qDebug() << name; // FIXME: discover why it does not accept caps[i].name() directly
+        }
 
 	resize(300, 350);
 
@@ -132,7 +134,7 @@ void MediaPlayer::setCurrentSource(const Phonon::MediaSource &source)
 		actionSeekBackward->setEnabled(false);
 	}
 
-	qDebug(m_media->metaData("ARTIST").first());
+	qDebug() << (m_media->metaData("ARTIST").first());
 }
 
 void MediaPlayer::createButtons()

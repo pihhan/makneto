@@ -11,6 +11,8 @@
 #include "makneto.h"
 #include "settings.h"
 
+#include <kicon.h>
+
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QPushButton>
 #include <QtGui/QLabel>

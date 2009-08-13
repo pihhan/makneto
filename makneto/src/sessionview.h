@@ -133,8 +133,8 @@ private:
   ChatState m_lastChatState;
   int m_id;
 	QString m_session;
-  int m_type;
-  QString m_nick;
+        int m_type;
+        QString m_nick;
   KAction *actionSelect;
 
 	// TODO: TEST ONLY!

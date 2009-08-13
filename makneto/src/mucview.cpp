@@ -71,7 +71,7 @@ void MUCView::createIcons()
 
 KIcon MUCView::getColorizedIcon(const KIcon &icon, QColor color)
 {
-  QImage img = icon.pixmap(32);
+  QImage img = icon.pixmap(32).toImage();
   KIconEffect::colorize(img, color, 1.0);
   return KIcon(QIcon(QPixmap::fromImage(img)));
 }

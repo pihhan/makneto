@@ -44,13 +44,13 @@ void AddContactDialog::okClicked()
 		return;
 	}
 
-	if (!XMPP::Jid(ui.jabberID->text().stripWhiteSpace()).isValid())
+	if (!XMPP::Jid(ui.jabberID->text().simplified()).isValid())
 	{
 		KMessageBox::error(this, i18n("Incorrect Jabber ID! Please try again to set correct Jabber ID."), i18n("Error"));
 		return;
 	}
 
-	addUser(XMPP::Jid(ui.jabberID->text().stripWhiteSpace()), "", ui.requestAuth->isChecked());
+	addUser(XMPP::Jid(ui.jabberID->text().simplified()), "", ui.requestAuth->isChecked());
 
 	accept();
 }

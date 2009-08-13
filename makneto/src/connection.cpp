@@ -27,6 +27,7 @@ using namespace XMPP;
 
 Connection::Connection(Makneto *makneto): m_makneto(makneto)
 {
+
 	m_tlsHandler = 0;
 	m_conn = 0;
 	m_stream = 0;
@@ -37,6 +38,10 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 
 	m_client = new Client();
 	m_client->setClientName("Makneto");
+
+        // FIXME: make this better and more secure, also this does memleak
+        m_tls = new QCA::TLS();
+        //m_tlsHandler = new XMPP::QCATLSHandler(m_tls);
 
 	QStringList features;
   features << "http://jabber.org/protocol/commands" << "http://www.w3.org/2000/svg";
@@ -95,13 +100,15 @@ bool Connection::login()
 
 	// my jabber id from settings
 	m_jid = Jid(Settings::jabberID());
-	m_jid.setResource("Makneto");
+        if (m_jid.resource().isEmpty()) {
+	        m_jid = m_jid.withResource("Makneto");
+        }
 
 	m_conn = new AdvancedConnector(this);
 
 	// TODO:ssl connection
 	m_conn->setOptSSL(false);
-	m_conn->setOptProbe(true);
+	m_conn->setOptProbe(false);
 	
 	if (!Settings::jabberHost().isEmpty())
 	{
@@ -114,7 +121,8 @@ bool Connection::login()
 	if (Settings::allowPlain())
 		m_stream->setAllowPlain(ClientStream::AllowPlain);
 
-	m_stream->setRequireMutualAuth(true);
+        // this makes problems with integrated Simple SASL library.
+	m_stream->setRequireMutualAuth(false);
 
 	connect(m_stream, SIGNAL(needAuthParams(bool, bool, bool)), SLOT(needAuthParams(bool, bool, bool)));
 	connect(m_stream, SIGNAL(connected()), SLOT(connected()));
@@ -334,7 +342,7 @@ void Connection::authenticated()
 {
 	qDebug() << "Connection::authenticated()";
 
-	m_client->start(m_jid.host(), m_jid.user(), "test", "Makneto");
+	m_client->start(m_jid.domain(), m_jid.node(), "test", "Makneto");
 
 	if (!m_stream->old())
 	{
@@ -637,31 +645,31 @@ void Connection::client_xmlIncoming(const QString &text)
         }
         if (affiliation.compare("none") == 0)
         {
-          Jid jid(from);
-          jid.setResource(QString());
+          Jid jid(Jid(from).bare());
+          // deprecated, create bare jid using bare() method
+//          jid.setResource(QString());
           Jid userJid(jid);
           emit groupChatMembershipRevoked(jid, userJid, reason);
         }
         else if (affiliation.compare("member") == 0)
         {
-          Jid jid(from);
-          jid.setResource(QString());
+          Jid jid(Jid(from).bare());
           Jid userJid(jid);
           emit groupChatMembershipGranted(jid, userJid, reason);
         }
         if (role.compare("participant") == 0)
         {
-          Jid jid(from);
-          jid.setResource(QString());
-          QString nick = jid.resource();
+          Jid jfrom(from);
+          Jid jid(jfrom.bare());
+          QString nick = jfrom.resource();
           emit groupChatVoiceGranted(jid, nick, reason);
           return;
         }
         else if (role.compare("visitor") == 0)
         {
-          Jid jid(from);
-          jid.setResource(QString());
-          QString nick = jid.resource();
+          Jid jfrom(from);
+          Jid jid(jfrom.bare());
+          QString nick = jfrom.resource();
           emit groupChatVoiceRevoked(jid, nick, reason);
           return;
         }
@@ -673,25 +681,25 @@ void Connection::client_xmlIncoming(const QString &text)
         {
           if (child.attribute("code").compare("307") == 0)
           {
-            Jid jid(from);
-            QString nick = jid.resource();
-            jid.setResource(QString());
+            Jid jfrom = Jid(from);
+            QString nick = jfrom.resource();
+            Jid jid(jfrom.bare());
             emit groupChatUserKicked(jid, nick, reason, actor);
             return;
           }
           else if (child.attribute("code").compare("301") == 0)
           {
-            Jid jid(from);
-            QString nick = jid.resource();
-            jid.setResource(QString());
+            Jid jfrom = Jid(from);
+            QString nick = jfrom.resource();
+            Jid jid(jfrom.bare());
             emit groupChatUserBanned(jid, nick, reason, actor);
             return;
           }
           else if (child.attribute("code").compare("301") == 0)
           {
-            Jid jid(from);
-            QString nick = jid.resource();
-            jid.setResource(QString());
+            Jid jfrom = Jid(from);
+            QString nick = jfrom.resource();
+            Jid jid(jfrom.bare());
             emit groupChatUserRemovedAsNonMember(jid, nick);
             return;
           }
@@ -712,8 +720,7 @@ void Connection::client_xmlIncoming(const QString &text)
     child = docElem.firstChildElement("subject");
     if (!child.isNull())
     {
-      Jid jid(to);
-      jid.setResource(QString());
+      Jid jid(Jid(to).bare());
       emit groupChatSubjectChanged(jid, child.text());
     }
     
@@ -740,9 +747,9 @@ void Connection::client_xmlIncoming(const QString &text)
       }
       if (!nick.isEmpty() && role.compare("participant") == 0)
       {
-        Jid jid(from);
-        QString nick = jid.resource();
-        jid.setResource(QString());
+        Jid jfrom(from);
+        QString nick = jfrom.resource();
+        Jid jid(jfrom.bare());
         emit groupChatVoiceRequested(jid, nick);
         return;
       }

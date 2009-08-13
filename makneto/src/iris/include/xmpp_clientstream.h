@@ -37,53 +37,55 @@ namespace XMPP
 	class TLSHandler;
 	class Connector;
 
+
+        /*! \brief Network stream abstraction for clients. */
 	class ClientStream : public Stream
 	{
 		Q_OBJECT
 	public:
 		enum Error {
-			ErrConnection = ErrCustom,  // Connection error, ask Connector-subclass what's up
-			ErrNeg,                     // Negotiation error, see condition
-			ErrTLS,                     // TLS error, see condition
-			ErrAuth,                    // Auth error, see condition
-			ErrSecurityLayer,           // broken SASL security layer
-			ErrBind                     // Resource binding error
+			ErrConnection = ErrCustom,  ///!< Connection error, ask Connector-subclass what's up
+			ErrNeg,                     ///!< Negotiation error, see condition
+			ErrTLS,                     ///!< TLS error, see condition
+			ErrAuth,                    ///!< Auth error, see condition
+			ErrSecurityLayer,           ///!< broken SASL security layer
+			ErrBind                     ///!< Resource binding error
 		};
 		enum Warning {
-			WarnOldVersion,             // server uses older XMPP/Jabber "0.9" protocol
-			WarnNoTLS                   // there is no chance for TLS at this point
+			WarnOldVersion,             ///!< server uses older XMPP/Jabber "0.9" protocol
+			WarnNoTLS                   ///!< there is no chance for TLS at this point
 		};
 		enum NegCond {
-			HostGone,                   // host no longer hosted
-			HostUnknown,                // unknown host
-			RemoteConnectionFailed,     // unable to connect to a required remote resource
-			SeeOtherHost,               // a 'redirect', see errorText() for other host
-			UnsupportedVersion          // unsupported XMPP version
+			HostGone,                   ///!< host no longer hosted
+			HostUnknown,                ///!< unknown host
+			RemoteConnectionFailed,     ///!< unable to connect to a required remote resource
+			SeeOtherHost,               ///!< a 'redirect', see errorText() for other host
+			UnsupportedVersion          ///!< unsupported XMPP version
 		};
 		enum TLSCond {
-			TLSStart,                   // server rejected STARTTLS
-			TLSFail                     // TLS failed, ask TLSHandler-subclass what's up
+			TLSStart,                   ///!< server rejected STARTTLS
+			TLSFail                     ///!< TLS failed, ask TLSHandler-subclass what's up
 		};
 		enum SecurityLayer {
 			LayerTLS,
 			LayerSASL
 		};
 		enum AuthCond {
-			GenericAuthError,           // all-purpose "can't login" error
-			NoMech,                     // No appropriate auth mech available
-			BadProto,                   // Bad SASL auth protocol
-			BadServ,                    // Server failed mutual auth
-			EncryptionRequired,         // can't use mech without TLS
-			InvalidAuthzid,             // bad input JID
-			InvalidMech,                // bad mechanism
-			InvalidRealm,               // bad realm
-			MechTooWeak,                // can't use mech with this authzid
-			NotAuthorized,              // bad user, bad password, bad creditials
-			TemporaryAuthFailure        // please try again later!
+			GenericAuthError,           ///!< all-purpose "can't login" error
+			NoMech,                     ///!< No appropriate auth mech available
+			BadProto,                   ///!< Bad SASL auth protocol
+			BadServ,                    ///!< Server failed mutual auth
+			EncryptionRequired,         ///!< can't use mech without TLS
+			InvalidAuthzid,             ///!< bad input JID
+			InvalidMech,                ///!< bad mechanism
+			InvalidRealm,               ///!< bad realm
+			MechTooWeak,                ///!< can't use mech with this authzid
+			NotAuthorized,              ///!< bad user, bad password, bad creditials
+			TemporaryAuthFailure        ///!< please try again later!
 		};
 		enum BindCond {
-			BindNotAllowed,             // not allowed to bind a resource
-			BindConflict                // resource in-use
+			BindNotAllowed,             ///!< not allowed to bind a resource
+			BindConflict                ///!< resource in-use
 		};
 		enum AllowPlainType {
 			NoAllowPlain,
@@ -96,6 +98,11 @@ namespace XMPP
 		~ClientStream();
 
 		Jid jid() const;
+
+                /*! \brief Start connection to server.
+                 * \param jid Jid of server, only domain part is used.
+                 * \param auth Enable authentication, enabled by default.
+                 * */
 		void connectToServer(const Jid &jid, bool auth=true);
 		void accept(); // server
 		bool isActive() const;

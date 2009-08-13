@@ -5,7 +5,7 @@
 #include "contactlistgroupitem.h"
 #include "contactlistitemcomparator.h"
 
-ContactListGroupItem::ContactListGroupItem(ContactListGroupItem* parent) : ContactListItem(parent)
+ContactListGroupItem::ContactListGroupItem(ContactListGroupItem* parent) : ContactListItem(parent), expanded_(true)
 {
 }
 
@@ -76,7 +76,12 @@ ContactListItem* ContactListGroupItem::findFirstItem(ContactListItem* other)
 
 bool ContactListGroupItem::expanded() const
 {
-	return true;
+	return expanded_;
+}
+
+void ContactListGroupItem::setExpanded(bool expanded)
+{
+    expanded_ = expanded;
 }
 
 int ContactListGroupItem::count() const

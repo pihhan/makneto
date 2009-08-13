@@ -76,7 +76,7 @@ void WbWidget::setMode(Mode mode) {
 		if (file.open(QIODevice::ReadOnly)) {
 			// TODO: Should we perhaps scale large images?
 			QByteArray data = file.readAll();
-			QImage image(data);
+			QImage image = QImage::fromData(data);
 			if(!image.isNull()) {
 				// Create the element
 // 				QDomDocument d = QDomDocument();

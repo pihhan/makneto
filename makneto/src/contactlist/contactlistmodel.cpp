@@ -121,6 +121,7 @@ bool ContactListModel::setData(const QModelIndex& index, const QVariant& data, i
 	ContactListItem* item = static_cast<ContactListItem*>(index.internalPointer());
 	if (role == ContextMenuRole) {
 		item->showContextMenu(data.toPoint());
+                emit dataChanged(index, index);
 	}
 
 	return true;

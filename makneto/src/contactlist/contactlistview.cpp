@@ -5,6 +5,7 @@
 #include "contactlistmodel.h"
 #include "contactlistview.h"
 #include "contactlistcontact.h"
+#include "contactlistgroup.h"
 
 ContactListView::ContactListView(QWidget* parent) : QTreeView(parent)
 {
@@ -79,8 +80,23 @@ void ContactListView::contextMenuEvent(QContextMenuEvent* e)
 void ContactListView::mouseDoubleClickEvent(QMouseEvent *e)
 {
   QModelIndex index = indexAt(e->pos());
-  if (index.isValid())
-    emit itemDoubleClicked(static_cast<ContactListContact *> (index.internalPointer())->jid());
+  if (index.isValid()) {
+    ContactListItem *item = static_cast<ContactListItem *> (index.internalPointer());
+    ContactListContact *contact = dynamic_cast<ContactListContact *> (item);
+    if (contact != NULL) {
+        emit itemDoubleClicked(contact->jid());
+    } else {
+        ContactListGroup *gi = dynamic_cast<ContactListGroup *>(item);
+        if (gi != NULL) {
+            if (isExpanded(index))
+                collapse(index);
+            else 
+                expand(index);
+        } else {
+            qWarning("ContactListView::doubleClick on no group or contact.");
+        }
+    }
+  }
 }
 
 void ContactListView::resizeColumns()

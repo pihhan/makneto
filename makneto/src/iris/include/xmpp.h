@@ -69,18 +69,28 @@ namespace XMPP
 
 	void setDebug(Debug *);
 
+        /*! \brief Class for connection management and setup. 
+         * This class has only basic features, see AdvancedConnector if you 
+         * need proxy or HTTP polling support. */
 	class Connector : public QObject
 	{
 		Q_OBJECT
 	public:
 		Connector(QObject *parent=0);
 		virtual ~Connector();
-
+                
+                /*! \brief Start connection to server.
+                 * \param server DNS name of server.
+                 * */
 		virtual void connectToServer(const QString &server)=0;
 		virtual ByteStream *stream() const=0;
 		virtual void done()=0;
 
+                /*! \brief Get configuration of SSL.
+                 * \return True if we will connect with secure stream. */
 		bool useSSL() const;
+                /*! \brief Do we know address?.
+                 * \return True if IP address is known already. */
 		bool havePeerAddress() const;
 		QHostAddress peerAddress() const;
 		quint16 peerPort() const;
@@ -90,8 +100,15 @@ namespace XMPP
 		void error();
 
 	protected:
+                /*! \brief Configure usage of secure stream. 
+                 * Force SSL encryption right after connection, legacy SSL.
+                 * \param b True if we should try SSL on connection. */
 		void setUseSSL(bool b);
+                /*! \brief Clear configured server IP address. */
 		void setPeerAddressNone();
+                /*! \brief Configure server IP address. 
+                 * \param addr IP addres of server. 
+                 * \param port Target port of server. */
 		void setPeerAddress(const QHostAddress &addr, quint16 port);
 
 	private:
@@ -100,7 +117,10 @@ namespace XMPP
 		QHostAddress addr;
 		quint16 port;
 	};
-
+        
+        /*! \brief Advanced connector with special connections also.
+         *
+         * It does support connection using HTTP proxy and SOCKS proxy. */
 	class AdvancedConnector : public Connector
 	{
 		Q_OBJECT
@@ -124,10 +144,32 @@ namespace XMPP
 			QString pass() const;
 			int pollInterval() const;
 
+                        /*! \brief Set connection type as HTTP using CONNECT request. 
+                         *
+                         * Connect is faster and more reliable than polling, 
+                         * but have to be supported and enabled by Proxy servers,
+                         * often is disabled by default. After HTTP request does work like normal TCP connection.
+                         * \param host DNS name of HTTP server. 
+                         * \param port Port of HTTP server. */
 			void setHttpConnect(const QString &host, quint16 port);
+                        /*! \brief Set connection type to HTTP polling.
+                         *
+                         * Polling is slower, less efficient and does use more
+                         * traffic than connect method. But it does look like
+                         * normal HTTP traffic and should pass any proxy.
+                         * \param host DNS name of HTTP server.
+                         * \param port Port of HTTP server.
+                         * \param url Url to polling page. FIXME: is relative to server root, or full URL with http:// ? */
 			void setHttpPoll(const QString &host, quint16 port, const QString &url);
 			void setSocks(const QString &host, quint16 port);
+                        /*! \brief Set credentials for authentication. 
+                         * \param user Username. 
+                         * \param pass Password. */
 			void setUserPass(const QString &user, const QString &pass);
+                        /*! \brief Set polling interval.
+                         * It does affect time of reaction. Lesser the time is,
+                         *  faster and more instant messages are, but also uses
+                         *  more network resources and data. */
 			void setPollInterval(int secs);
 
 		private:
@@ -138,13 +180,25 @@ namespace XMPP
 			int v_poll;
 		};
 
+                /*! \brief Set proxy server.
+                 * Does work only if connection is idle. */
 		void setProxy(const Proxy &proxy);
+                /*! \brief Set manual IP hostname and port.
+                 * Does work only if connection is idle. */
 		void setOptHostPort(const QString &host, quint16 port);
+                /*! \brief Configure SSL probing. 
+                 * Does work only if connection is idle. Check this, if legacy
+                 * SSL connection should be tried first. If that would not work,
+                 * try plain TCP connection instead. */
 		void setOptProbe(bool);
+                /*! \brief Set SSL usage.
+                 * Does work only if connection is idle. */
 		void setOptSSL(bool);
 
 		void changePollInterval(int secs);
 
+                /*! \brief Start connection to server.
+                 * \param server DNS name of server. */
 		void connectToServer(const QString &server);
 		ByteStream *stream() const;
 		void done();
@@ -158,9 +212,14 @@ namespace XMPP
 		void httpSyncFinished();
 
 	private slots:
+                /*! \brief DNS resolution is complete, we have target address. */
 		void dns_done();
+                /*! \brief Triggers when SRV reply arrives.
+                 * Set hostname and port.
+                 * */
 		void srv_done();
 		void bs_connected();
+                /*! \brief Handle errors, or try next SRV hostname if we have any */
 		void bs_error(int);
 		void http_syncStarted();
 		void http_syncFinished();
@@ -171,10 +230,16 @@ namespace XMPP
 
 		void cleanup();
 		void do_resolve();
+                /*! \brief Initiate actual connection. 
+                 * Connect to XMPP or Proxy server. On success, signal to 
+                 * bs_connected is emited, on error to bs_error.*/
 		void do_connect();
+                /*! \brief Try next server from SRV reply list. */
 		void tryNextSrv();
 	};
 
+
+        /*! \brief Virtual abstraction of TLS handler. */
 	class TLSHandler : public QObject
 	{
 		Q_OBJECT
@@ -195,6 +260,7 @@ namespace XMPP
 		void readyReadOutgoing(const QByteArray &a, int plainBytes);
 	};
 
+        /*! \brief Useable and implemented TLS handler. */
 	class QCATLSHandler : public TLSHandler
 	{
 		Q_OBJECT
@@ -204,7 +270,9 @@ namespace XMPP
 
 		QCA::TLS *tls() const;
 		int tlsError() const;
-
+                
+                /*! \brief Enable certificate hostname matching.
+                 * \param enable true to enable checking */
 		void setXMPPCertCheck(bool enable);
 		bool XMPPCertCheck();
 		bool certMatchesHostname();

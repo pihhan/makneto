@@ -263,6 +263,7 @@ public:
 
 		mechanism_ = QString();
 		foreach(QString mech, mechlist) {
+                        qDebug() << "SimpleSasl Mechanism: " << mech << endl;
 			if (mech == "DIGEST-MD5") {
 				mechanism_ = "DIGEST-MD5";
 				break;
