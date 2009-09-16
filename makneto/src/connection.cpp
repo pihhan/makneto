@@ -44,6 +44,7 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
         //m_tlsHandler = new XMPP::QCATLSHandler(m_tls);
 
 	QStringList features;
+        // FIXME: this features list is invalid
         features << "http://jabber.org/protocol/commands" << "http://www.w3.org/2000/svg";
 	m_client->setFeatures(Features(features));
 
@@ -554,8 +555,7 @@ void Connection::client_rosterItemAdded(const RosterItem &item)
 		m_makneto->getContactList()->addContact(item.name(), item.jid().full(), "");
 	else
 	{
-		for (int i = 0; i < item.groups().size(); ++i)
-			m_makneto->getContactList()->addContact(item.name(), item.jid().full(), item.groups().at(i));
+		m_makneto->getContactList()->addContact(item.name(), item.jid().full(), item.groups());
 	}
 
 }
@@ -815,6 +815,7 @@ void Connection::sendMessage(const Message &message)
     \param jid Bare jid of person we are adding.
     \param group Name of group we want to add contact to.
     \param requestAuth should we request subscription from that contact also?
+    \todo Support multiple groups per user on add.
     */
 void Connection::addUser(const Jid &jid, const QString &group, bool requestAuth)
 {

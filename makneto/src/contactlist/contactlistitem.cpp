@@ -2,13 +2,13 @@
 #include "contactlistitem.h"
 #include "contactlistgroupitem.h"
 
-ContactListItem::ContactListItem(ContactListGroupItem* parent) : QObject(), parent_(NULL), defaultParent_(parent)
+ContactListItem::ContactListItem(ContactListGroupItem* parent) : QObject(), parent_(NULL), defaultParent_(parent), contactlist_(NULL)
 {
 	setParent(parent);
 }
 
 ContactListItem::ContactListItem(const ContactListItem &item)
-    : QObject(), parent_(NULL),defaultParent_(item.defaultParent_)
+    : QObject(), parent_(NULL),defaultParent_(item.defaultParent_), contactlist_(NULL)
 {
         setParent(item.parent_);
 }
@@ -22,7 +22,9 @@ void ContactListItem::operator=(const ContactListItem &item)
 /*! \brief Get contact list instance. */
 ContactList* ContactListItem::contactList() const
 {
-	if (parent()) {
+        if (contactlist_) {
+            return contactlist_;
+        } else if (parent()) {
 		return parent()->contactList();
 	}
 	else {
@@ -54,10 +56,11 @@ void ContactListItem::setParent(ContactListGroupItem* parent)
 		
 		if (parent) {
 			parent->addItem(this);
+                        contactlist_ = parent->contactList();
 		}
 		
 		parent_ = parent;
-		contactList()->emitDataChanged();
+		contactList()->emitDataChanged(this);
 	}
 }
 
@@ -123,6 +126,7 @@ QList<ContactListItem*> ContactListItem::invisibleItems()
 	return l;
 }*/
 
+/*! \brief Not implemented. */
 void ContactListItem::showContextMenu(const QPoint&)
 {
 }

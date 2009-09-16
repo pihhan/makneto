@@ -78,4 +78,28 @@ void ContactListContact::updateParent()
 		setParent(newParent);
 }
 
+/*! \brief Add group this contact is member of.
+    \param Pointer to ContactListGroup.
+    It does not modify group itself, it only adds that group to list,
+    if it is not already in list. In that case, it does nothing. 
+*/
+void    ContactListContact::addGroup(ContactListGroup *group)
+{
+    GroupsList::iterator it = groups_.begin();
+    for ( ; it != groups_.end(); ++it) {
+        if (*it == group) // already in list
+            return;
+    }
+    groups_.append(group);
+}
+
+/*! \brief Remove group this contact is member of.
+    \param group Pointer to group.
+    It will not remove contact from group itself, it only modifies list
+    of groups in this class. 
+*/
+void    ContactListContact::removeGroup(ContactListGroup *group)
+{
+    groups_.removeAll(group);
+}
 

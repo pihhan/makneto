@@ -192,3 +192,5 @@ void ContactListModel::contactList_changed()
 {
 	reset();
 }
+
+

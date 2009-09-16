@@ -4,9 +4,12 @@
 #include <QString>
 #include <QIcon>
 #include <QHash>
+#include <QList>
 
 #include "status.h"
 #include "contactlistitem.h"
+
+class ContactListGroup;
 
 class ContactListContact : public ContactListItem
 {
@@ -29,6 +32,13 @@ public:
 	virtual QString toolTip() const;
 
 	virtual int countOnline() const;
+
+        typedef QList<ContactListGroup *> GroupsList;
+        GroupsList getGroups();
+        void    addGroup(ContactListGroup *group);
+        void    removeGroup(ContactListGroup *group);
+private:
+        GroupsList  groups_;
         
 };
 

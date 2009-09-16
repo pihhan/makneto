@@ -46,6 +46,7 @@ public:
 private:
 	ContactListGroupItem* parent_;
 	ContactListGroupItem* defaultParent_;
+        ContactList *         contactlist_;
 };
 
 #endif

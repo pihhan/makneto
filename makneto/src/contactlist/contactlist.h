@@ -2,11 +2,15 @@
 #define CONTACTLIST_H
 
 #include <QObject>
+#include <QString>
+#include <QHash>
 
 class ContactListGroupItem;
 class ContactListRootItem;
 class ContactListItemComparator;
 class ContactListItem;
+class ContactListContact;
+class ContactListGroup;
 
 /*! \brief Implementation of graphical contact list. */
 class ContactList : public QObject
@@ -16,6 +20,9 @@ class ContactList : public QObject
 	friend class ContactListModel;
 
 public:
+        typedef QHash<QString, ContactListGroup *> GroupsHash;
+        typedef QHash<QString, ContactListContact *> ContactsHash;
+
 	ContactList(QObject* parent = 0);
 	bool showOffline() const { return showOffline_; }
 	bool showGroups() const { return showGroups_; }
@@ -23,6 +30,12 @@ public:
 	ContactListRootItem* rootItem();
 	const ContactListItemComparator* itemComparator() const;
 	const QString& search() const;
+
+        ContactListContact * getContact(const QString &jid);
+        ContactListGroup * getGroup(const QString &groupname);
+
+	void addItem(ContactListItem*);
+	void removeItem(ContactListItem*);
 
 signals:
 	void dataChanged();
@@ -52,6 +65,9 @@ private:
 	ContactListRootItem* rootItem_;
 	ContactListRootItem* invisibleGroup_;
 	ContactListRootItem* altInvisibleGroup_;
+
+        GroupsHash          groups_; ///!< List of all groups in roster
+        ContactsHash        contacts_; ///!< List of all contacts in roster
 
 	//ContactListGroupItem* hiddenGroup_;
 	//ContactListGroupItem* agentsGroup_;

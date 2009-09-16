@@ -2,6 +2,8 @@
 #include "contactlistgroupitem.h"
 #include "contactlistrootitem.h"
 #include "contactlistalphacomparator.h"
+#include "contactlistcontact.h"
+#include "contactlistgroup.h"
 
 
 ContactList::ContactList(QObject* parent)
@@ -133,3 +135,59 @@ void ContactList::updateParents()
 
 	emit dataChanged();
 }
+
+/*! \brief Get contact class by jid.
+    \param jid Bare jid of contact.
+    \return Pointer to jid on success, NULL if no such contact exists in roster. 
+*/
+ContactListContact * ContactList::getContact(const QString &jid)
+{
+    ContactListContact *contact;
+    ContactsHash::iterator it;
+    it = contacts_.find(jid);
+    if (it != contacts_.end())
+        return *it;
+    else 
+        return NULL;
+}
+
+/*! \brief get Group class by name.
+    \param groupname Name of group.
+    \return Pointer to group on success, NULL if no such group exists.
+*/
+ContactListGroup * ContactList::getGroup(const QString &groupname)
+{
+    ContactListGroup *group;
+    GroupsHash::iterator it;
+    it = groups_.find(groupname);
+    if (it != groups_.end())
+        return *it;
+    else 
+        return NULL;
+}
+
+void ContactList::addItem(ContactListItem *item)
+{
+    ContactListContact *contact = dynamic_cast<ContactListContact *>(item);
+    ContactListGroup *group = dynamic_cast<ContactListGroup *>(item);
+
+    if (contact != NULL) {
+        // TODO: add to all groups it might be member of also
+        contacts_.insert(contact->jid(), contact);
+    } else if (group != NULL) {
+        groups_.insert(group->name(), group);
+    }
+}
+
+void ContactList::removeItem(ContactListItem *item)
+{
+    ContactListContact *contact = dynamic_cast<ContactListContact *>(item);
+    ContactListGroup *group = dynamic_cast<ContactListGroup *>(item);
+
+    if (contact != NULL) {
+        contacts_.remove(contact->jid());
+    } else if (group != NULL) {
+        groups_.remove(group->name());
+    }
+}
+
