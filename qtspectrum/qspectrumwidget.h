@@ -13,15 +13,25 @@
 
 class QSpectrumWidget : public QWidget
 {
+    Q_OBJECT
+
     public:
     QSpectrumWidget ( QWidget *parent = 0, Qt::WindowFlags f = 0);
 
-    virtual void render(QPainter *painter, const QPoint & targetOffset = QPoint(), const QRegion & sourceRegion = QRegion(), RenderFlags renderFlags = RenderFlags( DrawWindowBackground | DrawChildren ) );
+//    virtual void render(QPainter *painter, const QPoint & targetOffset = QPoint(), const QRegion & sourceRegion = QRegion(), RenderFlags renderFlags = RenderFlags( DrawWindowBackground | DrawChildren ) );
 
-    QSpectrum spectrum() { return m_spectrum; }
+    QSpectrum * spectrum() { return m_spectrum; }
+    void setSpectrum(QSpectrum *spectrum);
+    void setTimeout(int timeout);
 
+    public slots:
+    void printSpectrum();
+
+    protected:
+    void paintEvent(QPaintEvent *event);
+        
     private:
-    QSpectrum m_spectrum;
+    QSpectrum *m_spectrum;
     float   m_maximum;
     float   m_minimum;
     QTimer  m_timer;

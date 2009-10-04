@@ -7,6 +7,10 @@
 #include <vector>
 #include <stdint.h>
 
+/** @brief Class representing spectrum meter values.
+    It does contain spectrum elements for Gstreamer pipeline, but not graphical representation 
+    of results.
+    */
 class QSpectrum
 {
     public:
@@ -35,6 +39,9 @@ class QSpectrum
     /** \brief Add this object as watch of specified bus, so messages will flow to us. */
     void attachToBus(GstBus *bus);
     void attachToBus(GstBin *bin);
+    
+    void addToBin(GstElement *bin);
+    bool linkFrom(GstElement *source);
 
 
     protected:

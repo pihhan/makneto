@@ -2,7 +2,6 @@
 #ifndef GSTINPUT_H
 #define GSTINPUT_H
 
-
 #include <gst/gst.h>
 
 
@@ -15,6 +14,8 @@ class QGstInput
 
     GstElement *element()
     { return m_source; }
+
+    void iterateSourcePads();
 
     protected:
     GstElement *m_source;
