@@ -6,7 +6,7 @@
 #include <gloox/gloox.h>
 #include <gloox/logsink.h>
 
-#define CL_DEBUG(client,message) client->logInstance()->log(LogLevelDebug, \
+#define CL_DEBUG(client,message) (client)->logInstance().log(LogLevelDebug, \
     LogAreaUser, (message) )
 
 namespace gloox {
