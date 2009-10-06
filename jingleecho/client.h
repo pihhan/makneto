@@ -11,6 +11,7 @@
 #include <gloox/client.h>
 #include <gloox/stanza.h>
 
+#include "requests.h"
 
 namespace gloox {
 
@@ -34,6 +35,7 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
 
     static std::string connErrorToString(ConnectionError e);  
     static std::string authErrorToString(AuthenticationError e);
+    static std::string stanzaErrorToString(StanzaError e);
 
     std::string authError();
 
@@ -44,6 +46,7 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
     private:
     Client  *m_client;
     JID     m_jid;
+    RequestList *m_requests;
     
 };
 

@@ -2,12 +2,16 @@
 #include <cstdlib>
 #include <list>
 #include <vector>
+#include <iostream>
+
+#include <gloox/disco.h>
 
 #include "requests.h"
 #include "client.h"
 #include "parser.h"
 #include "logger.h"
 
+using namespace gloox;
 
 RequestList::RequestList(EchoClient *client)
     : m_client(client), m_requests( vectorSize )
@@ -16,7 +20,7 @@ RequestList::RequestList(EchoClient *client)
 
 bool RequestList::contextPresent(int context)
 {
-    if (context > vectorSize)
+    if ((size_t) context > vectorSize)
         return false;
     return (m_requests.at(context).type != Request::NONE);
 }
@@ -33,7 +37,7 @@ int RequestList::generateContext()
 
 Request RequestList::getRequest(int context)
 {
-    if (context > vectorSize)
+    if ((size_t) context > vectorSize)
         return Request();
     return m_requests.at(context);
 }
@@ -42,7 +46,7 @@ Request RequestList::getRequest(int context)
 void RequestList::handleDiscoInfoResult(Stanza *stanza, int context)
 {
     Request r = getRequest(context);
-    if (r.type != DISCO_INFO) { 
+    if (r.type != Request::DISCO_INFO) { 
         std::cerr << "Zadost o disco nema spravny typ kontextu!" << std::endl;
         return;
     }
@@ -50,11 +54,11 @@ void RequestList::handleDiscoInfoResult(Stanza *stanza, int context)
         std::string result("Disco#info for ");
         result.append(stanza->from() + "\n");
 
-        Tag * query = stanza->findChild(query);
+        Tag * query = stanza->findChild("query");
         Tag::TagList identities = query->findChildren("identity");
-        Tag::TagList features = query->findChildren("features");
+        Tag::TagList features = query->findChildren("feature");
         result.append("Identities: \n");
-        for (Tag::TagList::const_iterator it=identites.begin(); it!=identities.end(); it++) {
+        for (Tag::TagList::const_iterator it=identities.begin(); it!=identities.end(); it++) {
             Tag *t = (*it);
             std::string one = t->findAttribute("category") + "/" +
                 t->findAttribute("type") + "/" + t->findAttribute("name") + "\n";
@@ -71,12 +75,12 @@ void RequestList::handleDiscoInfoResult(Stanza *stanza, int context)
 void RequestList::handleDiscoItemsResult(Stanza *stanza, int context)
 {
     Request r = getRequest(context);
-    if (r.type == Request::ITEMS) {
+    if (r.type == Request::DISCO_ITEMS) {
         std::string result("Disco#items for ");
         result.append(stanza->from() + "\n");
 
-        Tag * query = stanza->findChild(query);
-        Tag::TagList items = query->findChildren("items");
+        Tag * query = stanza->findChild("query");
+        Tag::TagList items = query->findChildren("item");
         result.append("Items: \n");
         for (Tag::TagList::const_iterator it=items.begin(); it!=items.end(); it++) {
             Tag *t = (*it);
@@ -92,11 +96,17 @@ void RequestList::handleDiscoItemsResult(Stanza *stanza, int context)
 void RequestList::handleDiscoError(Stanza *stanza, int context)
 {
     Request r = getRequest(context);
-    CL_LOG(m_client->client(), "Disco error occured from " + stanza->from());
-    if (r.type == DISCO_ITEMS || r.type == DISCO_INFO) {
-        m_client->sendChatMessage(r.from, "Disco error from " 
-            + stanza->from() + ": " + stanza->errorText());
+    CL_DEBUG(m_client->client(), "Disco error occured from " + stanza->from());
+    if (r.type == Request::DISCO_ITEMS || r.type == Request::DISCO_INFO) {
+        std::string desc("Disco error from ");
+        desc.append(stanza->from() + ": " + stanza->errorText());
+        m_client->sendChatMessage(r.from, desc);
     }
+}
+
+bool RequestList::handleDiscoSet(Stanza *stanza)
+{
+    return false;
 }
 
 
@@ -123,10 +133,28 @@ void RequestList::createDiscoRequest(gloox::JID origin, gloox::JID target, const
     m_client->client()->disco()->getDiscoItems(target,node, this, r2.context);
 }
 
+void RequestList::createVersionRequest(gloox::JID origin, gloox::JID target)
+{
+    Request r = createRequest(Request::VERSION);
+    r.from = origin;
+    r.to = target;
+    addRequest(r);
+}
+
 void RequestList::addRequest(Request r)
 {
     m_requests[r.context] = r;
 }
+
+void RequestList::handleAdhocCommand(const std::string &command, Tag *tag, const gloox::JID &from, const std::string &id)
+{
+    std::cout << "command " << command << " from " << from.full() << std::endl;
+}
+
+
+/*
+ * Single Request entry.
+ */
 
 
 Request::Request()

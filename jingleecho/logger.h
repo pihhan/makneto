@@ -8,6 +8,10 @@
 
 #define CL_DEBUG(client,message) (client)->logInstance().log(LogLevelDebug, \
     LogAreaUser, (message) )
+#define CL_WARN(client,message) (client)->logInstance().log(LogLevelWarning, \
+    LogAreaUser, (message) )
+#define CL_ERROR(client,message) (client)->logInstance().log(LogLevelError, \
+    LogAreaUser, (message) )
 
 namespace gloox {
 

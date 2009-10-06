@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 
+namespace parser {
 /** @brief Class for one word in input string. */
 class Token
 {
@@ -57,5 +58,7 @@ class Parser
 
 };
 
+
+} // namespace
 #endif
 

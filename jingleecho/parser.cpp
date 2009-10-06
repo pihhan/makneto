@@ -6,6 +6,7 @@
 #include "parser.h"
 
 using namespace std;
+using namespace parser;
 
 /**
 @brief Parse input text to words.
@@ -14,13 +15,13 @@ Parser::Parser(const std::string &text)
     : m_state(S_BEGIN)
 {
     std::string subword;
-    char quote;
+    char quote = '\0';
     size_t  start = 0;
     m_it = m_tokens.begin();
 
     m_text = text;
 
-    for (int i=0; i<text.size(); ++i) {
+    for (size_t i=0; i<text.size(); ++i) {
         char c = text.at(i);
         switch (m_state) {
             case S_BEGIN:
@@ -54,11 +55,17 @@ Parser::Parser(const std::string &text)
                 break; // BEGIN
             
             case S_WORD:
+                // FIXME: vyrazeni roztrhavani slov interpunkci
+#ifndef INTERPUNCT_BREAK
+                if (isalnum(c) || ispunct(c)) {
+#else
                 if (isalnum(c)) {
+#endif
                     subword.append(1, c);
                 } else if (isspace(c)) {
                     addToken(subword, start);
                     subword.erase();
+                    m_state = S_BEGIN;
                 } else if (ispunct(c)) {
                     addToken(subword, start);
                     subword.erase();
@@ -91,6 +98,7 @@ Parser::Parser(const std::string &text)
                         subword.append(1, c);
                         addToken(subword, i);
                         subword.erase();
+                        m_state = S_BEGIN;
                     }
                 } else if (isspace(c)) {
                     addToken(subword, i);
@@ -118,6 +126,7 @@ Parser::Parser(const std::string &text)
     }
     if (m_state == S_STRING) {
         m_error = "Unterminated quote, started at "+ start;
+        std::cerr << m_error << std::endl;
     }
 
     reset();

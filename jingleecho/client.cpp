@@ -7,6 +7,7 @@
 
 #include "client.h"
 #include "logger.h"
+#include "parser.h"
 //#include "rosterator.h"
 
 using namespace gloox;
@@ -27,14 +28,16 @@ EchoClient::EchoClient(const std::string &jid, const std::string &password)
     initLog();
 
     m_client->setPresence(PresenceChat, 5, "bot ready to ping-pong with you");
+
+    m_requests = new RequestList(this);
 }
 
 void EchoClient::initLog()
 {
     Logger::init();
     m_client->logInstance().registerLogHandler(LogLevelDebug, LogAreaAll, logger);
-    m_client->logInstance().registerLogHandler(LogLevelWarning, LogAreaAll, logger);
-    m_client->logInstance().registerLogHandler(LogLevelError, LogAreaAll, logger);
+    //m_client->logInstance().registerLogHandler(LogLevelWarning, LogAreaAll, logger);
+    //m_client->logInstance().registerLogHandler(LogLevelError, LogAreaAll, logger);
 }
 
 void EchoClient::handlePresence(Stanza *stanza)
@@ -59,7 +62,7 @@ void EchoClient::onConnect()
 bool EchoClient::onTLSConnect( const CertInfo &info )
 {
     if (m_client->server() != info.server) {
-        m_client->logInstance().log(LogLevelError, LogAreaUser, "Server certificate name and requested jid do not match.");
+        m_client->logInstance().log(LogLevelWarning, LogAreaUser, "Server certificate name and requested jid do not match.");
     }
     // FIXME: pro zkouseni, at se dari
     //return info.chain;
@@ -93,7 +96,37 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
     std::string body = stanza->body();
     if (!body.empty()) {
         CL_DEBUG(m_client, "Message received: " + body);
-        m_client->send(bounceMessage(stanza));
+        // m_client->send(bounceMessage(stanza));
+        parser::Parser p(body);
+        std::string reply("Parsed:");
+        std::string cmd;
+        std::string param;
+
+        if (!p.atEnd()) {
+            parser::Token t = p.nextToken();
+            cmd = t.value();
+        }
+        if (!p.atEnd()) {
+            param = p.nextToken().value();
+        }
+        if (cmd == "disco") {
+            JID target(stanza->from());
+            if (!param.empty()) {
+                target = JID(param);
+            }
+            if (!target) {
+                sendChatMessage(stanza->from(), "target is not valid jid: " + param);
+                return;
+            } else {
+                m_requests->createDiscoRequest(stanza->from(), target);
+            }
+        } else {
+            while (!p.atEnd()) {
+                parser::Token t = p.nextToken();
+                reply.append("\"" + t.value() + "\" ");
+            }
+            sendChatMessage(stanza->from(), reply);
+        }
     }
 }
 
@@ -181,4 +214,60 @@ void EchoClient::sendChatMessage(const JID &to, const std::string &message)
     Stanza *msg = Stanza::createMessageStanza( to, message);
     m_client->send(msg);
 }
+
+
+std::string EchoClient::stanzaErrorToString(StanzaError e)
+{
+    switch (e) {
+        case StanzaErrorUndefined:
+            return "udefined";
+        case StanzaErrorBadRequest:
+            return "bad-request";
+        case StanzaErrorConflict:
+            return "conflict";
+        case StanzaErrorFeatureNotImplemented:
+            return "not-implemented";
+        case StanzaErrorForbidden:
+            return "forbidden";
+        case StanzaErrorGone:
+            return "gone";
+        case StanzaErrorInternalServerError:
+            return "internal-server-error";
+        case StanzaErrorItemNotFound:
+            return "item-not-found";
+        case StanzaErrorJidMalformed:
+            return "jid-malformed";
+        case StanzaErrorNotAcceptable:
+            return "not-acceptable";
+        case StanzaErrorNotAllowed:
+            return "not-allowed";
+        case StanzaErrorNotAuthorized:
+            return "not-authorized";
+        case StanzaErrorPaymentRequired:
+            return "payment-required";
+        case StanzaErrorRecipientUnavailable:
+            return "recipient-unavailable";
+        case StanzaErrorRedirect:
+            return "redirect";
+        case StanzaErrorRegistrationRequired:
+            return "registration-required";
+        case StanzaErrorRemoteServerNotFound:
+            return "remote-server-not-found";
+        case StanzaErrorRemoteServerTimeout:
+            return "remote-server-timeout";
+        case StanzaErrorResourceConstraint:
+            return "resource-contraint";
+        case StanzaErrorServiceUnavailable:
+            return "service-unavailable";
+        case StanzaErrorSubscribtionRequired:
+            return "subscription-required";
+        case StanzaErrorUndefinedCondition:
+            return "undefined-condition";
+        case StanzaErrorUnexpectedRequest:
+            return "unexpected-request";
+        default:
+            return "unhandled";
+    }
+}
+
 
