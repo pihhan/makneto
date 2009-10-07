@@ -2,7 +2,7 @@
 
 #include "versionhandler.h"
 
-#define XMLNS_VERSION2 "jabber:iq:version"
+#define XMLNS_VERSION1 "jabber:iq:version"
 
 using namespace gloox;
 
@@ -47,7 +47,7 @@ std::string VersionReceiver::getVerOs(Stanza *stanza)
 VersionIqHandler::VersionIqHandler(ClientBase *base)
     : m_base(base)
 {
-
+    m_base->registerIqHandler(this, XMLNS_VERSION1);
 }
 
 bool VersionIqHandler::handleIq(Stanza *stanza)
@@ -62,12 +62,14 @@ bool VersionIqHandler::handleIq(Stanza *stanza)
             break;
         case StanzaIqError:
         case StanzaIqResult:
-            rcvr = m_contexts(0);
+            rcvr = m_contexts.at(0);
             if (rcvr) {
                 rcvr->handleVersion(stanza, 0);
                 return true;
             }
             break;
+	default:
+	    return false;
     }
     return false;
 }
@@ -84,12 +86,14 @@ bool VersionIqHandler::handleIqID(Stanza *stanza, int context)
             break;
         case StanzaIqError:
         case StanzaIqResult:
-            rcvr = m_contexts(context);
+            rcvr = m_contexts.at(context);
             if (rcvr) {
                 rcvr->handleVersion(stanza, context);
                 return true;
             }
             break;
+	default:
+	  return false;
     }
     return false;
 }
@@ -97,7 +101,7 @@ bool VersionIqHandler::handleIqID(Stanza *stanza, int context)
 void VersionIqHandler::requestVersion(const gloox::JID &target, VersionReceiver *rcvr, int context)
 {
     if ((size_t) context > m_contexts.capacity()) {
-        m_cotexts.resize(context, NULL);
+        m_contexts.resize(context+1	, NULL);
     }
     m_contexts.at(context) = rcvr;
 
@@ -117,7 +121,7 @@ void VersionIqHandler::replyVersion(const gloox::Stanza *stanza)
     new Tag(query, "version", m_version);
     if (!m_os.empty())
         new Tag(query, "os", m_os);
-    stanza->finalize();
+    reply->finalize();
     m_base->send(reply);
 }
 

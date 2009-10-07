@@ -13,12 +13,13 @@
     real handling method. */
 class VersionReceiver
 {
+    public:
     VersionReceiver();
 
-    virtual void handleVersion(Stanza *stanza, int context)=0;
-    std::string getVerName(Stanza *stanza);
-    std::string getVerNumber(Stanza *stanza);
-    std::string getVerOs(Stanza *stanza);
+    virtual void handleVersion(gloox::Stanza *stanza, int context)=0;
+    std::string getVerName(gloox::Stanza *stanza);
+    std::string getVerNumber(gloox::Stanza *stanza);
+    std::string getVerOs(gloox::Stanza *stanza);
 };
 
 /** @brief Class handling responses or requests to us. */
@@ -27,7 +28,7 @@ class VersionIqHandler : public gloox::IqHandler
     public:
     typedef std::vector<VersionReceiver *>  VersionContextVector;
 
-    VersionIqHandler(ClientBase *base);
+    VersionIqHandler(gloox::ClientBase *base);
 
 
     virtual bool handleIq(gloox::Stanza *stanza);
@@ -38,10 +39,10 @@ class VersionIqHandler : public gloox::IqHandler
     void setVersion(const std::string &version, const std::string &name, const std::string &os);
 
     protected:
-    void replyVersion(Stanza *stanza);
+    void replyVersion(const gloox::Stanza *stanza);
 
     private:
-    gloox::ClientBase  *m_client;
+    gloox::ClientBase  *m_base;
     VersionContextVector m_contexts;
     std::string         m_version;
     std::string         m_name;

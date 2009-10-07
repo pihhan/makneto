@@ -11,6 +11,8 @@
 #include <gloox/adhochandler.h>
 #include <gloox/adhoccommandprovider.h>
 
+#include "versionhandler.h"
+
 namespace gloox {
     class EchoClient;
 }
@@ -36,7 +38,8 @@ class Request
 };
 
 class RequestList : public gloox::DiscoHandler, 
-        public gloox::AdhocCommandProvider
+        public gloox::AdhocCommandProvider,
+		public VersionReceiver
 {
     public:
     typedef std::vector<Request> RequestVector;
@@ -58,8 +61,12 @@ class RequestList : public gloox::DiscoHandler,
     void createDiscoRequest(gloox::JID origin, gloox::JID target, const std::string &node = std::string());
     void createVersionRequest(gloox::JID origin, gloox::JID target);
 
+	virtual void handleVersion(gloox::Stanza *stanza, int context);
+
+
     protected:
     void addRequest(Request r);
+	void removeRequest(Request r);
 
     private:
     gloox::EchoClient *m_client;

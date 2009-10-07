@@ -99,7 +99,8 @@ void RequestList::handleDiscoError(Stanza *stanza, int context)
     CL_DEBUG(m_client->client(), "Disco error occured from " + stanza->from());
     if (r.type == Request::DISCO_ITEMS || r.type == Request::DISCO_INFO) {
         std::string desc("Disco error from ");
-        desc.append(stanza->from() + ": " + stanza->errorText());
+        desc.append(stanza->from() + ": " );
+		desc.append(EchoClient::describeError(stanza));
         m_client->sendChatMessage(r.from, desc);
     }
 }
@@ -139,11 +140,34 @@ void RequestList::createVersionRequest(gloox::JID origin, gloox::JID target)
     r.from = origin;
     r.to = target;
     addRequest(r);
+	m_client->versionHandler()->requestVersion(target, this, r.context);
+}
+
+void RequestList::handleVersion(gloox::Stanza *stanza, int context)
+{
+	Request r = getRequest(context);
+	if (r.type == Request::VERSION) {
+		if (stanza->subtype() == StanzaIqResult) {
+			std::string name = getVerName(stanza);
+			std::string version = getVerNumber(stanza);
+			std::string os = getVerOs(stanza);
+			std::string reply = "Name: " + name + " Version: " + version + " OS: "+ os;
+			m_client->sendChatMessage(r.from, reply);
+		} else if (stanza->subtype() == StanzaIqError) {
+			std::string reply = EchoClient::describeError(stanza);
+			m_client->sendChatMessage(r.from, reply);
+		}
+	}
 }
 
 void RequestList::addRequest(Request r)
 {
     m_requests[r.context] = r;
+}
+
+void RequestList::removeRequest(Request r)
+{
+	m_requests[r.context] = Request();
 }
 
 void RequestList::handleAdhocCommand(const std::string &command, Tag *tag, const gloox::JID &from, const std::string &id)

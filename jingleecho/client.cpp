@@ -4,6 +4,7 @@
 #include <gloox/jid.h>
 #include <gloox/disco.h>
 #include <gloox/rostermanager.h>
+#include <gloox/dns.h>
 
 #include "client.h"
 #include "logger.h"
@@ -30,6 +31,7 @@ EchoClient::EchoClient(const std::string &jid, const std::string &password)
     m_client->setPresence(PresenceChat, 5, "bot ready to ping-pong with you");
 
     m_requests = new RequestList(this);
+    m_verhandler = new VersionIqHandler(m_client);
 }
 
 void EchoClient::initLog()
@@ -91,6 +93,40 @@ Stanza * EchoClient::bounceMessage(Stanza *stanza)
     return reply;
 }
 
+#ifdef DNS_RESOLVER
+/** @brief Create string of host:port pairs that resolved from domain.
+	@param domain DNS name to resolve.
+	@param service Name of service for SRV lookup. If empty, only hostname is resolved. For example, "_xmpp-server"
+	@param proto Protocol on which to lookup service. Only used if service is not empty.
+	FIXME: DNS class is not present in this package
+*/
+std::string EchoClient::resolveToString(const std::string &domain, const std::string &service, std::string &proto)
+{
+			std::string reply;
+			bool first = true;
+			DNS::HostMap map;
+			if (service.empty()) 
+				map = DNS::resolve(domain, m_client->client()->logInstance());
+			else
+				map = DNS::resolve(service, proto, domain, m_client->client()->logInstance());
+			
+			if (map.size() == 0) {
+				reply.append("(none)");
+			} else {
+				for (HostMap::iterator it = map.begin(); it != map.end(); it++) {
+					if (!first)
+						reply.append(", ");
+					first = false;
+					std::string hostport(it->first);
+					if (!service.empty())
+						hostport << ":" << it->second;
+					reply.append(hostport);
+				}
+			}
+			return reply;
+}
+#endif
+
 void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 {
     std::string body = stanza->body();
@@ -120,6 +156,33 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
             } else {
                 m_requests->createDiscoRequest(stanza->from(), target);
             }
+		} else if (cmd == "ver" || cmd == "version") {
+			JID target(stanza->from());
+			if (!param.empty())
+				target = JID(param);
+			if (!target) {
+				sendChatMessage(stanza->from(), "target is not valid jid: " + param);
+				return;
+			} else {
+				m_requests->createVersionRequest(stanza->from(), target);
+			}
+#ifdef DNS_RESOVLER
+		} else if (cmd == "dns") {
+			if (param.empty()) {
+				sendChatMessage(stanza->from(), "you have to specify name to resolve");
+				return;
+			}
+			std::string reply;
+			reply.append("XMPP server: ");
+			reply.append(resolveToString(param, "_xmpp-server", "_tcp");
+			reply.append("\n");
+			reply.append("XMPP client: ");
+			reply.append(resolveToString(param, "_xmpp-client", "_tcp");
+			reply.append("\n");
+			reply.append("Hostname: ");
+			reply.append(resolveToString(param);
+			m_client->sendChatMessage(stanza->from(), reply);
+#endif				
         } else {
             while (!p.atEnd()) {
                 parser::Token t = p.nextToken();
@@ -270,4 +333,19 @@ std::string EchoClient::stanzaErrorToString(StanzaError e)
     }
 }
 
+/** @brief Create description of error from stanza */
+std::string EchoClient::describeError(const Stanza *stanza)
+{
+	std::string description;
+	description = stanzaErrorToString(stanza->error());
+	if (!stanza->errorText().empty()) {
+		description.append(": " + stanza->errorText().empty());
+	}
+	return description;
+}
+
+VersionIqHandler *EchoClient::versionHandler()
+{
+	return m_verhandler;
+}
 

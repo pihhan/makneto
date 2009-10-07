@@ -12,6 +12,7 @@
 #include <gloox/stanza.h>
 
 #include "requests.h"
+#include "versionhandler.h"
 
 namespace gloox {
 
@@ -36,17 +37,25 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
     static std::string connErrorToString(ConnectionError e);  
     static std::string authErrorToString(AuthenticationError e);
     static std::string stanzaErrorToString(StanzaError e);
+	
+	/** @brief Create text description of error from received stanza. */
+	static std::string describeError(const Stanza *stanza);
 
     std::string authError();
 
     void sendChatMessage(const JID &to, const std::string &message);
+	std::string resolveToString(const std::string &domain, const std::string &service = "", std::string &proto="_tcp");
+
 
     Client  *client() { return m_client; }
+
+	VersionIqHandler *versionHandler();
 
     private:
     Client  *m_client;
     JID     m_jid;
     RequestList *m_requests;
+    VersionIqHandler *m_verhandler;
     
 };
 
