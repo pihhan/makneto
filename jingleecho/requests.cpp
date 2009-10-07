@@ -182,7 +182,7 @@ void RequestList::handleAdhocCommand(const std::string &command, Tag *tag, const
 
 
 Request::Request()
-    : context(0), type(NONE)
+    : context(0), type(NONE), data(0)
 {
 }
 

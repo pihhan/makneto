@@ -17,9 +17,10 @@ class VersionReceiver
     VersionReceiver();
 
     virtual void handleVersion(gloox::Stanza *stanza, int context)=0;
-    std::string getVerName(gloox::Stanza *stanza);
-    std::string getVerNumber(gloox::Stanza *stanza);
-    std::string getVerOs(gloox::Stanza *stanza);
+
+    static std::string getVerName(gloox::Stanza *stanza);
+    static std::string getVerNumber(gloox::Stanza *stanza);
+    static std::string getVerOs(gloox::Stanza *stanza);
 };
 
 /** @brief Class handling responses or requests to us. */

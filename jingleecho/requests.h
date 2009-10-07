@@ -35,6 +35,7 @@ class Request
     gloox::JID  to;
     int         context;
     RequestType type;
+	void *		data;
 };
 
 class RequestList : public gloox::DiscoHandler, 

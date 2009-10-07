@@ -15,6 +15,10 @@ see http://xmpp.org/extensions/xep-0166.html
 #include <gloox/stanza.h>
 #include <gloox/jid.h>
 
+#define XMLNS_JINGLE		"urn:xmpp:jingle:1"
+#define XMLNS_JINGLE_ICE	"urn:xmpp:jingle:transports:ice-udp:1"
+
+
 class JingleContentDescription
 {
     public:
@@ -24,8 +28,9 @@ class JingleContentDescription
 
 /** Class describing one RTP payload for session negotiation.
     @see http://xmpp.org/extensions/xep-0167.html
+	It describes one format the client is able to handle for RTP session
     */
-class JingleRTPPayload
+class JingleRtpPayload
 {
     public:
     int             channels; ///!< recommended
@@ -34,24 +39,27 @@ class JingleRTPPayload
     unsigned int    maxptime; ///!< optional
     std::string     name; ///!< recommended for static, required for dynamic
     unsigned int    ptime; ///!< optional
+	
+	void parse(const gloox::Tag *tag);
 
 };
 
-class JingleRTPContentDescription : public JingleContentDescription
+class JingleRtpContentDescription : public JingleContentDescription
 {
     public:
 
-    typedef std::list<JingleRTPPayload> PayloadList;
+    typedef std::list<JingleRtpPayload> PayloadList;
+	
+	void addPayload(JingleRtpPayload &payload) { payloads.push_back(payload); }
+	
+	virtual void parse(const gloox::Tag *tag);
 
     PayloadList payloads;
+	std::string	m_xmlns;
+	std::string m_media;
 };
 
-
-
-/** @brief Representation of one candidate for raw-UDP transport.
-@see http://xmpp.org/extensions/xep-0177.html
-*/
-class JingleUdpCandidate
+class JingleCandidate
 {
     public:
     typedef enum { 
@@ -59,6 +67,8 @@ class JingleUdpCandidate
         NAT_SYMMETRIC,
         NAT_PERMISSIVE
     } NatType;
+	
+	virtual void parse(const gloox::Tag *tag)
 
     int             component;
     std::string     ip;
@@ -68,19 +78,31 @@ class JingleUdpCandidate
     NatType         natType;
 };
 
+/** @brief Representation of one candidate for raw-UDP transport.
+@see http://xmpp.org/extensions/xep-0177.html
+*/
+class JingleUdpCandidate : public JingleCandidate
+{
+    public:
+
+};
+
 /** @brief Representation of one candidate for ICE transport.
 @see http://xmpp.org/extensions/xep-0176.html
+ Only ICE specific things are added.
 */
-
-class JingleIceCandidate
+class JingleIceCandidate : public JingleCandidate
 {
-    int     component;
-    int     generation;
+	typedef enum {
+		PR_UNSPECIFIED = 0,
+		PR_UDP,
+		PR_TCP
+	} Protocols;
+	
+	virtual void parse(const gloox::Tag *tag);
+	
     int     foundation;
-    std::string id;
-    std::string ip;
     int     network;
-    unsigned int    port;
     int     priority;
     std::string     protocol;
     std::string     type;
@@ -89,16 +111,42 @@ class JingleIceCandidate
     std::string     relPort;
 };
 
-
-class JingleContentTransport
+/** @brief One Transport representation with its candidates. */
+class JingleTransport
 {
     public:
+		typedef std::list<JingleCandidate *>	CandidateList;
+		
+		/** @brief Get list of IPs this machine has. */
+		CandidateList localUdpCandidates();
+		
+		virtual void parse(const gloox::Tag *tag);
+		void addCandidate(JingleCandidate *c);
+		
     std::string xmlns;
     std::string pwd;
     std::string ufrag;
-
+	CandidateList	candidates;
 };
 
+/** @brief One stream of specified type, audio or video or something like it. */
+class JingleContent
+{
+    public:
+		
+		JingleContentTransport m_transport;
+		JingleRtpContentDescription m_description;
+		
+		void parse(const gloox::Tag *tag);
+
+    //private:
+    std::string m_xmlns;
+    std::string m_name;
+    std::string m_media;
+    std::string m_creator;
+};
+
+/** @brief One whole jingle session, ie. one audio/video call maybe. */
 class JingleSession
 {
     public:
@@ -109,23 +157,22 @@ class JingleSession
         JSTATE_ACTIVE, // after session-accept
         JSTATE_TERMINATED, // after session-terminate
     } SessionState;
+	typedef enum {
+		ACTION_INITIATE,
+		ACTION_ACCEPT,
+		ACTION_TERMINATE
+	} SessionAction;
+	typedef std::list<JingleContent *>	ContentList;
+	
+	
 
     JingleSession();
+	
+	void parse(const gloox::Stanza *staza);
 
-    private:
+	ContentList	m_contents;
     gloox::JID  m_initiator;
     std::string m_sid;
-};
-
-class JingleContent
-{
-    public:
-
-    private:
-    std::string m_xmlns;
-    std::string m_name;
-    std::string m_media;
-    std::string m_creator;
 };
 
 #endif
