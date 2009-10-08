@@ -62,19 +62,20 @@ int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
     int c;
 
     initAddressArray(&arr);
-    memset(&addr, sizeof(addr), 0);
-    addr.sin6_family = AF_INET6;
 
     proc = fopen(PROC_IP6_PATH, "r");
     if (!proc)
         return 0;
 
     do {
+    memset(&addr, 0, sizeof(addr));
+    addr.sin6_family = AF_INET6;
 
     for (i = 0; i<16; ++i) {
         unsigned int x;
         if (fscanf(proc, "%02x", &x) <= 0) {
             if (i==0) {
+                fclose(proc);
                 if (array)
                     *array = arr;
                 return 1;
@@ -113,6 +114,7 @@ int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
     } while (!feof(proc));
 
     fclose(proc);
+    if (array)
     *array = arr;
     return 1;
 }

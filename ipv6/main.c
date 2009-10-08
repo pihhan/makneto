@@ -7,18 +7,26 @@ char **list = NULL;
 int main(int argc, char *argv[])
 {
     const char *dev = "eth0";
+    const char *dev2 = "wlan0";
     char **it;
     printf("Vystup pro %s:\n", dev);
     list = getIpv6AddressList(dev);
+    for (it = list; it && *it; it++) {
+        printf("Zarizeni %s ma IPv6 adresu: %s\n", dev, *it);
+    }
 
     if (!list) {
         fprintf(stderr, "Pro zarizeni %s byl vracen prazdny list\n", dev);
         return 1;
     }
+
+    printf("Vystup pro %s:\n", dev2);
+    list = getIpv6AddressList(dev2);
     for (it = list; it && *it; it++) {
         printf("Zarizeni %s ma IPv6 adresu: %s\n", dev, *it);
     }
 
+    printf("Vystup vsech adres:\n");
     list = getIpv6AddressList(NULL);
     if (!list) {
         fprintf(stderr, "Pro vsechna zarizeni byl vracen prazdny list!\n");
