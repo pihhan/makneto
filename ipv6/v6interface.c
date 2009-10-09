@@ -280,6 +280,8 @@ char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Sc
         char name[MAX_HOST_LEN];
 
         for (it = addrlist; it; it = it->ifa_next) {
+            if (!it->ifa_addr)
+                continue;
             if ((v6AFtoBits(it->ifa_addr->sa_family) & families)
                 && (v6AddressScope(it->ifa_addr) & scopes)
                 && (!interface || !strcmp(interface, it->ifa_name))) 
@@ -289,6 +291,8 @@ char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Sc
 
         name[0] = '\0';
         for (it = addrlist, i = 0; it; it = it->ifa_next) {
+            if (!it->ifa_addr)
+                continue;
             if ((v6AFtoBits(it->ifa_addr->sa_family) & families)
                 && (v6AddressScope(it->ifa_addr) & scopes)
                 && (!interface || !strcmp(interface,it->ifa_name)) ) {
