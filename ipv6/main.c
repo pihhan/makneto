@@ -4,6 +4,16 @@
 
 char **list = NULL;
 
+void print_list(char ** list, const char *caption)
+{
+    char **it;
+    if (caption)
+        printf("%s\n", caption);
+    for (it = list; it && *it; it++) {
+        printf("%s\n", *it);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     const char *dev = "eth0";
@@ -35,6 +45,18 @@ int main(int argc, char *argv[])
     for (it = list; it && *it; it++) {
         printf("Adresa %s\n", *it);
     }
+
+    printf("Vystup vsech pres getifaddrs()\n");
+    list = getIpv6AddressList2(NULL);
+    for (it = list; it && *it; it++) {
+        printf("Adresa2: %s\n", *it);
+    }
+
+    list = getAddressList(NULL, AFB_ANY, SCOPE_GLOBAL);
+    print_list(list, "Globalni adresy.");
+
+    list = getAddressList(NULL, AFB_ANY, SCOPE_HOST);
+    print_list(list, "Lokalni adresy.");
 
     return 0;
 }
