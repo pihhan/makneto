@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <netdb.h>
+#include <stdbool.h>
+
+#include <arpa/inet.h>
+#include <ifaddrs.h>
 
 #include "v6interface.h"
 
@@ -48,6 +52,9 @@ size_t addAddressToList(Ipv6AddressArray *list, struct sockaddr_in6 addr)
 
 /** @brief Return array of found addresses.
     @interface  name of interface to list addresses from, or NULL, in that case, all addresses are returned. 
+
+    NOTE: this reads addresses from Linux specific file, it is not
+    expected to work on other POSIX systems or any other than linux.
 */
 int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
 {
@@ -62,19 +69,20 @@ int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
     int c;
 
     initAddressArray(&arr);
-    memset(&addr, sizeof(addr), 0);
-    addr.sin6_family = AF_INET6;
 
     proc = fopen(PROC_IP6_PATH, "r");
     if (!proc)
         return 0;
 
     do {
+    memset(&addr, 0, sizeof(addr));
+    addr.sin6_family = AF_INET6;
 
     for (i = 0; i<16; ++i) {
         unsigned int x;
         if (fscanf(proc, "%02x", &x) <= 0) {
             if (i==0) {
+                fclose(proc);
                 if (array)
                     *array = arr;
                 return 1;
@@ -113,6 +121,7 @@ int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
     } while (!feof(proc));
 
     fclose(proc);
+    if (array)
     *array = arr;
     return 1;
 }
@@ -150,4 +159,166 @@ char ** getIpv6AddressList(const char *interface)
     return list;
 }
 
+/** @brief Get list of addresses in BSD compatible way.
+    @return list of address strings, or NULL on error.
+*/
+char ** getIpv6AddressList2(const char *interface)
+{
+    struct ifaddrs *addrlist;
+    char ** stringlist;
+
+    if (getifaddrs(&addrlist)==0) {
+        size_t count = 0;
+        struct ifaddrs *it=NULL;
+        int i;
+        char name[MAX_HOST_LEN];
+
+        for (it = addrlist; it; it = it->ifa_next) {
+            if (it->ifa_addr->sa_family == AF_INET6) 
+                ++count;
+        }
+        stringlist = malloc(sizeof(char *) * (count + 1));
+
+        name[0] = '\0';
+        for (it = addrlist, i = 0; it; it = it->ifa_next) {
+            if (it->ifa_addr->sa_family == AF_INET6) {
+                if (getnameinfo(it->ifa_addr, 
+                        sizeof(struct sockaddr_in6),
+                        name, MAX_HOST_LEN, NULL, 0, NI_NUMERICHOST)==0) 
+                {
+                    char *s;
+                    s = malloc(strlen(name)+1);
+                    if (!s) {
+                        freeifaddrs(addrlist);
+                        free(stringlist);
+                        return NULL;
+                    }
+                    strcpy(s, name);
+                    stringlist[i++] = s;
+                } else {
+                    freeifaddrs(addrlist);
+                    free(stringlist);
+                    return NULL;
+                }
+            }
+        }
+        stringlist[i] = NULL;
+        freeifaddrs(addrlist);
+
+        return stringlist;
+    } else {
+        return NULL;
+    }
+}
+
+AddressFamilyBits v6AFtoBits(unsigned char af)
+{
+    switch (af) {
+        case AF_INET:   return AFB_INET;
+        case AF_INET6:  return AFB_INET6;
+        default:        return AFB_NONE;
+    }
+}
+
+Ipv6Scope v6AddressScope(struct sockaddr *addr)
+{
+    if (addr->sa_family == AF_INET) {
+        struct sockaddr_in *a = (struct sockaddr_in *) addr;
+
+        if (a->sin_addr.s_addr == htonl(INADDR_LOOPBACK)) {
+            return SCOPE_HOST;
+        } else if ((a->sin_addr.s_addr & 0xFFFF0000) == (0xA9FE0000)) {
+            // host lies in 169.254.x.y network
+            return SCOPE_LINK;
+        } else
+            return SCOPE_GLOBAL;
+    } else if (addr->sa_family == AF_INET6) {
+        struct sockaddr_in6 *a = (struct sockaddr_in6 *) addr;
+        if ((a->sin6_addr.s6_addr[0] & 0xFE)==0xFE 
+            && (a->sin6_addr.s6_addr[1] & 0xC0)==0x80) {
+            return SCOPE_LINK;
+        } else if ((a->sin6_addr.s6_addr[0] & 0xFE)==0xFE 
+            && (a->sin6_addr.s6_addr[1] & 0xC0)==0xC0) {
+            return SCOPE_SITE;
+        } else {
+            bool ishost = true;
+            int i;
+            for (i=0; i<15; i++) {
+                if (a->sin6_addr.s6_addr[i] != 0) {
+                    ishost = false;
+                    break;
+                }
+            }
+            if (ishost && a->sin6_addr.s6_addr[15] == 1)
+                return SCOPE_HOST;
+            else
+                return SCOPE_GLOBAL;
+        }
+    }
+    return SCOPE_UNDEFINED;
+}
+
+/** @brief Get list of addresses, based on 
+    @param interface interface to get addresses from, or NULL for all addresses on system
+    @param families Bits of families to include in list, 0 for default
+    @param scopes Which types address to include, 0 for default
+*/
+char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Scope scopes)
+{
+    struct ifaddrs *addrlist;
+    char ** stringlist;
+
+    if (families == 0) 
+        families = AFB_ANY;
+    if (scopes == 0)
+        scopes = SCOPE_GLOBAL;
+
+    if (getifaddrs(&addrlist)==0) {
+        size_t count = 0;
+        struct ifaddrs *it=NULL;
+        int i;
+        char name[MAX_HOST_LEN];
+
+        for (it = addrlist; it; it = it->ifa_next) {
+            if ((v6AFtoBits(it->ifa_addr->sa_family) & families)
+                && (v6AddressScope(it->ifa_addr) & scopes)
+                && (!interface || !strcmp(interface, it->ifa_name))) 
+                ++count;
+        }
+        stringlist = malloc(sizeof(char *) * (count + 1));
+
+        name[0] = '\0';
+        for (it = addrlist, i = 0; it; it = it->ifa_next) {
+            if ((v6AFtoBits(it->ifa_addr->sa_family) & families)
+                && (v6AddressScope(it->ifa_addr) & scopes)
+                && (!interface || !strcmp(interface,it->ifa_name)) ) {
+                // FIXME: jak zjistovat velikost adresy pro neznamy AF?
+                if (getnameinfo(it->ifa_addr, 
+                        sizeof(struct sockaddr_in6),
+                        name, MAX_HOST_LEN, NULL, 0, NI_NUMERICHOST)==0) 
+                {
+                    char *s;
+                    s = malloc(strlen(name)+1);
+                    if (!s) {
+                        freeifaddrs(addrlist);
+                        free(stringlist);
+                        return NULL;
+                    }
+                    strcpy(s, name);
+                    stringlist[i++] = s;
+                } else {
+                    freeifaddrs(addrlist);
+                    free(stringlist);
+                    return NULL;
+                }
+            }
+        }
+        stringlist[i] = NULL;
+        freeifaddrs(addrlist);
+
+        return stringlist;
+    } else {
+        return NULL;
+    }
+}
 
