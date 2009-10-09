@@ -174,13 +174,15 @@ char ** getIpv6AddressList2(const char *interface)
         char name[MAX_HOST_LEN];
 
         for (it = addrlist; it; it = it->ifa_next) {
-            if (it->ifa_addr->sa_family == AF_INET6) 
+            if (it->ifa_addr && it->ifa_addr->sa_family == AF_INET6) 
                 ++count;
         }
         stringlist = malloc(sizeof(char *) * (count + 1));
 
         name[0] = '\0';
         for (it = addrlist, i = 0; it; it = it->ifa_next) {
+            if (!it->ifa_addr)
+                continue;
             if (it->ifa_addr->sa_family == AF_INET6) {
                 if (getnameinfo(it->ifa_addr, 
                         sizeof(struct sockaddr_in6),
