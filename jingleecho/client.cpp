@@ -4,7 +4,9 @@
 #include <gloox/jid.h>
 #include <gloox/disco.h>
 #include <gloox/rostermanager.h>
+#ifdef DNS_RESOLVER
 #include <gloox/dns.h>
+#endif
 
 #include "client.h"
 #include "logger.h"

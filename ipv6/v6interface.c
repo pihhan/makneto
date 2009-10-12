@@ -328,3 +328,16 @@ char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Sc
     }
 }
 
+void v6Destroylist(char **list)
+{
+    char **it;
+
+    if (!list)
+        return;
+
+    for(it=list; it && *it; it++) {
+        free(*it);
+    }
+    free(list);
+}
+

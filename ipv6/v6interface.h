@@ -37,6 +37,9 @@ char ** getIpv6AddressList(const char *interface);
 char ** getIpv6AddressList2(const char *interface);
 
 char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Scope scopes);
+AddressFamilyBits v6AFtoBits(unsigned char af);
+Ipv6Scope v6AddressScope(struct sockaddr *addr);
+void v6Destroylist(char **list);
 
 #endif
 

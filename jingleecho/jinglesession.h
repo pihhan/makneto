@@ -14,6 +14,8 @@ see http://xmpp.org/extensions/xep-0166.html
 #include <gloox/gloox.h>
 #include <gloox/stanza.h>
 #include <gloox/jid.h>
+#include <gloox/clientbase.h>
+#include <gloox/client.h>
 
 #define XMLNS_JINGLE		"urn:xmpp:jingle:1"
 #define XMLNS_JINGLE_ICE	"urn:xmpp:jingle:transports:ice-udp:1"
@@ -33,14 +35,18 @@ class JingleContentDescription
 class JingleRtpPayload
 {
     public:
-    int             channels; ///!< recommended
-    unsigned int    clockrate; ///!< recommended
+		JingleRtpPayload(unsigned char id, const std::string &name, clockrate=8000, channels=1);
+		
     unsigned char   id; ///<! required
-    unsigned int    maxptime; ///!< optional
     std::string     name; ///!< recommended for static, required for dynamic
+    unsigned int    clockrate; ///!< recommended
+    int             channels; ///!< recommended
+    unsigned int    maxptime; ///!< optional
     unsigned int    ptime; ///!< optional
 	
 	void parse(const gloox::Tag *tag);
+	
+	gloox::Tag *tag();
 
 };
 
@@ -68,7 +74,8 @@ class JingleCandidate
         NAT_PERMISSIVE
     } NatType;
 	
-	virtual void parse(const gloox::Tag *tag)
+	virtual void parse(const gloox::Tag *tag);
+	virtual gloox::Tag *tag();
 
     int             component;
     std::string     ip;
@@ -117,8 +124,6 @@ class JingleTransport
     public:
 		typedef std::list<JingleCandidate *>	CandidateList;
 		
-		/** @brief Get list of IPs this machine has. */
-		CandidateList localUdpCandidates();
 		
 		virtual void parse(const gloox::Tag *tag);
 		void addCandidate(JingleCandidate *c);
@@ -137,7 +142,11 @@ class JingleContent
 		JingleContentTransport m_transport;
 		JingleRtpContentDescription m_description;
 		
+		JingleContent();
+		JingleContent(JingleContentTransport &transport, JingleRtpContentDescription &description);
+		
 		void parse(const gloox::Tag *tag);
+		gloox::Tag *tag();
 
     //private:
     std::string m_xmlns;
@@ -158,6 +167,7 @@ class JingleSession
         JSTATE_TERMINATED, // after session-terminate
     } SessionState;
 	typedef enum {
+		ACTION_NONE = 0,
 		ACTION_INITIATE,
 		ACTION_ACCEPT,
 		ACTION_TERMINATE
@@ -166,13 +176,33 @@ class JingleSession
 	
 	
 
-    JingleSession();
+    JingleSession(gloox::ClientBase *base);
 	
 	void parse(const gloox::Stanza *staza);
-
+	
+	unsigned int randomPort();
+	std::string	randomId();
+	
+	/** @brief Get list of IPs this machine has. */
+	JingleTransport::CandidateList					localUdpCandidates();
+	JingleTransport					localTransport();
+	
+	JingleRtpContentDescription		audioDescription();
+	
+	int initiateAudioSession(const gloox::JID &from, const gloox::JID &to);
+	void addContent(const JingleContent &content);
+	
+	/** @brief Get jingle tag for query. */
+	gloox::Tag *tag(SessionAction action = ACTION_INITIATE);
+		
+		
 	ContentList	m_contents;
     gloox::JID  m_initiator;
+	gloox::JID	m_target;
     std::string m_sid;
+	gloox::ClientBase	*m_client;
+	SessionState		m_state;
+	unsigned int		m_seed;
 };
 
 #endif

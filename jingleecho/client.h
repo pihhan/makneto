@@ -44,7 +44,9 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
     std::string authError();
 
     void sendChatMessage(const JID &to, const std::string &message);
-	std::string resolveToString(const std::string &domain, const std::string &service = "", std::string &proto="_tcp");
+#ifdef DNS_RESOLVE
+	std::string resolveToString(const std::string &domain, const std::string &service = "", const std::string &proto="_tcp");
+#endif
 
 
     Client  *client() { return m_client; }
