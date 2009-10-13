@@ -138,6 +138,17 @@ class JingleTransport
 class JingleContent
 {
     public:
+		typedef enum {
+			SENDER_NONE = 0,
+			SENDER_INITIATOR,
+			SENDER_RESPONDER,
+			SENDER_BOTH
+		} Senders; /// what side will produce some data
+		
+		typedef enum {
+			CREATOR_INITIATOR,
+			CREATOR_RESPONDER
+		} Creator;
 		
 		JingleContentTransport m_transport;
 		JingleRtpContentDescription m_description;
@@ -152,7 +163,8 @@ class JingleContent
     std::string m_xmlns;
     std::string m_name;
     std::string m_media;
-    std::string m_creator;
+    std::string m_creator; // 
+	std::string m_disposition; // what type of content is inside
 };
 
 /** @brief One whole jingle session, ie. one audio/video call maybe. */
@@ -170,15 +182,47 @@ class JingleSession
 		ACTION_NONE = 0,
 		ACTION_INITIATE,
 		ACTION_ACCEPT,
-		ACTION_TERMINATE
+		ACTION_TERMINATE,
+		ACTION_INFO,
+		ACTION_CONTENT_ADD,
+		ACTION_CONTENT_MODIFY,
+		ACTION_CONTENT_ACCEPT,
+		ACTION_CONTENT_REMOVE,
+		ACTION_CONTENT_REJECT,
+		ACTION_DESCRIPTION_INFO,
+		ACTION_SECURITY_INFO,
+		ACTION_TRANSPORT_ACCEPT,
+		ACTION_TRANSPORT_REJECT,
+		ACTION_TRANSPORT_INFO,
+		ACTION_TRANSPORT_REPLACE
 	} SessionAction;
+	
+	typedef enum {
+		REASON_UNDEFINED = 0,
+		REASON_ALTERNATIVE_SESSION,
+		REASON_BUSY,
+		REASON_CANCEL,
+		REASON_CONECTIVITY_ERROR,
+		REASON_DECLINE,
+		REASON_EXPIRED,
+		REASON_FAILED_APPLICATION,
+		REASON_FAILED_TRANSPORT,
+		REASON_GENERAL_ERROR,
+		REASON_GONE,
+		REASON_INCOMPATIBLE_PARAMETERS,
+		REASON_MEDIA_ERROR,
+		REASON_SECURITY_ERROR,
+		REASON_SUCCESS,
+		REASON_UNSUPPORTED_APPLICATIONS,
+		REASON_UNSUPPORTED_TRANSPORTS
+	} SessionReason;
 	typedef std::list<JingleContent *>	ContentList;
 	
 	
 
     JingleSession(gloox::ClientBase *base);
 	
-	void parse(const gloox::Stanza *staza);
+	void parse(const gloox::Stanza *staza, bool remote=false);
 	
 	unsigned int randomPort();
 	std::string	randomId();
@@ -191,18 +235,32 @@ class JingleSession
 	
 	int initiateAudioSession(const gloox::JID &from, const gloox::JID &to);
 	void addContent(const JingleContent &content);
+	void addRemoteContent(const JingleConent &content);
 	
 	/** @brief Get jingle tag for query. */
 	gloox::Tag *tag(SessionAction action = ACTION_INITIATE);
-		
+	
+	std::string sid() { return m_sid; }
+	SessionAction	action() 	{ return m_lastaction; }
+	
+	void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
+	bool mergeSession(JingleSession *session);
 		
 	ContentList	m_contents;
+	ContentList m_remote_contents;
     gloox::JID  m_initiator;
 	gloox::JID	m_target;
+	gloox::JID	m_responder;
     std::string m_sid;
 	gloox::ClientBase	*m_client;
 	SessionState		m_state;
 	unsigned int		m_seed;
+	SessionAction		m_lastaction;
+	bool				m_acknowledged; ///!< Whether we received acknowledge of last action from remote party. 
+	
+	protected:
+		static SessionAction actionFromString(const std::string &action);
+		static SessionReason reasonFromString(const std::string &reason);
 };
 
 #endif

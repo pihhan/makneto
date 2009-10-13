@@ -28,20 +28,37 @@ std::string JingleSession::randomId()
 	return m_client->getID();
 }
 
-void JingleSession::parse(const Stanza *stanza)
+void JingleSession::parse(const Stanza *stanza, bool remote)
 {
 	Tag *jingle = stanza->findChild("jingle");
 	if (!jingle)
 		return;
 	m_sid = jingle->findAttribute("sid");
 	m_initiator = jingle->findAttribute("initiator");
+	m_responder = jingle->findAttribute("responder");
 	std::string action = jingle->findAttribute("action");
-	Tag::TagList contents = jingke->findChildren("content");
+	m_lastaction = actionFromString(action);
+	Tag::TagList contents = jingle->findChildren("content");
 	
 	for (Tag::TagList::iterator it=contents.begin(); it!=contents.end(); it++) {
 		JingleContent *content = new JingleContent();
 		content->parse(*it);
+		if (remote) 
+			addRemoteContent(content);
+		else
+			addContent(content);
 	}
+}
+
+void JingleSession::setJids(const JID &initiator, const JID &receiver)
+{
+	m_initiator = initiator;
+	m_receiver = receiver;
+}
+
+void JingleSession::addRemoteContent(const JingleContent &content)
+{
+	m_remote_content.push_back(content);
 }
 
 void JingleContent::parse(const Tag *tag)
@@ -298,6 +315,61 @@ int JingleSession::initiateAudioSession(const JID &from, const JID &to)
 	m_target = to;
 	m_state = JSTATE_PENDING;
 	m_sid = randomId();
+	addContent(content);	
 	return 1;
 }
 
+int JingleSession::acceptAudioSession(JingleSession *session)
+{
+	JingleContent content( localTransport(), audioDescription() );
+	m_initiator = from;
+	m_target = to;
+	m_state = JSTATE_ACTIVE;
+	m_sid = randomId();
+	addContent(content);
+}
+
+SessionAction JingleSession::actionFromString(const std::string &action)
+{
+	if (action == "initiate")
+		return ACTION_INITIATE;
+	else if (action == "accept")
+		return ACTION_ACCEPT;
+	else if (action == "terminate")
+		return ACTION_TERMINATE;
+	else
+		return ACTION_NONE;
+}
+
+SessionReason JingleSession::reasonFromString(const std::string &reason)
+{
+	static const std::string[] reason_desc = { "undefined", 
+		"alternative-session", "busy", "cancel", "connectivity-error", "decline", "expired", "failed-application", "failed-transport",
+		"general-error", "gone", "incompatible-parameters", "media-error", "security-error", "success", "timeout", 
+		"unsupported-applications", "unsupported-transports"
+	};
+	
+	size_t size = sizeof(reason_desc) / sizeof(std::string);
+	for (size_t i =0; i< size; ++i) {
+		if (reason == reason_desc[i]) {
+			return ((SessionReason) i);
+		}
+	}
+	return REASON_UNDEFINED;
+}
+
+bool JingleSession::mergeSession(JingleSession *session, bool remote=true)
+{
+	if (!session)
+		return false;
+	if (m_sid != session->sid()) // session id does not match
+		return false;
+	if (session->m_responder)
+		m_responder = sesion->m_responder;
+	if (remote) {
+		if (session->action() == ACTION_ACCEPT) {
+			m_lastaction = session->action();
+			m_remote_contents = session->m_contents;
+		}
+	} 
+}
