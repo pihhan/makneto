@@ -12,6 +12,7 @@
 #include <gloox/adhoccommandprovider.h>
 
 #include "versionhandler.h"
+#include "jinglemanager.h"
 
 namespace gloox {
     class EchoClient;
@@ -26,7 +27,8 @@ class Request
         DISCO_ITEMS,
         DISCO_INFO,
         VCARD,
-        VERSION
+        VERSION,
+		JINGLE
     } RequestType;
 
     Request();
@@ -40,7 +42,8 @@ class Request
 
 class RequestList : public gloox::DiscoHandler, 
         public gloox::AdhocCommandProvider,
-		public VersionReceiver
+		public VersionReceiver,
+		public JingleActionHandler
 {
     public:
     typedef std::vector<Request> RequestVector;
@@ -63,6 +66,14 @@ class RequestList : public gloox::DiscoHandler,
     void createVersionRequest(gloox::JID origin, gloox::JID target);
 
 	virtual void handleVersion(gloox::Stanza *stanza, int context);
+	
+	/* jingle stuff */
+		JingleSession::SessionReason handleNewSession(JingleSession *session);
+		JingleSession::SessionReason handleSessionAccept(JingleSession *session, JingleSession *update);
+		JingleSession::SessionReason handleSessionChange(JingleSession *session, JingleSession *update);
+		JingleSession::SessionReason handleSessionTermination(JingleSession *sesion);
+		JingleSession::SessionReason handleSessionError(JingleSession *session, JingleSession *update);
+
 
 
     protected:

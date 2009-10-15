@@ -7,8 +7,16 @@
 
 unsigned int _jingle_seed = 0;
 
-
 using namespace gloox;
+
+
+static const std::string[] jingle_session_reason_desc = { "undefined", 
+		"alternative-session", "busy", "cancel", "connectivity-error", "decline", "expired", "failed-application", "failed-transport",
+		"general-error", "gone", "incompatible-parameters", "media-error", "security-error", "success", "timeout", 
+		"unsupported-applications", "unsupported-transports"
+	};
+
+
 
 JingleSession::JingleSession(ClientBase *base)
 	: m_client(base), m_state(STATE_NULL)
@@ -342,20 +350,23 @@ SessionAction JingleSession::actionFromString(const std::string &action)
 }
 
 SessionReason JingleSession::reasonFromString(const std::string &reason)
-{
-	static const std::string[] reason_desc = { "undefined", 
-		"alternative-session", "busy", "cancel", "connectivity-error", "decline", "expired", "failed-application", "failed-transport",
-		"general-error", "gone", "incompatible-parameters", "media-error", "security-error", "success", "timeout", 
-		"unsupported-applications", "unsupported-transports"
-	};
-	
-	size_t size = sizeof(reason_desc) / sizeof(std::string);
+{	
+	size_t size = sizeof(jingle_session_reason_desc) / sizeof(std::string);
 	for (size_t i =0; i< size; ++i) {
 		if (reason == reason_desc[i]) {
 			return ((SessionReason) i);
 		}
 	}
 	return REASON_UNDEFINED;
+}
+
+std::string JingleSession::stringFromReason(SessionReason reason)
+{
+	size_t size = sizeof(jingle_session_reason_desc) / sizeof(std::string);
+	size_t index = (size_t) reason;
+	if (index <= size) 
+		return jingle_session_reason_desc[index];
+	else return std::string();
 }
 
 bool JingleSession::mergeSession(JingleSession *session, bool remote=true)

@@ -35,7 +35,7 @@ class JingleContentDescription
 class JingleRtpPayload
 {
     public:
-		JingleRtpPayload(unsigned char id, const std::string &name, clockrate=8000, channels=1);
+		JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
 		
     unsigned char   id; ///<! required
     std::string     name; ///!< recommended for static, required for dynamic
@@ -150,11 +150,11 @@ class JingleContent
 			CREATOR_RESPONDER
 		} Creator;
 		
-		JingleContentTransport m_transport;
+		JingleTransport m_transport;
 		JingleRtpContentDescription m_description;
 		
 		JingleContent();
-		JingleContent(JingleContentTransport &transport, JingleRtpContentDescription &description);
+		JingleContent(JingleTransport &transport, JingleRtpContentDescription &description);
 		
 		void parse(const gloox::Tag *tag);
 		gloox::Tag *tag();
@@ -235,16 +235,31 @@ class JingleSession
 	
 	int initiateAudioSession(const gloox::JID &from, const gloox::JID &to);
 	void addContent(const JingleContent &content);
-	void addRemoteContent(const JingleConent &content);
+	void addRemoteContent(const JingleContent &content);
 	
 	/** @brief Get jingle tag for query. */
 	gloox::Tag *tag(SessionAction action = ACTION_INITIATE);
 	
 	std::string sid() { return m_sid; }
-	SessionAction	action() 	{ return m_lastaction; }
+	SessionAction	action() const 	{ return m_lastaction; }
+	SessionReason	reason() const	{ return m_reason; }
+	SessionState	state() const	{ return m_state; }
+	gloox::JID		initiator() const	{ return m_initiator; }
+	gloox::JID		responder() const	{ return m_responder; }
 	
 	void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
 	bool mergeSession(JingleSession *session);
+	
+	void setAcknowledged(bool ack)
+	{ m_acknowledged = ack; }
+	
+	void setState(SessionState state)
+	{ m_state = state; }
+	
+	int context()
+	{ return m_context; }
+	void setContext(int context)
+	{ m_context = context; }
 		
 	ContentList	m_contents;
 	ContentList m_remote_contents;
@@ -254,13 +269,16 @@ class JingleSession
     std::string m_sid;
 	gloox::ClientBase	*m_client;
 	SessionState		m_state;
+	SessionReason		m_reason;
 	unsigned int		m_seed;
 	SessionAction		m_lastaction;
 	bool				m_acknowledged; ///!< Whether we received acknowledge of last action from remote party. 
+	int					m_context;
 	
 	protected:
 		static SessionAction actionFromString(const std::string &action);
 		static SessionReason reasonFromString(const std::string &reason);
+		std::string stringFromReason(SessionReason reason);
 };
 
 #endif

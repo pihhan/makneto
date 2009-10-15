@@ -3,7 +3,9 @@
 #define CLIENT_H
 
 #include <string>
+#include <list>
 
+#include <gloox/jid.h>
 #include <gloox/gloox.h>
 #include <gloox/presencehandler.h>
 #include <gloox/messagehandler.h>
@@ -15,6 +17,8 @@
 #include "versionhandler.h"
 
 namespace gloox {
+	
+typedef std::list<JID> JidList;
 
 class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
 {
@@ -44,10 +48,14 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
     std::string authError();
 
     void sendChatMessage(const JID &to, const std::string &message);
+	void broadcastChatMessage(const std::string &message);
+	
 #ifdef DNS_RESOLVE
 	std::string resolveToString(const std::string &domain, const std::string &service = "", const std::string &proto="_tcp");
 #endif
 
+	JidList	getOnlineJids(bool resources);
+	bool	isAdmin(const JID &jid);
 
     Client  *client() { return m_client; }
 

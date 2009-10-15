@@ -6,9 +6,11 @@ CXXFLAGS += $(GLOOX_CFLAGS)
 CXXFLAGS += -Wall -g 
 LIBS += $(GLOOX_LIBS)
 
-HEADERS = client.h logger.h parser.h requests.h versionhandler.h
+HEADERS = client.h logger.h parser.h requests.h versionhandler.h \
+    jinglesession.h jinglemanager.h
 SOURCES = client.cpp logger.cpp
-OBJECTS = client.o logger.o main.o parser.o requests.o versionhandler.o
+OBJECTS = client.o logger.o main.o parser.o requests.o versionhandler.o \
+    jinglesession.o jinglemanager.o
 
 client: $(HEADERS) $(OBJECTS)
 	$(CXX) -o client $(OBJECTS) $(LIBS)

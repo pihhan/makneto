@@ -4,6 +4,7 @@
 #include <gloox/jid.h>
 #include <gloox/disco.h>
 #include <gloox/rostermanager.h>
+#include <gloox/rosteritem.h>
 #ifdef DNS_RESOLVER
 #include <gloox/dns.h>
 #endif
@@ -351,3 +352,56 @@ VersionIqHandler *EchoClient::versionHandler()
 	return m_verhandler;
 }
 
+
+/** @brief Return list of online JIDs from roster.
+	@param resources if true, enumerate resources and fill full jids for each contact, \
+	with all online resources for each contact. if false, include only bare jids.
+*/
+JidList	EchoClient::getOnlineJids(bool resources)
+{
+	JidList list;
+	Roster *roster = m_client->rosterManager()->roster();
+	if (!roster)
+		return list;
+	for (Roster::iterator it=roster->begin(); it!=roster->end(); it++) {
+		RosterItem *item = it->second;
+		if (item) {
+			if (item->online() && !resources) 
+				list.push_back(item->jid());
+			else if (resources) {
+				JID jid(item->jid());
+				for (RosterItem::ResourceMap::const_iterator it=item->resources().begin(); it!=item->resources().end(); it++) {
+					jid.setResource(it->first);
+					list.push_back(jid);
+				}
+			}
+		}
+	}
+	return list;
+}
+
+
+bool EchoClient::isAdmin(const JID &jid)
+{
+	const std::string admingroup("admin");
+	RosterItem *item = m_client->rosterManager()->getRosterItem(jid);
+	if (!jid) // not in roster
+		return false;
+	else {
+		StringList groups = item->groups();
+		for (StringList::iterator it=groups.begin(); it!=groups.end(); it++) {
+			if ((*it) == admingroup)
+				return true; // is in admin group
+		}
+		return false; // is in roster, but not in admin group
+	}
+}
+
+/** @brief Create message and send it to all online contacts. */
+void EchoClient::broadcastChatMessage(const std::string &message)
+{
+	JidList online = getOnlineJids(true);
+	for (JidList::iterator it=online.begin(); it!=online.end(); it++) {
+		sendChatMessage(*it, message);
+	}
+}

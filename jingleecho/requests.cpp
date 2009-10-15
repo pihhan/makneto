@@ -186,3 +186,37 @@ Request::Request()
 {
 }
 
+
+
+/* jingle stuff */
+
+JingleSession::SessionReason RequestList::handleNewSession(JingleSession *session)
+{
+	std::string from = session->initiator().full();
+	m_client->broadcastChatMessage("Incoming call from "+ from);
+	
+	Request r = createRequest(Request::JINGLE);
+	r.to = session->initiator();
+	r.data = (void *) session;
+	session->setContext(r.context);
+        addRequest(r);
+}
+
+JingleSession::SessionReason RequestList::handleSessionAccept(JingleSession *session, JingleSession *update)
+{
+
+    m_client->broadcastChatMessage("Session accepted");
+}
+
+JingleSession::SessionReason RequestList::handleSessionChange(JingleSession *session, JingleSession *update)
+{
+}
+
+JingleSession::SessionReason RequestList::handleSessionTermination(JingleSession *sesion)
+{
+}
+
+JingleSession::SessionReason RequestList::handleSessionError(JingleSession *session, JingleSession *update)
+{
+}
+
