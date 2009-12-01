@@ -74,7 +74,8 @@ private:
  *
  * @short Contact class
  * @author Jaroslav Reznik <rezzabuh@gmail.com>
- * @version 0.1
+ * @author Petr Mensik <petr-mensik@seznam.cz>
+ * @version 0.2
  */
 
 class MaknetoContact : public ContactListContact
@@ -121,6 +122,9 @@ public:
         /*! \brief Create new resource entry using its name na incoming status. */
         MaknetoContactResource * createResource(const QString &resource, const XMPP::Status &status);
         void removeResource(const QString &resource);
+
+        ResourcesHash allResources()
+        { return m_resources; }
 
 private:
 	QString m_name;

@@ -51,6 +51,8 @@ public:
 	//void setUnavailability(const QString& jid);
         Makneto *makneto();
 
+        MaknetoContact * getContact(const QString &jid);
+
 protected:
         QMenu * createContactMenu(const QString &jid);
         MaknetoGroup *createGroup(const QString &name);

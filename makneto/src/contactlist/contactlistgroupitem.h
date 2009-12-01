@@ -19,6 +19,7 @@ public:
 	void addItem(ContactListItem*);
 	void removeItem(ContactListItem*);
 	virtual bool expanded() const;
+        virtual void setExpanded(bool expanded);
 	virtual ContactListItem* findFirstItem(ContactListItem*);
 	virtual int count() const;
 	virtual int countOnline() const;
@@ -29,6 +30,7 @@ public:
 
 private:
 	QList<ContactListItem*> items_;
+        bool                    expanded_;
 };
 
 #endif

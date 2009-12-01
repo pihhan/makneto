@@ -24,6 +24,10 @@
 #include <klocalizedstring.h>
 
 
+#include <klocalizedstring.h>
+
+#include <klocalizedstring.h>
+
 MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makneto(makneto) 
 { 
   m_contactNewSessionActions = new QActionGroup(this);
@@ -82,23 +86,23 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 
 		mg = static_cast<MaknetoGroup*>(rootItem()->findFirstItem(&g));
 
-		if (!groupItem) 
+		if (!mg) 
 		{
 			mg = static_cast<MaknetoGroup*>(invisibleGroup()->findFirstItem(&g));
 		}
 	
-		if (!groupItem) 
+		if (!mg) 
 		{
                     mg = createGroup(groupCorrected);
-                    addItem(mg);
 		}
                 groupItem = mg;
 	}
 
-  MaknetoContact *contact = new MaknetoContact(name, jid, groupItem, contactMenu);
+  MaknetoContact *contact = new MaknetoContact(name, jid, mg, contactMenu);
   contact->addGroup(mg);
 
   addItem(contact);
+  qDebug() << "Added " << jid << " as " << name << " to roster.";
 }
 
 /** @brief Add new contact to roster.
@@ -150,8 +154,11 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
       if (!group) {
           group = createGroup(groupname);
       }
-      contact->addGroup(mg);
-      mg->addItem(contact);
+      contact->addGroup(group);
+      // add to group only if it is not already there
+      MaknetoContact *tmpcontact = group->findContactByJid(jid);
+      if (!tmpcontact) 
+          group->addItem(contact);
   }
 
   addItem(contact);
@@ -179,16 +186,23 @@ void MaknetoContactList::setAvailability(const QString& jid, const QString &reso
 			{
 
 				item->setStatus(resource, status, m_makneto->getFeatureManager());
+	                        emitDataChanged(item);
 			}
 		}
 	}
 
-	emitDataChanged();
 }
 
 Makneto * MaknetoContactList::makneto()
 {
     return m_makneto;
 }
+
+MaknetoContact * MaknetoContactList::getContact(const QString &jid)
+{
+    ContactListContact *contact = ContactList::getContact(jid);
+    return dynamic_cast<MaknetoContact *>(contact);
+}
+
 
 #include "maknetocontactlist.moc"

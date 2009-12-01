@@ -16,6 +16,7 @@
 #include "xmpp_features.h"
 #include "filetransfer.h"
 #include "xmpp_tasks.h"
+#include <xmpp_discoitem.h>
 
 
 #include "settings.h"
@@ -38,6 +39,12 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 
 	m_client = new Client();
 	m_client->setClientName("Makneto");
+        DiscoItem::Identity identity;
+        identity.category = "client";
+        identity.type = "pc";
+        identity.name = "Makneto";
+        m_client->setIdentity(identity);
+        
 
         // FIXME: make this better and more secure, also this does memleak
         m_tls = new QCA::TLS();

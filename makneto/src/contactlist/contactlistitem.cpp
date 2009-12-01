@@ -60,7 +60,9 @@ void ContactListItem::setParent(ContactListGroupItem* parent)
 		}
 		
 		parent_ = parent;
-		contactList()->emitDataChanged(this);
+
+                if (contactlist_)
+		    contactlist_->emitDataChanged(this);
 	}
 }
 

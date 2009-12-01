@@ -110,6 +110,7 @@ set(makneto_SRCS
         featurelist.cpp
         discorequest.h
         discorequest.cpp
+        maknetocontactresource.cpp
 
  )
 

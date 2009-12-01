@@ -1,11 +1,12 @@
 #include <QList>
+#include <QDebug>
 
 #include "contactlist.h"
 #include "contactlistrootitem.h"
 #include "contactlistgroupitem.h"
 #include "contactlistitemcomparator.h"
 
-ContactListGroupItem::ContactListGroupItem(ContactListGroupItem* parent) : ContactListItem(parent)
+ContactListGroupItem::ContactListGroupItem(ContactListGroupItem* parent) : ContactListItem(parent), expanded_(true)
 {
 }
 
@@ -43,10 +44,14 @@ void ContactListGroupItem::addItem(ContactListItem* item)
 	QList<ContactListItem*>::Iterator it = items_.begin();
 	bool inserted = false;
 	while(it != items_.end() && !inserted) {
-		if (contactList()->itemComparator()->compare(*it,item) >= 0) {
+                int compared = contactList()->itemComparator()->compare(*it,item);
+		if ( compared > 0) {
 			items_.insert(it,item);
 			inserted = true;
-		}
+		} else if (compared == 0) {
+                    // item is already in group?
+                    qWarning("Adding item to group that is already there. Skipping.");
+                }
 		it++;
 	}
 
@@ -81,7 +86,12 @@ ContactListItem* ContactListGroupItem::findFirstItem(ContactListItem* other)
 
 bool ContactListGroupItem::expanded() const
 {
-	return true;
+	return expanded_;
+}
+
+void ContactListGroupItem::setExpanded(bool expanded)
+{
+    expanded_ = expanded;
 }
 
 int ContactListGroupItem::count() const

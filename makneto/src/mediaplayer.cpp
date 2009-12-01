@@ -31,6 +31,7 @@
 #include <iostream>
 
 MediaPlayer::MediaPlayer(QWidget * parent)
+    : QDialog(parent)
 {
 	m_mainLayout = new QVBoxLayout;
 

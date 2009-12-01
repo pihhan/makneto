@@ -1051,8 +1051,7 @@ WbText::~WbText() {
 
 QDomElement WbText::svg() {
 	QDomElement _svg = WbItem::svg();
-	QDomDocument d;
-	_svg.appendChild(d.createTextNode(text_));
+	_svg.appendChild(document().createTextNode(text_));
 	return _svg;
 };
 
@@ -1083,7 +1082,7 @@ QList<QString> WbText::parseSvg(QDomElement &_svg, bool emitChanges) {
 	QString t = _svg.text();
 	if(text_ != t) {
 		if(emitChanges) {
-			QDomDocument d;
+			QDomDocument d = document();
 			QDomElement oldSvg = d.createElement("e");
 			oldSvg.appendChild(d.createTextNode(text_));
 			emit contentChanged(id(), _svg.cloneNode().childNodes(), oldSvg.childNodes());
@@ -1150,7 +1149,7 @@ WbItem* WbText::clone() {
 
 void WbText::checkTextChanges() {
 	if(graphicsitem_->toPlainText() != text_) {
-		QDomDocument d;
+		QDomDocument d = document();
 		QDomElement _svg = d.createElement("e");
 		_svg.appendChild(d.createTextNode(graphicsitem_->toPlainText()));
 		QDomElement oldSvg = d.createElement("e");
