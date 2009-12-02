@@ -890,7 +890,19 @@ void VCard::setPhotoURI(const QString &p)
 
 const QDate VCard::bday() const
 {
-	return QDate::fromString(d->bday);
+    // unfortunately, VCARD does not specify format for birth day.
+    if (d->bday.isEmpty())
+        return QDate();
+    // iso has more defined format, likely not to be confused with anything else
+    // try first ISO, then old default TextDate, then locale parser
+    QDate date = QDate::fromString(d->bday, Qt::ISODate); 
+    if (!date.isValid()) 
+        date = QDate::fromString(d->bday, Qt::TextDate);
+    if (!date.isValid()) 
+        date = QDate::fromString(d->bday, Qt::DefaultLocaleShortDate);
+    if (!date.isValid())
+        date = QDate::fromString(d->bday, Qt::DefaultLocaleLongDate);
+	return date;
 }
 
 void VCard::setBday(const QDate &date)
