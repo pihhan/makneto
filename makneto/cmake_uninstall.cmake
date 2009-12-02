@@ -1,8 +1,8 @@
-IF(NOT EXISTS "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/install_manifest.txt")
-  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/home/pihhan/Projekty/makneto/branches/pihhan/makneto/install_manifest.txt\"")
-ENDIF(NOT EXISTS "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/install_manifest.txt")
+IF(NOT EXISTS "/home/pihhan/xmpp/makneto-pihhan/makneto/install_manifest.txt")
+  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/home/pihhan/xmpp/makneto-pihhan/makneto/install_manifest.txt\"")
+ENDIF(NOT EXISTS "/home/pihhan/xmpp/makneto-pihhan/makneto/install_manifest.txt")
 
-FILE(READ "/home/pihhan/Projekty/makneto/branches/pihhan/makneto/install_manifest.txt" files)
+FILE(READ "/home/pihhan/xmpp/makneto-pihhan/makneto/install_manifest.txt" files)
 STRING(REGEX REPLACE "\n" ";" files "${files}")
 FOREACH(file ${files})
   MESSAGE(STATUS "Uninstalling \"${file}\"")
