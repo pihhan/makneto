@@ -172,8 +172,10 @@ void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &stat
                 FeatureList *fl;
                 if (flm->isKnown(node,ver,hash,ext)) {
                     fl = flm->getFeatures(node,ver,hash,ext);
+                    if (!fl)
+                        qWarning("Features should be known, but returned NULL");
                     r->setFeatures( fl, true );
-                    qDebug() << "Features found in local cache";
+                    qDebug() << "Features found in local cache"; 
                 } else {
                     XMPP::Jid jid1(m_jid);
                     XMPP::Jid jid2(jid1.node(), jid1.domain(), resource);

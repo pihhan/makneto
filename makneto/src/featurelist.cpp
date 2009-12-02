@@ -514,13 +514,8 @@ FeatureList * FeatureListManager::getFeaturesByHash( const QString &ver, const Q
     */
 FeatureList * FeatureListManager::getFeatures( const QString &node, const QString &ver, const QString &hash, const QString &ext)
 {
-    Q_UNUSED(node);
 
-    QString index;
-    if (hash.isEmpty()) 
-        index = ver + "#" + ext;
-    else 
-        index = hash;
+    QString index = singleCaps(node, ver, hash, ext);
     
     QHash<QString, ListOfFeatures>::iterator db = m_database.find(hash);
     if (db != m_database.end()) {
@@ -652,7 +647,20 @@ QString FeatureListManager::singleCaps( const QString &node, const QString &ver,
 
 void FeatureListManager::writeDatabase()
 {
-    writeToFile(getDatabasePath());
+    QString path = getDatabasePath();
+    QFileInfo info(path);
+    if (!info.exists()) {
+        QDir dir = info.dir();
+        if (!dir.exists()) {
+            qDebug() << "Configuration directory does not exist, trying to create: " << dir.path();
+            if (!dir.mkpath( dir.path())) {
+                qWarning("Creating directory path for cache failed.");
+            }
+        }
+    }
+    if (!writeToFile(path)) {
+        qWarning() << "Feature cache write failed: "  << path;
+    }
 }
 
 /** \brief Get path to cache file for current user. */

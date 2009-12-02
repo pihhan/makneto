@@ -48,13 +48,15 @@ void contactDetailDialog::detailsArrived()
     if (req) {
         
         ui.editNickname->setText( req->vcard().nickName() );
-        ui.editBirthDay->setText( req->vcard().bday().toString() );
+        ui.editBirthDay->setText( 
+            req->vcard().bday().toString(Qt::DefaultLocaleShortDate) 
+        );
         ui.editFullName->setText( req->vcard().fullName() );
 
         contactDescription = req->vcard().desc();
         updateDetailText();
 
-        req->deleteLater();
+        req->safeDelete();
     }
 }
 

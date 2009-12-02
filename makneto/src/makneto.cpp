@@ -73,9 +73,8 @@ void Makneto::contactDetails(QAction *action)
   contactDetail->show();
 
   // pihhanovy hratky
-  QString jid = action->data().toString();
   DiscoRequest *req = new DiscoRequest(m_conn->rootTask());
-  req->get(jid, "");
+  req->get(target.full(), "");
   req->go(true);
 
   // get info
