@@ -21,25 +21,6 @@ message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
 #set(Iris_DIR "../iris")
 find_package(Iris REQUIRED)
 
-# Pihhanovy pokusy s IRIS
-# FIND_LIBRARY(LIB_IRIS NAMES iris irisnet
-#     PATHS /usr/lib /usr/local/lib ../../iris 
-#     ENV IRIS_TREE 
-#     PATH_SUFFIXES lib)
-# MESSAGE(STATUS "Iris is at: ${LIB_IRIS}")
-# 
-# Check_Include_Files("xmpp.h" IRIS_INCLUDE)
-# MESSAGE(STATUS "Iris include: ${IRIS_INCLUDE}")
-# 
-# 
-# 
-# set(IRIS_TREE "../../iris")
-# set(IRIS_LIB_PATH ${IRIS_TREE}/lib)
-# set(IRIS_LIBS 
-#     iris
-#     irisnet
-#     )
-# set(IRIS_INCLUDE ${IRIS_TREE}/include/iris ${IRIS_TREE}/src)
 
 include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
 #cutestuff/util cutestuff/network cutestuff/legacy 
