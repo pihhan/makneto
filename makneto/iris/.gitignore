@@ -1,0 +1,12 @@
+Makefile
+*.o
+*.moc
+ui_*.h
+moc_*.cpp
+qrc_*.cpp
+/conf.log
+/conf.pri
+/configure
+/bin
+/lib
+/plugins

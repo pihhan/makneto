@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include <QDomDocument>
 
 #include <xmpp_task.h>
 #include <xmpp_jid.h>
