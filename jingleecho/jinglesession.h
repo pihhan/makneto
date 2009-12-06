@@ -35,6 +35,7 @@ class JingleContentDescription
 class JingleRtpPayload
 {
     public:
+                JingleRtpPayload(const gloox::Tag *tag);
 		JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
 		
     unsigned char   id; ///<! required
@@ -46,7 +47,7 @@ class JingleRtpPayload
 	
 	void parse(const gloox::Tag *tag);
 	
-	gloox::Tag *tag();
+	gloox::Tag *tag() const;
 
 };
 
@@ -56,9 +57,10 @@ class JingleRtpContentDescription : public JingleContentDescription
 
     typedef std::list<JingleRtpPayload> PayloadList;
 	
-	void addPayload(JingleRtpPayload &payload) { payloads.push_back(payload); }
+	void addPayload(const JingleRtpPayload &payload) { payloads.push_back(payload); }
 	
 	virtual void parse(const gloox::Tag *tag);
+        virtual gloox::Tag *tag() const;
 
     PayloadList payloads;
 	std::string	m_xmlns;
@@ -75,7 +77,7 @@ class JingleCandidate
     } NatType;
 	
 	virtual void parse(const gloox::Tag *tag);
-	virtual gloox::Tag *tag();
+	virtual gloox::Tag *tag() const;
 
     int             component;
     std::string     ip;
@@ -107,6 +109,8 @@ class JingleIceCandidate : public JingleCandidate
 	} Protocols;
 	
 	virtual void parse(const gloox::Tag *tag);
+
+        virtual gloox::Tag *tag() const;
 	
     int     foundation;
     int     network;
@@ -122,15 +126,17 @@ class JingleIceCandidate : public JingleCandidate
 class JingleTransport
 {
     public:
-		typedef std::list<JingleCandidate *>	CandidateList;
+		typedef std::list<JingleCandidate>	CandidateList;
 		
 		
 		virtual void parse(const gloox::Tag *tag);
-		void addCandidate(JingleCandidate *c);
+		void addCandidate(const JingleCandidate &c);
+
+                gloox::Tag * tag() const;
 		
-    std::string xmlns;
-    std::string pwd;
-    std::string ufrag;
+    std::string m_xmlns;
+    std::string m_pwd;
+    std::string m_ufrag;
 	CandidateList	candidates;
 };
 
@@ -149,15 +155,20 @@ class JingleContent
 			CREATOR_INITIATOR,
 			CREATOR_RESPONDER
 		} Creator;
-		
-		JingleTransport m_transport;
-		JingleRtpContentDescription m_description;
+
+                typedef std::list<JingleTransport>  TransportList;
 		
 		JingleContent();
-		JingleContent(JingleTransport &transport, JingleRtpContentDescription &description);
+		JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description);
+
+		JingleTransport m_transport;
+		JingleRtpContentDescription m_description;
+
+
+                JingleRtpContentDescription description() { return m_description; }
 		
 		void parse(const gloox::Tag *tag);
-		gloox::Tag *tag();
+		gloox::Tag *tag() const;
 
     //private:
     std::string m_xmlns;
@@ -216,7 +227,7 @@ class JingleSession
 		REASON_UNSUPPORTED_APPLICATIONS,
 		REASON_UNSUPPORTED_TRANSPORTS
 	} SessionReason;
-	typedef std::list<JingleContent *>	ContentList;
+	typedef std::list<JingleContent>	ContentList;
 	
 	
 
@@ -232,13 +243,15 @@ class JingleSession
 	JingleTransport					localTransport();
 	
 	JingleRtpContentDescription		audioDescription();
+        JingleContent                           audioContent();
 	
 	int initiateAudioSession(const gloox::JID &from, const gloox::JID &to);
+        int acceptAudioSession(JingleSession *session);
 	void addContent(const JingleContent &content);
 	void addRemoteContent(const JingleContent &content);
 	
 	/** @brief Get jingle tag for query. */
-	gloox::Tag *tag(SessionAction action = ACTION_INITIATE);
+	gloox::Tag *tag(SessionAction action = ACTION_INITIATE) const;
 	
 	std::string sid() { return m_sid; }
 	SessionAction	action() const 	{ return m_lastaction; }
@@ -248,7 +261,8 @@ class JingleSession
 	gloox::JID		responder() const	{ return m_responder; }
 	
 	void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
-	bool mergeSession(JingleSession *session);
+        void setAction(SessionAction action) { m_lastaction = action; }
+	bool mergeSession(JingleSession *session, bool remote = true);
 	
 	void setAcknowledged(bool ack)
 	{ m_acknowledged = ack; }
@@ -260,6 +274,8 @@ class JingleSession
 	{ return m_context; }
 	void setContext(int context)
 	{ m_context = context; }
+
+        ContentList     contents() { return m_contents; }
 		
 	ContentList	m_contents;
 	ContentList m_remote_contents;
@@ -278,7 +294,8 @@ class JingleSession
 	protected:
 		static SessionAction actionFromString(const std::string &action);
 		static SessionReason reasonFromString(const std::string &reason);
-		std::string stringFromReason(SessionReason reason);
+        public:
+		static std::string stringFromReason(SessionReason reason);
 };
 
 #endif

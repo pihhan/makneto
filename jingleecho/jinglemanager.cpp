@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include <gloox/stanza.h>
 #include "jinglemanager.h"
 
@@ -7,7 +8,7 @@ using namespace gloox;
 JingleManager::JingleManager(ClientBase *base)
 	: m_base(base)
 {
-	base->registerIqHandler(XMLNS_JINGLE, this);
+	base->registerIqHandler(this, XMLNS_JINGLE);
 }
 
 std::string JingleManager::getSid(Stanza *stanza)
@@ -34,7 +35,7 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 	sid = getSid(stanza);
 	local_session = getSession(sid);
 	
-	switch (stanza->subtype) {
+	switch (stanza->subtype()) {
 		case StanzaIqGet:
 			break;
 		case StanzaIqSet:
@@ -44,7 +45,7 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 				session = new JingleSession(m_base);
 			jingle = stanza->findChild("jingle", "xmlns", XMLNS_JINGLE);
 			if (jingle) {
-				session->parse(jingle);
+				session->parse(stanza);
 				switch (session->action()) {
 					case JingleSession::ACTION_INITIATE:
 						addSession(session);
@@ -84,7 +85,7 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 			sid = getSid(stanza);
 			local_session = getSession(sid);
 			if (local_session)
-				local_session->setAcknowledge(true);
+				local_session->setAcknowledged(true);
 			break;
 		case StanzaIqError:
 			if (!local_session) {
@@ -92,9 +93,9 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 				return false;
 			}
 			if (m_handler) {
-				result = m_handler->handleSessionError(stanza, local_session);
+				result = m_handler->handleSessionError(local_session, stanza);
 			}
-			break;
+                        return true;
 		default:
 			return false;
 	}
@@ -107,11 +108,11 @@ void JingleManager::addSession(JingleSession *session)
 	m_sessions.insert(make_pair(session->sid(), session));
 }
 
-JingleSession * getSession(const std::string &sid)
+JingleSession * JingleManager::getSession(const std::string &sid)
 {
 	SessionMap::iterator it = m_sessions.find(sid);
 	if (it!= m_sessions.end())
-		return (*it);
+		return it->second;
 	else return NULL;
 }
 
@@ -123,6 +124,7 @@ void JingleManager::removeSession(const std::string &sid)
 JingleSession * JingleManager::initiateAudioSession(const gloox::JID &from, const gloox::JID &to)
 {
 	JingleSession *session = new JingleSession(m_base);
+        session->addContent(session->audioContent());
 	session->initiateAudioSession(from, to);
 	Tag *jingle = session->tag(JingleSession::ACTION_INITIATE);
 	addSession(session);
@@ -130,6 +132,7 @@ JingleSession * JingleManager::initiateAudioSession(const gloox::JID &from, cons
 	std::string id = m_base->getID();
 	Stanza *stanza = Stanza::createIqStanza(to, id, StanzaIqSet, XMLNS_JINGLE, jingle);
 	m_base->send(stanza);
+        return session;
 }
 
 
@@ -150,26 +153,26 @@ void JingleManager::acceptAudioSession(JingleSession *session)
 void JingleManager::replyAcknowledge(const Stanza *stanza)
 {
 	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
-		if (reason == JingleSession::REASON_SUCCESS) {
-			Stanza *reply = Stanza::createIqStanza(stanza->from(), stanza->id(), StanzaIqResult);
-			m_base->send(reply);
-		} else {
-		}
+		Stanza *reply = Stanza::createIqStanza(stanza->from(), stanza->id(), StanzaIqResult);
+		m_base->send(reply);
 	}
 }
 
 /** @brief Create result reply to specified stanza with matching id. */
-void JingleManager::replyTerminate(const Stanza *stanza, JingleSession::SessionReason reason, const std::string &sid="")
+void JingleManager::replyTerminate(const Stanza *stanza, JingleSession::SessionReason reason, const std::string &sid)
 {
 	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
 		Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);
 		jingle->addAttribute("action", "session-terminate");
 		jingle->addAttribute("sid", sid);
-		Tag *reason = new Tag(jingle, "reason");
-		Tag *reason_tag = new Tag(reason, JingleSession::stringFromReason(reason));
+		Tag *r = new Tag(jingle, "reason");
+		Tag *reason_subtag = new Tag(r, 
+                        JingleSession::stringFromReason(reason));
 		
-		std::string id = m_base->getId();
+		std::string id = m_base->getID();
 		Stanza *reply = Stanza::createIqStanza(stanza->from(), id, StanzaIqSet, XMLNS_JINGLE, jingle);
 		m_base->send(reply);
 	}
 }
+
+

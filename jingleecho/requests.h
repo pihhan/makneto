@@ -72,7 +72,7 @@ class RequestList : public gloox::DiscoHandler,
 		JingleSession::SessionReason handleSessionAccept(JingleSession *session, JingleSession *update);
 		JingleSession::SessionReason handleSessionChange(JingleSession *session, JingleSession *update);
 		JingleSession::SessionReason handleSessionTermination(JingleSession *sesion);
-		JingleSession::SessionReason handleSessionError(JingleSession *session, JingleSession *update);
+		JingleSession::SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza);
 
 
 

@@ -35,6 +35,10 @@ EchoClient::EchoClient(const std::string &jid, const std::string &password)
 
     m_requests = new RequestList(this);
     m_verhandler = new VersionIqHandler(m_client);
+    m_jingle = new JingleManager(m_client);
+    if (m_jingle) {
+        m_jingle->registerActionHandler(m_requests);
+    }
 }
 
 void EchoClient::initLog()
@@ -130,6 +134,17 @@ std::string EchoClient::resolveToString(const std::string &domain, const std::st
 }
 #endif
 
+void EchoClient::sendHelp(const Stanza *stanza)
+{
+    std::string helpmsg = 
+        "Usage:\n"
+        "disco [target jid]\n"
+        "version [target jid]\n"
+        "call [target]\n"
+        "accept [sid]\n";
+    sendChatMessage(stanza->from(), helpmsg);
+}
+
 void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 {
     std::string body = stanza->body();
@@ -148,7 +163,9 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
         if (!p.atEnd()) {
             param = p.nextToken().value();
         }
-        if (cmd == "disco") {
+        if (cmd == "help" || cmd == "?") {
+            sendHelp(stanza);
+        } else if (cmd == "disco") {
             JID target(stanza->from());
             if (!param.empty()) {
                 target = JID(param);
@@ -159,7 +176,7 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
             } else {
                 m_requests->createDiscoRequest(stanza->from(), target);
             }
-		} else if (cmd == "ver" || cmd == "version") {
+	} else if (cmd == "ver" || cmd == "version") {
 			JID target(stanza->from());
 			if (!param.empty())
 				target = JID(param);
@@ -169,8 +186,38 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 			} else {
 				m_requests->createVersionRequest(stanza->from(), target);
 			}
+        } else if (cmd == "call" || cmd == "initate") {
+            JID target(stanza->from());
+            if (!param.empty())
+                target = JID(param);
+
+            JingleSession *session = 
+                    m_jingle->initiateAudioSession(stanza->from(), target); 
+            if (session) {
+                std::string sid = session->sid();
+                sendChatMessage(stanza->from(), " initiated session id:" + sid);
+            } else {
+                sendChatMessage(stanza->from(), "session is NULL");
+            }
+        } else if (cmd == "accept") {
+            JingleSession *session = NULL;
+            if (!param.empty()) {
+                session = m_jingle->getSession(param);
+            } else {
+                JingleManager::SessionMap map = m_jingle->allSessions();
+                JingleManager::SessionMap::iterator it = map.begin();
+                if (it != map.end()) {
+                    session = (*it).second;
+                }
+                sendChatMessage(stanza->from(), " found first session id:" 
+                    + session->sid());
+            }
+
+            m_jingle->acceptAudioSession(session);
+            sendChatMessage(stanza->from(), "session accepted");
+
 #ifdef DNS_RESOVLER
-		} else if (cmd == "dns") {
+	} else if (cmd == "dns") {
 			if (param.empty()) {
 				sendChatMessage(stanza->from(), "you have to specify name to resolve");
 				return;

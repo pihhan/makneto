@@ -15,6 +15,7 @@
 
 #include "requests.h"
 #include "versionhandler.h"
+#include "jinglemanager.h"
 
 namespace gloox {
 	
@@ -54,6 +55,8 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
 	std::string resolveToString(const std::string &domain, const std::string &service = "", const std::string &proto="_tcp");
 #endif
 
+        void sendHelp(const Stanza *stanza);
+
 	JidList	getOnlineJids(bool resources);
 	bool	isAdmin(const JID &jid);
 
@@ -66,6 +69,7 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
     JID     m_jid;
     RequestList *m_requests;
     VersionIqHandler *m_verhandler;
+    JingleManager   *m_jingle;
     
 };
 

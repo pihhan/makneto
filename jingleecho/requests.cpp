@@ -193,30 +193,55 @@ Request::Request()
 JingleSession::SessionReason RequestList::handleNewSession(JingleSession *session)
 {
 	std::string from = session->initiator().full();
-	m_client->broadcastChatMessage("Incoming call from "+ from);
+        std::string sid;
+        if (session) 
+            sid = session->sid();
+	m_client->broadcastChatMessage("Incoming call from "+ from 
+                + " with id:" + sid);
 	
 	Request r = createRequest(Request::JINGLE);
 	r.to = session->initiator();
 	r.data = (void *) session;
 	session->setContext(r.context);
         addRequest(r);
+        return JingleSession::REASON_SUCCESS;
 }
 
 JingleSession::SessionReason RequestList::handleSessionAccept(JingleSession *session, JingleSession *update)
 {
-
+    
     m_client->broadcastChatMessage("Session accepted");
+    std::cout << "handler JingleSessionAccept" << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_UNDEFINED;
 }
 
 JingleSession::SessionReason RequestList::handleSessionChange(JingleSession *session, JingleSession *update)
 {
+    std::cout << "handler " << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_UNDEFINED;
 }
 
-JingleSession::SessionReason RequestList::handleSessionTermination(JingleSession *sesion)
+JingleSession::SessionReason RequestList::handleSessionTermination(JingleSession *session)
 {
+    std::string sid;
+    if (session)
+        sid = session->sid();
+    std::cout << "handler " << __FUNCTION__ << std::endl;
+    m_client->broadcastChatMessage("Session id:"+ sid + " terminated.");
+    return JingleSession::REASON_UNDEFINED;
 }
 
-JingleSession::SessionReason RequestList::handleSessionError(JingleSession *session, JingleSession *update)
+JingleSession::SessionReason RequestList::handleSessionError(JingleSession *session, const gloox::Stanza *stanza)
 {
+    std::string sid;
+    if (session) {
+        m_client->broadcastChatMessage("Jingle Error for session id:" 
+                + session->sid());
+    } else {
+        m_client->broadcastChatMessage("Jingle Error came from " + stanza->from().full()
+                + " without session");
+    }
+    std::cout << "handler " << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_UNDEFINED;
 }
 

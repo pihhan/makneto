@@ -1,4 +1,4 @@
-
+#include <iostream>
 #include <cstdlib>
 #include <ctime>
 
@@ -10,7 +10,7 @@ unsigned int _jingle_seed = 0;
 using namespace gloox;
 
 
-static const std::string[] jingle_session_reason_desc = { "undefined", 
+static const std::string jingle_session_reason_desc[] = { "undefined", 
 		"alternative-session", "busy", "cancel", "connectivity-error", "decline", "expired", "failed-application", "failed-transport",
 		"general-error", "gone", "incompatible-parameters", "media-error", "security-error", "success", "timeout", 
 		"unsupported-applications", "unsupported-transports"
@@ -19,16 +19,17 @@ static const std::string[] jingle_session_reason_desc = { "undefined",
 
 
 JingleSession::JingleSession(ClientBase *base)
-	: m_client(base), m_state(STATE_NULL)
+	: m_client(base), m_state(JSTATE_NULL)
 {
 	m_sid = m_client->getID();
-	time(&m_seed);
+	time((time_t *) &m_seed);
 }
 
 /** @brief Get unprivileged random port. */
-unsigned int JingleSesion::randomPort()
+unsigned int JingleSession::randomPort()
 {
-	unsigned int port = (rand_r(m_seed) % 32000) + 1024;
+	unsigned int port = (rand_r(&m_seed) % 32000) + 1024;
+        return port;
 }
 
 std::string JingleSession::randomId()
@@ -49,8 +50,8 @@ void JingleSession::parse(const Stanza *stanza, bool remote)
 	Tag::TagList contents = jingle->findChildren("content");
 	
 	for (Tag::TagList::iterator it=contents.begin(); it!=contents.end(); it++) {
-		JingleContent *content = new JingleContent();
-		content->parse(*it);
+		JingleContent content;
+		content.parse(*it);
 		if (remote) 
 			addRemoteContent(content);
 		else
@@ -61,12 +62,12 @@ void JingleSession::parse(const Stanza *stanza, bool remote)
 void JingleSession::setJids(const JID &initiator, const JID &receiver)
 {
 	m_initiator = initiator;
-	m_receiver = receiver;
+	m_responder = receiver;
 }
 
 void JingleSession::addRemoteContent(const JingleContent &content)
 {
-	m_remote_content.push_back(content);
+	m_remote_contents.push_back(content);
 }
 
 void JingleContent::parse(const Tag *tag)
@@ -91,16 +92,31 @@ void JingleTransport::parse(const Tag *tag)
 	if (!tag || tag->name() != "transport")
 		return;
 	m_xmlns = tag->findAttribute("xmlns");
+        m_pwd = tag->findAttribute("pwd");
+        m_ufrag = tag->findAttribute("ufrag");
 	Tag::TagList candidates = tag->findChildren("candidate");
 	for (Tag::TagList::iterator it=candidates.begin(); it!=candidates.end(); ++it) {
-		JingleUdpCandidate *c = new JingleUdpCandidate();
-		c->parse(*it);
+		JingleUdpCandidate c;
+		c.parse(*it);
 		addCandidate(c);
 	}
 }
 
+Tag * JingleTransport::tag() const
+{
+    Tag *t = new Tag("transport", "xmlns", m_xmlns);
+    if (!m_pwd.empty())
+        t->addAttribute("pwd", m_pwd);
+    if (!m_ufrag.empty())
+        t->addAttribute("ufrag", m_ufrag);
+    for (CandidateList::const_iterator it = candidates.begin(); it!=candidates.end(); it++) {
+        t->addChild(it->tag());
+    }
+    return t;
+}
 
-void JingleTransport::addCandidate(JingleCandidate *c)
+
+void JingleTransport::addCandidate(const JingleCandidate &c)
 {
  	candidates.push_back(c);
 }
@@ -108,7 +124,7 @@ void JingleTransport::addCandidate(JingleCandidate *c)
 
 void JingleCandidate::parse(const Tag *tag)
 {
-	if (!tag || tag->name() != "candidate")
+	if (!tag || tag->name() != "candidate")
 		return;
 	component = atoi(tag->findAttribute("component").c_str());
 	ip 		= tag->findAttribute("ip");
@@ -117,13 +133,13 @@ void JingleCandidate::parse(const Tag *tag)
 	generation = atoi(tag->findAttribute("generation").c_str());
 }
 
-Tag* JingleCandidate::tag()
+Tag* JingleCandidate::tag() const
 {
 	Tag *t = new Tag("candidate");
 	if (!t) return NULL;
 	t->addAttribute("component", component);
 	t->addAttribute("ip", ip);
-	t->addAttribute("port", port);
+	t->addAttribute("port", (long) port);
 	t->addAttribute("id", id);
 	t->addAttribute("generation", generation);
 	return t;
@@ -143,7 +159,7 @@ void JingleIceCandidate::parse(const Tag *tag)
 	relPort		=	tag->findAttribute("relPort");
 }
 
-Tag * JingleIceCandidate::tag()
+Tag * JingleIceCandidate::tag() const
 {
 	Tag *t = JingleCandidate::tag();
 	t->addAttribute("foundation", foundation);
@@ -151,9 +167,9 @@ Tag * JingleIceCandidate::tag()
 	t->addAttribute("priority", priority);
 	t->addAttribute("protocol", protocol);
 	t->addAttribute("type", type);
-	if (relAddr)
+	if (!relAddr.empty())
 		t->addAttribute("relAddr", relAddr);
-	if (relPort)
+	if (!relPort.empty())
 		t->addAttribute("relPort", relPort);
 	return t;
 }
@@ -167,26 +183,31 @@ void JingleRtpContentDescription::parse(const Tag *tag)
 	
 	Tag::TagList payloads = tag->findChildren("payload");
 	for (Tag::TagList::iterator it=payloads.begin(); it!=payloads.end(); ++it) {
-		JingleRtpPayload payload;
-		payload.parse(*it);
+		JingleRtpPayload payload(*it);
 		addPayload(payload);
 	}
 }
 
-Tag *JingleRtpContentDescription::tag()
+Tag *JingleRtpContentDescription::tag() const
 {
 	Tag *t = new Tag("description");
 	t->addAttribute("xmlns", m_xmlns);
-	if (m_media)
+	if (!m_media.empty())
 		t->addAttribute("media", m_media);
-	for (PayloadList::iterator it=payloads.begin(); it!=payloads.end(); ++it) {
+	for (PayloadList::const_iterator it=payloads.begin(); it!=payloads.end(); ++it) {
 		t->addChild(it->tag());
 	}
 	return t;
 }
+
+JingleRtpPayload::JingleRtpPayload(const Tag *tag)
+    : id(0), clockrate(0), channels(1), maxptime(0), ptime(0)
+{
+    parse(tag);
+}
 	
-JingleRtpPayload::JingleRtpPayload(unsigned char id, const std::string &name, clockrate, channels)
-	: id(id), name(name), clockrate(clockrate), channels(channels), maptime(0). ptime(0)
+JingleRtpPayload::JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate, int channels)
+	: id(id), name(name), clockrate(clockrate), channels(channels), maxptime(0), ptime(0)
 {
 }
 
@@ -195,49 +216,49 @@ void JingleRtpPayload::parse(const Tag *tag)
 	if(!tag || tag->name() != "payload")
 		return;
 	id = atoi( tag->findAttribute("id").c_str() );
-	channels = atoi( tag->findAttribute("channels");
+	channels = atoi( tag->findAttribute("channels").c_str());
 	name = tag->findAttribute("name");
-	clockrate = atoi(tag->findAttribute("clockrate"));
+	clockrate = atoi(tag->findAttribute("clockrate").c_str());
 	ptime = atoi( tag->findAttribute("ptime").c_str());
 	maxptime = atoi( tag->findAttribute("maxptime").c_str());
 }
 
-Tag * JingleRtpPayload::tag()
+Tag * JingleRtpPayload::tag() const
 {
 	Tag *t = new Tag("payload");
 	if (!t) return NULL;
 	t->addAttribute("id", id);
 	t->addAttribute("name", name);
-	t->addAttribute("clockrate", clockrate);
+	t->addAttribute("clockrate", (long) clockrate);
 	if (channels)
 		t->addAttribute("channels", channels);
 	if (ptime)
-		t->addAttribute("ptime", ptime);
+		t->addAttribute("ptime", (long) ptime);
 	if (maxptime)
-		t->addAttribute("maxptime", maxptime);
+		t->addAttribute("maxptime", (long) maxptime);
 	return t;
 }
 
 
 JingleTransport::CandidateList JingleSession::localUdpCandidates()
 {
-	CandidateList cl;
+	JingleTransport::CandidateList cl;
 	char ** charlist = getAddressList(NULL, AFB_ANY, SCOPE_GLOBAL);
-	if (!list) {
+	if (!charlist) {
 		std::cerr << "Chyba pri ziskavani lokalnich adres." << std::endl;
 		return cl;
 	}
 	for (char **it=charlist; it && *it; it++) {
 		JingleUdpCandidate candidate;
 		candidate.ip = std::string(*it);
-		candidate.po	rt = randomPort();
+		candidate.port = randomPort();
 		candidate.id = randomId();
 		candidate.component = 0;
 		candidate.generation = 0;
 		candidate.natType = JingleCandidate::NAT_NONE;
 		
 	}
-	v6DestroyList(list);
+	v6Destroylist(charlist);
 	return cl;
 }
 
@@ -260,31 +281,36 @@ JingleRtpContentDescription	JingleSession::audioDescription()
 	return d;
 }
 
-Tag * JingleContent::tag()
+JingleContent   JingleSession::audioContent()
+{
+    return JingleContent(localTransport(), audioDescription() );
+}
+
+Tag * JingleContent::tag() const
 {
 	Tag *t = new Tag("content");
-	tag->addAttribute("xmlns", m_xmlns);
-	if (m_name)
-		tag->addAttribute("name", m_name);
-	if (m_media)
-		tag->addAttribute("media", m_media);
-	if (m_creator)
-		tag->addAttribute("creator");
+	t->addAttribute("xmlns", m_xmlns);
+	if (!m_name.empty())
+		t->addAttribute("name", m_name);
+	if (!m_media.empty())
+		t->addAttribute("media", m_media);
+	if (!m_creator.empty())
+		t->addAttribute("creator", m_creator);
 	Tag *transport = m_transport.tag();
 	if (transport)
-		tag->addChild(transport);
+		t->addChild(transport);
 	Tag *description = m_description.tag();
 	if (description)
-		tag->addChild(description);
+		t->addChild(description);
 	return t;
 }
 
-Tag * JingleSession::tag(SessionAction action)
+Tag * JingleSession::tag(SessionAction action) const
 {
 	Tag *t = new Tag("jingle");
 	t->addAttribute("xmlns", XMLNS_JINGLE);
 	t->addAttribute("sid", m_sid);
-	switch (m_action) {
+	switch (m_lastaction) {
 		case ACTION_INITIATE:	t->addAttribute("action", "initiate"); break;
 		case ACTION_ACCEPT:		t->addAttribute("action", "accept"); break;
 		case ACTION_TERMINATE:	t->addAttribute("action", "terminate"); break;
@@ -294,8 +320,8 @@ Tag * JingleSession::tag(SessionAction action)
 	// TODO: nejak vybrat action
 	if (m_initiator)
 		t->addAttribute("initiator", m_initiator);
-	for (ContentList::iterator it=m_contents.begin(); it!=m_contents.end(); it++) {
-		t->addChild(it->tag());
+	for (ContentList::const_iterator it=m_contents.begin(); it!=m_contents.end(); it++) {
+		t->addChild((it)->tag());
 	}
 	return t;
 }
@@ -304,8 +330,8 @@ JingleContent::JingleContent()
 {
 }
 
-JingleContent::JingleContent(JingleTransport &transport, JingleContentDescription &description)
-	m_transport(transport), m_description(description)
+JingleContent::JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description)
+	: m_transport(transport), m_description(description)
 {
 }
 
@@ -330,14 +356,13 @@ int JingleSession::initiateAudioSession(const JID &from, const JID &to)
 int JingleSession::acceptAudioSession(JingleSession *session)
 {
 	JingleContent content( localTransport(), audioDescription() );
-	m_initiator = from;
-	m_target = to;
 	m_state = JSTATE_ACTIVE;
 	m_sid = randomId();
 	addContent(content);
+        return 1;
 }
 
-SessionAction JingleSession::actionFromString(const std::string &action)
+JingleSession::SessionAction JingleSession::actionFromString(const std::string &action)
 {
 	if (action == "initiate")
 		return ACTION_INITIATE;
@@ -349,11 +374,11 @@ SessionAction JingleSession::actionFromString(const std::string &action)
 		return ACTION_NONE;
 }
 
-SessionReason JingleSession::reasonFromString(const std::string &reason)
+JingleSession::SessionReason JingleSession::reasonFromString(const std::string &reason)
 {	
 	size_t size = sizeof(jingle_session_reason_desc) / sizeof(std::string);
 	for (size_t i =0; i< size; ++i) {
-		if (reason == reason_desc[i]) {
+		if (reason == jingle_session_reason_desc[i]) {
 			return ((SessionReason) i);
 		}
 	}
@@ -369,18 +394,19 @@ std::string JingleSession::stringFromReason(SessionReason reason)
 	else return std::string();
 }
 
-bool JingleSession::mergeSession(JingleSession *session, bool remote=true)
+bool JingleSession::mergeSession(JingleSession *session, bool remote)
 {
 	if (!session)
 		return false;
 	if (m_sid != session->sid()) // session id does not match
 		return false;
 	if (session->m_responder)
-		m_responder = sesion->m_responder;
+		m_responder = session->m_responder;
 	if (remote) {
 		if (session->action() == ACTION_ACCEPT) {
 			m_lastaction = session->action();
 			m_remote_contents = session->m_contents;
 		}
 	} 
+        return true;
 }
