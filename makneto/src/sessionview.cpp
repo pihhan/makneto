@@ -180,7 +180,7 @@ void SessionView::createToolBar()
 	QActionGroup *groupMode = new QActionGroup(this);
 	connect(groupMode, SIGNAL(triggered(QAction*)), this, SLOT(setMode(QAction*)));
  
-	KAction *actionSelect = new KAction(KIcon("select-rectangular"), i18n("Selection"), groupMode);
+	actionSelect = new KAction(KIcon("select-rectangular"), i18n("Selection"), groupMode);
 	m_wbtoolbar->addAction(actionSelect);
 	actionSelect->setData(QVariant(WbWidget::Select));
 
