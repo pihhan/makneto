@@ -217,6 +217,8 @@ class JingleContent
     JingleParticipant   m_owner;
 };
 
+typedef std::list<JingleContent>	ContentList;
+
 /** @brief One whole jingle session, ie. one audio/video call maybe. */
 class JingleSession
 {
@@ -266,7 +268,6 @@ class JingleSession
 		REASON_UNSUPPORTED_APPLICATIONS,
 		REASON_UNSUPPORTED_TRANSPORTS
 	} SessionReason;
-	typedef std::list<JingleContent>	ContentList;
 	
 	
 
@@ -331,6 +332,10 @@ class JingleSession
 
         ContentList     localContents() { return m_local_contents; }
         ContentList     remoteContents() { return m_remote_contents; }
+
+        /** @brief Create string representation for human reading. */
+        std::string     describe();
+
 		
 	ContentList	m_local_contents;
 	ContentList     m_remote_contents;
@@ -362,6 +367,7 @@ class JingleSession
 		static SessionReason reasonFromString(const std::string &reason);
         public:
 		static std::string stringFromReason(SessionReason reason);
+                static std::string stringFromState(SessionState state);
 };
 
 #endif

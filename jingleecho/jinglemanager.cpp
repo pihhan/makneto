@@ -1,6 +1,8 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <ctime>
+
 #include <gloox/stanza.h>
 #include <gloox/disco.h>
 #include "jinglemanager.h"
@@ -16,6 +18,7 @@ JingleManager::JingleManager(ClientBase *base)
         base->disco()->addFeature(XMLNS_JINGLE);
         base->disco()->addFeature(XMLNS_JINGLE_RAWUDP);
         base->disco()->addFeature(XMLNS_JINGLE_RTP);
+        m_seed = (unsigned int) time(NULL);
 }
 
 std::string JingleManager::getSid(Stanza *stanza)
@@ -51,9 +54,10 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 				session = new JingleSession(m_base);
 			jingle = stanza->findChild("jingle", "xmlns", XMLNS_JINGLE);
 			if (jingle) {
-				session->parse(stanza);
+				session->parse(stanza, true);
 				switch (session->action()) {
 					case JingleSession::ACTION_INITIATE:
+                                                session->setState(JingleSession::JSTATE_PENDING);
 						addSession(session);
 						if (m_handler) {
 							replyAcknowledge(stanza);
@@ -74,8 +78,9 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 						break;
 					case JingleSession::ACTION_TERMINATE:
 						if (m_handler && local_session) {
-							replyAcknowledge(stanza);
-							result = m_handler->handleSessionTermination(local_session);
+                                                    local_session->setState(JingleSession::JSTATE_TERMINATED);
+						    replyAcknowledge(stanza);
+						    result = m_handler->handleSessionTermination(local_session);
 						} else return false;
 						
 					default:
@@ -202,15 +207,19 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
         ls->setSelf(self());
         ls->setRemote(session->from());
         ls->setAction(JingleSession::ACTION_ACCEPT);
-        ls->addLocalContent(audioContent());
-        ls->replaceRemoteContent(session->localContents());
+        JingleContent newcontent = audioContent();
+        ls->addLocalContent(newcontent);
+        ls->replaceRemoteContent(session->remoteContents());
         ls->setState(JingleSession::JSTATE_ACTIVE);
+        session->addLocalContent(newcontent);
+        session->setState(JingleSession::JSTATE_ACTIVE);
+        session->setResponder(self());
 
 	Tag *jingle = ls->tag();
 
         addSession(ls);	
 	std::string id = m_base->getID();
-	Stanza *stanza = createJingleStanza(session->initiator(), id, StanzaIqSet, jingle);
+	Stanza *stanza = createJingleStanza(ls->to(), id, StanzaIqSet, jingle);
 	m_base->send(stanza);
         return ls;
 }

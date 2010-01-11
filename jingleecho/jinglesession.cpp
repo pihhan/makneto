@@ -52,7 +52,7 @@ void JingleSession::parse(const Stanza *stanza, bool remote)
 		if (remote) 
 			addRemoteContent(content);
 		else
-			addContent(content);
+			addLocalContent(content);
 	}
 }
 
@@ -404,6 +404,27 @@ std::string JingleSession::stringFromReason(SessionReason reason)
 	else return std::string();
 }
 
+std::string JingleSession::stringFromState(SessionState state)
+{
+    switch (state) {
+        case JSTATE_NULL:
+            return "null";
+        case JSTATE_ACTIVE:
+            return "active";
+        case JSTATE_PENDING:
+            return "pending";
+        case JSTATE_TERMINATED:
+            return "terminated";
+        default:
+            return std::string();
+    }
+}
+
+/** @brief Combine into this session remote content from given session.
+    @param session parsed from incoming stanza
+    @param remote if true, remote contents from session are put to my remote,
+        in other case local contents from session are put to my remote contents.
+*/
 bool JingleSession::mergeSession(JingleSession *session, bool remote)
 {
 	if (!session)
@@ -415,9 +436,11 @@ bool JingleSession::mergeSession(JingleSession *session, bool remote)
 	if (remote) {
 		if (session->action() == ACTION_ACCEPT) {
 			m_lastaction = session->action();
-			m_remote_contents = session->m_local_contents;
+			m_remote_contents = session->m_remote_contents;
 		}
-	} 
+	} else {
+                m_remote_contents = session->m_local_contents;
+        }
         return true;
 }
 
@@ -453,4 +476,29 @@ void JingleSession::replaceLocalContent(const ContentList &list)
 void JingleSession::setCaller(bool caller)
 {
     m_am_caller = caller;
+}
+
+std::string JingleSession::describe()
+{
+    std::string reply = "Jingle session id=\""+ m_sid + "\"\n";
+    reply += "initiator: " + m_initiator.full() + "\n";
+    reply += "from: " + m_from.full() + "\n";
+    reply += "to: " + m_to.full() + "\n";
+    reply += "remote: " + remote().full() + "\n";
+    reply += "state: " + stringFromState(state()) + "\n";
+    reply += "Local contents:\n";
+    for (ContentList::const_iterator it=m_local_contents.begin(); 
+            it!=m_local_contents.end(); it++) {
+        gloox::Tag *t = it->tag();
+        reply += "     "+ t->xml() + "\n";
+        delete t;
+    }
+    reply += "Remote contents:\n";
+    for (ContentList::const_iterator it=m_remote_contents.begin(); 
+            it!=m_remote_contents.end(); it++) {
+        gloox::Tag *t = it->tag();
+        reply += "    "+ t->xml() + "\n";
+        delete t;
+    }
+    return reply;
 }

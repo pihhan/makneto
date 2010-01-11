@@ -141,7 +141,8 @@ void EchoClient::sendHelp(const Stanza *stanza)
         "disco [target jid]\n"
         "version [target jid]\n"
         "call [target]\n"
-        "accept [sid]\n";
+        "accept [sid]\n"
+        "sessions\n";
     sendChatMessage(stanza->from(), helpmsg);
 }
 
@@ -225,6 +226,15 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
                 m_jingle->acceptAudioSession(session);
                 sendChatMessage(stanza->from(), "session accepted");
             }
+
+        } else if (cmd == "sessions") {
+            std::string r = "Sessions List:\n";
+            JingleManager::SessionMap map = m_jingle->allSessions();
+            for (JingleManager::SessionMap::const_iterator it=map.begin();
+                    it != map.end(); it++) {
+                r += (it->second)->describe() + "\n";
+            }
+            sendChatMessage(stanza->from(), r);
 
 #ifdef DNS_RESOVLER
 	} else if (cmd == "dns") {

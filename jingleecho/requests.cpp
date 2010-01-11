@@ -204,6 +204,9 @@ JingleSession::SessionReason RequestList::handleNewSession(JingleSession *sessio
         std::string sid;
         if (session) 
             sid = session->sid();
+        if (session->initiator())
+            from = session->from().full() + " on behalf " 
+                + session->initiator().full();
 	m_client->broadcastChatMessage("Incoming call from "+ from 
                 + " with id:" + sid);
 	
@@ -217,10 +220,13 @@ JingleSession::SessionReason RequestList::handleNewSession(JingleSession *sessio
 
 JingleSession::SessionReason RequestList::handleSessionAccept(JingleSession *session, JingleSession *update)
 {
-    
-    m_client->broadcastChatMessage("Session accepted");
-    std::cout << "handler JingleSessionAccept" << __FUNCTION__ << std::endl;
-    return JingleSession::REASON_UNDEFINED;
+    gloox::JID from = session->initiator();
+    if (!from)
+        from = session->from();
+    m_client->sendChatMessage(from, "Session accepted");
+
+    std::cout << "handler JingleSessionAccept " << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_SUCCESS;
 }
 
 JingleSession::SessionReason RequestList::handleSessionChange(JingleSession *session, JingleSession *update)
@@ -242,12 +248,13 @@ JingleSession::SessionReason RequestList::handleSessionTermination(JingleSession
 JingleSession::SessionReason RequestList::handleSessionError(JingleSession *session, const gloox::Stanza *stanza)
 {
     std::string sid;
+    std::string description = EchoClient::describeError(stanza);
     if (session) {
         m_client->broadcastChatMessage("Jingle Error for session id:" 
-                + session->sid());
+                + session->sid() + ": " + description);
     } else {
         m_client->broadcastChatMessage("Jingle Error came from " + stanza->from().full()
-                + " without session");
+                + " without session: "+ description);
     }
     std::cout << "handler " << __FUNCTION__ << std::endl;
     return JingleSession::REASON_UNDEFINED;
