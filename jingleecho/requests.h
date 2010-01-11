@@ -12,6 +12,7 @@
 #include <gloox/adhoccommandprovider.h>
 
 #include "versionhandler.h"
+#include "jinglesession.h"
 #include "jinglemanager.h"
 
 namespace gloox {
@@ -28,7 +29,7 @@ class Request
         DISCO_INFO,
         VCARD,
         VERSION,
-		JINGLE
+	JINGLE
     } RequestType;
 
     Request();
@@ -64,6 +65,8 @@ class RequestList : public gloox::DiscoHandler,
     Request createRequest(Request::RequestType t);
     void createDiscoRequest(gloox::JID origin, gloox::JID target, const std::string &node = std::string());
     void createVersionRequest(gloox::JID origin, gloox::JID target);
+    /** @brief Only allocate request, not any network action. */
+    Request createJingleRequest(const gloox::JID &origin, JingleSession *session);
 
 	virtual void handleVersion(gloox::Stanza *stanza, int context);
 	

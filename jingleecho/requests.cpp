@@ -55,6 +55,10 @@ void RequestList::handleDiscoInfoResult(Stanza *stanza, int context)
         result.append(stanza->from() + "\n");
 
         Tag * query = stanza->findChild("query");
+        if (!query) {
+            m_client->sendChatMessage(r.from, "(empty info)");
+            return;
+        }
         Tag::TagList identities = query->findChildren("identity");
         Tag::TagList features = query->findChildren("feature");
         result.append("Identities: \n");
@@ -80,6 +84,10 @@ void RequestList::handleDiscoItemsResult(Stanza *stanza, int context)
         result.append(stanza->from() + "\n");
 
         Tag * query = stanza->findChild("query");
+        if (!query) {
+            m_client->sendChatMessage(r.from, "(no items)");
+            return;
+        }
         Tag::TagList items = query->findChildren("item");
         result.append("Items: \n");
         for (Tag::TagList::const_iterator it=items.begin(); it!=items.end(); it++) {
@@ -243,5 +251,12 @@ JingleSession::SessionReason RequestList::handleSessionError(JingleSession *sess
     }
     std::cout << "handler " << __FUNCTION__ << std::endl;
     return JingleSession::REASON_UNDEFINED;
+}
+    
+Request RequestList::createJingleRequest(const JID &origin, JingleSession *session)
+{
+    Request r = createRequest(Request::JINGLE);
+    r.data = session;
+    return r;
 }
 

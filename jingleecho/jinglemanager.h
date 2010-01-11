@@ -4,7 +4,9 @@
 
 #include <string>
 #include <map>
+#include <gloox/gloox.h>
 #include <gloox/iqhandler.h>
+#include <gloox/stanza.h>
 
 #include "jinglesession.h"
 
@@ -24,6 +26,9 @@ class JingleActionHandler
 		
 };
 
+
+/** @brief Create manager for jingle sessions. 
+    @author Petr Mensik <pihhan@cipis.net> */
 class JingleManager : public gloox::IqHandler
 {
 	public:
@@ -34,8 +39,8 @@ class JingleManager : public gloox::IqHandler
 	virtual bool handleIq(gloox::Stanza *stanza);
 	virtual bool handleIqID(gloox::Stanza *stanza, int content);
 	
-	JingleSession * initiateAudioSession(const gloox::JID &from, const gloox::JID &to);
-        void acceptAudioSession(JingleSession *session);
+	JingleSession * initiateAudioSession(const gloox::JID &to);
+        JingleSession * acceptAudioSession(JingleSession *session);
         void replyTerminate(const gloox::Stanza *stanza, JingleSession::SessionReason reason, const std::string &sid="");
 	JingleSession * getSession(const std::string &sid);
 	
@@ -49,12 +54,34 @@ class JingleManager : public gloox::IqHandler
 
         SessionMap              allSessions()
         { return m_sessions; }
+
+        gloox::JID  self()  { return m_base->jid(); }
 	
+
+	unsigned int randomPort();
+	std::string	randomId();
+	
+	/** @brief Get list of IPs this machine has. */
+	JingleTransport::CandidateList	    localUdpCandidates();
+	JingleTransport			    localTransport();
+	
+	JingleRtpContentDescription		audioDescription();
+        JingleContent                           audioContent();
+
+
+        static gloox::Stanza * createJingleStanza(const gloox::JID &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
+
+        JingleSession * initiateEmptySession(const gloox::JID &to, 
+                const gloox::JID &initiator = gloox::JID()  );
+        JingleSession * initiateAudioSession(const gloox::JID &to, 
+                const gloox::JID &initiator=gloox::JID()    );
+
 	protected:
 	
 	SessionMap m_sessions;
 	gloox::ClientBase *m_base;
 	JingleActionHandler	*m_handler;
+        unsigned int                 m_seed;
 };
 
 

@@ -19,22 +19,10 @@ static const std::string jingle_session_reason_desc[] = { "undefined",
 
 
 JingleSession::JingleSession(ClientBase *base)
-	: m_client(base), m_state(JSTATE_NULL)
+	: m_client(base), m_state(JSTATE_NULL), m_lastaction(ACTION_NONE)
 {
 	m_sid = m_client->getID();
 	time((time_t *) &m_seed);
-}
-
-/** @brief Get unprivileged random port. */
-unsigned int JingleSession::randomPort()
-{
-	unsigned int port = (rand_r(&m_seed) % 32000) + 1024;
-        return port;
-}
-
-std::string JingleSession::randomId()
-{
-	return m_client->getID();
 }
 
 void JingleSession::parse(const Stanza *stanza, bool remote)
@@ -47,6 +35,15 @@ void JingleSession::parse(const Stanza *stanza, bool remote)
 	m_responder = jingle->findAttribute("responder");
 	std::string action = jingle->findAttribute("action");
 	m_lastaction = actionFromString(action);
+        m_to = stanza->to();
+        m_from = stanza->from();
+        if (m_lastaction== ACTION_INITIATE) {
+            m_caller = stanza->from();
+            m_responder = stanza->to();
+        } else if (m_lastaction == ACTION_ACCEPT) {
+            m_caller = stanza->to();
+            m_responder = stanza->from();
+        }
 	Tag::TagList contents = jingle->findChildren("content");
 	
 	for (Tag::TagList::iterator it=contents.begin(); it!=contents.end(); it++) {
@@ -68,6 +65,16 @@ void JingleSession::setJids(const JID &initiator, const JID &receiver)
 void JingleSession::addRemoteContent(const JingleContent &content)
 {
 	m_remote_contents.push_back(content);
+}
+
+void JingleSession::addParticipant(const gloox::JID &jid)
+{
+    m_participants.push_back(jid);
+}
+
+void JingleSession::addParticipant(const JingleParticipant &p)
+{
+    m_participants.push_back(p);
 }
 
 void JingleContent::parse(const Tag *tag)
@@ -239,7 +246,7 @@ Tag * JingleRtpPayload::tag() const
 	return t;
 }
 
-
+#if 0
 JingleTransport::CandidateList JingleSession::localUdpCandidates()
 {
 	JingleTransport::CandidateList cl;
@@ -272,19 +279,7 @@ JingleTransport JingleSession::localTransport()
 	return t;
 }
 
-JingleRtpContentDescription	JingleSession::audioDescription()
-{
-	JingleRtpContentDescription d;
-	d.m_xmlns = "urn:xmpp:jingle:apps:rtp:1";
-	d.addPayload(JingleRtpPayload(96, "speex", 16000));
-	d.addPayload(JingleRtpPayload(97, "speex", 8000));
-	return d;
-}
-
-JingleContent   JingleSession::audioContent()
-{
-    return JingleContent(localTransport(), audioDescription() );
-}
+#endif
 
 Tag * JingleContent::tag() const
 {
@@ -310,17 +305,24 @@ Tag * JingleSession::tag(SessionAction action) const
 	Tag *t = new Tag("jingle");
 	t->addAttribute("xmlns", XMLNS_JINGLE);
 	t->addAttribute("sid", m_sid);
-	switch (m_lastaction) {
-		case ACTION_INITIATE:	t->addAttribute("action", "initiate"); break;
-		case ACTION_ACCEPT:		t->addAttribute("action", "accept"); break;
-		case ACTION_TERMINATE:	t->addAttribute("action", "terminate"); break;
+        if (action == ACTION_NONE)
+            action = m_lastaction;
+	switch (action) {
+		case ACTION_INITIATE:	
+                    t->addAttribute("action", "initiate"); break;
+		case ACTION_ACCEPT: 
+                    t->addAttribute("action", "accept"); break;
+		case ACTION_TERMINATE:	
+                    t->addAttribute("action", "terminate"); break;
 		default: break;
 	}
 	
 	// TODO: nejak vybrat action
 	if (m_initiator)
-		t->addAttribute("initiator", m_initiator);
-	for (ContentList::const_iterator it=m_contents.begin(); it!=m_contents.end(); it++) {
+		t->addAttribute("initiator", m_initiator.full());
+	for (ContentList::const_iterator it=m_local_contents.begin(); 
+            it!=m_local_contents.end(); 
+            it++) {
 		t->addChild((it)->tag());
 	}
 	return t;
@@ -336,29 +338,37 @@ JingleContent::JingleContent(const JingleTransport &transport, const JingleRtpCo
 }
 
 
-void JingleSession::addContent(const JingleContent &content)
+void JingleSession::addLocalContent(const JingleContent &content)
 {
-	m_contents.push_back(content);
+	m_local_contents.push_back(content);
 }
 
-
+/** @brief Prepare structure for initialization. */
 int JingleSession::initiateAudioSession(const JID &from, const JID &to)
 {
+#ifdef REFACTOR
 	JingleContent content( localTransport(), audioDescription() );
 	m_initiator = from;
-	m_target = to;
+	m_caller = to;
 	m_state = JSTATE_PENDING;
 	m_sid = randomId();
+        m_lastaction = ACTION_INITIATE;
 	addContent(content);	
+#endif
 	return 1;
 }
 
 int JingleSession::acceptAudioSession(JingleSession *session)
 {
+        if (!session)
+            return 0;
+#ifdef REFACTOR
 	JingleContent content( localTransport(), audioDescription() );
 	m_state = JSTATE_ACTIVE;
-	m_sid = randomId();
+	m_sid = session->sid();
+        m_lastaction = ACTION_ACCEPT;
 	addContent(content);
+#endif
         return 1;
 }
 
@@ -405,8 +415,42 @@ bool JingleSession::mergeSession(JingleSession *session, bool remote)
 	if (remote) {
 		if (session->action() == ACTION_ACCEPT) {
 			m_lastaction = session->action();
-			m_remote_contents = session->m_contents;
+			m_remote_contents = session->m_local_contents;
 		}
 	} 
         return true;
+}
+
+gloox::JID  JingleSession::remote() const
+{
+    return m_remote_jid;
+}
+
+JingleSession * JingleSession::createReply(JingleSession *remote)
+{
+    if (!remote)
+        return NULL;
+    JingleSession *reply = new JingleSession(remote->m_client);
+    reply->setSid(remote->sid());
+    reply->setInitiator(remote->initiator());
+    reply->setFrom(remote->to());
+    reply->setTo(remote->from());
+    reply->setRemote(remote->from());
+    return reply;
+}
+
+
+void JingleSession::replaceRemoteContent(const ContentList &list)
+{
+    m_remote_contents = list;
+}
+
+void JingleSession::replaceLocalContent(const ContentList &list)
+{
+    m_local_contents = list;
+}
+
+void JingleSession::setCaller(bool caller)
+{
+    m_am_caller = caller;
 }

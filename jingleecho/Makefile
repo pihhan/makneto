@@ -21,4 +21,8 @@ client: $(HEADERS) $(OBJECTS)
 
 clean:
 	rm -f *.o client
-    
+   
+tags: $(SOURCES) $(HEADERS)
+	ctags $(SOURCES) $(HEADERS)
+
+ 

@@ -1,7 +1,11 @@
 
+#include <cstdlib>
 #include <iostream>
 #include <gloox/stanza.h>
+#include <gloox/disco.h>
 #include "jinglemanager.h"
+
+#include "ipv6/v6interface.h"
 
 using namespace gloox;
 
@@ -9,6 +13,9 @@ JingleManager::JingleManager(ClientBase *base)
 	: m_base(base)
 {
 	base->registerIqHandler(this, XMLNS_JINGLE);
+        base->disco()->addFeature(XMLNS_JINGLE);
+        base->disco()->addFeature(XMLNS_JINGLE_RAWUDP);
+        base->disco()->addFeature(XMLNS_JINGLE_RTP);
 }
 
 std::string JingleManager::getSid(Stanza *stanza)
@@ -39,7 +46,6 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 		case StanzaIqGet:
 			break;
 		case StanzaIqSet:
-			sid = getSid(stanza);
 			local_session = getSession(sid);
 			if (!session)
 				session = new JingleSession(m_base);
@@ -55,7 +61,6 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 						} else return false;
 						break;
 					case JingleSession::ACTION_ACCEPT:
-						local_session = getSession(sid);
 						if (!local_session) {
 							std::cerr << "Jingle accept pro neexistujici session" << std::endl;
 							return false;
@@ -78,6 +83,9 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 						
 				}
 			} else { // if jingle
+                            Tag * query = stanza->findChild("query");
+                            if (query) 
+                                std::cerr << "Query found inside jingle request" << std::endl;
 				return false;
 			}
 			break;
@@ -89,7 +97,8 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 			break;
 		case StanzaIqError:
 			if (!local_session) {
-				std::cerr << "Chyba pro session, kterou neobsluhujeme!" << std::endl;
+				std::cerr << "Chyba pro session, kterou neobsluhujeme! id:"
+                                << sid << std::endl;
 				return false;
 			}
 			if (m_handler) {
@@ -121,32 +130,89 @@ void JingleManager::removeSession(const std::string &sid)
 	m_sessions.erase(sid);
 }
 
-JingleSession * JingleManager::initiateAudioSession(const gloox::JID &from, const gloox::JID &to)
+/** @brief Create iq stanza with jingle child instead of query. */
+Stanza * JingleManager::createJingleStanza(const gloox::JID &to, const std::string &id, enum StanzaSubType type, Tag *jingle)
+{
+        Tag *stanzatag = new Tag("iq");
+        stanzatag->addAttribute("id", id);
+        switch (type) {
+            case StanzaIqGet:
+                stanzatag->addAttribute("type", "get");
+                break;
+            case StanzaIqSet:
+                stanzatag->addAttribute("type", "set");
+                break;
+            case StanzaIqResult:
+                stanzatag->addAttribute("type", "result");
+                break;
+            case StanzaIqError:
+                stanzatag->addAttribute("type", "error");
+                break;
+            default:
+                return NULL;
+        }
+        if (to)
+            stanzatag->addAttribute("to", to.full());
+        stanzatag->addChild(jingle);
+        Stanza *stanza = new Stanza(stanzatag);
+        return stanza;
+}
+
+JingleSession * JingleManager::initiateEmptySession(
+        const gloox::JID &to, 
+        const gloox::JID &initiator) 
 {
 	JingleSession *session = new JingleSession(m_base);
-        session->addContent(session->audioContent());
-	session->initiateAudioSession(from, to);
+        if (!session) 
+            return NULL;
+        session->setSid(randomId());
+        session->setAction(JingleSession::ACTION_INITIATE);
+//	session->initiateAudioSession(from, to);
+        session->setSelf(self());
+        session->setCaller(true);
+        session->setRemote(to);
+        session->setTo(to);
+        session->setFrom(self());
+        if (initiator)
+            session->setInitiator(initiator);
+        return session;
+}
+
+JingleSession * JingleManager::initiateAudioSession(
+    const gloox::JID &to, 
+    const gloox::JID &initiator)
+{
+        JingleSession *session = initiateEmptySession(to, initiator);
+        session->addLocalContent(audioContent());
 	Tag *jingle = session->tag(JingleSession::ACTION_INITIATE);
 	addSession(session);
 	
 	std::string id = m_base->getID();
-	Stanza *stanza = Stanza::createIqStanza(to, id, StanzaIqSet, XMLNS_JINGLE, jingle);
+	Stanza *stanza = createJingleStanza(to, id, StanzaIqSet, jingle);
 	m_base->send(stanza);
         return session;
 }
 
 
-void JingleManager::acceptAudioSession(JingleSession *session)
+JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 {
-	JingleSession *ls = new JingleSession(m_base);
-	ls->acceptAudioSession(session);
-	Tag *jingle = ls->tag(JingleSession::ACTION_ACCEPT);
-	
+	JingleSession *ls = JingleSession::createReply(session);
+        if (!ls)
+            return NULL;
+        ls->setSelf(self());
+        ls->setRemote(session->from());
+        ls->setAction(JingleSession::ACTION_ACCEPT);
+        ls->addLocalContent(audioContent());
+        ls->replaceRemoteContent(session->localContents());
+        ls->setState(JingleSession::JSTATE_ACTIVE);
+
+	Tag *jingle = ls->tag();
+
+        addSession(ls);	
 	std::string id = m_base->getID();
-	Stanza *stanza = Stanza::createIqStanza(session->initiator(), id, StanzaIqSet, XMLNS_JINGLE, jingle);
+	Stanza *stanza = createJingleStanza(session->initiator(), id, StanzaIqSet, jingle);
 	m_base->send(stanza);
-	
-	session->setState(JingleSession::JSTATE_ACTIVE);
+        return ls;
 }
 
 /** @brief Create result reply to specified stanza with matching id. */
@@ -173,6 +239,66 @@ void JingleManager::replyTerminate(const Stanza *stanza, JingleSession::SessionR
 		Stanza *reply = Stanza::createIqStanza(stanza->from(), id, StanzaIqSet, XMLNS_JINGLE, jingle);
 		m_base->send(reply);
 	}
+}
+
+
+
+JingleTransport::CandidateList JingleManager::localUdpCandidates()
+{
+	JingleTransport::CandidateList cl;
+	char ** charlist = getAddressList(NULL, AFB_ANY, SCOPE_GLOBAL);
+	if (!charlist) {
+		std::cerr << "Chyba pri ziskavani lokalnich adres." << std::endl;
+		return cl;
+	}
+	for (char **it=charlist; it && *it; it++) {
+		JingleUdpCandidate candidate;
+		candidate.ip = std::string(*it);
+		candidate.port = randomPort();
+		candidate.id = randomId();
+		candidate.component = 0;
+		candidate.generation = 0;
+		candidate.natType = JingleCandidate::NAT_NONE;
+		cl.push_back(candidate);
+	}
+	v6Destroylist(charlist);
+	return cl;
+}
+
+JingleTransport JingleManager::localTransport()
+{
+	JingleTransport t;
+	t.m_xmlns = "urn:xmpp:jingle:transports:ice-udp:1";
+	t.m_ufrag = randomId();
+	t.m_pwd = randomId();
+	t.candidates = localUdpCandidates();
+	return t;
+}
+
+/** @brief Get unprivileged random port. */
+unsigned int JingleManager::randomPort()
+{
+	unsigned int port = (((unsigned int) rand_r(&m_seed)) % 32000) + 1024;
+        return port;
+}
+
+std::string JingleManager::randomId()
+{
+	return m_base->getID();
+}
+
+JingleRtpContentDescription	JingleManager::audioDescription()
+{
+	JingleRtpContentDescription d;
+	d.m_xmlns = "urn:xmpp:jingle:apps:rtp:1";
+	d.addPayload(JingleRtpPayload(96, "speex", 16000));
+	d.addPayload(JingleRtpPayload(97, "speex", 8000));
+	return d;
+}
+
+JingleContent   JingleManager::audioContent()
+{
+    return JingleContent(localTransport(), audioDescription() );
 }
 
 
