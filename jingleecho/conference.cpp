@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "conference.h"
 
 
@@ -12,7 +13,9 @@ Conference::Conference(GstElement *bin)
 
     m_fsconference = gst_element_factory_make("fsrtpconference", NULL);
     g_assert(m_fsconference);
-
+    if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
+        std::cerr << "Chyba pri pridavani conference do pipeline" << std::endl;
+    }
 
 }
 

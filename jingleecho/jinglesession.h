@@ -59,6 +59,9 @@ class JingleRtpContentDescription : public JingleContentDescription
 {
     public:
 
+    typedef enum { TYPE_UNKNOWN, TYPE_AUDIO, TYPE_VIDEO }
+        MediaType;
+
     typedef std::list<JingleRtpPayload> PayloadList;
 	
 	void addPayload(const JingleRtpPayload &payload) 

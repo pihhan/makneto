@@ -9,8 +9,6 @@
 #include <gst/gst_interface.h>
 #include <gst/farsight/fs-conference-iface.h>
 
-#include "confexception.h"
-
 class Conference;
 
 class Session
@@ -21,6 +19,10 @@ class Session
     FsStream *createStream(FsParticipant *participant);
 
     void setRemote(const std::string &ip, int port);
+    void setRemote(const GList *list);
+    void setLocalCodec(const GList *codecs);
+    bool setRemoteCodec(const GList *codecs);
+    GstPad * sink();
 
     private:
     FsSession *m_session;
