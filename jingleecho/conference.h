@@ -6,28 +6,14 @@
 #include <list>
 
 #include <gst/gst.h>
-#include <gst/gst_interface.h>
+#include <gst/gstinterface.h>
 #include <gst/farsight/fs-conference-iface.h>
 
-#include "confexception.h"
+#include "qpipeline.h"
+#include "session.h"
 
-class Conference;
 
-class Session
-{
-    public:
-    Session(Conference *conf);
-
-    FsStream *createStream(FsParticipant *participant);
-
-    void setRemote(const std::string &ip, int port);
-
-    private:
-    FsSession *m_session;
-    Conference *m_conf;
-    GError      *m_lasterror;
-    FsStream    *m_stream;
-};
+typedef std::list<Session *>    SessionList;
 
 /** Representation for one multimedia session between two people.
 */
@@ -36,10 +22,10 @@ class Conference
     public:
 
     Conference(GstElement *bin);
-
-    static bus_watch(GstBus *bus, GstElement *element, gpointer user_data);
+    Conference(QPipeline *pipeline);
 
     GstElement * pipeline();
+    GstElement * conference();
 
     FsParticipant * createParticipant( const std::string &name);
 
@@ -47,12 +33,32 @@ class Conference
     void setOutput(GstElement *output);
 
     GList * getLocalCandidates();
+    void addSession(Session *session);
+    void removeSession(Session *session);
+    void setNicknames(const std::string &local, const std::string &remote);
+
+    FsParticipant * localParticipant()
+    { return m_selfParticipant; }
+
+    FsParticipant * remoteParticipant()
+    { return m_remoteParticipant; }
+
+    void onRecvCodecsChanged(GList *codecs);
+    void onSendCodecsChanged(GList *codecs);
+    void onLocalCandidatesPrepared();
+    void onNewLocalCandidate(FsCandidate *candidate);
+
+    static gboolean messageCallback(GstBus *bus, GstMessage *message, gpointer user_data);
+    
+    void srcPadAdded(Session *session, GstPad *pad, FsCodec *codec);
 
     private:
+    QPipeline  * m_qpipeline;
     GstElement * m_pipeline;
     GstElement * m_fsconference;
     FsParticipant * m_selfParticipant;
     FsParticipant * m_remoteParticipant;
+    SessionList     m_sessions;
 };
 
 #endif

@@ -55,6 +55,10 @@ void RequestList::handleDiscoInfoResult(Stanza *stanza, int context)
         result.append(stanza->from() + "\n");
 
         Tag * query = stanza->findChild("query");
+        if (!query) {
+            m_client->sendChatMessage(r.from, "(empty info)");
+            return;
+        }
         Tag::TagList identities = query->findChildren("identity");
         Tag::TagList features = query->findChildren("feature");
         result.append("Identities: \n");
@@ -80,6 +84,10 @@ void RequestList::handleDiscoItemsResult(Stanza *stanza, int context)
         result.append(stanza->from() + "\n");
 
         Tag * query = stanza->findChild("query");
+        if (!query) {
+            m_client->sendChatMessage(r.from, "(no items)");
+            return;
+        }
         Tag::TagList items = query->findChildren("item");
         result.append("Items: \n");
         for (Tag::TagList::const_iterator it=items.begin(); it!=items.end(); it++) {
@@ -184,5 +192,78 @@ void RequestList::handleAdhocCommand(const std::string &command, Tag *tag, const
 Request::Request()
     : context(0), type(NONE), data(0)
 {
+}
+
+
+
+/* jingle stuff */
+
+JingleSession::SessionReason RequestList::handleNewSession(JingleSession *session)
+{
+	std::string from = session->initiator().full();
+        std::string sid;
+        if (session) 
+            sid = session->sid();
+        if (session->initiator())
+            from = session->from().full() + " on behalf " 
+                + session->initiator().full();
+	m_client->broadcastChatMessage("Incoming call from "+ from 
+                + " with id:" + sid);
+	
+	Request r = createRequest(Request::JINGLE);
+	r.to = session->initiator();
+	r.data = (void *) session;
+	session->setContext(r.context);
+        addRequest(r);
+        return JingleSession::REASON_SUCCESS;
+}
+
+JingleSession::SessionReason RequestList::handleSessionAccept(JingleSession *session, JingleSession *update)
+{
+    gloox::JID from = session->initiator();
+    if (!from)
+        from = session->from();
+    m_client->sendChatMessage(from, "Session accepted");
+
+    std::cout << "handler JingleSessionAccept " << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_SUCCESS;
+}
+
+JingleSession::SessionReason RequestList::handleSessionChange(JingleSession *session, JingleSession *update)
+{
+    std::cout << "handler " << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_UNDEFINED;
+}
+
+JingleSession::SessionReason RequestList::handleSessionTermination(JingleSession *session)
+{
+    std::string sid;
+    if (session)
+        sid = session->sid();
+    std::cout << "handler " << __FUNCTION__ << std::endl;
+    m_client->broadcastChatMessage("Session id:"+ sid + " terminated.");
+    return JingleSession::REASON_UNDEFINED;
+}
+
+JingleSession::SessionReason RequestList::handleSessionError(JingleSession *session, const gloox::Stanza *stanza)
+{
+    std::string sid;
+    std::string description = EchoClient::describeError(stanza);
+    if (session) {
+        m_client->broadcastChatMessage("Jingle Error for session id:" 
+                + session->sid() + ": " + description);
+    } else {
+        m_client->broadcastChatMessage("Jingle Error came from " + stanza->from().full()
+                + " without session: "+ description);
+    }
+    std::cout << "handler " << __FUNCTION__ << std::endl;
+    return JingleSession::REASON_UNDEFINED;
+}
+    
+Request RequestList::createJingleRequest(const JID &origin, JingleSession *session)
+{
+    Request r = createRequest(Request::JINGLE);
+    r.data = session;
+    return r;
 }
 

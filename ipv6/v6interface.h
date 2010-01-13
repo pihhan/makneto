@@ -1,7 +1,9 @@
 
 #ifndef V6INTERFACE_H
 #define V6INTERFACE_H
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define PROC_IP6_PATH   "/proc/net/if_inet6"
 // TODO: zjistit nekde skutecnou hodnotu
@@ -37,6 +39,12 @@ char ** getIpv6AddressList(const char *interface);
 char ** getIpv6AddressList2(const char *interface);
 
 char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Scope scopes);
+AddressFamilyBits v6AFtoBits(unsigned char af);
+Ipv6Scope v6AddressScope(struct sockaddr *addr);
+void v6Destroylist(char **list);
 
+#ifdef __cplusplus
+} // extern C
+#endif
 #endif
 

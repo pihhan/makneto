@@ -12,6 +12,8 @@
 #include <gloox/adhoccommandprovider.h>
 
 #include "versionhandler.h"
+#include "jinglesession.h"
+#include "jinglemanager.h"
 
 namespace gloox {
     class EchoClient;
@@ -26,7 +28,8 @@ class Request
         DISCO_ITEMS,
         DISCO_INFO,
         VCARD,
-        VERSION
+        VERSION,
+	JINGLE
     } RequestType;
 
     Request();
@@ -40,7 +43,8 @@ class Request
 
 class RequestList : public gloox::DiscoHandler, 
         public gloox::AdhocCommandProvider,
-		public VersionReceiver
+		public VersionReceiver,
+		public JingleActionHandler
 {
     public:
     typedef std::vector<Request> RequestVector;
@@ -61,8 +65,18 @@ class RequestList : public gloox::DiscoHandler,
     Request createRequest(Request::RequestType t);
     void createDiscoRequest(gloox::JID origin, gloox::JID target, const std::string &node = std::string());
     void createVersionRequest(gloox::JID origin, gloox::JID target);
+    /** @brief Only allocate request, not any network action. */
+    Request createJingleRequest(const gloox::JID &origin, JingleSession *session);
 
 	virtual void handleVersion(gloox::Stanza *stanza, int context);
+	
+	/* jingle stuff */
+		JingleSession::SessionReason handleNewSession(JingleSession *session);
+		JingleSession::SessionReason handleSessionAccept(JingleSession *session, JingleSession *update);
+		JingleSession::SessionReason handleSessionChange(JingleSession *session, JingleSession *update);
+		JingleSession::SessionReason handleSessionTermination(JingleSession *sesion);
+		JingleSession::SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza);
+
 
 
     protected:

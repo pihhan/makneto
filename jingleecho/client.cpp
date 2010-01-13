@@ -4,7 +4,10 @@
 #include <gloox/jid.h>
 #include <gloox/disco.h>
 #include <gloox/rostermanager.h>
+#include <gloox/rosteritem.h>
+#ifdef DNS_RESOLVER
 #include <gloox/dns.h>
+#endif
 
 #include "client.h"
 #include "logger.h"
@@ -32,6 +35,10 @@ EchoClient::EchoClient(const std::string &jid, const std::string &password)
 
     m_requests = new RequestList(this);
     m_verhandler = new VersionIqHandler(m_client);
+    m_jingle = new JingleManager(m_client);
+    if (m_jingle) {
+        m_jingle->registerActionHandler(m_requests);
+    }
 }
 
 void EchoClient::initLog()
@@ -44,7 +51,7 @@ void EchoClient::initLog()
 
 void EchoClient::handlePresence(Stanza *stanza)
 {
-    std::cout << "Received presence from " << stanza->from() << std::endl;
+    std::cout << "Received presence from " << stanza->from().full() << std::endl;
 
     m_client->rosterManager()->handlePresence(stanza);
 }
@@ -127,9 +134,22 @@ std::string EchoClient::resolveToString(const std::string &domain, const std::st
 }
 #endif
 
+void EchoClient::sendHelp(const Stanza *stanza)
+{
+    std::string helpmsg = 
+        "Usage:\n"
+        "disco [target jid]\n"
+        "version [target jid]\n"
+        "call [target]\n"
+        "accept [sid]\n"
+        "sessions\n";
+    sendChatMessage(stanza->from(), helpmsg);
+}
+
 void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 {
     std::string body = stanza->body();
+    JID from(stanza->from());
     if (!body.empty()) {
         CL_DEBUG(m_client, "Message received: " + body);
         // m_client->send(bounceMessage(stanza));
@@ -145,7 +165,9 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
         if (!p.atEnd()) {
             param = p.nextToken().value();
         }
-        if (cmd == "disco") {
+        if (cmd == "help" || cmd == "?") {
+            sendHelp(stanza);
+        } else if (cmd == "disco") {
             JID target(stanza->from());
             if (!param.empty()) {
                 target = JID(param);
@@ -156,7 +178,7 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
             } else {
                 m_requests->createDiscoRequest(stanza->from(), target);
             }
-		} else if (cmd == "ver" || cmd == "version") {
+	} else if (cmd == "ver" || cmd == "version") {
 			JID target(stanza->from());
 			if (!param.empty())
 				target = JID(param);
@@ -166,8 +188,56 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 			} else {
 				m_requests->createVersionRequest(stanza->from(), target);
 			}
+        } else if (cmd == "call" || cmd == "initate") {
+            JID target(stanza->from());
+            if (!param.empty())
+                target = JID(param);
+
+            JingleSession *session = 
+                    m_jingle->initiateAudioSession(target, stanza->from()); 
+            if (session) {
+                std::string sid = session->sid();
+                m_requests->createJingleRequest(stanza->from(), session);
+                sendChatMessage(stanza->from(), " initiated session id:" + sid);
+            } else {
+                sendChatMessage(stanza->from(), "session is NULL");
+            }
+        } else if (cmd == "accept") {
+            JingleSession *session = NULL;
+            if (!param.empty()) {
+                session = m_jingle->getSession(param);
+                if (!session) {
+                    sendChatMessage(from, "no such session found.");
+                    return;
+                }
+            } else {
+                JingleManager::SessionMap map = m_jingle->allSessions();
+                JingleManager::SessionMap::iterator it = map.begin();
+                if (it != map.end()) {
+                    session = (*it).second;
+                    sendChatMessage(stanza->from(), " found first session id:" 
+                        + session->sid());
+                } else {
+                    sendChatMessage(stanza->from(), "no active session.");
+                }
+            }
+    
+            if (session) {
+                m_jingle->acceptAudioSession(session);
+                sendChatMessage(stanza->from(), "session accepted");
+            }
+
+        } else if (cmd == "sessions") {
+            std::string r = "Sessions List:\n";
+            JingleManager::SessionMap map = m_jingle->allSessions();
+            for (JingleManager::SessionMap::const_iterator it=map.begin();
+                    it != map.end(); it++) {
+                r += (it->second)->describe() + "\n";
+            }
+            sendChatMessage(stanza->from(), r);
+
 #ifdef DNS_RESOVLER
-		} else if (cmd == "dns") {
+	} else if (cmd == "dns") {
 			if (param.empty()) {
 				sendChatMessage(stanza->from(), "you have to specify name to resolve");
 				return;
@@ -349,3 +419,56 @@ VersionIqHandler *EchoClient::versionHandler()
 	return m_verhandler;
 }
 
+
+/** @brief Return list of online JIDs from roster.
+	@param resources if true, enumerate resources and fill full jids for each contact, \
+	with all online resources for each contact. if false, include only bare jids.
+*/
+JidList	EchoClient::getOnlineJids(bool resources)
+{
+	JidList list;
+	Roster *roster = m_client->rosterManager()->roster();
+	if (!roster)
+		return list;
+	for (Roster::iterator it=roster->begin(); it!=roster->end(); it++) {
+		RosterItem *item = it->second;
+		if (item) {
+			if (item->online() && !resources) 
+				list.push_back(item->jid());
+			else if (resources) {
+				JID jid(item->jid());
+				for (RosterItem::ResourceMap::const_iterator it=item->resources().begin(); it!=item->resources().end(); it++) {
+					jid.setResource(it->first);
+					list.push_back(jid);
+				}
+			}
+		}
+	}
+	return list;
+}
+
+
+bool EchoClient::isAdmin(const JID &jid)
+{
+	const std::string admingroup("admin");
+	RosterItem *item = m_client->rosterManager()->getRosterItem(jid);
+	if (!jid) // not in roster
+		return false;
+	else {
+		StringList groups = item->groups();
+		for (StringList::iterator it=groups.begin(); it!=groups.end(); it++) {
+			if ((*it) == admingroup)
+				return true; // is in admin group
+		}
+		return false; // is in roster, but not in admin group
+	}
+}
+
+/** @brief Create message and send it to all online contacts. */
+void EchoClient::broadcastChatMessage(const std::string &message)
+{
+	JidList online = getOnlineJids(true);
+	for (JidList::iterator it=online.begin(); it!=online.end(); it++) {
+		sendChatMessage(*it, message);
+	}
+}
