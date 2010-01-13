@@ -54,12 +54,17 @@ bool Session::createStream()
         g_value_take_boxed(&param[paramcount].value, m_localCandidates);
         paramcount++;
     }
+
     FsStream *stream = fs_session_new_stream(
         m_session,
         m_conf->remoteParticipant(),
         FS_DIRECTION_BOTH,
         "rawudp",
         paramcount, param, &m_lasterror);
+    if (m_lasterror) {
+        std::cerr << __FUNCTION__ << " fs_session_new_stream:" 
+                  << m_lasterror->message << std::endl;
+    }
     g_assert(stream);
     m_stream = stream;
     g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
