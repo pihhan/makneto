@@ -70,9 +70,19 @@ class JingleRtpContentDescription : public JingleContentDescription
 	virtual void parse(const gloox::Tag *tag);
         virtual gloox::Tag *tag() const;
 
+        std::string media() const
+        { return m_media; }
+
+        std::string xmlns() const
+        { return m_xmlns; }
+
+        MediaType   type() const
+        { return m_type; }
+
     PayloadList payloads;
 	std::string	m_xmlns;
 	std::string m_media;
+        MediaType   m_type;
 };
 
 /** @brief Class with parameters for one transport candidate for one content. 
@@ -339,8 +349,14 @@ class JingleSession
         ContentList     localContents() { return m_local_contents; }
         ContentList     remoteContents() { return m_remote_contents; }
 
+        JingleContent   firstRemoteContent();
+        JingleContent   firstLocalContent();
+
         /** @brief Create string representation for human reading. */
         std::string     describe();
+
+        void * data();
+        void setData(void *data);
 
 		
 	ContentList	m_local_contents;
@@ -367,6 +383,7 @@ class JingleSession
         /// not sure i need this global versioning
         int                     m_localversion; ///!< local version number of changes
         int                     m_ackedversion; ///!< version number we received acks from remote
+        void                    *m_data; ///!< Custom data about this session
 	
 	protected:
 		static SessionAction actionFromString(const std::string &action);

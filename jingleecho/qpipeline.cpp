@@ -1,8 +1,19 @@
 
-#include <gst/gst.h>
-#include <QDebug>
 
+#include <gst/gst.h>
 #include "qpipeline.h"
+
+#ifdef QT
+#include <QDebug>
+#else // !QT
+#include <iostream>
+#include <string>
+void qCritical(const std::string &msg)
+{
+    std::cerr << msg << std::endl;
+}
+#endif
+
 
 QPipeline::QPipeline()
 {
@@ -83,22 +94,24 @@ GstBus * QPipeline::bus()
 
 bool QPipeline::createAudioSource()
 {
-    gchar *env = g_getenv("AUDIOSOURCE");
+    const gchar *env = g_getenv("AUDIOSOURCE");
+    GError *err = NULL;
     if (env) {
-        m_source = gst_parse_bin_from_description(env);
+        m_source = gst_parse_bin_from_description(env, TRUE, &err);
     } else {
-        m_source = gst_parse_bin_from_description(DEFAULT_AUDIOSOURCE);
+        m_source = gst_parse_bin_from_description(DEFAULT_AUDIOSOURCE, TRUE, &err);
     }
     return (m_source != NULL);
 }
 
 bool QPipeline::createAudioSink()
 {
-    gchar *env = g_getenv("AUDIOSINK");
+    const gchar *env = g_getenv("AUDIOSINK");
+    GError *err = NULL;
     if (env) {
-        m_sink = gst_parse_bin_from_description(env);
+        m_sink = gst_parse_bin_from_description(env, TRUE, &err);
     } else {
-        m_sink = gst_parse_bin_from_description(DEFAULT_AUDIOSINK);
+        m_sink = gst_parse_bin_from_description(DEFAULT_AUDIOSINK, TRUE, &err);
     }
     return (m_sink != NULL);
 }

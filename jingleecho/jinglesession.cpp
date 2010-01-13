@@ -187,6 +187,11 @@ void JingleRtpContentDescription::parse(const Tag *tag)
 		return;
 	m_xmlns = tag->findAttribute("xmlns");
 	m_media = tag->findAttribute("media");
+        if (m_media == "audio") {
+            m_type = TYPE_AUDIO;
+        } else if (m_media == "video") {
+            m_type = TYPE_VIDEO;
+        }
 	
 	Tag::TagList payloads = tag->findChildren("payload");
 	for (Tag::TagList::iterator it=payloads.begin(); it!=payloads.end(); ++it) {
@@ -502,3 +507,33 @@ std::string JingleSession::describe()
     }
     return reply;
 }
+
+void * JingleSession::data()
+{
+    return m_data;
+}
+
+void JingleSession::setData(void *data)
+{
+    m_data = data;
+}
+
+JingleContent JingleSession::firstRemoteContent()
+{
+    if (m_remote_contents.size() > 0) {
+        return m_remote_contents.front();
+    } else {
+        return JingleContent();
+    }
+}
+
+JingleContent JingleSession::firstLocalContent()
+{
+    if (m_local_contents.size() > 0) {
+        return m_local_contents.front();
+    } else {
+        return JingleContent();
+    }
+}
+
+

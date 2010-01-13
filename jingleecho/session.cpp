@@ -8,7 +8,14 @@ Session::Session(Conference *conf)
       m_localCandidates(NULL)
 {
     GError *err =NULL;
-    m_session = fs_conference_new_session(conf->conference(), FS_MEDIA_TYPE_AUDIO, &err);
+    m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), FS_MEDIA_TYPE_AUDIO, &err);
+}
+
+Session::~Session()
+{
+    g_object_unref(m_stream);
+    g_object_unref(m_session);
+    fs_candidate_list_destroy(m_localCandidates);
 }
 
 FsStream *Session::createStream(FsParticipant *participant, const GList *lcandidates)

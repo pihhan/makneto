@@ -5,7 +5,9 @@
 
 #include <gloox/stanza.h>
 #include <gloox/disco.h>
+
 #include "jinglemanager.h"
+#include "fsjingle.h"
 
 #include "ipv6/v6interface.h"
 
@@ -70,7 +72,7 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 							return false;
 						}
 						local_session->mergeSession(session, true);
-						local_session->setState(JingleSession::JSTATE_ACTIVE);
+                                                acceptedAudioSession(local_session);
 						if (m_handler) {
 							replyAcknowledge(stanza);
 							result = m_handler->handleSessionAccept(local_session, session);
@@ -204,10 +206,11 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 	JingleSession *ls = JingleSession::createReply(session);
         if (!ls)
             return NULL;
+        JingleContent newcontent = audioContent();
+
         ls->setSelf(self());
         ls->setRemote(session->from());
         ls->setAction(JingleSession::ACTION_ACCEPT);
-        JingleContent newcontent = audioContent();
         ls->addLocalContent(newcontent);
         ls->replaceRemoteContent(session->remoteContents());
         ls->setState(JingleSession::JSTATE_ACTIVE);
@@ -217,11 +220,27 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 
 	Tag *jingle = ls->tag();
 
+        FstJingle *fsj = new FstJingle();
+        fsj->createAudioSession(session);
+        ls->setData(fsj);
+
         addSession(ls);	
 	std::string id = m_base->getID();
 	Stanza *stanza = createJingleStanza(ls->to(), id, StanzaIqSet, jingle);
 	m_base->send(stanza);
         return ls;
+}
+
+/** @brief Internal handle of confirmation or our outgoing call. */
+bool JingleManager::acceptedAudioSession(JingleSession *session)
+{
+    session->setState(JingleSession::JSTATE_ACTIVE);
+    
+    FstJingle *fsj = new FstJingle();
+    fsj->createAudioSession(session);
+
+    session->setData(fsj);
+    return true;
 }
 
 /** @brief Create result reply to specified stanza with matching id. */

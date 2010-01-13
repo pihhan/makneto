@@ -15,11 +15,11 @@ LIBS += $(FARSIGHT_LIBS)
 
 HEADERS = client.h logger.h parser.h requests.h versionhandler.h \
     jinglesession.h jinglemanager.h ipv6/v6interface.h \
-    fsjingle.h session.h conference.h
+    fsjingle.h session.h conference.h qpipeline.h
 SOURCES = client.cpp logger.cpp
 OBJECTS = client.o logger.o main.o parser.o requests.o versionhandler.o \
     jinglesession.o jinglemanager.o ipv6/v6interface.o \
-    fsjingle.h session.o conference.o
+    fsjingle.o session.o conference.o qpipeline.o
 
 client: $(HEADERS) $(OBJECTS)
 	$(CXX) -o client $(OBJECTS) $(LIBS)

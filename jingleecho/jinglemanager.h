@@ -41,6 +41,9 @@ class JingleManager : public gloox::IqHandler
 	
 	JingleSession * initiateAudioSession(const gloox::JID &to);
         JingleSession * acceptAudioSession(JingleSession *session);
+
+        bool acceptedAudioSession(JingleSession *session);
+
         void replyTerminate(const gloox::Stanza *stanza, JingleSession::SessionReason reason, const std::string &sid="");
 	JingleSession * getSession(const std::string &sid);
 	
