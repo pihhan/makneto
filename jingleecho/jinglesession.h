@@ -198,11 +198,12 @@ class JingleContent
 		JingleContent();
 		JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description);
 
-		JingleTransport m_transport;
-		JingleRtpContentDescription m_description;
 
 
-                JingleRtpContentDescription description() { return m_description; }
+                JingleRtpContentDescription description() const
+                { return m_description; }
+                JingleTransport transport() const
+                { return m_transport; }
 		
 	    void parse(const gloox::Tag *tag);
 	    gloox::Tag *tag() const;
@@ -212,6 +213,8 @@ class JingleContent
                 { m_owner = p; }
 
     //private:
+    JingleTransport     m_transport;
+    JingleRtpContentDescription m_description;
     std::string m_xmlns;
     std::string m_name;
     std::string m_media;

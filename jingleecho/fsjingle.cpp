@@ -1,7 +1,15 @@
 
 #include <glib.h>
+
 #include "fsjingle.h"
 
+
+
+FstJingle::FstJingle()
+{
+    pipeline = new QPipeline();
+    conference = new Conference(pipeline);
+}
 
 /** @brief Convert jingle structure to farsight format */
 FsCandiate * FstJingle::createFsCandidate(const JingleCandidate & candidate)
@@ -61,4 +69,24 @@ GList * FstJingle::createFsCandidateList(const JingleTransport &transport)
     return candidates;
 }
 
+/** @brief create audio session in farsight. */
+bool FstJingle::createAudioSession(const JingleContent &local, const JingleContent &remote)
+{
+    Session *session = new Session(conference);
+    
+    session->setLocal(localCandidates);
+    session->createStream();
+    session->setRemote(remoteCandidates);
+
+    GList *localCodecs = createFsCodecList(local.description());
+    session->setLocalCodec(localCodec);
+
+    GList *remoteCodecs = createFsCodecList(remote.description());
+    session->setRemoteCodec(remoteCodecs);
+
+    GList *remoteCandidates = createFsCandidateList(remote.transport());
+    GList *localCandidates = createFsCandidateList(local.transport());
+
+    conference.addSession(session);
+}
 
