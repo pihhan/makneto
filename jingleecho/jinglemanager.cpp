@@ -284,7 +284,7 @@ JingleTransport::CandidateList JingleManager::localUdpCandidates()
 		candidate.ip = std::string(*it);
 		candidate.port = randomPort();
 		candidate.id = randomId();
-		candidate.component = 0;
+		candidate.component = 1;
 		candidate.generation = 0;
 		candidate.natType = JingleCandidate::NAT_NONE;
 		cl.push_back(candidate);
