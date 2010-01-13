@@ -39,8 +39,13 @@ Conference::Conference(QPipeline *pipeline)
 FsParticipant * Conference::createParticipant( const std::string &name)
 {
     GError *error = NULL;
-    return fs_conference_new_participant(
+    FsParticipant *p = fs_conference_new_participant(
         FS_CONFERENCE(m_fsconference), name.c_str(), &error );
+    if (error) {
+    std::cerr << __FUNCTION__ << " fs_conference_new_participant: " <<
+        error->message << std::endl;
+    }
+    return p;
 }
 
 GList * Conference::getLocalCandidates()

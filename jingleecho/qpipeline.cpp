@@ -18,6 +18,7 @@ void qCritical(const std::string &msg)
 QPipeline::QPipeline()
 {
     m_pipe = gst_pipeline_new("qpipeline");
+    g_assert(m_pipe);
     m_bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipe));
     m_pausable = true;
 
@@ -102,6 +103,10 @@ bool QPipeline::createAudioSource()
         m_source = gst_parse_bin_from_description(DEFAULT_AUDIOSOURCE, TRUE, &err);
     }
     return (m_source != NULL);
+    if (err) {
+        std::cerr << __FUNCTION__ << " gst_parse_bin_from_description: " <<
+            err->message << std::endl;
+    }
 }
 
 bool QPipeline::createAudioSink()
@@ -112,6 +117,10 @@ bool QPipeline::createAudioSink()
         m_sink = gst_parse_bin_from_description(env, TRUE, &err);
     } else {
         m_sink = gst_parse_bin_from_description(DEFAULT_AUDIOSINK, TRUE, &err);
+    }
+    if (err) {
+        std::cerr << __FUNCTION__ << " gst_parse_bin_from_description: " <<
+            err->message << std::endl;
     }
     return (m_sink != NULL);
 }

@@ -274,7 +274,7 @@ void JingleManager::replyTerminate(const Stanza *stanza, JingleSession::SessionR
 JingleTransport::CandidateList JingleManager::localUdpCandidates()
 {
 	JingleTransport::CandidateList cl;
-	char ** charlist = getAddressList(NULL, AFB_ANY, SCOPE_GLOBAL);
+	char ** charlist = getAddressList(NULL, AFB_INET, SCOPE_GLOBAL);
 	if (!charlist) {
 		std::cerr << "Chyba pri ziskavani lokalnich adres." << std::endl;
 		return cl;

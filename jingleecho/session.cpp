@@ -9,6 +9,9 @@ Session::Session(Conference *conf)
 {
     GError *err =NULL;
     m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), FS_MEDIA_TYPE_AUDIO, &err);
+    if (err != NULL) {
+        std::cerr <<__FUNCTION__<< " fs_conference_new_session: "<< err->message << std::endl;
+    }
 }
 
 Session::~Session()
@@ -58,7 +61,8 @@ bool Session::createStream()
         "rawudp",
         paramcount, param, &m_lasterror);
     g_assert(stream);
-    g_signal_connect(stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
+    m_stream = stream;
+    g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
     return true;
 }
 
