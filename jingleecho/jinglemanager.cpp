@@ -224,7 +224,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
         fsj->createAudioSession(session);
         ls->setData(fsj);
 
-        addSession(ls);	
+//        addSession(ls);	
 	std::string id = m_base->getID();
 	Stanza *stanza = createJingleStanza(ls->to(), id, StanzaIqSet, jingle);
 	m_base->send(stanza);
