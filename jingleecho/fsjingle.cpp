@@ -1,8 +1,9 @@
 
+#include <iostream>
 #include <glib.h>
 
 #include "fsjingle.h"
-
+#include "logger/logger.h"
 
 
 FstJingle::FstJingle()
@@ -77,7 +78,7 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     GList *remoteCandidates = createFsCandidateList(remote.transport());
     GList *localCandidates = createFsCandidateList(local.transport());
 
-    session->setLocal(localCandidates);
+//    session->setLocal(localCandidates);
     session->createStream();
     session->setRemote(remoteCandidates);
 
@@ -87,7 +88,16 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     GList *remoteCodecs = createFsCodecList(remote.description());
     session->setRemoteCodec(remoteCodecs);
 
+    GstPad *audiosrc = pipeline->getAudioSourcePad();
+    GstPad *sink = session->sink();
+    g_assert(audiosrc && sink);
+    GstPadLinkReturn r = gst_pad_link(audiosrc, session->sink());
+    g_assert(r == GST_PAD_LINK_OK);
+
+//    gst_object_unref(audiosrc);
+
     conference->addSession(session);
+    LOGGER(logit) << "created Audio session" << std::endl;
     return true;
 }
 
@@ -104,10 +114,28 @@ bool FstJingle::createAudioSession(JingleSession *session)
         ++lit;
         ++rit;
     } 
-    return result;
+    LOGGER(logit) << "createAudioSession result: " << result << std::endl;
+
+    bool paused = pipeline->setState(GST_STATE_PAUSED);
+    LOGGER(logit) << "Paused pipeline: " << paused << std::endl;
+
+    LOGGER(logit) << "Pipeline state " << pipeline->current_state() 
+        << " pending " << pipeline->pending_state() << std::endl;
+
+    bool playing = true;
+#if 0 
+    playing = pipeline->setState(GST_STATE_PLAYING);
+    LOGGER(logit) << "Playing pipeline: " << playing << std::endl;
+    LOGGER(logit) << "Pipeline state " << pipeline->current_state() 
+        << " pending " << pipeline->pending_state() << std::endl;
+#endif
+    pipeline->describe();
+    return result && paused && playing;
 }
 
 void FstJingle::setNicknames(const std::string &local, const std::string &remote)
 {
     conference->setNicknames(local, remote);
 }
+
+

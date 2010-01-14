@@ -10,7 +10,7 @@
 #endif
 
 #include "client.h"
-#include "logger.h"
+#include "glogger.h"
 #include "parser.h"
 //#include "rosterator.h"
 
@@ -43,8 +43,8 @@ EchoClient::EchoClient(const std::string &jid, const std::string &password)
 
 void EchoClient::initLog()
 {
-    Logger::init();
-    m_client->logInstance().registerLogHandler(LogLevelDebug, LogAreaAll, logger);
+    GLogger::init();
+    m_client->logInstance().registerLogHandler(LogLevelDebug, LogAreaAll, glogger);
     //m_client->logInstance().registerLogHandler(LogLevelWarning, LogAreaAll, logger);
     //m_client->logInstance().registerLogHandler(LogLevelError, LogAreaAll, logger);
 }

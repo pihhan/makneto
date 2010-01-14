@@ -67,16 +67,18 @@ class JingleManager : public gloox::IqHandler
 	/** @brief Get list of IPs this machine has. */
 	JingleTransport::CandidateList	    localUdpCandidates();
 	JingleTransport			    localTransport();
+    JingleTransport             emptyUdpTransport();
 	
 	JingleRtpContentDescription		audioDescription();
-        JingleContent                           audioContent();
+    JingleContent                   audioContent();
 
 
-        static gloox::Stanza * createJingleStanza(const gloox::JID &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
+    static gloox::Stanza * createJingleStanza(const gloox::JID &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
+    static gloox::Stanza * createJingleStanza(JingleStanza *js, const std::string &id);
 
-        JingleSession * initiateEmptySession(const gloox::JID &to, 
+    JingleSession * initiateEmptySession(const gloox::JID &to, 
                 const gloox::JID &initiator = gloox::JID()  );
-        JingleSession * initiateAudioSession(const gloox::JID &to, 
+    JingleSession * initiateAudioSession(const gloox::JID &to, 
                 const gloox::JID &initiator=gloox::JID()    );
 
 	protected:

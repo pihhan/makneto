@@ -71,11 +71,11 @@ class RequestList : public gloox::DiscoHandler,
 	virtual void handleVersion(gloox::Stanza *stanza, int context);
 	
 	/* jingle stuff */
-		JingleSession::SessionReason handleNewSession(JingleSession *session);
-		JingleSession::SessionReason handleSessionAccept(JingleSession *session, JingleSession *update);
-		JingleSession::SessionReason handleSessionChange(JingleSession *session, JingleSession *update);
-		JingleSession::SessionReason handleSessionTermination(JingleSession *sesion);
-		JingleSession::SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza);
+		SessionReason handleNewSession(JingleSession *session);
+		SessionReason handleSessionAccept(JingleSession *session, JingleSession *update);
+		SessionReason handleSessionChange(JingleSession *session, JingleSession *update);
+		SessionReason handleSessionTermination(JingleSession *sesion);
+		SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza);
 
 
 

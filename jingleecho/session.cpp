@@ -3,6 +3,8 @@
 #include <gst/gstpad.h>
 #include "conference.h"
 
+#include "logger/logger.h"
+
 Session::Session(Conference *conf)
     : m_conf(conf),m_session(NULL),m_lasterror(NULL),m_stream(NULL),
       m_localCandidates(NULL)
@@ -12,6 +14,8 @@ Session::Session(Conference *conf)
     if (err != NULL) {
         std::cerr <<__FUNCTION__<< " fs_conference_new_session: "<< err->message << std::endl;
     }
+    g_assert(m_session);
+    g_signal_connect(m_session, "error", G_CALLBACK(Session::sessionError), this); 
 }
 
 Session::~Session()
@@ -40,6 +44,7 @@ FsStream *Session::createStream(FsParticipant *participant, const GList *lcandid
         paramcount, param, &m_lasterror);
     g_assert(stream);
     g_signal_connect(stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
+    g_signal_connect(stream, "error", G_CALLBACK(Session::streamError), this);
     return stream;
 }
 
@@ -62,7 +67,7 @@ bool Session::createStream()
         "rawudp",
         paramcount, param, &m_lasterror);
     if (m_lasterror) {
-        std::cerr << __FUNCTION__ << " fs_session_new_stream:" 
+        LOGGER(logit) << " fs_session_new_stream:" 
                   << m_lasterror->message << std::endl;
     }
     g_assert(stream);
@@ -128,8 +133,24 @@ void Session::setLocal(GList *candidates)
 void Session::srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data)
 {
     Session *session = (Session *) user_data;
-    std::cout << "Source pad added" << std::endl;
+    LOGGER(logit) << "Source pad added" << std::endl;
     session->m_conf->srcPadAdded(session, pad, codec);
+}
+
+void Session::streamError(FsStream *self, FsError errno, gchar *error_msg,
+    gchar *debug_msg, gpointer user_data)
+{
+    Session *session = (Session *) user_data;
+    LOGGER(logit).printf("Error on stream %p(%p): %d, %s, %s",
+        self, session, errno, error_msg, debug_msg);
+}
+
+void Session::sessionError(FsSession *self, FsError errno, gchar *error_msg,
+    gchar *debug_msg, gpointer user_data)
+{
+    Session *session = (Session *) user_data;
+    LOGGER(logit).printf("Error on session %p(%p): %d, %s, %s",
+        self, session, errno, error_msg, debug_msg);
 }
 
 

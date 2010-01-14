@@ -1,6 +1,6 @@
 
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef GLOGGER_H
+#define GLOGGER_H
 
 #include <string>
 #include <gloox/gloox.h>
@@ -16,10 +16,10 @@
 namespace gloox {
 
 /** @brief Class for logging output. For now, log into standard output. */
-class Logger : public LogHandler
+class GLogger : public LogHandler
 {
     public:
-    Logger();
+    GLogger();
 
     virtual void handleLog(LogLevel level, LogArea area, const std::string &message);
 
@@ -34,7 +34,7 @@ class Logger : public LogHandler
 
 } // namespace gloox
 
-extern gloox::Logger * logger; 
+extern gloox::GLogger * glogger; 
 
 #endif
 

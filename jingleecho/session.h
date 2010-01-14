@@ -23,7 +23,12 @@ class Session
     bool setRemoteCodec(GList *codecs);
     GstPad * sink();
 
+    /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
+    static void streamError(FsStream *self, FsError errno, gchar *error_msg,
+    gchar *debug_msg, gpointer user_data);
+    static void sessionError(FsSession *self, FsError errno, gchar *error_msg,
+    gchar *debug_msg, gpointer user_data);
 
     private:
     Conference *m_conf;

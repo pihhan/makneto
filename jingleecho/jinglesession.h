@@ -21,6 +21,7 @@ see http://xmpp.org/extensions/xep-0166.html
 #define XMLNS_JINGLE_ICE	"urn:xmpp:jingle:transports:ice-udp:1"
 #define XMLNS_JINGLE_RTP        "urn:xmpp:jingle:apps:rtp:1"
 #define XMLNS_JINGLE_RAWUDP     "urn:xmpp:jingle:transports:raw-udp:1"
+#define XMLNS_JINGLE_RTPINFO    "urn:xmpp:jingle:apps:rtp:info:1"
 
 
 class JingleContentDescription
@@ -258,7 +259,8 @@ typedef std::list<JingleContent>	ContentList;
 		ACTION_TRANSPORT_ACCEPT,
 		ACTION_TRANSPORT_REJECT,
 		ACTION_TRANSPORT_INFO,
-		ACTION_TRANSPORT_REPLACE
+		ACTION_TRANSPORT_REPLACE,
+        ACTION_LAST = ACTION_TRANSPORT_REPLACE
 	} SessionAction;
 	
 	typedef enum {
@@ -281,6 +283,75 @@ typedef std::list<JingleContent>	ContentList;
 		REASON_UNSUPPORTED_TRANSPORTS
 	} SessionReason;
 
+    typedef enum {
+        INFO_NONE = 0,
+        INFO_ACTIVE,
+        INFO_HOLD,
+        INFO_MUTE,
+        INFO_RINGING,
+        INFO_LAST = INFO_RINGING
+    } SessionInfo;
+
+
+/** @brief Class carrying all information about one stanza with Jingle namespace
+ * */
+class JingleStanza
+{
+    public:
+
+    JingleStanza();
+
+    std::string sid() const;
+    ContentList contents() const;
+    gloox::JID  from() const;
+    gloox::JID  to() const;
+    gloox::JID  responder() const;
+    gloox::JID  initiator() const;
+
+    SessionAction action() const;
+    SessionReason reason() const;
+    SessionInfo   info() const;
+    bool          valid() const;
+
+    void setSid(const std::string &sid);
+    void setContent( const ContentList &list);
+    void setFrom(const gloox::JID &jid);
+    void setTo(const gloox::JID &jid);
+    void setResponder( const gloox::JID &jid);
+    void setInitiator( const gloox::JID &jid);
+    void setAction(SessionAction action);
+    void setReason(SessionReason reason);
+    void setInfo(SessionInfo info);
+
+	void parse(const gloox::Stanza *staza);
+	/** @brief Get jingle tag for query. */
+	gloox::Tag *tag() const;
+
+    void addContent(const JingleContent &content);
+    void addContent(const ContentList &contents);
+    void replaceContents(const ContentList &contents);
+    void clearContents();
+    ContentList contents();
+    JingleContent firstContent();
+
+    private:
+	ContentList     m_contents;
+
+    gloox::JID      m_initiator;
+	gloox::JID	m_caller;
+	gloox::JID	m_responder;
+
+    gloox::JID      m_from;
+    gloox::JID      m_to;
+        
+    std::string m_sid;
+    SessionAction   m_action;
+    SessionReason   m_reason;
+    SessionInfo     m_info;
+    bool            m_valid;   
+};
+
+
 /** @brief One whole jingle session, ie. one audio/video call maybe. */
 class JingleSession
 {
@@ -290,19 +361,17 @@ class JingleSession
 	
 	void parse(const gloox::Stanza *staza, bool remote=false);
 	
-        static JingleSession *createReply(JingleSession *remote);
+    static JingleSession *createReply(JingleSession *remote);
 	
-	int initiateAudioSession(const gloox::JID &from, const gloox::JID &to);
-        int acceptAudioSession(JingleSession *session);
 	void addContent(const JingleContent &content) 
             { addLocalContent(content); };
 	void addLocalContent(const JingleContent &content);
 
 	void addRemoteContent(const JingleContent &content);
-        void addParticipant(const gloox::JID &jid);
-        void addParticipant(const JingleParticipant &p);
-        void replaceRemoteContent(const ContentList &list);
-        void replaceLocalContent(const ContentList &list);
+    void addParticipant(const gloox::JID &jid);
+    void addParticipant(const JingleParticipant &p);
+    void replaceRemoteContent(const ContentList &list);
+    void replaceLocalContent(const ContentList &list);
 	
 	/** @brief Get jingle tag for query. */
 	gloox::Tag *tag(SessionAction action = ACTION_NONE) const;
@@ -311,26 +380,28 @@ class JingleSession
 	SessionAction	action() const 	{ return m_lastaction; }
 	SessionReason	reason() const	{ return m_reason; }
 	SessionState	state() const	{ return m_state; }
+    SessionInfo     info() const    { return m_info; }
+
 	gloox::JID		initiator() const	{ return m_initiator; }
-        gloox::JID              caller() const          { return m_caller; }
+    gloox::JID              caller() const          { return m_caller; }
 	gloox::JID		responder() const	{ return m_responder; }
-        gloox::JID              remote() const;
-        gloox::JID              from() const    { return m_from; }
-        gloox::JID              to() const      { return m_to; }
-        bool        localOriginated() { return m_am_caller; }
+    gloox::JID              remote() const;
+    gloox::JID              from() const    { return m_from; }
+    gloox::JID              to() const      { return m_to; }
+    bool        localOriginated() { return m_am_caller; }
 	
-        void setSid(const std::string &sid) { m_sid = sid; }
+    void setSid(const std::string &sid) { m_sid = sid; }
 	void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
-        void setAction(SessionAction action) { m_lastaction = action; }
+    void setAction(SessionAction action) { m_lastaction = action; }
 	bool mergeSession(JingleSession *session, bool remote = true);
-        void setCaller(bool caller);
-        void setSelf(const gloox::JID &self) { m_my_jid = self; }
-        void setInitiator(const gloox::JID &jid) { m_initiator = jid; }
-        void setCaller(const gloox::JID &jid) { m_caller = jid; }
-        void setResponder(const gloox::JID &jid) { m_responder = jid; }
-        void setRemote(const gloox::JID &jid) { m_remote_jid = jid; }
-        void setTo(const gloox::JID &jid) { m_to = jid; }
-        void setFrom(const gloox::JID &jid) { m_from = jid; }
+    void setCaller(bool caller);
+    void setSelf(const gloox::JID &self) { m_my_jid = self; }
+    void setInitiator(const gloox::JID &jid) { m_initiator = jid; }
+    void setCaller(const gloox::JID &jid) { m_caller = jid; }
+    void setResponder(const gloox::JID &jid) { m_responder = jid; }
+    void setRemote(const gloox::JID &jid) { m_remote_jid = jid; }
+    void setTo(const gloox::JID &jid) { m_to = jid; }
+    void setFrom(const gloox::JID &jid) { m_from = jid; }
 
         
 	
@@ -345,36 +416,55 @@ class JingleSession
 	void setContext(int context)
 	{ m_context = context; }
 
-        ContentList     localContents() { return m_local_contents; }
-        ContentList     remoteContents() { return m_remote_contents; }
+    ContentList     localContents() { return m_local_contents; }
+    ContentList     remoteContents() { return m_remote_contents; }
 
-        JingleContent   firstRemoteContent();
-        JingleContent   firstLocalContent();
+    JingleContent   firstRemoteContent();
+    JingleContent   firstLocalContent();
 
         /** @brief Create string representation for human reading. */
-        std::string     describe();
+    std::string     describe();
 
-        void * data();
-        void setData(void *data);
+    void * data();
+    void setData(void *data);
 
-		
+    JingleStanza *createStanza(SessionAction action);
+    JingleStanza *createStanzaInitiate();
+    JingleStanza *createStanzaInfo(SessionInfo info);
+    JingleStanza *createStanzaAccept();
+
+    void initiateFromRemote(const JingleStanza *stanza);
+	bool mergeFromRemote(const JingleStanza *session);
+
+	public:
+		static SessionAction actionFromString(const std::string &action);
+		static SessionReason reasonFromString(const std::string &reason);
+        static SessionInfo   infoFromString(const std::string &info);
+    public:
+		static std::string stringFromAction(SessionAction action);
+		static std::string stringFromReason(SessionReason reason);
+        static std::string stringFromState(SessionState state);
+        static std::string stringFromInfo(SessionInfo info);
+
+    private:	
 	ContentList	m_local_contents;
 	ContentList     m_remote_contents;
         gloox::JID      m_initiator;
 	gloox::JID	m_caller;
 	gloox::JID	m_responder;
 
-        gloox::JID      m_my_jid;
-        gloox::JID      m_remote_jid;
-        gloox::JID      m_from;
-        gloox::JID      m_to;
+    gloox::JID      m_my_jid;
+    gloox::JID      m_remote_jid;
+    gloox::JID      m_from;
+    gloox::JID      m_to;
         
-        std::string m_sid;
+    std::string m_sid;
 	gloox::ClientBase	*m_client;
 	SessionState		m_state;
 	SessionReason		m_reason;
 	unsigned int		m_seed;
 	SessionAction		m_lastaction;
+    SessionInfo         m_info;
         ParticipantList         m_participants;
 	bool				m_acknowledged; ///!< Whether we received acknowledge of last action from remote party. 
 	int					m_context;
@@ -383,64 +473,10 @@ class JingleSession
         int                     m_localversion; ///!< local version number of changes
         int                     m_ackedversion; ///!< version number we received acks from remote
         void                    *m_data; ///!< Custom data about this session
+
 	
-	protected:
-		static SessionAction actionFromString(const std::string &action);
-		static SessionReason reasonFromString(const std::string &reason);
-        public:
-		static std::string stringFromReason(SessionReason reason);
-                static std::string stringFromState(SessionState state);
 };
 
-#ifdef MAYBE_FUTURE
-class JingleStanza
-{
-    public:
-
-    JingleStanza() : m_action(ACTION_NONE), m_reason(REASON_UNDEFINED)
-    {}
-
-    std::string sid() const { return m_sid; }
-    ContentList contents() const { return m_contents; }
-    gloox::JID  from() const { return m_from; }
-    gloox::JID  to() const          { return m_to; }
-    gloox::JID  responder() const   { return m_responder; }
-    gloox::JID  initiator() const   { return m_initiator; }
-
-    SessionAction action() const    { return m_action; }
-    SessionReason reason() const    { return m_reason; }
-
-    void setSid(const std::string &sid)
-    { m_sid = sid; }
-    void setContent( const ContentList &list)
-    { m_contents = list; }
-    void setFrom(const gloox::JID &jid)
-    { m_from = jid; }
-    void setTo(const gloox::JID &jid)
-    { m_to = jid; }
-    void setResponder( const gloox::JID &jid)
-    { m_responder = jid; }
-    void setInitiator( const gloox::JID &jid)
-    { m_initiator = jid; }
-    void setAction(SessionAction action)
-    { m_action = action; }
-    void setReason(SessionReason reason)
-    { m_reason = reason; }
-
-    private:
-	ContentList     m_contents;
-        gloox::JID      m_initiator;
-	gloox::JID	m_caller;
-	gloox::JID	m_responder;
-
-        gloox::JID      m_from;
-        gloox::JID      m_to;
-        
-        std::string m_sid;
-        SessionAction   m_action;
-        SessionReason   m_reason;
-};
-#endif
 
 #endif
 

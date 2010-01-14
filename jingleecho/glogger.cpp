@@ -1,19 +1,18 @@
 
 #include <iostream>
-#include "logger.h"
+#include "glogger.h"
+#include "logger/logger.h"
 
 using namespace gloox;
 
-Logger *logger = NULL;
+GLogger *glogger = NULL;
 
-
-
-Logger::Logger()
+GLogger::GLogger()
 {
-    std::cout << "Logger created." << std::endl;
+    logit << "Logger created." << std::endl;
 }
 
-std::string Logger::areaToString(LogArea area)
+std::string GLogger::areaToString(LogArea area)
 {
     switch (area) {
         case LogAreaClassParser:
@@ -49,7 +48,7 @@ std::string Logger::areaToString(LogArea area)
     }
 }
 
-std::string Logger::levelToString(LogLevel level)
+std::string GLogger::levelToString(LogLevel level)
 {
     switch (level) {
         case LogLevelDebug:
@@ -63,21 +62,21 @@ std::string Logger::levelToString(LogLevel level)
     }
 }
 
-void Logger::handleLog(LogLevel level, LogArea area, const std::string &message)
+void GLogger::handleLog(LogLevel level, LogArea area, const std::string &message)
 {
     std::string prefix = "[" + levelToString(level) + "] ";
 
     prefix += "(" + areaToString(area) + ") ";
 
-    std::cout << prefix << message << std::endl;
+    logit << prefix << message << std::endl;
 }
 
-void Logger::init()
+void GLogger::init()
 {
-    logger = new Logger();
+    glogger = new GLogger();
 }
 
-void Logger::debug(const std::string &message)
+void GLogger::debug(const std::string &message)
 {
     handleLog(LogLevelDebug, LogAreaUser, message);
 }

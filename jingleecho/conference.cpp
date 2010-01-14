@@ -1,7 +1,9 @@
 
 #include <iostream>
 #include "conference.h"
+#include "logger/logger.h"
 
+#define LOGCF() (LOGGER(logit) << " conference " )
 
 Conference::Conference(GstElement *bin)
     : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0)
@@ -15,7 +17,7 @@ Conference::Conference(GstElement *bin)
     m_fsconference = gst_element_factory_make("fsrtpconference", NULL);
     g_assert(m_fsconference);
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
-        std::cerr << "Chyba pri pridavani conference do pipeline" << std::endl;
+        LOGCF() << "Chyba pri pridavani conference do pipeline" << std::endl;
     }
 
 }
@@ -31,7 +33,7 @@ Conference::Conference(QPipeline *pipeline)
     m_fsconference = gst_element_factory_make("fsrtpconference", NULL);
     g_assert(m_fsconference);
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
-        std::cerr << "Chyba pri pridavani conference do pipeline" << std::endl;
+        LOGGER(logit) << "Chyba pri pridavani conference do pipeline" << std::endl;
     }
 
 }
@@ -42,7 +44,7 @@ FsParticipant * Conference::createParticipant( const std::string &name)
     FsParticipant *p = fs_conference_new_participant(
         FS_CONFERENCE(m_fsconference), name.c_str(), &error );
     if (error) {
-    std::cerr << __FUNCTION__ << " fs_conference_new_participant: " <<
+    LOGCF() << " fs_conference_new_participant: " <<
         error->message << std::endl;
     }
     return p;
@@ -99,22 +101,23 @@ void Conference::setNicknames(const std::string &local, const std::string &remot
 
 void Conference::onNewLocalCandidate(FsCandidate *candidate)
 {
-    std::cout << "New candidate: " << candidate->ip << ":" << candidate->port 
+    LOGCF() << "New candidate: " << candidate->ip << ":" << candidate->port 
         << std::endl;
 }
 
 void Conference::onLocalCandidatesPrepared()
 {
+    LOGCF() << "Local candidates prepared" << std::endl;
 }
 
 void Conference::onRecvCodecsChanged(GList *codecs)
 {
-    std::cout << "Recv codecs changed" << std::endl;
+    LOGCF() << "Recv codecs changed" << std::endl;
 }
 
 void Conference::onSendCodecsChanged(GList *codecs)
 {
-    std::cout << "Send codecs changed" << std::endl;
+    LOGCF() << "Send codecs changed" << std::endl;
 }
 
 gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer user_data)
@@ -128,22 +131,24 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 GError *error = NULL;
                 gchar *debugmsg = NULL;
                 gst_message_parse_error(message, &error, &debugmsg);
-                std::cerr << "Error: conference::messageCallback: " << debugmsg << std::endl;
+                LOGCF() << "Error: conference::messageCallback: " << debugmsg << std::endl;
             }
             break;
         case GST_MESSAGE_ELEMENT:
             {
                 const GstStructure *s = gst_message_get_structure(message);
+                LOGCF() << "Got element message with name: " 
+                        <<  gst_structure_get_name(s) << std::endl;
                 if (gst_structure_has_name(s, "farsight-error")) {
                     gint error;
                     const gchar *error_msg = gst_structure_get_string(s, "error-msg");
                     const gchar *debug_msg = gst_structure_get_string(s, "debug-msg");
                     g_assert(gst_structure_get_enum(s, "error-no", FS_TYPE_ERROR, &error));
                     if (FS_ERROR_IS_FATAL(error)) {
-                        g_error("Farsight fatal error: %d %s %s",
+                        LOGGER(logit).printf("Farsight fatal error: %d %s %s",
                             error, error_msg, debug_msg);
                     } else {
-                        g_error("Farsight non-fatal error: %d %s %s",
+                        LOGGER(logit).printf("Farsight non-fatal error: %d %s %s",
                             error, error_msg, debug_msg);
                     }
 
@@ -182,7 +187,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
             }
             break;
         default:
-            std::cerr << "Neoblouzeny typ zpravy " << gst_message_type_get_name(message->type) << std::endl;
+            LOGCF() << "Neoblouzeny typ zpravy " << gst_message_type_get_name(message->type) << std::endl;
             break;
             
     }
@@ -203,12 +208,12 @@ void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
         return;
     GstPad *sinkpad = m_qpipeline->getAudioSinkPad();
     if (!gst_pad_is_linked(sinkpad)) {
-        std::cout << "linking pad to audio sink" << std::endl;
+        LOGCF() << "linking pad to audio sink" << std::endl;
         if (!gst_pad_link(pad, sinkpad)) {
-            std::cerr << "Link zdroje na sink selhal!" << std::endl;
+            LOGCF() << "Link zdroje na sink selhal!" << std::endl;
         }
     } else {
-        std::cout << "sink si already linked!" << std::endl;
+        LOGCF() << "sink si already linked!" << std::endl;
     }
 }
 

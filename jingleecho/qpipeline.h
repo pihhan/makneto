@@ -4,8 +4,8 @@
 
 #include <gst/gst.h>
 
-#define DEFAULT_AUDIOSOURCE "audiotestsrc"
-#define DEFAULT_AUDIOSINK   "fakesink"
+#define DEFAULT_AUDIOSOURCE "audiotestsrc ! audioconvert !audioresample ! audioconvert"
+#define DEFAULT_AUDIOSINK   "audioconvert ! pulsesink"
 
 /** @brief Simple C++ wrapper for Gstreamer pipeline. */
 class QPipeline
@@ -21,6 +21,7 @@ class QPipeline
 
     bool setState(GstState newstate);
     GstState current_state();
+    GstState pending_state();
 
     /** @brief Link source to destination. 
         Both of them have to be already added inside this pipeline.
@@ -35,6 +36,12 @@ class QPipeline
 
     GstPad * getAudioSourcePad();
     GstPad * getAudioSinkPad();
+
+    void describe();
+
+    /* glib callbacks */
+    static void elementAdded(GstBin *bin, GstElement *element, gpointer pipeline);
+    static void elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline);
 
     private:
 

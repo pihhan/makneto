@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "v6interface.h"
 #include "jinglesession.h"
+#include "logger/logger.h"
 
 unsigned int _jingle_seed = 0;
 
@@ -16,7 +16,24 @@ static const std::string jingle_session_reason_desc[] = { "undefined",
 		"unsupported-applications", "unsupported-transports"
 	};
 
+static const std::string jingle_session_info_desc[] = {
+    "none", "active", "hold", "mute", "ringing", "!LAST!"
+};
 
+static const std::string action_descriptions[] = { 
+            "none","session-initiate", 
+            "session-accept", "session-terminate", "session-info",
+            "content-add", "content-modify", "content-accept", 
+            "content-remove", "content-reject", "description-info",
+            "security-info", "transport-accept", "transport-reject",
+            "transport-info", "transport-replace", "!ACTION-LAST!"
+};
+
+/*
+ *
+ * JingleSession
+ *
+ */
 
 JingleSession::JingleSession(ClientBase *base)
 	: m_client(base), m_state(JSTATE_NULL), m_lastaction(ACTION_NONE)
@@ -94,6 +111,25 @@ void JingleContent::parse(const Tag *tag)
 	m_transport.parse(transport);
 }
 
+Tag * JingleContent::tag() const
+{
+	Tag *t = new Tag("content");
+	t->addAttribute("xmlns", m_xmlns);
+	if (!m_name.empty())
+		t->addAttribute("name", m_name);
+	if (!m_media.empty())
+		t->addAttribute("media", m_media);
+	if (!m_creator.empty())
+		t->addAttribute("creator", m_creator);
+	Tag *transport = m_transport.tag();
+	if (transport)
+		t->addChild(transport);
+	Tag *description = m_description.tag();
+	if (description)
+		t->addChild(description);
+	return t;
+}
+
 void JingleTransport::parse(const Tag *tag)
 {
 	if (!tag || tag->name() != "transport")
@@ -128,6 +164,11 @@ void JingleTransport::addCandidate(const JingleCandidate &c)
  	candidates.push_back(c);
 }
 
+/*
+ *
+ * JingleCandidate
+ *
+ */
 
 void JingleCandidate::parse(const Tag *tag)
 {
@@ -151,6 +192,12 @@ Tag* JingleCandidate::tag() const
 	t->addAttribute("generation", generation);
 	return t;
 }
+
+/*
+ *
+ * JingleIceCandidate
+ *
+ */
 
 void JingleIceCandidate::parse(const Tag *tag)
 {
@@ -212,6 +259,12 @@ Tag *JingleRtpContentDescription::tag() const
 	return t;
 }
 
+/*
+ *
+ * JingleRtpPayload
+ *
+ */
+
 JingleRtpPayload::JingleRtpPayload(const Tag *tag)
     : id(0), clockrate(0), channels(1), maxptime(0), ptime(0)
 {
@@ -251,59 +304,26 @@ Tag * JingleRtpPayload::tag() const
 	return t;
 }
 
-#if 0
-JingleTransport::CandidateList JingleSession::localUdpCandidates()
+/*
+ *
+ * JingleContent
+ *
+ */
+JingleContent::JingleContent()
 {
-	JingleTransport::CandidateList cl;
-	char ** charlist = getAddressList(NULL, AFB_ANY, SCOPE_GLOBAL);
-	if (!charlist) {
-		std::cerr << "Chyba pri ziskavani lokalnich adres." << std::endl;
-		return cl;
-	}
-	for (char **it=charlist; it && *it; it++) {
-		JingleUdpCandidate candidate;
-		candidate.ip = std::string(*it);
-		candidate.port = randomPort();
-		candidate.id = randomId();
-		candidate.component = 0;
-		candidate.generation = 0;
-		candidate.natType = JingleCandidate::NAT_NONE;
-		
-	}
-	v6Destroylist(charlist);
-	return cl;
 }
 
-JingleTransport JingleSession::localTransport()
+JingleContent::JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description)
+	: m_transport(transport), m_description(description)
 {
-	JingleTransport t;
-	t.m_xmlns = "urn:xmpp:jingle:transports:ice-udp:1";
-	t.m_ufrag = randomId();
-	t.m_pwd = randomId();
-	t.candidates = localUdpCandidates();
-	return t;
 }
 
-#endif
 
-Tag * JingleContent::tag() const
-{
-	Tag *t = new Tag("content");
-	t->addAttribute("xmlns", m_xmlns);
-	if (!m_name.empty())
-		t->addAttribute("name", m_name);
-	if (!m_media.empty())
-		t->addAttribute("media", m_media);
-	if (!m_creator.empty())
-		t->addAttribute("creator", m_creator);
-	Tag *transport = m_transport.tag();
-	if (transport)
-		t->addChild(transport);
-	Tag *description = m_description.tag();
-	if (description)
-		t->addChild(description);
-	return t;
-}
+/*
+ *
+ * JingleSession
+ *
+ */
 
 Tag * JingleSession::tag(SessionAction action) const
 {
@@ -333,58 +353,36 @@ Tag * JingleSession::tag(SessionAction action) const
 	return t;
 }
 
-JingleContent::JingleContent()
-{
-}
-
-JingleContent::JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description)
-	: m_transport(transport), m_description(description)
-{
-}
-
-
 void JingleSession::addLocalContent(const JingleContent &content)
 {
 	m_local_contents.push_back(content);
 }
 
-/** @brief Prepare structure for initialization. */
-int JingleSession::initiateAudioSession(const JID &from, const JID &to)
-{
-#ifdef REFACTOR
-	JingleContent content( localTransport(), audioDescription() );
-	m_initiator = from;
-	m_caller = to;
-	m_state = JSTATE_PENDING;
-	m_sid = randomId();
-        m_lastaction = ACTION_INITIATE;
-	addContent(content);	
-#endif
-	return 1;
-}
-
-int JingleSession::acceptAudioSession(JingleSession *session)
-{
-        if (!session)
-            return 0;
-#ifdef REFACTOR
-	JingleContent content( localTransport(), audioDescription() );
-	m_state = JSTATE_ACTIVE;
-	m_sid = session->sid();
-        m_lastaction = ACTION_ACCEPT;
-	addContent(content);
-#endif
-        return 1;
-}
-
 SessionAction JingleSession::actionFromString(const std::string &action)
 {
-	if (action == "initiate")
+	if (action == "session-initiate")
 		return ACTION_INITIATE;
-	else if (action == "accept")
+	else if (action == "session-accept")
 		return ACTION_ACCEPT;
-	else if (action == "terminate")
+	else if (action == "session-terminate")
 		return ACTION_TERMINATE;
+    else if (action == "session-info")
+        return ACTION_INFO;
+    else if (action == "content-accept")
+        return ACTION_CONTENT_ACCEPT;
+    else if (action == "content-add")
+        return ACTION_CONTENT_ADD;
+    else if (action == "content-modify")
+        return ACTION_CONTENT_MODIFY;
+    else if (action == "content-reject")
+        return ACTION_CONTENT_REJECT;
+    else if (action == "content-remove")
+        return ACTION_CONTENT_REMOVE;
+    else if (action == "description-info")
+        return ACTION_DESCRIPTION_INFO;
+    else if (action == "transport-info")
+        return ACTION_TRANSPORT_INFO;
+    /* TODO: transport-{accept,reject,replace} */
 	else
 		return ACTION_NONE;
 }
@@ -398,6 +396,16 @@ SessionReason JingleSession::reasonFromString(const std::string &reason)
 		}
 	}
 	return REASON_UNDEFINED;
+}
+
+SessionInfo JingleSession::infoFromString(const std::string &info)
+{
+    size_t size = sizeof(jingle_session_info_desc) / sizeof(std::string);
+    for (size_t i=0; i < size; ++i) {
+        if (info == jingle_session_info_desc[i]) 
+            return (SessionInfo) i;
+    }
+    return INFO_NONE;
 }
 
 std::string JingleSession::stringFromReason(SessionReason reason)
@@ -424,6 +432,26 @@ std::string JingleSession::stringFromState(SessionState state)
             return std::string();
     }
 }
+
+std::string JingleSession::stringFromInfo(SessionInfo info)
+{
+	size_t size = sizeof(jingle_session_info_desc) / sizeof(std::string);
+	size_t index = (size_t) info;
+	if (index <= size) 
+		return jingle_session_reason_desc[index];
+	else return std::string();
+}
+
+std::string JingleSession::stringFromAction(SessionAction action)
+{
+    int index;
+    if (action >= ACTION_NONE && action <=ACTION_LAST) {
+        index = (int) action;
+        return action_descriptions[index];
+    }
+    return std::string();
+}
+
 
 /** @brief Combine into this session remote content from given session.
     @param session parsed from incoming stanza
@@ -536,4 +564,237 @@ JingleContent JingleSession::firstLocalContent()
     }
 }
 
+JingleStanza * JingleSession::createStanza(SessionAction action)
+{
+    JingleStanza *stanza = new JingleStanza();
+    stanza->setFrom(m_my_jid);
+    stanza->setTo(m_remote_jid);
+    stanza->setAction(action);
+    stanza->setSid(m_sid);
+    return stanza;
+}
+
+JingleStanza * JingleSession::createStanzaInitiate()
+{
+    JingleStanza *stanza = createStanza(ACTION_INITIATE);
+    stanza->setInitiator(m_initiator);
+    if (m_local_contents.size() > 0)
+        stanza->addContent(m_local_contents);
+
+    return stanza;
+}
+
+JingleStanza * JingleSession::createStanzaAccept()
+{
+    JingleStanza *stanza = createStanza(ACTION_ACCEPT);
+    if (m_responder)
+        stanza->setResponder(m_responder);
+    if (m_local_contents.size() > 0)
+        stanza->addContent(m_local_contents);
+
+    return stanza;
+}
+
+JingleStanza * JingleSession::createStanzaInfo(SessionInfo info)
+{
+    JingleStanza *stanza = createStanza(ACTION_INFO);
+    stanza->setInfo(info);
+    return stanza;
+}
+
+void JingleSession::initiateFromRemote(const JingleStanza *stanza)
+{
+    m_sid = stanza->sid();
+    m_remote_jid = stanza->from();
+    m_my_jid = stanza->to();
+    m_initiator = stanza->initiator();
+    m_responder = stanza->responder();
+    m_remote_contents = stanza->contents();
+    m_lastaction = stanza->action(); 
+    m_from = stanza->from();
+    m_to = stanza->to();
+}
+
+bool JingleSession::mergeFromRemote(const JingleStanza *stanza)
+{
+	if (!stanza)
+		return false;
+	if (m_sid != stanza->sid()) // session id does not match
+		return false;
+	if (stanza->responder())
+		m_responder = stanza->responder();
+
+    switch (stanza->action()) {
+        case ACTION_ACCEPT:
+            m_lastaction = stanza->action();
+            replaceLocalContent(stanza->contents());
+            break;
+        default:
+            std::cerr << "Neobslouzena jingle akce v mergeFromRemote" << std::endl;
+    }
+    return true;
+}
+
+/*
+ *
+ * JingleStanza
+ *
+ */
+
+JingleStanza::JingleStanza() 
+    : m_action(ACTION_NONE), m_reason(REASON_UNDEFINED), m_info(INFO_NONE),
+      m_valid(false)
+{
+}
+
+/** @brief Parse XML stanza to structure. */
+void JingleStanza::parse(const Stanza *stanza)
+{
+	Tag *jingle = stanza->findChild("jingle");
+	if (!jingle) {
+        m_valid = false;
+		return;
+    }
+	m_sid = jingle->findAttribute("sid");
+	m_initiator = jingle->findAttribute("initiator");
+	m_responder = jingle->findAttribute("responder");
+	std::string action = jingle->findAttribute("action");
+	m_action = JingleSession::actionFromString(action);
+    m_to = stanza->to();
+    m_from = stanza->from();
+
+	Tag::TagList contents = jingle->findChildren("content");
+	
+	for (Tag::TagList::iterator it=contents.begin(); it!=contents.end(); it++) {
+		JingleContent content;
+		content.parse(*it);
+		addContent(content);
+	}
+    m_valid = true;
+}
+
+void JingleStanza::addContent(const JingleContent &content)
+{
+    m_contents.push_back(content);
+}
+
+void JingleStanza::addContent(const ContentList &contents)
+{
+    for (ContentList::const_iterator it= contents.begin();
+                it != contents.end(); it++) {
+        m_contents.push_back(*it);
+    }
+}
+
+
+void JingleStanza::clearContents()
+{
+    m_contents.clear();
+}
+
+Tag * JingleStanza::tag() const
+{
+	Tag *t = new Tag("jingle");
+	t->addAttribute("xmlns", XMLNS_JINGLE);
+	t->addAttribute("sid", m_sid);
+
+    std::string straction = JingleSession::stringFromAction(m_action);
+    if (!straction.empty()) 
+            t->addAttribute("action", straction);
+    else LOGGER(logit) << "Prazdne action po prevedeni na retezec" 
+            << m_action << std::endl;
+            
+	if (m_initiator)
+		t->addAttribute("initiator", m_initiator.full());
+    if (m_responder)
+        t->addAttribute("responder", m_responder.full());
+	for (ContentList::const_iterator it=m_contents.begin(); 
+            it!=m_contents.end(); 
+            it++) {
+		t->addChild((it)->tag());
+	}
+    if (m_info != INFO_NONE) {
+        std::string infostr = JingleSession::stringFromInfo(m_info);
+        new Tag(t, infostr, "xmlns", XMLNS_JINGLE_RTPINFO);
+    }
+	return t;
+}
+
+std::string JingleStanza::sid() const 
+{ return m_sid; }
+
+ContentList JingleStanza::contents() const 
+{ return m_contents; }
+
+gloox::JID  JingleStanza::from() const 
+{ return m_from; }
+
+gloox::JID  JingleStanza::to() const          
+{ return m_to; }
+
+gloox::JID  JingleStanza::responder() const   
+{ return m_responder; }
+
+gloox::JID  JingleStanza::initiator() const   
+{ return m_initiator; }
+
+SessionAction JingleStanza::action() const    
+{ return m_action; }
+
+SessionReason JingleStanza::reason() const
+{ return m_reason; }
+
+SessionInfo   JingleStanza::info() const
+{ return m_info; }
+
+bool JingleStanza::valid() const 
+{
+    return m_valid;
+}
+
+
+void JingleStanza::setSid(const std::string &sid)
+{ m_sid = sid; }
+
+void JingleStanza::setContent( const ContentList &list)
+{ m_contents = list; }
+
+void JingleStanza::setFrom(const gloox::JID &jid)
+{ m_from = jid; }
+
+void JingleStanza::setTo(const gloox::JID &jid)
+{ m_to = jid; }
+
+void JingleStanza::setResponder( const gloox::JID &jid)
+{ m_responder = jid; }
+
+void JingleStanza::setInitiator( const gloox::JID &jid)
+{ m_initiator = jid; }
+
+void JingleStanza::setAction(SessionAction action)
+{ m_action = action; }
+
+void JingleStanza::setReason(SessionReason reason)
+{ m_reason = reason; }
+
+void JingleStanza::setInfo(SessionInfo info)
+{ m_info = info; }
+
+ContentList JingleStanza::contents()
+{
+    return m_contents;
+}
+
+JingleContent   JingleStanza::firstContent()
+{
+    if (m_contents.size() > 0)
+        return m_contents.front();
+    else 
+        return JingleContent();
+}
+
+void JingleStanza::replaceContents(const ContentList &contents)
+{
+    m_contents = contents;
+}
 
