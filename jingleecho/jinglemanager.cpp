@@ -197,7 +197,6 @@ JingleSession * JingleManager::initiateEmptySession(
             return NULL;
         session->setSid(randomId());
         session->setAction(ACTION_INITIATE);
-//	session->initiateAudioSession(from, to);
         session->setSelf(self());
         session->setCaller(true);
         session->setRemote(to);
@@ -231,19 +230,6 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 {
         JingleContent newcontent = audioContent();
 
-#if 0
-	JingleSession *ls = JingleSession::createReply(session);
-        if (!ls)
-            return NULL;
-        ls->setSelf(self());
-        ls->setRemote(session->from());
-        ls->setAction(ACTION_ACCEPT);
-        ls->addLocalContent(newcontent);
-        ls->replaceRemoteContent(session->remoteContents());
-        ls->setState(JSTATE_ACTIVE);
-	    Tag *jingle = ls->tag();
-//        addSession(ls);	
-#endif
         session->addLocalContent(newcontent);
         session->setState(JSTATE_ACTIVE);
         session->setResponder(self());

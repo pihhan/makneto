@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <sstream>
 #include <glib.h>
 
 #include "fsjingle.h"
@@ -94,6 +95,9 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     GstPadLinkReturn r = gst_pad_link(audiosrc, session->sink());
     g_assert(r == GST_PAD_LINK_OK);
 
+    
+    GstCaps *caps = gst_pad_get_caps(sink);
+    LOGGER(logit) << "fs sink has caps: " << gst_caps_to_string(caps) << std::endl;
 //    gst_object_unref(audiosrc);
 
     conference->addSession(session);
@@ -138,4 +142,11 @@ void FstJingle::setNicknames(const std::string &local, const std::string &remote
     conference->setNicknames(local, remote);
 }
 
-
+std::string FstJingle::stateDescribe()
+{
+    std::ostringstream o;
+    o << "Stav pipeline " << gst_element_get_name(pipeline->element()) << std::endl 
+      << " momentalni stav: " << pipeline->current_state() 
+      << " cekajici stav: " << pipeline->pending_state() << std::endl;
+    return o.str();
+}

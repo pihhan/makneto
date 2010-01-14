@@ -28,6 +28,7 @@ class FstJingle
     void setNicknames(const std::string &local, const std::string &remote);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
     bool createAudioSession(JingleSession *session);
+    std::string stateDescribe();
 
     QPipeline *pipeline;
     Conference *conference;

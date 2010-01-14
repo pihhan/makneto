@@ -627,7 +627,7 @@ bool JingleSession::mergeFromRemote(const JingleStanza *stanza)
     switch (stanza->action()) {
         case ACTION_ACCEPT:
             m_lastaction = stanza->action();
-            replaceLocalContent(stanza->contents());
+            replaceRemoteContent(stanza->contents());
             break;
         default:
             std::cerr << "Neobslouzena jingle akce v mergeFromRemote" << std::endl;

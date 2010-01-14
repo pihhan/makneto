@@ -48,4 +48,7 @@ clean:
 tags: $(SOURCES) $(HEADERS)
 	ctags $(SOURCES) $(HEADERS)
 
+qpipeline.cpp: qpipeline.h
+fsjingle.cpp: fsjingle.h
+conference.cpp: conference.h
  

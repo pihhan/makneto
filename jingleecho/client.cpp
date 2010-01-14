@@ -12,6 +12,7 @@
 #include "client.h"
 #include "glogger.h"
 #include "parser.h"
+#include "fsjingle.h"
 //#include "rosterator.h"
 
 using namespace gloox;
@@ -233,6 +234,10 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
             for (JingleManager::SessionMap::const_iterator it=map.begin();
                     it != map.end(); it++) {
                 r += (it->second)->describe() + "\n";
+                FstJingle *fs = (FstJingle *) (it->second)->data();
+                if (fs)
+                    r += fs->stateDescribe() + "\n";
+
             }
             sendChatMessage(stanza->from(), r);
 
