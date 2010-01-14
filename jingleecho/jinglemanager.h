@@ -17,12 +17,12 @@ class JingleActionHandler
 {
 	public:
 		
-		virtual JingleSession::SessionReason handleNewSession(JingleSession *session) = 0;
-		virtual JingleSession::SessionReason handleSessionAccept(JingleSession *session, JingleSession *update) = 0;
-		virtual JingleSession::SessionReason handleSessionChange(JingleSession *session, JingleSession *update) = 0;
-		virtual JingleSession::SessionReason handleSessionTermination(JingleSession *sesion) = 0;
+		virtual SessionReason handleNewSession(JingleSession *session) = 0;
+		virtual SessionReason handleSessionAccept(JingleSession *session, JingleSession *update) = 0;
+		virtual SessionReason handleSessionChange(JingleSession *session, JingleSession *update) = 0;
+		virtual SessionReason handleSessionTermination(JingleSession *sesion) = 0;
                 /** @brief Handle error of session. Expect JingleSession might be null, if stanza did not contain session id. */
-		virtual JingleSession::SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza) = 0;
+		virtual SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza) = 0;
 		
 };
 
@@ -44,7 +44,7 @@ class JingleManager : public gloox::IqHandler
 
         bool acceptedAudioSession(JingleSession *session);
 
-        void replyTerminate(const gloox::Stanza *stanza, JingleSession::SessionReason reason, const std::string &sid="");
+        void replyTerminate(const gloox::Stanza *stanza, SessionReason reason, const std::string &sid="");
 	JingleSession * getSession(const std::string &sid);
 	
 	void 				removeSession(const std::string &sid);

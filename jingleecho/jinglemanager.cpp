@@ -42,7 +42,7 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 	Tag *jingle = NULL;
 	std::string sid;
 	JingleSession *local_session = NULL;
-	JingleSession::SessionReason result = JingleSession::REASON_UNDEFINED;
+	SessionReason result = REASON_UNDEFINED;
 	
 	sid = getSid(stanza);
 	local_session = getSession(sid);
@@ -58,15 +58,15 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 			if (jingle) {
 				session->parse(stanza, true);
 				switch (session->action()) {
-					case JingleSession::ACTION_INITIATE:
-                                                session->setState(JingleSession::JSTATE_PENDING);
+					case ACTION_INITIATE:
+                                                session->setState(JSTATE_PENDING);
 						addSession(session);
 						if (m_handler) {
 							replyAcknowledge(stanza);
 							result = m_handler->handleNewSession(session);
 						} else return false;
 						break;
-					case JingleSession::ACTION_ACCEPT:
+					case ACTION_ACCEPT:
 						if (!local_session) {
 							std::cerr << "Jingle accept pro neexistujici session" << std::endl;
 							return false;
@@ -78,9 +78,9 @@ bool JingleManager::handleIqID(Stanza *stanza, int context)
 							result = m_handler->handleSessionAccept(local_session, session);
 						} else return false;
 						break;
-					case JingleSession::ACTION_TERMINATE:
+					case ACTION_TERMINATE:
 						if (m_handler && local_session) {
-                                                    local_session->setState(JingleSession::JSTATE_TERMINATED);
+                                                    local_session->setState(JSTATE_TERMINATED);
 						    replyAcknowledge(stanza);
 						    result = m_handler->handleSessionTermination(local_session);
 						} else return false;
@@ -173,7 +173,7 @@ JingleSession * JingleManager::initiateEmptySession(
         if (!session) 
             return NULL;
         session->setSid(randomId());
-        session->setAction(JingleSession::ACTION_INITIATE);
+        session->setAction(ACTION_INITIATE);
 //	session->initiateAudioSession(from, to);
         session->setSelf(self());
         session->setCaller(true);
@@ -191,7 +191,7 @@ JingleSession * JingleManager::initiateAudioSession(
 {
         JingleSession *session = initiateEmptySession(to, initiator);
         session->addLocalContent(audioContent());
-	Tag *jingle = session->tag(JingleSession::ACTION_INITIATE);
+	Tag *jingle = session->tag(ACTION_INITIATE);
 	addSession(session);
 	
 	std::string id = m_base->getID();
@@ -210,12 +210,12 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 
         ls->setSelf(self());
         ls->setRemote(session->from());
-        ls->setAction(JingleSession::ACTION_ACCEPT);
+        ls->setAction(ACTION_ACCEPT);
         ls->addLocalContent(newcontent);
         ls->replaceRemoteContent(session->remoteContents());
-        ls->setState(JingleSession::JSTATE_ACTIVE);
+        ls->setState(JSTATE_ACTIVE);
         session->addLocalContent(newcontent);
-        session->setState(JingleSession::JSTATE_ACTIVE);
+        session->setState(JSTATE_ACTIVE);
         session->setResponder(self());
 
 	Tag *jingle = ls->tag();
@@ -234,7 +234,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 /** @brief Internal handle of confirmation or our outgoing call. */
 bool JingleManager::acceptedAudioSession(JingleSession *session)
 {
-    session->setState(JingleSession::JSTATE_ACTIVE);
+    session->setState(JSTATE_ACTIVE);
     
     FstJingle *fsj = new FstJingle();
     fsj->createAudioSession(session);
@@ -253,7 +253,7 @@ void JingleManager::replyAcknowledge(const Stanza *stanza)
 }
 
 /** @brief Create result reply to specified stanza with matching id. */
-void JingleManager::replyTerminate(const Stanza *stanza, JingleSession::SessionReason reason, const std::string &sid)
+void JingleManager::replyTerminate(const Stanza *stanza, SessionReason reason, const std::string &sid)
 {
 	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
 		Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);

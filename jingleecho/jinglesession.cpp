@@ -377,7 +377,7 @@ int JingleSession::acceptAudioSession(JingleSession *session)
         return 1;
 }
 
-JingleSession::SessionAction JingleSession::actionFromString(const std::string &action)
+SessionAction JingleSession::actionFromString(const std::string &action)
 {
 	if (action == "initiate")
 		return ACTION_INITIATE;
@@ -389,7 +389,7 @@ JingleSession::SessionAction JingleSession::actionFromString(const std::string &
 		return ACTION_NONE;
 }
 
-JingleSession::SessionReason JingleSession::reasonFromString(const std::string &reason)
+SessionReason JingleSession::reasonFromString(const std::string &reason)
 {	
 	size_t size = sizeof(jingle_session_reason_desc) / sizeof(std::string);
 	for (size_t i =0; i< size; ++i) {

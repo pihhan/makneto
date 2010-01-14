@@ -154,9 +154,11 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     g_assert(val);
                     candidate = (FsCandidate *) g_value_get_boxed(val);
                     conf->onNewLocalCandidate(candidate);
+
                 } else if (gst_structure_has_name(s, 
                         "farsight-local-candidates-prepared")) {
                     conf->onLocalCandidatesPrepared();
+
                 } else if (gst_structure_has_name(s,
                         "farsight-recv-codecs-changed")) {
                     const GValue *v = gst_structure_get_value(s, "codecs");
@@ -164,6 +166,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     g_assert(v);
                     codecs = (GList *) g_value_get_boxed(v);
                     conf->onRecvCodecsChanged(codecs);
+
                 } else if (gst_structure_has_name(s,
                         "farsight-send-codecs-changed")) {
                     const GValue *v = gst_structure_get_value(s, "codecs");
@@ -171,10 +174,15 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     g_assert(v);
                     codecs = (GList *) g_value_get_boxed(v);
                     conf->onSendCodecsChanged(codecs);
+                } else {
+                    const gchar *name = gst_structure_get_name(s);
+                    std::cerr << "Neznama zprava na pipeline: " <<
+                            name << std::endl;
                 }
             }
             break;
         default:
+            std::cerr << "Neoblouzeny typ zpravy " << gst_message_type_get_name(message->type) << std::endl;
             break;
             
     }

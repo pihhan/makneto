@@ -235,17 +235,13 @@ class JingleContent
 
 typedef std::list<JingleContent>	ContentList;
 
-/** @brief One whole jingle session, ie. one audio/video call maybe. */
-class JingleSession
-{
-    public:
-
     typedef enum { 
         JSTATE_NULL = 0,
         JSTATE_PENDING, // after session-initiate
         JSTATE_ACTIVE, // after session-accept
         JSTATE_TERMINATED, // after session-terminate
     } SessionState;
+
 	typedef enum {
 		ACTION_NONE = 0,
 		ACTION_INITIATE,
@@ -284,8 +280,11 @@ class JingleSession
 		REASON_UNSUPPORTED_APPLICATIONS,
 		REASON_UNSUPPORTED_TRANSPORTS
 	} SessionReason;
-	
-	
+
+/** @brief One whole jingle session, ie. one audio/video call maybe. */
+class JingleSession
+{
+    public:
 
     JingleSession(gloox::ClientBase *base);
 	
@@ -392,6 +391,56 @@ class JingleSession
 		static std::string stringFromReason(SessionReason reason);
                 static std::string stringFromState(SessionState state);
 };
+
+#ifdef MAYBE_FUTURE
+class JingleStanza
+{
+    public:
+
+    JingleStanza() : m_action(ACTION_NONE), m_reason(REASON_UNDEFINED)
+    {}
+
+    std::string sid() const { return m_sid; }
+    ContentList contents() const { return m_contents; }
+    gloox::JID  from() const { return m_from; }
+    gloox::JID  to() const          { return m_to; }
+    gloox::JID  responder() const   { return m_responder; }
+    gloox::JID  initiator() const   { return m_initiator; }
+
+    SessionAction action() const    { return m_action; }
+    SessionReason reason() const    { return m_reason; }
+
+    void setSid(const std::string &sid)
+    { m_sid = sid; }
+    void setContent( const ContentList &list)
+    { m_contents = list; }
+    void setFrom(const gloox::JID &jid)
+    { m_from = jid; }
+    void setTo(const gloox::JID &jid)
+    { m_to = jid; }
+    void setResponder( const gloox::JID &jid)
+    { m_responder = jid; }
+    void setInitiator( const gloox::JID &jid)
+    { m_initiator = jid; }
+    void setAction(SessionAction action)
+    { m_action = action; }
+    void setReason(SessionReason reason)
+    { m_reason = reason; }
+
+    private:
+	ContentList     m_contents;
+        gloox::JID      m_initiator;
+	gloox::JID	m_caller;
+	gloox::JID	m_responder;
+
+        gloox::JID      m_from;
+        gloox::JID      m_to;
+        
+        std::string m_sid;
+        SessionAction   m_action;
+        SessionReason   m_reason;
+};
+#endif
 
 #endif
 
