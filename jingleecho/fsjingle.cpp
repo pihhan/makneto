@@ -120,7 +120,7 @@ bool FstJingle::createAudioSession(JingleSession *session)
     } 
     LOGGER(logit) << "createAudioSession result: " << result << std::endl;
 
-    bool paused = pipeline->setState(GST_STATE_PAUSED);
+    bool paused = pipeline->setState(GST_STATE_PLAYING);
     LOGGER(logit) << "Paused pipeline: " << paused << std::endl;
 
     LOGGER(logit) << "Pipeline state " << pipeline->current_state() 
