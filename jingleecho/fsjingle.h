@@ -24,11 +24,16 @@ class FstJingle
     static FsCodec * createFsCodec(const JingleRtpPayload & payload);
     static GList * createFsCodecList(const JingleRtpContentDescription &description);
     static GList * createFsCandidateList(const JingleTransport &transport);
+    static GList * createSingleFsCandidateList(const JingleTransport &transport);
 
     void setNicknames(const std::string &local, const std::string &remote);
+    bool linkSink(Session *session);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
     bool createAudioSession(JingleSession *session);
     std::string stateDescribe();
+
+    static std::string codecListToString(const GList *codeclist);
+    static std::string toString(const FsCodec *codec);
 
     QPipeline *pipeline;
     Conference *conference;

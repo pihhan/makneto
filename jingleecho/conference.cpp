@@ -1,5 +1,7 @@
 
 #include <iostream>
+#include <sstream>
+
 #include "conference.h"
 #include "logger/logger.h"
 
@@ -208,17 +210,26 @@ void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
         return;
     GstPad *sinkpad = m_qpipeline->getAudioSinkPad();
     if (!gst_pad_is_linked(sinkpad)) {
-        LOGCF() << "linking pad to audio sink" << std::endl;
+        LOGCF() << "linkuji pad na audio sink" << std::endl;
         if (!gst_pad_link(pad, sinkpad)) {
             LOGCF() << "Link zdroje na sink selhal!" << std::endl;
         }
     } else {
-        LOGCF() << "sink si already linked!" << std::endl;
+        LOGCF() << "sink je uz prilinkovan!" << std::endl;
     }
 }
 
-void bus_watch(GstBus *bus, GstElement *element, gpointer user_data)
+/** @brief Create text description of this conference and its state. */
+std::string Conference::describe()
 {
+    std::ostringstream o;
+    o << "Conference: " << gst_element_get_name(m_fsconference) << std::endl;
+    for (SessionList::iterator it=m_sessions.begin(); it!=m_sessions.end(); it++) {
+        if (*it)
+            o << (*it)->describe() << std::endl;
+        else
+            LOGCF() << "NULL Session!" << std::endl;
+    }
+    return o.str();
 }
-
 

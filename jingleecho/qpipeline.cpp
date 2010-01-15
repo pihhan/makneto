@@ -1,5 +1,5 @@
 
-
+#include <sstream>
 #include <gst/gst.h>
 #include "qpipeline.h"
 
@@ -20,6 +20,7 @@ void qCritical(const std::string &msg)
 
 
 QPipeline::QPipeline()
+    : m_source(0), m_sourcefilter(0), m_sink(0), m_sinkfilter(0)
 {
     m_pipe = gst_pipeline_new("qpipeline");
     g_assert(m_pipe);
@@ -38,6 +39,13 @@ QPipeline::QPipeline()
     } else {
         QPLOG() << "creating sink our source failed" << std::endl;
     }
+
+#if 0
+    createFilters();
+    if (m_sourcefilter) {
+        link(m_source, m_sourcefilter);        
+    }
+#endif
 
 }
 
@@ -184,18 +192,23 @@ void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer pipeli
     QPLOG() << "removed element: " << gst_element_get_name(element) << std::endl;
 }
 
-void QPipeline::describe()
+std::string QPipeline::describe()
 {
+    std::ostringstream o;
     GstIterator *it;
     bool done = FALSE;
     GstElement *element;
 
+    o << "Pipeline: " << gst_element_get_name(m_pipe) << std::endl 
+      << " momentalni stav: " << current_state() 
+      << " cekajici stav: " << pending_state() << std::endl;
+
     it = gst_bin_iterate_elements(GST_BIN(m_pipe));
-    QPLOG() << "Elements in pipeline " << gst_element_get_name(m_pipe) << std::endl;
+    o << "Elements: ";
     while(!done) {
         switch (gst_iterator_next(it, (void **) &element)) {
             case GST_ITERATOR_OK:
-                QPLOG() << gst_element_get_name(element) << std::endl;
+                o << gst_element_get_name(element) << ", ";
                 gst_object_unref(element);
                 break;
             case GST_ITERATOR_RESYNC:
@@ -211,4 +224,24 @@ void QPipeline::describe()
         }
     }
     gst_iterator_free(it);
+    return o.str();
 }
+
+bool QPipeline::createFilters()
+{
+    m_sourcefilter = gst_element_factory_make("capsfilter", "sourcefilter");
+    g_assert(m_sourcefilter);
+    GstCaps *fixed = gst_caps_new_simple("audio/x-raw-int",
+        "rate", G_TYPE_INT, 8000,
+        "channels", G_TYPE_INT, 1,
+        "width", G_TYPE_INT, 16,
+        NULL);
+    g_assert(fixed);    
+    g_object_set(G_OBJECT(m_sourcefilter), "caps", fixed, NULL);
+    gst_caps_unref(fixed);
+    add(m_sourcefilter);
+
+    m_sinkfilter = NULL;
+    return true;
+}
+

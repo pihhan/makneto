@@ -3,8 +3,9 @@
 #define QPIPELINE_H
 
 #include <gst/gst.h>
+#include <string>
 
-#define DEFAULT_AUDIOSOURCE "audiotestsrc ! audioconvert !audioresample ! audioconvert"
+#define DEFAULT_AUDIOSOURCE "audiotestsrc ! audio/x-raw-int,rate=8000 ! audioconvert "
 #define DEFAULT_AUDIOSINK   "audioconvert ! pulsesink"
 
 /** @brief Simple C++ wrapper for Gstreamer pipeline. */
@@ -36,8 +37,10 @@ class QPipeline
 
     GstPad * getAudioSourcePad();
     GstPad * getAudioSinkPad();
+    
+    bool createFilters();
 
-    void describe();
+    std::string describe();
 
     /* glib callbacks */
     static void elementAdded(GstBin *bin, GstElement *element, gpointer pipeline);
@@ -49,7 +52,9 @@ class QPipeline
     GstBin *m_bin;
     GstElement *m_pipe;
     GstElement *m_source;
+    GstElement *m_sourcefilter;
     GstElement *m_sink;
+    GstElement *m_sinkfilter;
     bool m_pausable;
 };
 

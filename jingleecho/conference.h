@@ -52,6 +52,8 @@ class Conference
     
     void srcPadAdded(Session *session, GstPad *pad, FsCodec *codec);
 
+    std::string describe();
+
     private:
     QPipeline  * m_qpipeline;
     GstElement * m_pipeline;

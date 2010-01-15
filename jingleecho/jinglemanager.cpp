@@ -296,15 +296,27 @@ JingleTransport::CandidateList JingleManager::localUdpCandidates()
 		std::cerr << "Chyba pri ziskavani lokalnich adres." << std::endl;
 		return cl;
 	}
+    int port = randomPort();
+
 	for (char **it=charlist; it && *it; it++) {
 		JingleUdpCandidate candidate;
 		candidate.ip = std::string(*it);
-		candidate.port = randomPort();
+		candidate.port = port;
 		candidate.id = randomId();
 		candidate.component = 1;
 		candidate.generation = 0;
 		candidate.natType = JingleCandidate::NAT_NONE;
 		cl.push_back(candidate);
+
+        // pridam taky RTCP kanal
+        JingleUdpCandidate rtcp_cnd;
+        rtcp_cnd.ip = std::string(*it);
+        rtcp_cnd.port = candidate.port+1;
+        rtcp_cnd.id = randomId();
+        rtcp_cnd.component = 2;
+        rtcp_cnd.generation = 0;
+        rtcp_cnd.natType = JingleCandidate::NAT_NONE;
+        cl.push_back(rtcp_cnd);
 	}
 	v6Destroylist(charlist);
 	return cl;
@@ -345,8 +357,14 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 {
 	JingleRtpContentDescription d;
 	d.m_xmlns = "urn:xmpp:jingle:apps:rtp:1";
-	d.addPayload(JingleRtpPayload(96, "speex", 16000));
+    d.addPayload(JingleRtpPayload(0, "PCMU", 8000));
+    d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
+    d.addPayload(JingleRtpPayload(2, "G721", 8000));
+    d.addPayload(JingleRtpPayload(3, "GSM", 8000));
+#ifdef USE_SPEEX
 	d.addPayload(JingleRtpPayload(97, "speex", 8000));
+	d.addPayload(JingleRtpPayload(96, "speex", 16000));
+#endif
 	return d;
 }
 

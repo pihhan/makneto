@@ -2,6 +2,10 @@
 #ifndef SESSION_H
 #define SESSION_H
 
+#include <glib.h>
+#include <gst/gst.h>
+#include <gst/farsight/fs-codec.h>
+
 class Conference;
 
 /** @brief Represents one media session and tools for working with that. */
@@ -23,6 +27,16 @@ class Session
     bool setRemoteCodec(GList *codecs);
     GstPad * sink();
 
+    FsCodec *currentSendCodec();
+    GList   *currentRecvCodec();
+    bool    codecsReady();
+    unsigned int     rtpSsrc();
+    int     rtcpTimeout();
+    void    setRtcpTimeout(int timeout);
+
+    std::string describe();
+    GList * getCodecListProperty(const char *name);
+
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
     static void streamError(FsStream *self, FsError errno, gchar *error_msg,
@@ -31,6 +45,9 @@ class Session
     gchar *debug_msg, gpointer user_data);
 
     private:
+
+    void resetError();
+
     Conference *m_conf;
     FsSession *m_session;
     GError      *m_lasterror;

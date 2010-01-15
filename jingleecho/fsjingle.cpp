@@ -71,15 +71,67 @@ GList * FstJingle::createFsCandidateList(const JingleTransport &transport)
     return candidates;
 }
 
+/** @brief Create list containing only one, topmost candidate. */
+GList * FstJingle::createSingleFsCandidateList(const JingleTransport &transport)
+{
+    GList *candidates = NULL;
+    if (transport.candidates.size()>0) {
+        JingleCandidate c = transport.candidates.front();
+        FsCandidate *candidate = createFsCandidate(c);
+        candidates = g_list_prepend(candidates, candidate);
+        return candidates;
+    } else {
+        return NULL;
+    }
+}
+
+bool FstJingle::linkSink(Session *session)
+{
+    GstPad *audiosrc = pipeline->getAudioSourcePad();
+    g_assert(audiosrc);
+#if 0
+    GstCaps *srccaps = gst_pad_get_caps(audiosrc);
+    GstCaps *fixed = gst_caps_new_simple("audio/x-raw-int",
+        "rate", G_TYPE_INT, 8000,
+        "channels", G_TYPE_INT, 1,
+        "width", G_TYPE_INT, 16,
+        NULL);
+    g_assert(fixed);
+    GstCaps *intersect = gst_caps_intersect(srccaps, fixed);
+    g_assert(intersect);
+    if (!gst_caps_is_fixed(intersect)) {
+        LOGGER(logit) << "intersect neni fixed" << std::endl;
+    }
+    gst_pad_set_caps(audiosrc, intersect);
+    g_object_unref(fixed);
+    g_object_unref(srccaps);
+    g_object_unref(intersect);
+#endif
+
+    GstPad *sink = session->sink();
+    g_assert(audiosrc && sink);
+    GstPadLinkReturn r = gst_pad_link(audiosrc, sink);
+    g_assert(r == GST_PAD_LINK_OK);
+    
+    GstCaps *caps = gst_pad_get_caps(sink);
+    gchar * capsstr = gst_caps_to_string(caps);
+    LOGGER(logit) << "fs sink has caps: " << capsstr << std::endl;
+    g_free(capsstr);
+    g_object_unref(G_OBJECT(audiosrc));
+    g_object_unref(G_OBJECT(caps));
+    g_object_unref(sink);
+    return (r == GST_PAD_LINK_OK);
+}
+
 /** @brief create audio session in farsight. */
 bool FstJingle::createAudioSession(const JingleContent &local, const JingleContent &remote)
 {
     Session *session = new Session(conference);
     
     GList *remoteCandidates = createFsCandidateList(remote.transport());
-    GList *localCandidates = createFsCandidateList(local.transport());
+    GList *localCandidates = createSingleFsCandidateList(local.transport());
 
-//    session->setLocal(localCandidates);
+    session->setLocal(localCandidates);
     session->createStream();
     session->setRemote(remoteCandidates);
 
@@ -89,16 +141,7 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     GList *remoteCodecs = createFsCodecList(remote.description());
     session->setRemoteCodec(remoteCodecs);
 
-    GstPad *audiosrc = pipeline->getAudioSourcePad();
-    GstPad *sink = session->sink();
-    g_assert(audiosrc && sink);
-    GstPadLinkReturn r = gst_pad_link(audiosrc, session->sink());
-    g_assert(r == GST_PAD_LINK_OK);
-
-    
-    GstCaps *caps = gst_pad_get_caps(sink);
-    LOGGER(logit) << "fs sink has caps: " << gst_caps_to_string(caps) << std::endl;
-//    gst_object_unref(audiosrc);
+    linkSink(session);
 
     conference->addSession(session);
     LOGGER(logit) << "created Audio session" << std::endl;
@@ -145,8 +188,34 @@ void FstJingle::setNicknames(const std::string &local, const std::string &remote
 std::string FstJingle::stateDescribe()
 {
     std::ostringstream o;
-    o << "Stav pipeline " << gst_element_get_name(pipeline->element()) << std::endl 
-      << " momentalni stav: " << pipeline->current_state() 
-      << " cekajici stav: " << pipeline->pending_state() << std::endl;
+    o << pipeline->describe() << std::endl;
+    o << conference->describe() << std::endl;
     return o.str();
 }
+
+std::string FstJingle::codecListToString(const GList *codeclist)
+{
+    std::string description;
+    bool first = true;
+    if (!codeclist)
+        return description;
+    while (codeclist) {
+        FsCodec * codec = (FsCodec *) codeclist->data;
+        if (!first)
+            description += ", ";
+        description += toString(codec);
+        first = false;
+        codeclist = g_list_next(codeclist);
+    }
+    return description;
+}
+
+std::string FstJingle::toString(const FsCodec *codec)
+{
+    gchar * desc = fs_codec_to_string(codec);
+    std::string cppdesc(desc);
+    g_free(desc);
+    return cppdesc;
+}
+
+
