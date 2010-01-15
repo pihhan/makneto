@@ -192,105 +192,119 @@ typedef std::list<JingleParticipant>    ParticipantList;
 class JingleContent
 {
     public:
-		typedef enum {
-			SENDER_NONE = 0,
-			SENDER_INITIATOR,
-			SENDER_RESPONDER,
-			SENDER_BOTH
-		} Senders; /// what side will produce some data
-		
-		typedef enum {
-			CREATOR_INITIATOR,
-			CREATOR_RESPONDER
-		} Creator;
+        typedef enum {
+                SENDER_NONE = 0,
+                SENDER_INITIATOR,
+                SENDER_RESPONDER,
+                SENDER_BOTH
+        } Senders; /// what side will produce some data
+        
+        typedef enum {
+                CREATOR_NONE = 0,
+                CREATOR_INITIATOR,
+                CREATOR_RESPONDER
+        } Creator;
 
-                typedef std::list<JingleTransport>  TransportList;
-		
-		JingleContent();
-		JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description);
+        typedef enum {
+                MEDIA_NONE = 0,
+                MEDIA_AUDIO,
+                MEDIA_VIDEO
+        } MediaType;
 
+        typedef std::list<JingleTransport>  TransportList;
+        
+        JingleContent();
+        JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description);
 
+        JingleRtpContentDescription description() const;
+        JingleTransport transport() const;
+            
+        void parse(const gloox::Tag *tag);
+        gloox::Tag *tag() const;
 
-                JingleRtpContentDescription description() const
-                { return m_description; }
-                JingleTransport transport() const
-                { return m_transport; }
-		
-	    void parse(const gloox::Tag *tag);
-	    gloox::Tag *tag() const;
-            JingleParticipant owner()
-                { return m_owner; }
-            void setOwner( const JingleParticipant &p ) 
-                { m_owner = p; }
+        JingleParticipant owner()
+            { return m_owner; }
+        void setOwner( const JingleParticipant &p ) 
+            { m_owner = p; }
 
-    //private:
+        std::string name() const;
+        Creator     creator() const;
+        MediaType   media() const;
+        std::string disposition() const;
+
+        void setName(const std::string &name);
+        void setCreator(Creator creator);
+        void setMedia(MediaType media);
+        void setDisposition(const std::string &disposition);
+
+    private:
     JingleTransport     m_transport;
     JingleRtpContentDescription m_description;
     std::string m_xmlns;
     std::string m_name;
-    std::string m_media;
-    std::string m_creator; // 
-	std::string m_disposition; // what type of content is inside
+    Creator     m_creator; 
+    MediaType   m_media;
+    std::string m_disposition; // what type of content is inside
     JingleParticipant   m_owner;
 };
 
 typedef std::list<JingleContent>	ContentList;
 
-    typedef enum { 
-        JSTATE_NULL = 0,
-        JSTATE_PENDING, // after session-initiate
-        JSTATE_ACTIVE, // after session-accept
-        JSTATE_TERMINATED, // after session-terminate
-    } SessionState;
+typedef enum { 
+    JSTATE_NULL = 0,
+    JSTATE_PENDING, // after session-initiate
+    JSTATE_ACTIVE, // after session-accept
+    JSTATE_TERMINATED, // after session-terminate
+} SessionState;
 
-	typedef enum {
-		ACTION_NONE = 0,
-		ACTION_INITIATE,
-		ACTION_ACCEPT,
-		ACTION_TERMINATE,
-		ACTION_INFO,
-		ACTION_CONTENT_ADD,
-		ACTION_CONTENT_MODIFY,
-		ACTION_CONTENT_ACCEPT,
-		ACTION_CONTENT_REMOVE,
-		ACTION_CONTENT_REJECT,
-		ACTION_DESCRIPTION_INFO,
-		ACTION_SECURITY_INFO,
-		ACTION_TRANSPORT_ACCEPT,
-		ACTION_TRANSPORT_REJECT,
-		ACTION_TRANSPORT_INFO,
-		ACTION_TRANSPORT_REPLACE,
-        ACTION_LAST = ACTION_TRANSPORT_REPLACE
-	} SessionAction;
-	
-	typedef enum {
-		REASON_UNDEFINED = 0,
-		REASON_ALTERNATIVE_SESSION,
-		REASON_BUSY,
-		REASON_CANCEL,
-		REASON_CONECTIVITY_ERROR,
-		REASON_DECLINE,
-		REASON_EXPIRED,
-		REASON_FAILED_APPLICATION,
-		REASON_FAILED_TRANSPORT,
-		REASON_GENERAL_ERROR,
-		REASON_GONE,
-		REASON_INCOMPATIBLE_PARAMETERS,
-		REASON_MEDIA_ERROR,
-		REASON_SECURITY_ERROR,
-		REASON_SUCCESS,
-		REASON_UNSUPPORTED_APPLICATIONS,
-		REASON_UNSUPPORTED_TRANSPORTS
-	} SessionReason;
+typedef enum {
+    ACTION_NONE = 0,
+    ACTION_INITIATE,
+    ACTION_ACCEPT,
+    ACTION_TERMINATE,
+    ACTION_INFO,
+    ACTION_CONTENT_ADD,
+    ACTION_CONTENT_MODIFY,
+    ACTION_CONTENT_ACCEPT,
+    ACTION_CONTENT_REMOVE,
+    ACTION_CONTENT_REJECT,
+    ACTION_DESCRIPTION_INFO,
+    ACTION_SECURITY_INFO,
+    ACTION_TRANSPORT_ACCEPT,
+    ACTION_TRANSPORT_REJECT,
+    ACTION_TRANSPORT_INFO,
+    ACTION_TRANSPORT_REPLACE,
+    ACTION_LAST = ACTION_TRANSPORT_REPLACE
+} SessionAction;
 
-    typedef enum {
-        INFO_NONE = 0,
-        INFO_ACTIVE,
-        INFO_HOLD,
-        INFO_MUTE,
-        INFO_RINGING,
-        INFO_LAST = INFO_RINGING
-    } SessionInfo;
+typedef enum {
+    REASON_UNDEFINED = 0,
+    REASON_ALTERNATIVE_SESSION,
+    REASON_BUSY,
+    REASON_CANCEL,
+    REASON_CONECTIVITY_ERROR,
+    REASON_DECLINE,
+    REASON_EXPIRED,
+    REASON_FAILED_APPLICATION,
+    REASON_FAILED_TRANSPORT,
+    REASON_GENERAL_ERROR,
+    REASON_GONE,
+    REASON_INCOMPATIBLE_PARAMETERS,
+    REASON_MEDIA_ERROR,
+    REASON_SECURITY_ERROR,
+    REASON_SUCCESS,
+    REASON_UNSUPPORTED_APPLICATIONS,
+    REASON_UNSUPPORTED_TRANSPORTS
+} SessionReason;
+
+typedef enum {
+    INFO_NONE = 0,
+    INFO_ACTIVE,
+    INFO_HOLD,
+    INFO_MUTE,
+    INFO_RINGING,
+    INFO_LAST = INFO_RINGING
+} SessionInfo;
 
 
 /** @brief Class carrying all information about one stanza with Jingle namespace
@@ -323,9 +337,9 @@ class JingleStanza
     void setReason(SessionReason reason);
     void setInfo(SessionInfo info);
 
-	void parse(const gloox::Stanza *staza);
-	/** @brief Get jingle tag for query. */
-	gloox::Tag *tag() const;
+    void parse(const gloox::Stanza *staza);
+    /** @brief Get jingle tag for query. */
+    gloox::Tag *tag() const;
 
     void addContent(const JingleContent &content);
     void addContent(const ContentList &contents);
@@ -335,11 +349,11 @@ class JingleStanza
     JingleContent firstContent();
 
     private:
-	ContentList     m_contents;
+    ContentList     m_contents;
 
     gloox::JID      m_initiator;
-	gloox::JID	m_caller;
-	gloox::JID	m_responder;
+    gloox::JID	m_caller;
+    gloox::JID	m_responder;
 
     gloox::JID      m_from;
     gloox::JID      m_to;
@@ -359,70 +373,66 @@ class JingleSession
 
     JingleSession(gloox::ClientBase *base);
 	
-	void parse(const gloox::Stanza *staza, bool remote=false);
-	
     static JingleSession *createReply(JingleSession *remote);
 	
-	void addContent(const JingleContent &content) 
-            { addLocalContent(content); };
-	void addLocalContent(const JingleContent &content);
+    void parse(const gloox::Stanza *staza, bool remote=false);
+    void addContent(const JingleContent &content) 
+        { addLocalContent(content); };
+    void addLocalContent(const JingleContent &content);
 
-	void addRemoteContent(const JingleContent &content);
+    void addRemoteContent(const JingleContent &content);
     void addParticipant(const gloox::JID &jid);
     void addParticipant(const JingleParticipant &p);
     void replaceRemoteContent(const ContentList &list);
     void replaceLocalContent(const ContentList &list);
 	
-	/** @brief Get jingle tag for query. */
-	gloox::Tag *tag(SessionAction action = ACTION_NONE) const;
-	
-	std::string sid() { return m_sid; }
-	SessionAction	action() const 	{ return m_lastaction; }
-	SessionReason	reason() const	{ return m_reason; }
-	SessionState	state() const	{ return m_state; }
-    SessionInfo     info() const    { return m_info; }
+    /** @brief Get jingle tag for query. */
+    gloox::Tag *tag(SessionAction action = ACTION_NONE) const;
+    
+    std::string sid() const;
+    SessionAction	action() const;
+    SessionReason	reason() const;
+    SessionState	state() const;
+    SessionInfo     info() const;
 
-	gloox::JID		initiator() const	{ return m_initiator; }
-    gloox::JID              caller() const          { return m_caller; }
-	gloox::JID		responder() const	{ return m_responder; }
-    gloox::JID              remote() const;
-    gloox::JID              from() const    { return m_from; }
-    gloox::JID              to() const      { return m_to; }
-    bool        localOriginated() { return m_am_caller; }
+    gloox::JID	    initiator() const;
+    gloox::JID      caller() const;
+    gloox::JID	    responder() const;
+    gloox::JID      remote() const;
+    gloox::JID      from() const;
+    gloox::JID      to() const;
+    bool        localOriginated() const;
 	
-    void setSid(const std::string &sid) { m_sid = sid; }
-	void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
-    void setAction(SessionAction action) { m_lastaction = action; }
-	bool mergeSession(JingleSession *session, bool remote = true);
+    void setSid(const std::string &sid);
+    void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
+    void setAction(SessionAction action);
+    bool mergeSession(JingleSession *session, bool remote = true);
+    void setSelf(const gloox::JID &self);
+    void setInitiator(const gloox::JID &jid);
+    void setCaller(const gloox::JID &jid);
+    void setResponder(const gloox::JID &jid);
+    void setRemote(const gloox::JID &jid);
+    void setTo(const gloox::JID &jid);
+    void setFrom(const gloox::JID &jid);
     void setCaller(bool caller);
-    void setSelf(const gloox::JID &self) { m_my_jid = self; }
-    void setInitiator(const gloox::JID &jid) { m_initiator = jid; }
-    void setCaller(const gloox::JID &jid) { m_caller = jid; }
-    void setResponder(const gloox::JID &jid) { m_responder = jid; }
-    void setRemote(const gloox::JID &jid) { m_remote_jid = jid; }
-    void setTo(const gloox::JID &jid) { m_to = jid; }
-    void setFrom(const gloox::JID &jid) { m_from = jid; }
 
-        
-	
-	void setAcknowledged(bool ack)
-	{ m_acknowledged = ack; }
-	
-	void setState(SessionState state)
-	{ m_state = state; }
-	
-	int context()
-	{ return m_context; }
-	void setContext(int context)
-	{ m_context = context; }
+    /** @brief Mark if last sent stanza has been acked. */
+    void setAcknowledged(bool ack);
+    
+    void setState(SessionState state);
+    
+    /** @brief get context number for gloox matching to stanzas without sid. */
+    int context();
+    /** @brief Context for help with gloox matching with id. */
+    void setContext(int context);
 
-    ContentList     localContents() { return m_local_contents; }
-    ContentList     remoteContents() { return m_remote_contents; }
+    ContentList     localContents();
+    ContentList     remoteContents();
 
     JingleContent   firstRemoteContent();
     JingleContent   firstLocalContent();
 
-        /** @brief Create string representation for human reading. */
+    /** @brief Create string representation for human reading. */
     std::string     describe();
 
     void * data();
@@ -434,24 +444,24 @@ class JingleSession
     JingleStanza *createStanzaAccept();
 
     void initiateFromRemote(const JingleStanza *stanza);
-	bool mergeFromRemote(const JingleStanza *session);
+    bool mergeFromRemote(const JingleStanza *session);
 
-	public:
-		static SessionAction actionFromString(const std::string &action);
-		static SessionReason reasonFromString(const std::string &reason);
-        static SessionInfo   infoFromString(const std::string &info);
     public:
-		static std::string stringFromAction(SessionAction action);
-		static std::string stringFromReason(SessionReason reason);
+        static SessionAction actionFromString(const std::string &action);
+        static SessionReason reasonFromString(const std::string &reason);
+        static SessionInfo   infoFromString(const std::string &info);
+
+        static std::string stringFromAction(SessionAction action);
+        static std::string stringFromReason(SessionReason reason);
         static std::string stringFromState(SessionState state);
         static std::string stringFromInfo(SessionInfo info);
 
     private:	
-	ContentList	m_local_contents;
-	ContentList     m_remote_contents;
-        gloox::JID      m_initiator;
-	gloox::JID	m_caller;
-	gloox::JID	m_responder;
+    ContentList	m_local_contents;
+    ContentList     m_remote_contents;
+    gloox::JID      m_initiator;
+    gloox::JID	m_caller;
+    gloox::JID	m_responder;
 
     gloox::JID      m_my_jid;
     gloox::JID      m_remote_jid;
@@ -459,20 +469,20 @@ class JingleSession
     gloox::JID      m_to;
         
     std::string m_sid;
-	gloox::ClientBase	*m_client;
-	SessionState		m_state;
-	SessionReason		m_reason;
-	unsigned int		m_seed;
-	SessionAction		m_lastaction;
+    gloox::ClientBase	*m_client;
+    SessionState		m_state;
+    SessionReason		m_reason;
+    unsigned int		m_seed;
+    SessionAction		m_lastaction;
     SessionInfo         m_info;
-        ParticipantList         m_participants;
-	bool				m_acknowledged; ///!< Whether we received acknowledge of last action from remote party. 
-	int					m_context;
-        bool                    m_am_caller; ///!< true if i am calling remote party, false if i accepted this session.
-        /// not sure i need this global versioning
-        int                     m_localversion; ///!< local version number of changes
-        int                     m_ackedversion; ///!< version number we received acks from remote
-        void                    *m_data; ///!< Custom data about this session
+    ParticipantList         m_participants;
+    bool				m_acknowledged; ///!< Whether we received acknowledge of last action from remote party. 
+    int					m_context;
+    bool                    m_am_caller; ///!< true if i am calling remote party, false if i accepted this session.
+    /// not sure i need this global versioning
+    int                     m_localversion; ///!< local version number of changes
+    int                     m_ackedversion; ///!< version number we received acks from remote
+    void                    *m_data; ///!< Custom data about this session
 
 	
 };

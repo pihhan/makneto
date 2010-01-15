@@ -204,15 +204,16 @@ GstElement * Conference::conference()
 /** @brief Handle notification from remote party to connect pad somewhere. */
 void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
 {
-    std::cout << "Source pad added: " << gst_pad_get_name(pad) <<
+    LOGCF() << "Source pad added: " << gst_pad_get_name(pad) <<
             " with codec: " << fs_codec_to_string(codec) <<  std::endl;
     if (!m_qpipeline)
         return;
     GstPad *sinkpad = m_qpipeline->getAudioSinkPad();
     if (!gst_pad_is_linked(sinkpad)) {
         LOGCF() << "linkuji pad na audio sink" << std::endl;
-        if (!gst_pad_link(pad, sinkpad)) {
-            LOGCF() << "Link zdroje na sink selhal!" << std::endl;
+        GstPadLinkReturn r = gst_pad_link(pad, sinkpad);
+        if (GST_PAD_LINK_FAILED(r)) {
+            LOGCF() << "Link zdroje na sink selhal!" << r << std::endl;
         }
     } else {
         LOGCF() << "sink je uz prilinkovan!" << std::endl;

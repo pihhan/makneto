@@ -79,7 +79,7 @@ GList * FstJingle::createSingleFsCandidateList(const JingleTransport &transport)
     if (transport.candidates.size()>0) {
         JingleCandidate c = transport.candidates.front();
         FsCandidate *candidate = createFsCandidate(c);
-        // FIXME: specialni fix, protoze se to pouziva
+        // FIXME: specialni fix, aby fungoval prijem na vsech adresach
         candidate->ip = NULL;
         candidates = g_list_prepend(candidates, candidate);
         return candidates;
@@ -114,16 +114,18 @@ bool FstJingle::linkSink(Session *session)
     GstPad *sink = session->sink();
     g_assert(audiosrc && sink);
     GstPadLinkReturn r = gst_pad_link(audiosrc, sink);
-    g_assert(r == GST_PAD_LINK_OK);
+    if (GST_PAD_LINK_FAILED(r)) {
+        LOGGER(logit) << "pad link zdroje selhal!" << r << std::endl;
+    }
     
     GstCaps *caps = gst_pad_get_caps(sink);
     gchar * capsstr = gst_caps_to_string(caps);
     LOGGER(logit) << "fs sink has caps: " << capsstr << std::endl;
     g_free(capsstr);
-    g_object_unref(G_OBJECT(audiosrc));
-    g_object_unref(G_OBJECT(caps));
-    g_object_unref(sink);
-    return (r == GST_PAD_LINK_OK);
+    gst_object_unref(audiosrc);
+    gst_caps_unref(caps);
+    gst_object_unref(sink);
+    return (GST_PAD_LINK_SUCCESSFUL(r));
 }
 
 /** @brief create audio session in farsight. */
@@ -182,6 +184,17 @@ bool FstJingle::createAudioSession(JingleSession *session)
     pipeline->describe();
     return result && paused && playing;
 }
+
+bool FstJingle::replaceRemoteContent(const JingleContent &content)
+{
+    GList *remoteCandidates = createFsCandidateList(remote.transport());
+    GList *remoteCodecs = createFsCodecList(remote.description());
+
+    session->setRemote(remoteCandidates);
+    session->setRemoteCodec(remoteCodecs);
+    return true;
+}
+
 
 void FstJingle::setNicknames(const std::string &local, const std::string &remote)
 {
