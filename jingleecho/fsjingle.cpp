@@ -71,13 +71,16 @@ GList * FstJingle::createFsCandidateList(const JingleTransport &transport)
     return candidates;
 }
 
-/** @brief Create list containing only one, topmost candidate. */
+/** @brief Create list containing only one, topmost candidate.
+    Modified, removes IP from candidates, so only port applies.  */
 GList * FstJingle::createSingleFsCandidateList(const JingleTransport &transport)
 {
     GList *candidates = NULL;
     if (transport.candidates.size()>0) {
         JingleCandidate c = transport.candidates.front();
         FsCandidate *candidate = createFsCandidate(c);
+        // FIXME: specialni fix, protoze se to pouziva
+        candidate->ip = NULL;
         candidates = g_list_prepend(candidates, candidate);
         return candidates;
     } else {
