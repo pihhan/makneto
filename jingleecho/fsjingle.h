@@ -30,7 +30,9 @@ class FstJingle
     bool linkSink(Session *session);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
     bool createAudioSession(JingleSession *session);
+    bool replaceRemoteContent(const JingleContent &content);
     std::string stateDescribe();
+    bool terminate();
 
     static std::string codecListToString(const GList *codeclist);
     static std::string toString(const FsCodec *codec);

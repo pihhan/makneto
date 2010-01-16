@@ -54,6 +54,10 @@ class Conference
 
     std::string describe();
 
+    Session *   getSession(const std::string &name);
+    bool        removeSession(const std::string &name);
+    void        removeAllSessions();
+
     private:
     QPipeline  * m_qpipeline;
     GstElement * m_pipeline;

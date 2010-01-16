@@ -31,24 +31,29 @@ class JingleActionHandler
     @author Petr Mensik <pihhan@cipis.net> */
 class JingleManager : public gloox::IqHandler
 {
-	public:
-		typedef std::map<std::string, JingleSession *> 	SessionMap;
+    public:
+        typedef std::map<std::string, JingleSession *> 	SessionMap;
 		
 	JingleManager(gloox::ClientBase *base);
 	
 	virtual bool handleIq(gloox::Stanza *stanza);
 	virtual bool handleIqID(gloox::Stanza *stanza, int content);
 	
+        /** @brief Initiate new audio session. */
 	JingleSession * initiateAudioSession(const gloox::JID &to);
+
+        /** @brief Accept new audio session. */
         JingleSession * acceptAudioSession(JingleSession *session);
 
-        bool acceptedAudioSession(JingleSession *session);
+        /** @brief Terminate passed session. */
+        void            terminateSession(JingleSession *session, SessionReason reason = REASON_DECLINE);
 
-        void replyTerminate(const gloox::Stanza *stanza, SessionReason reason, const std::string &sid="");
+
+        void replyTerminate(const gloox::JID &to, SessionReason reason, const std::string &sid="");
 	JingleSession * getSession(const std::string &sid);
 	
-	void 				removeSession(const std::string &sid);
-	void				addSession(JingleSession *session);
+	void 			removeSession(const std::string &sid);
+	void			addSession(JingleSession *session);
 	static std::string	getSid(gloox::Stanza *stanza);
         void                    replyAcknowledge(const gloox::Stanza *stanza);
 	
@@ -80,8 +85,11 @@ class JingleManager : public gloox::IqHandler
                 const gloox::JID &initiator = gloox::JID()  );
     JingleSession * initiateAudioSession(const gloox::JID &to, 
                 const gloox::JID &initiator=gloox::JID()    );
+    
+    void            send(JingleStanza *js);
 
 	protected:
+        bool acceptedAudioSession(JingleSession *session);
 	
 	SessionMap m_sessions;
 	gloox::ClientBase *m_base;

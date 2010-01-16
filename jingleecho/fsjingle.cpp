@@ -132,6 +132,8 @@ bool FstJingle::linkSink(Session *session)
 bool FstJingle::createAudioSession(const JingleContent &local, const JingleContent &remote)
 {
     Session *session = new Session(conference);
+    g_assert(session);
+    session->setName(remote.name());
     
     GList *remoteCandidates = createFsCandidateList(remote.transport());
     GList *localCandidates = createSingleFsCandidateList(local.transport());
@@ -185,14 +187,23 @@ bool FstJingle::createAudioSession(JingleSession *session)
     return result && paused && playing;
 }
 
+/** @brief Replace previous content with this content. */
 bool FstJingle::replaceRemoteContent(const JingleContent &content)
 {
-    GList *remoteCandidates = createFsCandidateList(remote.transport());
-    GList *remoteCodecs = createFsCodecList(remote.description());
+    GList *remoteCandidates = createFsCandidateList(content.transport());
+    GList *remoteCodecs = createFsCodecList(content.description());
 
-    session->setRemote(remoteCandidates);
-    session->setRemoteCodec(remoteCodecs);
-    return true;
+    Session *session = conference->getSession(content.name());
+    if (session) {
+        session->setRemote(remoteCandidates);
+        session->setRemoteCodec(remoteCodecs);
+        return true;
+    } else {
+        LOGGER(logit) << "Content na nahrazeni nema odpovidajici session!" 
+            << content.name() << " media " << content.media() 
+            << std::endl;
+        return false;
+    }
 }
 
 
@@ -232,6 +243,13 @@ std::string FstJingle::toString(const FsCodec *codec)
     std::string cppdesc(desc);
     g_free(desc);
     return cppdesc;
+}
+
+/** @brief Terminate current session. */
+bool FstJingle::terminate()
+{
+    conference->removeAllSessions();
+    return true;
 }
 
 

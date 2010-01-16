@@ -220,6 +220,7 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
                         + session->sid());
                 } else {
                     sendChatMessage(stanza->from(), "no active session.");
+                    return;
                 }
             }
     
@@ -240,6 +241,32 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 
             }
             sendChatMessage(stanza->from(), r);
+        } else if (cmd == "terminate") {
+            JingleSession *session = NULL;
+            if (!param.empty()) {
+                session = m_jingle->getSession(param);
+                if (!session) {
+                    sendChatMessage(from, "no such session found.");
+                    return;
+                }
+            } else {
+                JingleManager::SessionMap map = m_jingle->allSessions();
+                JingleManager::SessionMap::iterator it = map.begin();
+                if (it != map.end()) {
+                    session = (*it).second;
+                    sendChatMessage(stanza->from(), " found first session id:" 
+                        + session->sid());
+                } else {
+                    sendChatMessage(stanza->from(), "no active session.");
+                    return;
+                }
+            }
+    
+            if (session) {
+                m_jingle->acceptAudioSession(session);
+                sendChatMessage(stanza->from(), "session accepted");
+            }
+
 
 #ifdef DNS_RESOVLER
 	} else if (cmd == "dns") {

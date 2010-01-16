@@ -249,3 +249,13 @@ void Session::resetError()
     m_lasterror = NULL;
 }
 
+std::string Session::name()
+{
+    return m_name;
+}
+
+void Session::setName(const std::string &name)
+{
+    m_name = name;
+}
+

@@ -35,7 +35,8 @@ Conference::Conference(QPipeline *pipeline)
     m_fsconference = gst_element_factory_make("fsrtpconference", NULL);
     g_assert(m_fsconference);
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
-        LOGGER(logit) << "Chyba pri pridavani conference do pipeline" << std::endl;
+        LOGGER(logit) << "Chyba pri pridavani conference do pipeline" 
+                << std::endl;
     }
 
 }
@@ -77,6 +78,7 @@ GList * Conference::getLocalCandidates()
     }
     return candidates;
 #endif
+    return NULL;
 }
 
 void Conference::addSession(Session *session)
@@ -122,6 +124,11 @@ void Conference::onSendCodecsChanged(GList *codecs)
     LOGCF() << "Send codecs changed" << std::endl;
 }
 
+/** @brief Message callback handling messages received from pipeline bus.
+    @param bus Bus we received message from.
+    @param message Message itself.
+    @param user_data Pointer to this class.
+*/
 gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer user_data)
 {
     Conference *conf = (Conference *) user_data;
@@ -232,5 +239,39 @@ std::string Conference::describe()
             LOGCF() << "NULL Session!" << std::endl;
     }
     return o.str();
+}
+
+/** @brief Get sesion by content name. */
+Session * Conference::getSession(const std::string &name)
+{
+    for (SessionList::iterator it=m_sessions.begin(); 
+            it!=m_sessions.end(); it++) {
+        if (*it && (*it)->name() == name)
+            return *it;
+    }
+    return NULL;
+}
+
+/** @brief remove and terminate one session with name. 
+    @return true if session was terminated, false otherwise. */
+bool Conference::removeSession(const std::string &name)
+{
+    Session *session = getSession(name);
+    if (!session)
+        return false;
+    m_sessions.remove(session);
+    delete session;
+    return true;
+}
+
+void Conference::removeAllSessions()
+{
+    for (SessionList::iterator it=m_sessions.begin(); 
+            it!=m_sessions.end(); it++) {
+        if (*it) {
+            delete (*it);
+        }
+    }
+    m_sessions.clear();
 }
 

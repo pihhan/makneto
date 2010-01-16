@@ -269,24 +269,42 @@ void JingleManager::replyAcknowledge(const Stanza *stanza)
 }
 
 /** @brief Create result reply to specified stanza with matching id. */
-void JingleManager::replyTerminate(const Stanza *stanza, SessionReason reason, const std::string &sid)
+void JingleManager::replyTerminate(const gloox::JID  &to, SessionReason reason, const std::string &sid)
 {
-	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
-		Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);
-		jingle->addAttribute("action", "session-terminate");
-		jingle->addAttribute("sid", sid);
-		Tag *r = new Tag(jingle, "reason");
-		new Tag(r, 
-                        JingleSession::stringFromReason(reason));
-		
-		std::string id = m_base->getID();
-		Stanza *reply = Stanza::createIqStanza(stanza->from(), id, StanzaIqSet, XMLNS_JINGLE, jingle);
-        m_base->trackID(this, id, 3);
-		m_base->send(reply);
-	}
+    Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);
+    jingle->addAttribute("action", "session-terminate");
+    jingle->addAttribute("sid", sid);
+    Tag *r = new Tag(jingle, "reason");
+    new Tag(r, 
+            JingleSession::stringFromReason(reason));
+    
+    std::string id = m_base->getID();
+    Stanza *reply = Stanza::createIqStanza(to, id, StanzaIqSet, XMLNS_JINGLE, jingle);
+    m_base->trackID(this, id, 3);
+    m_base->send(reply);
 }
 
 
+
+void JingleManager::terminateSession(JingleSession *session, SessionReason reason)
+{
+    JingleStanza *stanza = session->createStanzaTerminate(reason);
+    send(stanza);
+    session->setState(JSTATE_TERMINATED);
+    if (session->data()) {
+        FstJingle *fst = static_cast<FstJingle *>(session->data());
+        fst->terminate();
+    }
+}
+
+/** @brief Send jingle stanza, so it is delivered back to me. */
+void JingleManager::send(JingleStanza *js)
+{
+    std::string id = m_base->getID();
+    Stanza *stanza = createJingleStanza(js, id);
+    m_base->trackID(this, id, 5);
+    m_base->send(stanza);
+}
 
 JingleTransport::CandidateList JingleManager::localUdpCandidates()
 {

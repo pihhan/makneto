@@ -102,7 +102,7 @@ void JingleSession::addParticipant(const JingleParticipant &p)
 
 /** @brief Create content without any contents */
 JingleContent::JingleContent()
-    : m_creator(CREATOR_NONE), m_media(MEDIA_NONE)
+    : m_creator(CREATOR_NONE), m_media(MEDIA_NONE), m_senders(SENDERS_UNKNOWN)
 {
 }
 
@@ -112,7 +112,7 @@ JingleContent::JingleContent()
     */
 JingleContent::JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description)
 	: m_transport(transport), m_description(description),
-          m_creator(CREATOR_NONE), m_media(MEDIA_NONE)
+          m_creator(CREATOR_NONE), m_media(MEDIA_NONE), m_senders(SENDERS_UNKNOWN)
 {
 }
 
@@ -139,6 +139,18 @@ void JingleContent::parse(const Tag *tag)
             m_creator = CREATOR_RESPONDER;
         else
             m_creator = CREATOR_NONE;
+
+        std::string senders = tag->findAttribute("senders");
+        if (senders == "none")
+            m_senders = SENDERS_NONE;
+        else if(senders == "initiator")
+            m_senders = SENDERS_INITIATOR;
+        else if (senders == "responder") 
+            m_senders = SENDERS_RESPONDER;
+        else if (senders == "both")
+            m_senders = SENDERS_BOTH;
+        else 
+            m_senders = SENDERS_UNKNOWN;
 
 	std::string m_disposition = tag->findAttribute("disposition");
 	
@@ -186,6 +198,19 @@ Tag * JingleContent::tag() const
             break;
     }
 
+    switch (m_senders) {
+        case SENDERS_NONE:
+            t->addAttribute("senders", "none"); break;
+        case SENDERS_INITIATOR:
+            t->addAttribute("senders", "initiator"); break;
+        case SENDERS_RESPONDER:
+            t->addAttribute("senders", "responder"); break;
+        case SENDERS_BOTH:
+            t->addAttribute("senders", "both"); break;
+        case SENDERS_UNKNOWN:
+            break;
+    }
+
     Tag *transport = m_transport.tag();
     if (transport)
             t->addChild(transport);
@@ -200,7 +225,7 @@ std::string JingleContent::name() const
     return m_name;
 }
 
-Creator     JingleContent::creator() const
+JingleContent::Creator JingleContent::creator() const
 {
     return m_creator;
 }
@@ -213,6 +238,11 @@ MediaType   JingleContent::media() const
 std::string JingleContent::disposition() const
 {
     return m_disposition;
+}
+
+JingleContent::Senders JingleContent::senders() const 
+{
+    return m_senders;
 }
 
 void JingleContent::setName(const std::string &name)
@@ -233,6 +263,11 @@ void JingleContent::setMedia(MediaType media)
 void JingleContent::setDisposition(const std::string &disposition)
 {
     m_disposition = disposition;
+}
+
+void JingleContent::setSenders(JingleContent::Senders s)
+{
+    m_senders = s;
 }
 
 
@@ -354,9 +389,11 @@ void JingleRtpContentDescription::parse(const Tag *tag)
 	m_xmlns = tag->findAttribute("xmlns");
 	m_media = tag->findAttribute("media");
         if (m_media == "audio") {
-            m_type = TYPE_AUDIO;
+            m_type = MEDIA_AUDIO;
         } else if (m_media == "video") {
-            m_type = TYPE_VIDEO;
+            m_type = MEDIA_VIDEO;
+        } else {
+            m_type = MEDIA_NONE;
         }
 	
 	Tag::TagList payloads = tag->findChildren("payload");
@@ -586,11 +623,6 @@ bool JingleSession::mergeSession(JingleSession *session, bool remote)
         return true;
 }
 
-gloox::JID  JingleSession::remote() const
-{
-    return m_remote_jid;
-}
-
 JingleSession * JingleSession::createReply(JingleSession *remote)
 {
     if (!remote)
@@ -710,6 +742,13 @@ JingleStanza * JingleSession::createStanzaInfo(SessionInfo info)
     stanza->setInfo(info);
     return stanza;
 }
+    
+JingleStanza * JingleSession::createStanzaTerminate(SessionReason reason)
+{
+    JingleStanza *stanza = createStanza(ACTION_TERMINATE);
+    stanza->setReason(reason);
+    return stanza;
+}
 
 void JingleSession::initiateFromRemote(const JingleStanza *stanza)
 {
@@ -787,7 +826,7 @@ gloox::JID JingleSession::responder() const
 
 gloox::JID JingleSession::remote() const
 {
-    return m_remote;
+    return m_remote_jid;
 }
 
 gloox::JID JingleSession::from() const    
@@ -850,9 +889,6 @@ void JingleSession::setFrom(const gloox::JID &jid)
      m_from = jid; 
 }
 
-void JingleSession::setAcknowledged(bool ack)
-{ m_acknowledged = ack; }
-
 void JingleSession::setState(SessionState state)
 { m_state = state; }
 
@@ -894,26 +930,48 @@ JingleStanza::JingleStanza()
 /** @brief Parse XML stanza to structure. */
 void JingleStanza::parse(const Stanza *stanza)
 {
-	Tag *jingle = stanza->findChild("jingle");
-	if (!jingle) {
+    Tag *jingle = stanza->findChild("jingle");
+    if (!jingle) {
         m_valid = false;
-		return;
+        return;
     }
-	m_sid = jingle->findAttribute("sid");
-	m_initiator = jingle->findAttribute("initiator");
-	m_responder = jingle->findAttribute("responder");
-	std::string action = jingle->findAttribute("action");
-	m_action = JingleSession::actionFromString(action);
+    m_sid = jingle->findAttribute("sid");
+    m_initiator = jingle->findAttribute("initiator");
+    m_responder = jingle->findAttribute("responder");
+    std::string action = jingle->findAttribute("action");
+    m_action = JingleSession::actionFromString(action);
     m_to = stanza->to();
     m_from = stanza->from();
 
-	Tag::TagList contents = jingle->findChildren("content");
-	
-	for (Tag::TagList::iterator it=contents.begin(); it!=contents.end(); it++) {
-		JingleContent content;
-		content.parse(*it);
-		addContent(content);
-	}
+    Tag::TagList contents = jingle->findChildren("content");
+    
+    for (Tag::TagList::iterator it=contents.begin(); it!=contents.end(); it++) {
+            JingleContent content;
+            content.parse(*it);
+            addContent(content);
+    }
+    m_reason = REASON_UNDEFINED;
+    if (jingle->hasChild("reason")) {
+        Tag *reason = jingle->findChild("reason");
+        for (Tag::TagList::iterator it = reason->children().begin();
+                it != reason->children().end(); it++) {
+            if (!(*it)->hasAttribute("xmlns")) {
+                SessionReason r = JingleSession::reasonFromString((*it)->name());
+                if (r != REASON_UNDEFINED)
+                    m_reason = r;
+                if (r == REASON_ALTERNATIVE_SESSION) {
+                    Tag *sid = (*it)->findChild("sid");
+                    if (sid)
+                        m_alternateSid = sid->cdata();
+                }
+
+            } // !xmlns
+        } // for
+
+        Tag *text = reason->findChild("text");
+        if (text)
+            m_reasonText = text->cdata();
+    }
     m_valid = true;
 }
 
@@ -938,9 +996,9 @@ void JingleStanza::clearContents()
 
 Tag * JingleStanza::tag() const
 {
-	Tag *t = new Tag("jingle");
-	t->addAttribute("xmlns", XMLNS_JINGLE);
-	t->addAttribute("sid", m_sid);
+    Tag *t = new Tag("jingle");
+    t->addAttribute("xmlns", XMLNS_JINGLE);
+    t->addAttribute("sid", m_sid);
 
     std::string straction = JingleSession::stringFromAction(m_action);
     if (!straction.empty()) 
@@ -948,8 +1006,8 @@ Tag * JingleStanza::tag() const
     else LOGGER(logit) << "Prazdne action po prevedeni na retezec" 
             << m_action << std::endl;
             
-	if (m_initiator)
-		t->addAttribute("initiator", m_initiator.full());
+    if (m_initiator)
+            t->addAttribute("initiator", m_initiator.full());
     if (m_responder)
         t->addAttribute("responder", m_responder.full());
 	for (ContentList::const_iterator it=m_contents.begin(); 
@@ -961,7 +1019,18 @@ Tag * JingleStanza::tag() const
         std::string infostr = JingleSession::stringFromInfo(m_info);
         new Tag(t, infostr, "xmlns", XMLNS_JINGLE_RTPINFO);
     }
-	return t;
+
+    if (m_reason != REASON_UNDEFINED) {
+        Tag *reason = new Tag("reason");
+        std::string rstr = JingleSession::stringFromReason(m_reason);
+        Tag *child = new Tag(rstr);
+        if (m_reason == REASON_ALTERNATIVE_SESSION && !m_alternateSid.empty()) {
+            new Tag(reason, "sid", m_alternateSid);
+        }
+        if (!m_reasonText.empty())
+            new Tag(reason, "text", m_reasonText);
+    }
+    return t;
 }
 
 std::string JingleStanza::sid() const 
@@ -990,6 +1059,18 @@ SessionReason JingleStanza::reason() const
 
 SessionInfo   JingleStanza::info() const
 { return m_info; }
+
+std::string   JingleStanza::reasonText() const
+{
+    return m_reasonText;
+}
+
+/** @brief Alternative session id.
+    Valid only for alternative-session reason. */
+std::string   JingleStanza::alternateSid() const
+{
+    return m_alternateSid;
+}
 
 bool JingleStanza::valid() const 
 {
@@ -1023,6 +1104,14 @@ void JingleStanza::setReason(SessionReason reason)
 
 void JingleStanza::setInfo(SessionInfo info)
 { m_info = info; }
+
+void JingleStanza::setReasonText(const std::string &text)
+{ m_reasonText = text; }
+
+void JingleStanza::setAlternateSid(const std::string &sid)
+{
+    m_alternateSid = sid;
+}
 
 ContentList JingleStanza::contents()
 {

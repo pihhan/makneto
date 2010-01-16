@@ -30,6 +30,11 @@ class JingleContentDescription
     std::string xmlns;
 };
 
+typedef enum {
+        MEDIA_NONE = 0,
+        MEDIA_AUDIO,
+        MEDIA_VIDEO
+} MediaType;
 
 /** Class describing one RTP payload for session negotiation.
     @see http://xmpp.org/extensions/xep-0167.html
@@ -38,8 +43,8 @@ class JingleContentDescription
 class JingleRtpPayload
 {
     public:
-                JingleRtpPayload(const gloox::Tag *tag);
-		JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
+        JingleRtpPayload(const gloox::Tag *tag);
+        JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
 		
     unsigned char   id; ///<! required
     std::string     name; ///!< recommended for static, required for dynamic
@@ -48,9 +53,9 @@ class JingleRtpPayload
     unsigned int    maxptime; ///!< optional
     unsigned int    ptime; ///!< optional
 	
-	void parse(const gloox::Tag *tag);
-	
-	gloox::Tag *tag() const;
+    void parse(const gloox::Tag *tag);
+    
+    gloox::Tag *tag() const;
 
 };
 
@@ -59,9 +64,6 @@ class JingleRtpPayload
 class JingleRtpContentDescription : public JingleContentDescription
 {
     public:
-
-    typedef enum { TYPE_UNKNOWN, TYPE_AUDIO, TYPE_VIDEO }
-        MediaType;
 
     typedef std::list<JingleRtpPayload> PayloadList;
 	
@@ -129,9 +131,9 @@ class JingleIceCandidate : public JingleCandidate
 		PR_TCP
 	} Protocols;
 	
-	virtual void parse(const gloox::Tag *tag);
+    virtual void parse(const gloox::Tag *tag);
 
-        virtual gloox::Tag *tag() const;
+    virtual gloox::Tag *tag() const;
 	
     int     foundation;
     int     network;
@@ -143,22 +145,26 @@ class JingleIceCandidate : public JingleCandidate
     std::string     relPort;
 };
 
-/** @brief One Transport representation with its candidates. */
+/** @brief One Transport representation with its candidates. 
+    Transport is description of network connection.
+    It contains network addresses and ports in candidates.
+    There might me more than one candidate. 
+*/
 class JingleTransport
 {
     public:
-		typedef std::list<JingleCandidate>	CandidateList;
-		
-		
-		virtual void parse(const gloox::Tag *tag);
-		void addCandidate(const JingleCandidate &c);
+    typedef std::list<JingleCandidate>	CandidateList;
+    
+    
+    virtual void parse(const gloox::Tag *tag);
+    void addCandidate(const JingleCandidate &c);
 
-                gloox::Tag * tag() const;
+    gloox::Tag * tag() const;
 		
     std::string m_xmlns;
     std::string m_pwd;
     std::string m_ufrag;
-	CandidateList	candidates;
+    CandidateList	candidates;
 };
 
 /** @brief One participant in session. */
@@ -186,17 +192,21 @@ class JingleParticipant
     std::string nick;
     Types       type;
 };
+
+
 typedef std::list<JingleParticipant>    ParticipantList;
+
     
 /** @brief One stream of specified type, audio or video or something like it. */
 class JingleContent
 {
     public:
         typedef enum {
-                SENDER_NONE = 0,
-                SENDER_INITIATOR,
-                SENDER_RESPONDER,
-                SENDER_BOTH
+                SENDERS_UNKNOWN = 0,
+                SENDERS_NONE,
+                SENDERS_INITIATOR,
+                SENDERS_RESPONDER,
+                SENDERS_BOTH
         } Senders; /// what side will produce some data
         
         typedef enum {
@@ -205,11 +215,6 @@ class JingleContent
                 CREATOR_RESPONDER
         } Creator;
 
-        typedef enum {
-                MEDIA_NONE = 0,
-                MEDIA_AUDIO,
-                MEDIA_VIDEO
-        } MediaType;
 
         typedef std::list<JingleTransport>  TransportList;
         
@@ -231,11 +236,13 @@ class JingleContent
         Creator     creator() const;
         MediaType   media() const;
         std::string disposition() const;
+        Senders     senders() const;
 
         void setName(const std::string &name);
         void setCreator(Creator creator);
         void setMedia(MediaType media);
         void setDisposition(const std::string &disposition);
+        void setSenders(Senders s);
 
     private:
     JingleTransport     m_transport;
@@ -245,6 +252,7 @@ class JingleContent
     Creator     m_creator; 
     MediaType   m_media;
     std::string m_disposition; // what type of content is inside
+    Senders     m_senders;
     JingleParticipant   m_owner;
 };
 
@@ -325,6 +333,8 @@ class JingleStanza
     SessionAction action() const;
     SessionReason reason() const;
     SessionInfo   info() const;
+    std::string   reasonText() const;
+    std::string   alternateSid() const;
     bool          valid() const;
 
     void setSid(const std::string &sid);
@@ -336,6 +346,8 @@ class JingleStanza
     void setAction(SessionAction action);
     void setReason(SessionReason reason);
     void setInfo(SessionInfo info);
+    void setReasonText(const std::string &text);
+    void setAlternateSid(const std::string &sid);
 
     void parse(const gloox::Stanza *staza);
     /** @brief Get jingle tag for query. */
@@ -362,6 +374,8 @@ class JingleStanza
     SessionAction   m_action;
     SessionReason   m_reason;
     SessionInfo     m_info;
+    std::string     m_reasonText; 
+    std::string     m_alternateSid; ///!< Valid only for alternative-session reason
     bool            m_valid;   
 };
 
@@ -442,6 +456,7 @@ class JingleSession
     JingleStanza *createStanzaInitiate();
     JingleStanza *createStanzaInfo(SessionInfo info);
     JingleStanza *createStanzaAccept();
+    JingleStanza *createStanzaTerminate(SessionReason reason = REASON_DECLINE);
 
     void initiateFromRemote(const JingleStanza *stanza);
     bool mergeFromRemote(const JingleStanza *session);

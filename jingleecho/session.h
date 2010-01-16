@@ -37,6 +37,9 @@ class Session
     std::string describe();
     GList * getCodecListProperty(const char *name);
 
+    std::string name();
+    void        setName(const std::string &name);
+
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
     static void streamError(FsStream *self, FsError errno, gchar *error_msg,
@@ -53,6 +56,7 @@ class Session
     GError      *m_lasterror;
     FsStream    *m_stream;
     GList       *m_localCandidates;
+    std::string  m_name;
 };
 
 
