@@ -7,7 +7,7 @@
 #include <gloox/disco.h>
 
 #include "jinglemanager.h"
-#include "fsjingle.h"
+#include "fstjingle.h"
 
 #include "ipv6/v6interface.h"
 #include "logger/logger.h"

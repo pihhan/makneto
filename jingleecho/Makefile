@@ -20,11 +20,11 @@ LIBS += $(FARSIGHT_LIBS)
 
 HEADERS = client.h glogger.h parser.h requests.h versionhandler.h \
     jinglesession.h jinglemanager.h ipv6/v6interface.h \
-    fsjingle.h session.h conference.h qpipeline.h
+    fstjingle.h session.h conference.h qpipeline.h
 SOURCES = client.cpp logger.cpp
 OBJECTS = client.o glogger.o main.o parser.o requests.o versionhandler.o \
     jinglesession.o jinglemanager.o \
-    fsjingle.o session.o conference.o qpipeline.o
+    fstjingle.o session.o conference.o qpipeline.o
 EXTERNAL= ../ipv6/v6interface.o ../logger/logger.o
 LIBS += $(EXTERNAL)
 

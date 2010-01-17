@@ -105,8 +105,8 @@ void Conference::setNicknames(const std::string &local, const std::string &remot
 
 void Conference::onNewLocalCandidate(FsCandidate *candidate)
 {
-    LOGCF() << "New candidate: " << candidate->ip << ":" << candidate->port 
-        << std::endl;
+    LOGCF() << "New local candidate: " << candidate->ip << ":" 
+        << candidate->port << std::endl;
 }
 
 void Conference::onLocalCandidatesPrepared()
@@ -238,6 +238,7 @@ std::string Conference::describe()
         else
             LOGCF() << "NULL Session!" << std::endl;
     }
+    o << "Elements: " << QPipeline::binToString(m_fsconference);
     return o.str();
 }
 

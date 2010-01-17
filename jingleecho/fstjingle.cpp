@@ -3,7 +3,7 @@
 #include <sstream>
 #include <glib.h>
 
-#include "fsjingle.h"
+#include "fstjingle.h"
 #include "logger/logger.h"
 
 

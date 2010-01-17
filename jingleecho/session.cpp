@@ -6,7 +6,7 @@
 #include "conference.h"
 
 #include "logger/logger.h"
-#include "fsjingle.h"
+#include "fstjingle.h"
 
 static const gchar     stun_ip[] = "212.71.150.10";
 
@@ -219,6 +219,7 @@ void Session::setRtcpTimeout(int timeout)
 std::string Session::describe()
 {
     std::ostringstream o("RTP Session ");
+    o << " name: " << m_name;
     o << " codecs ready: " << codecsReady();
     o << " ssrc: " << rtpSsrc();
     o << " rtcp timeout: " << rtcpTimeout();

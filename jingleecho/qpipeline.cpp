@@ -192,19 +192,13 @@ void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer pipeli
     QPLOG() << "removed element: " << gst_element_get_name(element) << std::endl;
 }
 
-std::string QPipeline::describe()
+std::string QPipeline::binToString(GstElement *bin)
 {
     std::ostringstream o;
-    GstIterator *it;
-    bool done = FALSE;
-    GstElement *element;
+    bool done = false;
+    GstElement *element = NULL;
 
-    o << "Pipeline: " << gst_element_get_name(m_pipe) << std::endl 
-      << " momentalni stav: " << current_state() 
-      << " cekajici stav: " << pending_state() << std::endl;
-
-    it = gst_bin_iterate_elements(GST_BIN(m_pipe));
-    o << "Elements: ";
+    GstIterator *it = gst_bin_iterate_sorted(GST_BIN(bin));
     while(!done) {
         switch (gst_iterator_next(it, (void **) &element)) {
             case GST_ITERATOR_OK:
@@ -224,6 +218,22 @@ std::string QPipeline::describe()
         }
     }
     gst_iterator_free(it);
+    return o.str();
+}
+
+std::string QPipeline::describe()
+{
+    std::ostringstream o;
+    GstIterator *it;
+    bool done = FALSE;
+    GstElement *element;
+
+    o << "Pipeline: " << gst_element_get_name(m_pipe) << std::endl 
+      << " momentalni stav: " << current_state() 
+      << " cekajici stav: " << pending_state() << std::endl;
+
+    o << "Elements: ";
+    o << binToString(m_pipe);
     return o.str();
 }
 

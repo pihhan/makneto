@@ -41,6 +41,7 @@ class QPipeline
     bool createFilters();
 
     std::string describe();
+    static std::string binToString(GstElement *bin);
 
     /* glib callbacks */
     static void elementAdded(GstBin *bin, GstElement *element, gpointer pipeline);
