@@ -13,7 +13,6 @@
 #include "glogger.h"
 #include "parser.h"
 #include "fstjingle.h"
-//#include "rosterator.h"
 
 using namespace gloox;
 
@@ -241,6 +240,7 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
 
             }
             sendChatMessage(stanza->from(), r);
+
         } else if (cmd == "terminate") {
             JingleSession *session = NULL;
             if (!param.empty()) {
