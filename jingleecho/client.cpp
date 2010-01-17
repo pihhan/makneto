@@ -263,8 +263,8 @@ void EchoClient::handleMessage (Stanza *stanza, MessageSession *session)
             }
     
             if (session) {
-                m_jingle->acceptAudioSession(session);
-                sendChatMessage(stanza->from(), "session accepted");
+                m_jingle->terminateSession(session);
+                sendChatMessage(stanza->from(), "session terminated.");
             }
 
 
