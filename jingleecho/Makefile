@@ -30,6 +30,10 @@ LIBS += $(EXTERNAL)
 
 all: client
 
+qpipeline.o: qpipeline.h qpipeline.cpp
+fstjingle.o: fstjingle.h qpipeline.cpp qpipeline.h
+conference.o: conference.h
+
 ipv6:
 	make -C ../ipv6
 
@@ -48,7 +52,4 @@ clean:
 tags: $(SOURCES) $(HEADERS)
 	ctags $(SOURCES) $(HEADERS)
 
-qpipeline.cpp: qpipeline.h
-fsjingle.cpp: fsjingle.h
-conference.cpp: conference.h
  

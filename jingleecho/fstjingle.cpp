@@ -249,6 +249,7 @@ std::string FstJingle::toString(const FsCodec *codec)
 bool FstJingle::terminate()
 {
     conference->removeAllSessions();
+    pipeline->setState(GST_STATE_NULL);
     return true;
 }
 

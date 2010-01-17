@@ -135,11 +135,10 @@ bool QPipeline::createAudioSource()
     } else {
         m_source = gst_parse_bin_from_description(DEFAULT_AUDIOSOURCE, TRUE, &err);
     }
-    if (err) {
+    if (!m_source && err) {
         QPLOG() << " gst_parse_bin_from_description: " <<
             err->message << std::endl;
     }
-    g_assert(m_source);
     return (m_source != NULL);
 }
 
@@ -152,11 +151,10 @@ bool QPipeline::createAudioSink()
     } else {
         m_sink = gst_parse_bin_from_description(DEFAULT_AUDIOSINK, TRUE, &err);
     }
-    if (err) {
+    if (!m_sink && err) {
         QPLOG() << " gst_parse_bin_from_description: " <<
             err->message << std::endl;
     }
-    g_assert(m_sink);
     return (m_sink != NULL);
 }
 
@@ -224,9 +222,6 @@ std::string QPipeline::binToString(GstElement *bin)
 std::string QPipeline::describe()
 {
     std::ostringstream o;
-    GstIterator *it;
-    bool done = FALSE;
-    GstElement *element;
 
     o << "Pipeline: " << gst_element_get_name(m_pipe) << std::endl 
       << " momentalni stav: " << current_state() 

@@ -294,6 +294,9 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
     if (session->data()) {
         FstJingle *fst = static_cast<FstJingle *>(session->data());
         fst->terminate();
+        LOGGER(logit) << "Audio session found and terminated." << std::endl;
+    } else {
+        LOGGER(logit) << "No data for session " << session->sid() << std::endl;
     }
 }
 

@@ -5,7 +5,7 @@
 #include <gst/gst.h>
 #include <string>
 
-#define DEFAULT_AUDIOSOURCE "audiotestsrc ! audio/x-raw-int,rate=8000 ! audioconvert "
+#define DEFAULT_AUDIOSOURCE "audiotestsrc is-live=1 ! audio/x-raw-int,rate=8000 ! audioconvert "
 #define DEFAULT_AUDIOSINK   "audioconvert ! pulsesink"
 
 /** @brief Simple C++ wrapper for Gstreamer pipeline. */
