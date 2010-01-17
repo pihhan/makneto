@@ -12,7 +12,7 @@
 #include "client.h"
 #include "glogger.h"
 #include "parser.h"
-#include "fsjingle.h"
+#include "fstjingle.h"
 //#include "rosterator.h"
 
 using namespace gloox;
