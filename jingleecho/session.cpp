@@ -260,3 +260,72 @@ void Session::setName(const std::string &name)
     m_name = name;
 }
 
+bool Session::isSrcLinked()
+{
+    return m_srclinked;
+}
+
+void Session::setSrcLinked(bool linked)
+{
+    m_srclinked = linked;
+}
+
+GList * Session::getLocalCandidates()
+{
+    return fs_candidate_list_copy(m_localCandidates);
+}
+
+void Session::clearLocalCandidates()
+{
+    if (m_localCandidates)
+        fs_candidate_list_destroy(m_localCandidates);
+    m_localCandidates = NULL;
+}
+
+void Session::onNewLocalCandidate(FsCandidate *candidate)
+{
+    FsCandidate *copy = fs_candidate_copy(candidate);
+    m_localCandidates = g_list_prepend(m_localCandidates, copy);
+}
+
+FsSession   *Session::sessionElement()
+{
+    gst_object_ref(m_session);
+    return m_session;
+}
+
+FsStream    *Session::streamElement()
+{
+    gst_object_ref(m_stream);
+    return m_stream;
+}
+
+unsigned int Session::id()
+{
+    unsigned int id = -1;
+    g_object_get(G_OBJECT(m_session), "id", &id, NULL);
+    return id;
+}
+
+/** @brief Get FsStream::id property from passed stream. */    
+unsigned int Session::idFromStream(FsStream *stream)
+{
+    FsSession *fs_session = NULL;
+    unsigned int id = -1;
+    g_object_get(G_OBJECT(stream), 
+        "session", &fs_session, 
+        NULL);
+    if (fs_session)
+        g_object_get(G_OBJECT(fs_session), "id", &id, NULL);
+    return id;
+}
+
+/** @brief Get FsStream::id property from passed stream. */    
+unsigned int Session::idFromStream(const GValue *val)
+{
+    g_assert(val && G_VALUE_HOLDS_POINTER(val));
+    FsStream *fs_stream = (FsStream *) g_value_get_pointer(val);
+    return idFromStream(fs_stream);
+}
+
+

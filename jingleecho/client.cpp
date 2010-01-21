@@ -80,7 +80,7 @@ bool EchoClient::onTLSConnect( const CertInfo &info )
 
 void EchoClient::connect()
 {
-    m_client->connect();
+    m_client->connect(false);
 }
 
 void EchoClient::onDisconnect(ConnectionError e)
@@ -504,3 +504,9 @@ void EchoClient::broadcastChatMessage(const std::string &message)
 		sendChatMessage(*it, message);
 	}
 }
+
+ConnectionError EchoClient::recv(int timeout)
+{
+    return m_client->recv(timeout);
+}
+

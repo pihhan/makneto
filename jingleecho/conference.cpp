@@ -8,7 +8,8 @@
 #define LOGCF() (LOGGER(logit) << " conference " )
 
 Conference::Conference(GstElement *bin)
-    : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0)
+    : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0),
+      m_localCandidates(0), m_newLocalCandidates(0)
 {
     m_pipeline = bin;
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(bin));
@@ -25,7 +26,8 @@ Conference::Conference(GstElement *bin)
 }
 
 Conference::Conference(QPipeline *pipeline)
-    : m_qpipeline(pipeline),m_selfParticipant(0),m_remoteParticipant(0)
+    : m_qpipeline(pipeline),m_selfParticipant(0),m_remoteParticipant(0),
+      m_localCandidates(0), m_newLocalCandidates(0)
 {
     m_pipeline = pipeline->element();
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipeline));
@@ -107,11 +109,15 @@ void Conference::onNewLocalCandidate(FsCandidate *candidate)
 {
     LOGCF() << "New local candidate: " << candidate->ip << ":" 
         << candidate->port << std::endl;
+    FsCandidate *copy = fs_candidate_copy(candidate);
+    m_localCandidates = g_list_prepend(m_localCandidates, copy);
 }
 
 void Conference::onLocalCandidatesPrepared()
 {
-    LOGCF() << "Local candidates prepared" << std::endl;
+    m_newLocalCandidates++;
+    LOGCF() << "Local candidates prepared: " 
+            << m_newLocalCandidates << std::endl;
 }
 
 void Conference::onRecvCodecsChanged(GList *codecs)
@@ -135,7 +141,6 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
 
     switch (GST_MESSAGE_TYPE(message)) {
         case GST_MESSAGE_ERROR:
-        case GST_MESSAGE_WARNING:
             {
                 GError *error = NULL;
                 gchar *debugmsg = NULL;
@@ -143,6 +148,13 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 LOGCF() << "Error: conference::messageCallback: " << debugmsg << std::endl;
             }
             break;
+        case GST_MESSAGE_WARNING:
+            {
+                GError *error = NULL;
+                gchar *debugmsg = NULL;
+                gst_message_parse_warning(message, &error, &debugmsg);
+                LOGCF() << "Warning: conference::messageCallback: " << debugmsg << std::endl;
+            }
         case GST_MESSAGE_ELEMENT:
             {
                 const GstStructure *s = gst_message_get_structure(message);
@@ -164,15 +176,37 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 } else if (gst_structure_has_name(s, 
                         "farsight-new-local-candidate")) {
                     const GValue *val = gst_structure_get_value(s, "candidate");
+                    const GValue *vstream = gst_structure_get_value(s, "stream");
                     FsCandidate *candidate = NULL;
-                    g_assert(val);
+                    FsStream *stream = NULL;
+                    gst_structure_get(message->structure, "stream", &stream, FS_TYPE_STREAM, NULL);
+                    unsigned int id;
+                    g_assert(val && vstream);
                     candidate = (FsCandidate *) g_value_get_boxed(val);
+                    id = Session::idFromStream(stream);
+                    Session *session = conf->getSession(id);
+                    if (session)
+                        session->onNewLocalCandidate(candidate);
                     conf->onNewLocalCandidate(candidate);
+                    gst_object_unref(stream);
 
                 } else if (gst_structure_has_name(s, 
                         "farsight-local-candidates-prepared")) {
                     conf->onLocalCandidatesPrepared();
 
+                } else if (gst_structure_has_name(s,
+                        "farsight-new-active-candidate-pair")) {
+                    const GValue *vstream = gst_structure_get_value(s, "stream");
+                    const GValue *vlocal = gst_structure_get_value(s, "local-candidate");
+                    const GValue *vremote = gst_structure_get_value(s, "remote-candidate");
+                    unsigned int id = Session::idFromStream(vstream);
+                    FsCandidate *l = (FsCandidate *) g_value_get_boxed(vlocal);
+                    FsCandidate *r = (FsCandidate *) g_value_get_boxed(vremote);
+                    Session *s = conf->getSession(id);
+                    if (s) {
+                        // TODO:
+                        //s->onNewActivePair(l, r);
+                    }
                 } else if (gst_structure_has_name(s,
                         "farsight-recv-codecs-changed")) {
                     const GValue *v = gst_structure_get_value(s, "codecs");
@@ -188,11 +222,30 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     g_assert(v);
                     codecs = (GList *) g_value_get_boxed(v);
                     conf->onSendCodecsChanged(codecs);
+                } else if (gst_structure_has_name(s,
+                        "farsight-component-state-changed")) {
+                    const GValue *vs = gst_structure_get_value(s, "stream");
+                    const GValue *vstate =gst_structure_get_value(s, "state");
+                    const GValue *vcomp = gst_structure_get_value(s, "component");
+                    FsStreamState state;
+                    FsStream *fs = (FsStream *) g_value_get_boxed(vs);
+                    state = (FsStreamState) g_value_get_enum(vstate);
+                    guint component = g_value_get_uint(vcomp);
+                    LOGGER(logit) << "Component " << component 
+                        << " state changed to " << state << std::endl;
                 } else {
                     const gchar *name = gst_structure_get_name(s);
                     std::cerr << "Neznama zprava na pipeline: " <<
                             name << std::endl;
                 }
+            }
+            break;
+        case GST_MESSAGE_STATE_CHANGED:
+            {
+                GstState olds, news, pending;
+                gst_message_parse_state_changed(message, &olds, &news, &pending);
+                LOGCF() << "Zmena stavu " << olds << " -> " << news 
+                        << " (" << pending << ")" << std::endl;
             }
             break;
         default:
@@ -221,6 +274,8 @@ void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
         GstPadLinkReturn r = gst_pad_link(pad, sinkpad);
         if (GST_PAD_LINK_FAILED(r)) {
             LOGCF() << "Link zdroje na sink selhal!" << r << std::endl;
+        } else {
+            session->setSrcLinked(true);
         }
     } else {
         LOGCF() << "sink je uz prilinkovan!" << std::endl;
@@ -253,6 +308,17 @@ Session * Conference::getSession(const std::string &name)
     return NULL;
 }
 
+/** @brief Get sesion by farsight session id. */
+Session * Conference::getSession(unsigned int id)
+{
+    for (SessionList::iterator it=m_sessions.begin(); 
+            it!=m_sessions.end(); it++) {
+        if (*it && (*it)->id() == id)
+            return *it;
+    }
+    return NULL;
+}
+
 /** @brief remove and terminate one session with name. 
     @return true if session was terminated, false otherwise. */
 bool Conference::removeSession(const std::string &name)
@@ -274,5 +340,38 @@ void Conference::removeAllSessions()
         }
     }
     m_sessions.clear();
+}
+
+GList * Conference::localCandidates()
+{
+    return fs_candidate_list_copy(m_localCandidates);
+}
+
+void Conference::resetLocalCandidates()
+{
+    if (m_localCandidates) {
+        fs_candidate_list_destroy(m_localCandidates);
+    }
+    m_localCandidates = NULL;
+}
+
+bool Conference::haveLocalCandidates()
+{
+    return (m_localCandidates != NULL);
+}
+    
+void Conference::resetNewLocalCandidates()
+{
+    m_newLocalCandidates = 0;
+}
+
+bool Conference::haveNewLocalCandidates()
+{
+    return (m_newLocalCandidates > 0);
+}
+    
+void Conference::increaseNewLocalCandidates()
+{
+    m_newLocalCandidates++;
 }
 

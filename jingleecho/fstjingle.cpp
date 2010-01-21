@@ -17,10 +17,43 @@ FstJingle::FstJingle()
 FsCandidate * FstJingle::createFsCandidate(const JingleCandidate & candidate)
 {
     const char foundation[] = "";
+    FsCandidateType type = FS_CANDIDATE_TYPE_HOST;
+    switch (candidate.candidateType) {
+        case JingleCandidate::TYPE_HOST:
+            type = FS_CANDIDATE_TYPE_HOST;  break;
+        case JingleCandidate::TYPE_REFLEXIVE:
+            type = FS_CANDIDATE_TYPE_SRFLX; break;
+        case JingleCandidate::TYPE_RELAYED:
+            type = FS_CANDIDATE_TYPE_RELAY; break;
+        default: 
+            break;
+    }
     FsCandidate *fscan = fs_candidate_new(foundation,
-        candidate.component, FS_CANDIDATE_TYPE_HOST, FS_NETWORK_PROTOCOL_UDP,
+        candidate.component, type, FS_NETWORK_PROTOCOL_UDP,
         candidate.ip.c_str(), candidate.port);
     return fscan;
+}
+
+JingleCandidate FstJingle::createJingleCandidate(const FsCandidate *candidate)
+{
+    JingleCandidate jc;
+
+    jc.ip = candidate->ip;
+    jc.port = candidate->port;
+    //jc.foundation = candidate->foundation;
+    jc.component = candidate->component_id;
+    switch (candidate->type) {
+        case FS_CANDIDATE_TYPE_HOST:
+            jc.candidateType = JingleCandidate::TYPE_HOST; break;
+        case FS_CANDIDATE_TYPE_SRFLX:
+        case FS_CANDIDATE_TYPE_PRFLX:
+            jc.candidateType = JingleCandidate::TYPE_REFLEXIVE; break;
+        case FS_CANDIDATE_TYPE_RELAY:
+            jc.candidateType = JingleCandidate::TYPE_RELAYED; break;
+        default:
+            jc.candidateType = JingleCandidate::TYPE_UNKNOWN; break;
+    }
+    return jc;
 }
 
 /** @brief Convert jingle rtp description to farsight codec.
@@ -61,7 +94,7 @@ GList * FstJingle::createFsCodecList(const JingleRtpContentDescription &descript
 GList * FstJingle::createFsCandidateList(const JingleTransport &transport)
 {
     GList *candidates = NULL;
-    for (JingleTransport::CandidateList::const_reverse_iterator 
+    for (CandidateList::const_reverse_iterator 
             it = transport.candidates.rbegin();
             it != transport.candidates.rend();
             it++) {
@@ -206,6 +239,28 @@ bool FstJingle::replaceRemoteContent(const JingleContent &content)
     }
 }
 
+bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate)
+{
+    Session *session = conference->getSession(content);
+    if (session) {
+        GList *candidates = NULL;
+        FsCandidate *fscan = createFsCandidate(candidate);
+        candidates = g_list_prepend(candidates, fscan);
+        session->setRemote(candidates);
+        fs_candidate_list_destroy(candidates);
+        LOGGER(logit) << "Nahrazuji vzdaleneho kandidata " 
+                << fscan->ip << ":" 
+                << fscan->port << " "
+                << "na content: " << content << std::endl;
+        return true;
+    } else {
+        LOGGER(logit)
+        << "Nenalezena session pri nahrazovani vzdaleneho kandidata: " 
+        << content << std::endl;
+    }
+    return false;
+}
+
 
 void FstJingle::setNicknames(const std::string &local, const std::string &remote)
 {
@@ -251,6 +306,108 @@ bool FstJingle::terminate()
     conference->removeAllSessions();
     pipeline->setState(GST_STATE_NULL);
     return true;
+}
+
+bool FstJingle::isPlaying()
+{
+    return (pipeline->current_state() == GST_STATE_PLAYING);
+}
+
+bool FstJingle::isPaused()
+{
+    return (pipeline->current_state() == GST_STATE_PAUSED);
+}
+
+bool FstJingle::isReady()
+{
+    return (pipeline->current_state() == GST_STATE_READY);
+}
+
+bool FstJingle::haveLocalCandidates()
+{
+    return conference->haveLocalCandidates();
+}
+
+CandidateList   FstJingle::localCandidates()
+{
+    GList *candidates = conference->localCandidates();
+    GList *item = candidates;
+    CandidateList cl;
+
+    while(item) {
+        cl.push_back(createJingleCandidate((FsCandidate *) item->data));
+        item = g_list_next(item);
+    }
+    fs_candidate_list_destroy(candidates);
+    return cl;
+}
+
+/** @brief Update local transport and its candidates from information we know
+    about. 
+    @param content Content to update.
+    @return True if updated, false otherwise. 
+*/
+bool FstJingle::updateLocalTransport(JingleContent &content)
+{
+    Session *fs = conference->getSession(content.name());
+    if (fs) {
+        GList * candidates = fs->getLocalCandidates();
+        CandidateList cl = createJingleCandidateList(candidates);
+        fs_candidate_list_destroy(candidates);
+        JingleTransport jt = content.transport();
+        jt.candidates = cl;
+        content.setTransport(jt);
+        return true;
+    }
+    return false;
+}
+    
+bool FstJingle::haveNewLocalCandidates()
+{
+    return conference->haveNewLocalCandidates();
+}
+
+void FstJingle::resetNewLocalCandidates()
+{
+    conference->resetNewLocalCandidates();
+}
+
+CandidateList   FstJingle::createJingleCandidateList(GList *candidates)
+{
+    CandidateList cl;
+    while (candidates) {
+        cl.push_back(createJingleCandidate((FsCandidate *) candidates->data));
+        candidates = g_list_next(candidates);
+    }
+    return cl;
+}
+
+/** @brief Try next candidate for this content. 
+    @return true if there is next candidate to try, false otherwise.
+*/
+bool FstJingle::tryNextCandidate(JingleContent &content)
+{
+    bool modified = false;
+    bool next = false;
+    JingleTransport jt = content.transport();
+    for (CandidateList::iterator ci = jt.candidates.begin(); 
+                ci!= jt.candidates.end(); ci++) 
+    {
+        if (ci->reachable == JingleCandidate::REACHABLE_TRYING) {
+            ci->reachable = JingleCandidate::REACHABLE_NO;
+            LOGGER(logit) << "Candidate marked unreachable" << std::endl;
+            modified = true;
+        } else if (ci->reachable == JingleCandidate::REACHABLE_UNKNOWN) {
+            ci->reachable = JingleCandidate::REACHABLE_TRYING;
+            LOGGER(logit) << "Candidate marked trying " << std::endl;
+            modified = true;
+            replaceRemoteCandidate(content.name(), *ci);
+            next = true;
+        }
+    } // for candidates
+    if (modified)
+        content.setTransport(jt);
+    return (modified && next);
 }
 
 

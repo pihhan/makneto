@@ -2,9 +2,12 @@
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
+#include <utility>
 
 #include <gloox/stanza.h>
 #include <gloox/disco.h>
+
+#include <glib.h>
 
 #include "jinglemanager.h"
 #include "fstjingle.h"
@@ -12,10 +15,27 @@
 #include "ipv6/v6interface.h"
 #include "logger/logger.h"
 
+extern GMainLoop    *loop;
+
+typedef std::pair<JingleSession *, JingleManager *> SessionManagerPair;
+
 using namespace gloox;
 
+
+static gboolean periodic_timer(gpointer user_data)
+{
+    JingleManager *manager = (JingleManager *) user_data;
+    JingleManager::SessionMap all = manager->allSessions();
+    for (JingleManager::SessionMap::iterator it= all.begin(); it!= all.end(); it++) {
+        JingleSession *session = (it->second);
+        manager->periodicSessionCheck(session);
+    }
+    return TRUE;
+}
+
+
 JingleManager::JingleManager(ClientBase *base)
-	: m_base(base)
+	: m_base(base), m_timerid(0)
 {
 	base->registerIqHandler(this, XMLNS_JINGLE);
         base->disco()->addFeature(XMLNS_JINGLE);
@@ -215,35 +235,36 @@ JingleSession * JingleManager::initiateAudioSession(
     session->addLocalContent(audioContent());
     JingleStanza *js = session->createStanzaInitiate();
 
-	addSession(session);
-	
-	std::string id = m_base->getID();
-	Stanza *stanza = createJingleStanza(js, id);
-    m_base->trackID(this, id, 1);
-	m_base->send(stanza);
+    addSession(session);
+   
+    send(js); 
     delete js;
+
     return session;
 }
 
 
+/** @brief Accept audio session. 
+    create multimedia pipeline also. 
+*/
 JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 {
-        JingleContent newcontent = audioContent();
+    JingleContent newcontent = audioContent();
 
-        session->addLocalContent(newcontent);
-        session->setState(JSTATE_ACTIVE);
-        session->setResponder(self());
-        JingleStanza *js = session->createStanzaAccept();
+    session->addLocalContent(newcontent);
+    session->setState(JSTATE_ACTIVE);
+    session->setResponder(self());
+    JingleStanza *js = session->createStanzaAccept();
 
 
-        FstJingle *fsj = new FstJingle();
-        fsj->createAudioSession(session);
-        session->setData(fsj);
+    FstJingle *fsj = new FstJingle();
+    fsj->createAudioSession(session);
+    session->setData(fsj);
 
-	std::string id = m_base->getID();
-	Stanza *stanza = createJingleStanza(js, id);
-    m_base->trackID(this, id, 1);
-	m_base->send(stanza);
+    send(js);
+    // start timeout timer
+    startSessionTimeout(session);
+    startPeriodicTimer();
     return session;
 }
 
@@ -256,6 +277,9 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
     fsj->createAudioSession(session);
 
     session->setData(fsj);
+
+    startSessionTimeout(session);
+    startPeriodicTimer();
     return true;
 }
 
@@ -285,7 +309,9 @@ void JingleManager::replyTerminate(const gloox::JID  &to, SessionReason reason, 
 }
 
 
-
+/** @brief Send termination of this session over network, and shutdown this
+    session. 
+*/
 void JingleManager::terminateSession(JingleSession *session, SessionReason reason)
 {
     JingleStanza *stanza = session->createStanzaTerminate(reason);
@@ -309,9 +335,11 @@ void JingleManager::send(JingleStanza *js)
     m_base->send(stanza);
 }
 
-JingleTransport::CandidateList JingleManager::localUdpCandidates()
+/** @brief Return simple local candidates.
+    Get them by enumerating local interfaces for addreses. */
+CandidateList JingleManager::localUdpCandidates()
 {
-	JingleTransport::CandidateList cl;
+	CandidateList cl;
 	char ** charlist = getAddressList(NULL, AFB_INET, SCOPE_GLOBAL);
 	if (!charlist) {
 		std::cerr << "Chyba pri ziskavani lokalnich adres." << std::endl;
@@ -394,4 +422,132 @@ JingleContent   JingleManager::audioContent()
     return JingleContent(localTransport(), audioDescription() );
 }
 
+/** @brief Periodic check for new information, state change, something like 
+    that. */
+void JingleManager::periodicSessionCheck(JingleSession *session)
+{
+    FstJingle *fst = static_cast<FstJingle *>(session->data());
+    if (fst) {
+        if (fst->haveNewLocalCandidates()) {
+            ContentList cl = session->localContents();
+            ContentList modified;
+
+            for (ContentList::iterator it=cl.begin(); it!=cl.end(); it++) {
+                if (fst->updateLocalTransport(*it)) {
+                    commentSession(session, "Local Transport updated: " + it->name());
+                    modified.push_back(*it);
+                }
+            }
+
+            if (modified.size() > 0) {
+                JingleStanza *js = session->createStanza(ACTION_TRANSPORT_INFO);
+                js->replaceContents(modified);
+                send(js);
+            }
+            fst->resetNewLocalCandidates();
+        } // new candidates
+    } // fst
+}
+
+
+void JingleManager::startPeriodicTimer()
+{
+    if (m_timerid != 0)
+        stopPeriodicTimer();
+
+    m_timerid = g_timeout_add(100, periodic_timer, this);
+}
+
+void JingleManager::stopPeriodicTimer()
+{
+    if (m_timerid != 0)
+        g_source_remove(m_timerid);
+    m_timerid = 0;
+}
+
+bool JingleManager::runningPeriodicTimer()
+{
+    return (m_timerid != 0);
+}
+
+void JingleManager::commentSession(JingleSession *session, const std::string &comment)
+{
+    gloox::JID target;
+    if (session->localOriginated())
+        target = session->initiator();
+    else 
+        target = session->responder();
+    if (target) {
+        gloox::Stanza *s = Stanza::createMessageStanza(target, comment);
+        m_base->send(s);
+    }
+}
+
+void JingleManager::registerActionHandler(JingleActionHandler *handler)
+{
+    m_handler = handler;
+}
+
+JingleManager::SessionMap  JingleManager::allSessions()
+{
+    return m_sessions; 
+}
+        
+gloox::JID JingleManager::self()
+{
+    return m_base->jid();
+}
+
+
+/** @brief Called on timeout, tries next in candidate list.  
+    That usually means that candidates we used could not connect. 
+    This is needed for RAWUDP transport, as it cannot handle
+    more than one remote candidates at one time. */
+bool JingleManager::sessionTimeout(JingleSession *session)
+{
+    if (session->state() == JSTATE_ACTIVE) {
+        // we think session is active, remove timeout
+        return FALSE;
+    }
+
+    bool untried = false;
+    ContentList cl = session->remoteContents();
+    for (ContentList::iterator it=cl.begin(); it!= cl.end(); it++) {
+        FstJingle *fst = static_cast<FstJingle *>(session->data());
+        if (fst->tryNextCandidate(*it)) {
+            untried = true;
+        }
+
+    } // for contents
+
+    if (!untried) {
+        LOGGER(logit) << "No more candidates remains, " 
+            << " session: " << session->sid() 
+            << std::endl;
+        terminateSession(session, REASON_MEDIA_ERROR);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+void JingleManager::startSessionTimeout(JingleSession *session)
+{
+    SessionManagerPair *p = new SessionManagerPair(session, this);
+    g_timeout_add(CANDIDATE_TIMEOUT_MS, JingleManager::sessionTimeout_gcb, p);
+}
+
+/** @brief Callback for glib, maps static call back to object method. 
+    @param user_data Pointer to std::pair<JingleSession *, JingleManager *>
+*/
+gboolean JingleManager::sessionTimeout_gcb(gpointer user_data)
+{
+    SessionManagerPair *p = static_cast<SessionManagerPair *>(user_data);
+    g_assert(p->first);
+    JingleManager *manager = p->second;
+    JingleSession *session = p->first;
+    bool r = manager->sessionTimeout(session);
+    if (!r)
+        delete p;
+    return r;
+}
 

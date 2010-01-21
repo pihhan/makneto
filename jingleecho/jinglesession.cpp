@@ -270,6 +270,16 @@ void JingleContent::setSenders(JingleContent::Senders s)
     m_senders = s;
 }
 
+void JingleContent::setTransport(JingleTransport &transport)
+{
+    m_transport = transport;
+}
+
+void JingleContent::setDescription(JingleRtpContentDescription &desc)
+{
+    m_description = desc;
+}
+
 
 /*
  *
@@ -316,6 +326,12 @@ void JingleTransport::addCandidate(const JingleCandidate &c)
  * JingleCandidate
  *
  */
+
+JingleCandidate::JingleCandidate()
+    : component(0), port(0), generation(0), natType(NAT_NONE), 
+      candidateType(TYPE_HOST), reachable(REACHABLE_UNKNOWN)
+{
+}
 
 void JingleCandidate::parse(const Tag *tag)
 {

@@ -37,6 +37,8 @@ class EchoClient : public PresenceHandler, ConnectionListener, MessageHandler
 
     void connect();
     void initLog();
+    ConnectionError recv(int timeout = -1);
+
     Stanza * bounceMessage(Stanza *stanza);
 
     static std::string connErrorToString(ConnectionError e);  

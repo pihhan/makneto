@@ -25,17 +25,32 @@ class FstJingle
     static GList * createFsCodecList(const JingleRtpContentDescription &description);
     static GList * createFsCandidateList(const JingleTransport &transport);
     static GList * createSingleFsCandidateList(const JingleTransport &transport);
+    static JingleCandidate createJingleCandidate(const FsCandidate *candidate);
+    static CandidateList   createJingleCandidateList(GList *candidates);
 
     void setNicknames(const std::string &local, const std::string &remote);
     bool linkSink(Session *session);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
     bool createAudioSession(JingleSession *session);
     bool replaceRemoteContent(const JingleContent &content);
+    bool replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate);
     std::string stateDescribe();
     bool terminate();
 
     static std::string codecListToString(const GList *codeclist);
     static std::string toString(const FsCodec *codec);
+
+    bool isPlaying();
+    bool isPaused();
+    bool isReady();
+
+    bool haveLocalCandidates();
+    CandidateList   localCandidates();
+    bool haveNewLocalCandidates();
+    void resetNewLocalCandidates();
+    
+    bool updateLocalTransport(JingleContent &content);
+    bool tryNextCandidate(JingleContent &content);
 
     QPipeline *pipeline;
     Conference *conference;

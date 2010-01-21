@@ -25,7 +25,11 @@ class Session
     void setLocal(GList *candidates);
     void setLocalCodec(GList *codecs);
     bool setRemoteCodec(GList *codecs);
+
     GstPad * sink();
+
+    GList *getLocalCandidates();
+    void clearLocalCandidates();
 
     FsCodec *currentSendCodec();
     GList   *currentRecvCodec();
@@ -39,6 +43,20 @@ class Session
 
     std::string name();
     void        setName(const std::string &name);
+    bool        isSrcLinked();
+    void        setSrcLinked(bool linked);
+
+    void        onNewLocalCandidate(FsCandidate *candidate);
+
+    FsSession   *sessionElement();
+    FsStream    *streamElement();
+
+    /** @brief Farsight id for this session. Used to lookup this class
+        from @class Conference when only farsight structures are handled. */
+    unsigned int    id();
+
+    static      unsigned int idFromStream(FsStream *stream);
+    static      unsigned int idFromStream(const GValue *val);
 
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
@@ -57,6 +75,7 @@ class Session
     FsStream    *m_stream;
     GList       *m_localCandidates;
     std::string  m_name;
+    bool         m_srclinked;
 };
 
 

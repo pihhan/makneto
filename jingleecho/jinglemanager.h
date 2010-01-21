@@ -10,6 +10,8 @@
 
 #include "jinglesession.h"
 
+#define CANDIDATE_TIMEOUT_MS    3000
+
 /** @brief Abstract class to handle incoming requests. 
 	Reimplement this to really do something with incoming jingle messages. 
 */
@@ -57,20 +59,18 @@ class JingleManager : public gloox::IqHandler
 	static std::string	getSid(gloox::Stanza *stanza);
         void                    replyAcknowledge(const gloox::Stanza *stanza);
 	
-	void registerActionHandler(JingleActionHandler *handler)
-	{ m_handler = handler; }
+	void registerActionHandler(JingleActionHandler *handler);
 
-        SessionMap              allSessions()
-        { return m_sessions; }
+        SessionMap              allSessions();
 
-        gloox::JID  self()  { return m_base->jid(); }
+        gloox::JID  self();
 	
 
 	unsigned int randomPort();
 	std::string	randomId();
 	
 	/** @brief Get list of IPs this machine has. */
-	JingleTransport::CandidateList	    localUdpCandidates();
+	CandidateList	    localUdpCandidates();
 	JingleTransport			    localTransport();
     JingleTransport             emptyUdpTransport();
 	
@@ -88,13 +88,24 @@ class JingleManager : public gloox::IqHandler
     
     void            send(JingleStanza *js);
 
-	protected:
-        bool acceptedAudioSession(JingleSession *session);
+    void periodicSessionCheck(JingleSession *session);
+    void startPeriodicTimer();
+    void stopPeriodicTimer();
+    bool runningPeriodicTimer();
+
+    void commentSession(JingleSession *session, const std::string &comment);
+    bool sessionTimeout(JingleSession *session);
+    void startSessionTimeout(JingleSession *session);
+
+    protected:
+    static gboolean sessionTimeout_gcb(gpointer user_data);
+    bool acceptedAudioSession(JingleSession *session);
 	
 	SessionMap m_sessions;
 	gloox::ClientBase *m_base;
-	JingleActionHandler	*m_handler;
-        unsigned int                 m_seed;
+	JingleActionHandler *m_handler;
+        unsigned int        m_seed;
+        unsigned int        m_timerid;
 };
 
 

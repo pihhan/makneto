@@ -55,16 +55,28 @@ class Conference
     std::string describe();
 
     Session *   getSession(const std::string &name);
+    Session *   getSession(unsigned int id);
     bool        removeSession(const std::string &name);
     void        removeAllSessions();
 
+    GList *     localCandidates();
+    void        resetLocalCandidates();
+    bool        haveLocalCandidates();
+
+    void        resetNewLocalCandidates();
+    bool        haveNewLocalCandidates();
+
     private:
+    void        increaseNewLocalCandidates();
+
     QPipeline  * m_qpipeline;
     GstElement * m_pipeline;
     GstElement * m_fsconference;
     FsParticipant * m_selfParticipant;
     FsParticipant * m_remoteParticipant;
     SessionList     m_sessions;
+    GList         * m_localCandidates;
+    int         m_newLocalCandidates;
 };
 
 #endif

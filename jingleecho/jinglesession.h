@@ -98,9 +98,26 @@ class JingleCandidate
         NAT_SYMMETRIC,
         NAT_PERMISSIVE
     } NatType;
+
+    typedef enum {
+        TYPE_UNKNOWN = 0,
+        TYPE_HOST, ///!< IP address of machine itself
+        TYPE_REFLEXIVE, ///!< public IP address of NAT box, my source address in internet
+        TYPE_RELAYED, ///!< Address of third party relay
+        TYPE_PEER_REFLEXIVE, ///!< Reflexive address got from peer
+    } CandidateType;
+
+    typedef enum {
+        REACHABLE_UNKNOWN = 0, ///!< We don't know as we haven't try yet
+        REACHABLE_NO, ///!< We tried and failed
+        REACHABLE_YES, ///!< We tried and got response
+        REACHABLE_TRYING ///!< We don't know yet, but we are trying now
+    } ReachableType;
 	
-	virtual void parse(const gloox::Tag *tag);
-	virtual gloox::Tag *tag() const;
+    virtual void parse(const gloox::Tag *tag);
+    virtual gloox::Tag *tag() const;
+
+    JingleCandidate();
 
     int             component;
     std::string     ip;
@@ -108,6 +125,8 @@ class JingleCandidate
     unsigned int    port;
     int             generation;
     NatType         natType;
+    CandidateType   candidateType;
+    ReachableType   reachable;
 };
 
 /** @brief Representation of one candidate for raw-UDP transport.
@@ -145,6 +164,8 @@ class JingleIceCandidate : public JingleCandidate
     std::string     relPort;
 };
 
+typedef std::list<JingleCandidate>	CandidateList;
+
 /** @brief One Transport representation with its candidates. 
     Transport is description of network connection.
     It contains network addresses and ports in candidates.
@@ -153,7 +174,6 @@ class JingleIceCandidate : public JingleCandidate
 class JingleTransport
 {
     public:
-    typedef std::list<JingleCandidate>	CandidateList;
     
     
     virtual void parse(const gloox::Tag *tag);
@@ -243,6 +263,8 @@ class JingleContent
         void setMedia(MediaType media);
         void setDisposition(const std::string &disposition);
         void setSenders(Senders s);
+        void setTransport(JingleTransport &transport);
+        void setDescription(JingleRtpContentDescription &desc);
 
     private:
     JingleTransport     m_transport;
