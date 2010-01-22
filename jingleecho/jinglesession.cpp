@@ -574,6 +574,8 @@ JingleStanza::JingleStanza()
 {
 }
 
+
+#ifdef GLOOX_API
 /** @brief Parse XML stanza to structure. */
 void JingleStanza::parse(const Stanza *stanza)
 {
@@ -622,25 +624,6 @@ void JingleStanza::parse(const Stanza *stanza)
     m_valid = true;
 }
 
-void JingleStanza::addContent(const JingleContent &content)
-{
-    m_contents.push_back(content);
-}
-
-void JingleStanza::addContent(const ContentList &contents)
-{
-    for (ContentList::const_iterator it= contents.begin();
-                it != contents.end(); it++) {
-        m_contents.push_back(*it);
-    }
-}
-
-
-void JingleStanza::clearContents()
-{
-    m_contents.clear();
-}
-
 Tag * JingleStanza::tag() const
 {
     Tag *t = new Tag("jingle");
@@ -678,6 +661,129 @@ Tag * JingleStanza::tag() const
             new Tag(reason, "text", m_reasonText);
     }
     return t;
+}
+
+#else
+
+/** @brief Parse incoming XML stanza to structure. 
+    Qt/Iris version.
+*/
+void JingleStanza::parse(QDomElement &tag)
+{
+    QDomElement jingle = tag.firstChildElement("jingle");
+    if (jingle.isNull())
+        return;
+    m_sid = jingle.attribute("sid").toStdString();
+    m_initiator = jingle.attribute("initiator").toStdString();
+    m_responder = jingle.attribute("responder").toStdString();
+    std::string action = jingle.attribute("action").toStdString();
+    m_action = JingleSession::actionFromString(action);
+
+    m_to = tag.attribute("from");
+    m_from = tag.attribute("to");
+
+    QDomElement content = jingle.firstChildElement("content");
+    while (!content.isNull()) {
+        JingleContent c;
+        c.parse(content);
+        addContent(c);
+        content = content.nextSiblingElement("content");
+    }
+
+    m_reason = REASON_UNDEFINED;
+    QDomElement reason = jingle.firstChildElement("reason");
+    if (!reason.isNull()) {
+        QDomElement rchild = reason.firstChildElement();
+        while (!rchild.isNull()) {
+            if (!rchild.hasAttribute("xmlns")) {
+                std::string tagname = rchild.tagName().toStdString();
+                SessionReason r = JingleSession::reasonFromString(tagname);
+
+                if (r != REASON_UNDEFINED)
+                    m_reason = r;
+                if (r == REASON_ALTERNATIVE_SESSION) {
+                    Tag *sid = rchild.firstChildElement("sid");
+                    if (!sid.isNull())
+                        m_alternateSid = sid->text().toStdString();
+                }
+            }
+        } // while rchild
+    } // if reason 
+
+}
+
+/**
+    @TODO Tag je vracen jako <jingle>, ale parsuje se <iq>
+*/
+QDomElement JingleStanza::tag(QDomDocument &doc) const
+{
+    QDomElement t = doc.createElement("jingle");
+    t.addAttribute("xmlns", XMLNS_JINGLE);
+    t.addAttribute("sid", m_sid);
+
+    std::string straction = JingleSession::stringFromAction(m_action);
+    if (!straction.empty()) 
+            t.addAttribute("action", straction);
+    else LOGGER(logit) << "Prazdne action po prevedeni na retezec" 
+            << m_action << std::endl;
+            
+    if (m_initiator)
+        t.addAttribute("initiator", m_initiator.full());
+    if (m_responder)
+        t.addAttribute("responder", m_responder.full());
+
+    for (ContentList::const_iterator it=m_contents.begin(); 
+        it!=m_contents.end(); 
+        it++) {
+            t.appendChild((it)->tag(doc));
+    }
+
+    if (m_info != INFO_NONE) {
+        std::string infostr = JingleSession::stringFromInfo(m_info);
+        QDomElement info = doc.createElement("info");
+        info.addAttribute("xmlns", XMLNS_JINGLE_RTPINFO);
+        t.appendChild(info);
+    }
+
+    if (m_reason != REASON_UNDEFINED) {
+        QDomElement reason = doc.createElement("reason");
+        std::string rstr = JingleSession::stringFromReason(m_reason);
+        QDomElement child = doc.createElement(rstr);
+        if (m_reason == REASON_ALTERNATIVE_SESSION && !m_alternateSid.empty()) {
+            QDomElement sid = doc.createElement("sid");
+            QDomText sidtext = doc.createTextNode(m_alternateSid.empty().c_str());
+            sid.appendChild(sidtext);
+            child.appendChild(sid);
+        }
+        if (!m_reasonText.empty()) {
+            QDomElement rtext = doc.createElement("text");
+            QDomText rtextt = doc.createTextNode(m_reasonText.c_str());
+            rtext.appendChild(rtextt);
+            child.appendChild(rtext);
+        }
+        reason.appendChild(child);
+    }
+    return t;
+}
+#endif
+
+void JingleStanza::addContent(const JingleContent &content)
+{
+    m_contents.push_back(content);
+}
+
+void JingleStanza::addContent(const ContentList &contents)
+{
+    for (ContentList::const_iterator it= contents.begin();
+                it != contents.end(); it++) {
+        m_contents.push_back(*it);
+    }
+}
+
+
+void JingleStanza::clearContents()
+{
+    m_contents.clear();
 }
 
 std::string JingleStanza::sid() const 
