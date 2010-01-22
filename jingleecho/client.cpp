@@ -435,6 +435,7 @@ std::string EchoClient::stanzaErrorToString(StanzaError e)
     }
 }
 
+
 /** @brief Create description of error from stanza */
 std::string EchoClient::describeError(const Stanza *stanza)
 {

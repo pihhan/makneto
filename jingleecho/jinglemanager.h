@@ -15,7 +15,9 @@
 #define PERIODIC_TIMEOUT    150
 
 /** @brief Abstract class to handle incoming requests. 
-	Reimplement this to really do something with incoming jingle messages. 
+    @author Petr Mensik <pihhan@cipis.net>
+    Reimplement this to really do something with incoming jingle messages. 
+    
 */
 class JingleActionHandler
 {
@@ -32,7 +34,9 @@ class JingleActionHandler
 
 
 /** @brief Create manager for jingle sessions. 
-    @author Petr Mensik <pihhan@cipis.net> */
+    @author Petr Mensik <pihhan@cipis.net> 
+    Some methods are virtual, as it needs XMPP library specific implementation.
+*/
 class JingleManager
 {
     public:
@@ -42,7 +46,7 @@ class JingleManager
 	
 	
         /** @brief Initiate new audio session. */
-	JingleSession * initiateAudioSession(const gloox::JID &to);
+	JingleSession * initiateAudioSession(const PJid &to);
 
         /** @brief Accept new audio session. */
         JingleSession * acceptAudioSession(JingleSession *session);
@@ -61,7 +65,7 @@ class JingleManager
 
         SessionMap              allSessions();
 
-        virtual gloox::JID  self()=0;
+        virtual PJid  self()=0;
 	
 
 	unsigned int randomPort();
@@ -77,10 +81,10 @@ class JingleManager
 
 
 
-    JingleSession * initiateEmptySession(const gloox::JID &to, 
-                const gloox::JID &initiator = gloox::JID()  );
-    JingleSession * initiateAudioSession(const gloox::JID &to, 
-                const gloox::JID &initiator=gloox::JID()    );
+    JingleSession * initiateEmptySession(const PJid &to, 
+                const PJid &initiator = PJid()  );
+    JingleSession * initiateAudioSession(const PJid &to, 
+                const PJid &initiator=PJid()    );
     
     virtual void    send(JingleStanza *js)=0;
 
@@ -89,7 +93,7 @@ class JingleManager
     void stopPeriodicTimer();
     bool runningPeriodicTimer();
 
-    void commentSession(JingleSession *session, const std::string &comment);
+    virtual void commentSession(JingleSession *session, const std::string &comment)=0;
     bool sessionTimeout(JingleSession *session);
     void startSessionTimeout(JingleSession *session);
     void destroySession(JingleSession *session);
@@ -99,13 +103,16 @@ class JingleManager
     bool acceptedAudioSession(JingleSession *session);
 	
 	SessionMap m_sessions;
-	gloox::ClientBase *m_base;
 	JingleActionHandler *m_handler;
         unsigned int        m_seed;
         unsigned int        m_timerid;
 };
 
-/** @brief Wrap around for Gloox library. */
+
+
+/** @brief Wrap around for Gloox library. 
+    This class is implementation of JingleManager using gloox. 
+*/
 class GlooxJingleManager :
     public gloox::IqHandler,
     public JingleManager
@@ -116,12 +123,13 @@ class GlooxJingleManager :
 	virtual bool handleIq(gloox::Stanza *stanza);
 	virtual bool handleIqID(gloox::Stanza *stanza, int content);
         virtual void    send(JingleStanza *js);
-        void replyTerminate(const gloox::JID &to, SessionReason reason, const std::string &sid="");
+        void replyTerminate(const PJid &to, SessionReason reason, const std::string &sid="");
         void    replyAcknowledge(const gloox::Stanza *stanza);
-        virtual gloox::JID  self();
+        virtual PJid  self();
     
-    static gloox::Stanza * createJingleStanza(const gloox::JID &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
+    static gloox::Stanza * createJingleStanza(const PJid &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
     static gloox::Stanza * createJingleStanza(JingleStanza *js, const std::string &id);
+    virtual void commentSession(JingleSession *session, const std::string &comment);
 
     protected:
 	gloox::ClientBase *m_base;

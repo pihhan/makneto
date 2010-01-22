@@ -1,4 +1,6 @@
 
+#include "pjid.h"
+
 #ifdef IRIS
 #include <xmpp/jid.h>
 #endif
@@ -7,6 +9,10 @@
 #include <gloox/jid.h>
 #endif
 
+
+PJid::PJid()
+{
+}
 
 #ifdef IRIS
 PJid::PJid(const std::string &fulljid)
@@ -69,12 +75,12 @@ std::string PJid::resourceStd() const
 
 std::string PJid::fullStd() const
 {
-    return gloox::JID.full();
+    return gloox::JID::full();
 }
 
 std::string PJid::bareStd() const
 {
-    return gloox::JID.bare();
+    return gloox::JID::bare();
 }
 
 #endif

@@ -17,6 +17,8 @@ see http://xmpp.org/extensions/xep-0166.html
 #include <gloox/clientbase.h>
 #include <gloox/client.h>
 
+#include "pjid.h"
+
 #include "jingle-description.h"
 #include "jingle-candidate.h"
 #include "jingle-content.h"
@@ -95,10 +97,10 @@ class JingleStanza
 
     std::string sid() const;
     ContentList contents() const;
-    gloox::JID  from() const;
-    gloox::JID  to() const;
-    gloox::JID  responder() const;
-    gloox::JID  initiator() const;
+    PJid  from() const;
+    PJid  to() const;
+    PJid  responder() const;
+    PJid  initiator() const;
 
     SessionAction action() const;
     SessionReason reason() const;
@@ -109,10 +111,10 @@ class JingleStanza
 
     void setSid(const std::string &sid);
     void setContent( const ContentList &list);
-    void setFrom(const gloox::JID &jid);
-    void setTo(const gloox::JID &jid);
-    void setResponder( const gloox::JID &jid);
-    void setInitiator( const gloox::JID &jid);
+    void setFrom(const PJid &jid);
+    void setTo(const PJid &jid);
+    void setResponder( const PJid &jid);
+    void setInitiator( const PJid &jid);
     void setAction(SessionAction action);
     void setReason(SessionReason reason);
     void setInfo(SessionInfo info);
@@ -133,12 +135,12 @@ class JingleStanza
     private:
     ContentList     m_contents;
 
-    gloox::JID      m_initiator;
-    gloox::JID	m_caller;
-    gloox::JID	m_responder;
+    PJid      m_initiator;
+    PJid	m_caller;
+    PJid	m_responder;
 
-    gloox::JID      m_from;
-    gloox::JID      m_to;
+    PJid      m_from;
+    PJid      m_to;
         
     std::string m_sid;
     SessionAction   m_action;
@@ -165,7 +167,7 @@ class JingleSession
     void addLocalContent(const JingleContent &content);
 
     void addRemoteContent(const JingleContent &content);
-    void addParticipant(const gloox::JID &jid);
+    void addParticipant(const PJid &jid);
     void addParticipant(const JingleParticipant &p);
     void replaceRemoteContent(const ContentList &list);
     void replaceLocalContent(const ContentList &list);
@@ -179,25 +181,25 @@ class JingleSession
     SessionState	state() const;
     SessionInfo     info() const;
 
-    gloox::JID	    initiator() const;
-    gloox::JID      caller() const;
-    gloox::JID	    responder() const;
-    gloox::JID      remote() const;
-    gloox::JID      from() const;
-    gloox::JID      to() const;
+    PJid	    initiator() const;
+    PJid      caller() const;
+    PJid	    responder() const;
+    PJid      remote() const;
+    PJid      from() const;
+    PJid      to() const;
     bool        localOriginated() const;
 	
     void setSid(const std::string &sid);
-    void setJids(const gloox::JID &initiator, const gloox::JID &receiver);
+    void setJids(const PJid &initiator, const PJid &receiver);
     void setAction(SessionAction action);
     bool mergeSession(JingleSession *session, bool remote = true);
-    void setSelf(const gloox::JID &self);
-    void setInitiator(const gloox::JID &jid);
-    void setCaller(const gloox::JID &jid);
-    void setResponder(const gloox::JID &jid);
-    void setRemote(const gloox::JID &jid);
-    void setTo(const gloox::JID &jid);
-    void setFrom(const gloox::JID &jid);
+    void setSelf(const PJid &self);
+    void setInitiator(const PJid &jid);
+    void setCaller(const PJid &jid);
+    void setResponder(const PJid &jid);
+    void setRemote(const PJid &jid);
+    void setTo(const PJid &jid);
+    void setFrom(const PJid &jid);
     void setCaller(bool caller);
 
     /** @brief Mark if last sent stanza has been acked. */
@@ -247,14 +249,14 @@ class JingleSession
     private:	
     ContentList	m_local_contents;
     ContentList     m_remote_contents;
-    gloox::JID      m_initiator;
-    gloox::JID	m_caller;
-    gloox::JID	m_responder;
+    PJid      m_initiator;
+    PJid	m_caller;
+    PJid	m_responder;
 
-    gloox::JID      m_my_jid;
-    gloox::JID      m_remote_jid;
-    gloox::JID      m_from;
-    gloox::JID      m_to;
+    PJid      m_my_jid;
+    PJid      m_remote_jid;
+    PJid      m_from;
+    PJid      m_to;
         
     std::string m_sid;
     SessionState		m_state;

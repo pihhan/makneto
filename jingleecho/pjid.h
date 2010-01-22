@@ -23,6 +23,7 @@ class PJid  : public XMPP::Jid
 {
     public:
 
+    PJid();
     PJid(const std::string &fulljid);
 
     std::string fullStd() const;

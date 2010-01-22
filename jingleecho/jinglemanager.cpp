@@ -15,6 +15,8 @@
 #include "ipv6/v6interface.h"
 #include "logger/logger.h"
 
+#define RANDOM_ID_LENGTH 8
+
 extern GMainLoop    *loop;
 
 typedef std::pair<JingleSession *, JingleManager *> SessionManagerPair;
@@ -73,8 +75,8 @@ void JingleManager::removeSession(const std::string &sid)
 }
 
 JingleSession * JingleManager::initiateEmptySession(
-        const gloox::JID &to, 
-        const gloox::JID &initiator) 
+        const PJid &to, 
+        const PJid &initiator) 
 {
 	JingleSession *session = new JingleSession();
         if (!session) 
@@ -92,8 +94,8 @@ JingleSession * JingleManager::initiateEmptySession(
 }
 
 JingleSession * JingleManager::initiateAudioSession(
-    const gloox::JID &to, 
-    const gloox::JID &initiator)
+    const PJid &to, 
+    const PJid &initiator)
 {
     JingleSession *session = initiateEmptySession(to, initiator);
     session->addLocalContent(audioContent());
@@ -229,7 +231,13 @@ unsigned int JingleManager::randomPort()
 
 std::string JingleManager::randomId()
 {
-	return m_base->getID();
+    static const char base[] = "01234567890abcdefghijklmnopqrstuvwxyz";
+    std::string id;
+    for (int len = 0; len<RANDOM_ID_LENGTH; len++) {
+        int i = rand_r(&m_seed) % sizeof(base);
+        id.append(1, base[i]);
+    }
+    return id;
 }
 
 JingleRtpContentDescription	JingleManager::audioDescription()
@@ -298,19 +306,6 @@ void JingleManager::stopPeriodicTimer()
 bool JingleManager::runningPeriodicTimer()
 {
     return (m_timerid != 0);
-}
-
-void JingleManager::commentSession(JingleSession *session, const std::string &comment)
-{
-    gloox::JID target;
-    if (session->localOriginated())
-        target = session->initiator();
-    else 
-        target = session->responder();
-    if (target) {
-        gloox::Stanza *s = Stanza::createMessageStanza(target, comment);
-        m_base->send(s);
-    }
 }
 
 void JingleManager::registerActionHandler(JingleActionHandler *handler)
@@ -513,7 +508,7 @@ void GlooxJingleManager::send(JingleStanza *js)
 }
 
 /** @brief Create iq stanza with jingle child instead of query. */
-Stanza * GlooxJingleManager::createJingleStanza(const gloox::JID &to, const std::string &id, enum StanzaSubType type, Tag *jingle)
+Stanza * GlooxJingleManager::createJingleStanza(const PJid &to, const std::string &id, enum StanzaSubType type, Tag *jingle)
 {
         Tag *stanzatag = new Tag("iq");
         stanzatag->addAttribute("id", id);
@@ -558,7 +553,7 @@ void GlooxJingleManager::replyAcknowledge(const Stanza *stanza)
 }
 
 /** @brief Create result reply to specified stanza with matching id. */
-void GlooxJingleManager::replyTerminate(const gloox::JID  &to, SessionReason reason, const std::string &sid)
+void GlooxJingleManager::replyTerminate(const PJid  &to, SessionReason reason, const std::string &sid)
 {
     Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);
     jingle->addAttribute("action", "session-terminate");
@@ -573,9 +568,22 @@ void GlooxJingleManager::replyTerminate(const gloox::JID  &to, SessionReason rea
     m_base->send(reply);
 }
 
-gloox::JID GlooxJingleManager::self()
+PJid GlooxJingleManager::self()
 {
     return m_base->jid();
+}
+
+void GlooxJingleManager::commentSession(JingleSession *session, const std::string &comment)
+{
+    PJid target;
+    if (session->localOriginated())
+        target = session->initiator();
+    else 
+        target = session->responder();
+    if (target) {
+        gloox::Stanza *s = Stanza::createMessageStanza(target, comment);
+        m_base->send(s);
+    }
 }
 
 

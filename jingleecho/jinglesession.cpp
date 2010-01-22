@@ -86,7 +86,7 @@ void JingleSession::parse(const Stanza *stanza, bool remote)
 	}
 }
 
-void JingleSession::setJids(const JID &initiator, const JID &receiver)
+void JingleSession::setJids(const PJid &initiator, const PJid &receiver)
 {
 	m_initiator = initiator;
 	m_responder = receiver;
@@ -97,7 +97,7 @@ void JingleSession::addRemoteContent(const JingleContent &content)
 	m_remote_contents.push_back(content);
 }
 
-void JingleSession::addParticipant(const gloox::JID &jid)
+void JingleSession::addParticipant(const PJid &jid)
 {
     m_participants.push_back(jid);
 }
@@ -456,32 +456,32 @@ SessionInfo JingleSession::info() const
 }
 
 
-gloox::JID JingleSession::initiator() const	
+PJid JingleSession::initiator() const	
 {
     return m_initiator; 
 }
 
-gloox::JID JingleSession::caller() const          
+PJid JingleSession::caller() const          
 {
     return m_caller; 
 }
 
-gloox::JID JingleSession::responder() const	
+PJid JingleSession::responder() const	
 {
     return m_responder; 
 }
 
-gloox::JID JingleSession::remote() const
+PJid JingleSession::remote() const
 {
     return m_remote_jid;
 }
 
-gloox::JID JingleSession::from() const    
+PJid JingleSession::from() const    
 {
     return m_from; 
 }
 
-gloox::JID JingleSession::to() const      
+PJid JingleSession::to() const      
 {
     return m_to; 
 }
@@ -501,37 +501,37 @@ void JingleSession::setAction(SessionAction action)
      m_lastaction = action; 
 }
 
-void JingleSession::setSelf(const gloox::JID &self)
+void JingleSession::setSelf(const PJid &self)
 {
      m_my_jid = self; 
 }
 
-void JingleSession::setInitiator(const gloox::JID &jid)
+void JingleSession::setInitiator(const PJid &jid)
 {
      m_initiator = jid; 
 }
 
-void JingleSession::setCaller(const gloox::JID &jid)
+void JingleSession::setCaller(const PJid &jid)
 {
      m_caller = jid; 
 }
 
-void JingleSession::setResponder(const gloox::JID &jid)
+void JingleSession::setResponder(const PJid &jid)
 {
      m_responder = jid; 
 }
 
-void JingleSession::setRemote(const gloox::JID &jid)
+void JingleSession::setRemote(const PJid &jid)
 {
      m_remote_jid = jid; 
 }
 
-void JingleSession::setTo(const gloox::JID &jid)
+void JingleSession::setTo(const PJid &jid)
 {
      m_to = jid; 
 }
 
-void JingleSession::setFrom(const gloox::JID &jid)
+void JingleSession::setFrom(const PJid &jid)
 {
      m_from = jid; 
 }
@@ -686,16 +686,16 @@ std::string JingleStanza::sid() const
 ContentList JingleStanza::contents() const 
 { return m_contents; }
 
-gloox::JID  JingleStanza::from() const 
+PJid  JingleStanza::from() const 
 { return m_from; }
 
-gloox::JID  JingleStanza::to() const          
+PJid  JingleStanza::to() const          
 { return m_to; }
 
-gloox::JID  JingleStanza::responder() const   
+PJid  JingleStanza::responder() const   
 { return m_responder; }
 
-gloox::JID  JingleStanza::initiator() const   
+PJid  JingleStanza::initiator() const   
 { return m_initiator; }
 
 SessionAction JingleStanza::action() const    
@@ -731,16 +731,16 @@ void JingleStanza::setSid(const std::string &sid)
 void JingleStanza::setContent( const ContentList &list)
 { m_contents = list; }
 
-void JingleStanza::setFrom(const gloox::JID &jid)
+void JingleStanza::setFrom(const PJid &jid)
 { m_from = jid; }
 
-void JingleStanza::setTo(const gloox::JID &jid)
+void JingleStanza::setTo(const PJid &jid)
 { m_to = jid; }
 
-void JingleStanza::setResponder( const gloox::JID &jid)
+void JingleStanza::setResponder( const PJid &jid)
 { m_responder = jid; }
 
-void JingleStanza::setInitiator( const gloox::JID &jid)
+void JingleStanza::setInitiator( const PJid &jid)
 { m_initiator = jid; }
 
 void JingleStanza::setAction(SessionAction action)
