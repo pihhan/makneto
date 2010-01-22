@@ -35,7 +35,7 @@ EchoClient::EchoClient(const std::string &jid, const std::string &password)
 
     m_requests = new RequestList(this);
     m_verhandler = new VersionIqHandler(m_client);
-    m_jingle = new JingleManager(m_client);
+    m_jingle = new GlooxJingleManager(m_client);
     if (m_jingle) {
         m_jingle->registerActionHandler(m_requests);
     }

@@ -24,6 +24,8 @@ class Conference
     Conference(GstElement *bin);
     Conference(QPipeline *pipeline);
 
+    virtual ~Conference();
+
     GstElement * pipeline();
     GstElement * conference();
 

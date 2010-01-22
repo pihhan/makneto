@@ -12,6 +12,8 @@ Conference::Conference(GstElement *bin)
       m_localCandidates(0), m_newLocalCandidates(0)
 {
     m_pipeline = bin;
+    gst_object_ref(m_pipeline);
+
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(bin));
 
     gst_bus_add_watch(bus, messageCallback, this);
@@ -42,6 +44,15 @@ Conference::Conference(QPipeline *pipeline)
     }
 
 }
+
+Conference::~Conference()
+{
+    removeAllSessions();
+
+    gst_object_unref(m_fsconference);
+    gst_object_unref(m_pipeline);
+}
+
 
 FsParticipant * Conference::createParticipant( const std::string &name)
 {
@@ -196,12 +207,20 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
 
                 } else if (gst_structure_has_name(s,
                         "farsight-new-active-candidate-pair")) {
-                    const GValue *vstream = gst_structure_get_value(s, "stream");
+                    FsCandidate *l = NULL;
+                    FsCandidate *r = NULL;
+                    FsStream *stream = NULL;
+                    gst_structure_get(message->structure, 
+                            "stream", FS_TYPE_STREAM, &stream,
+                            "local-candidate", G_TYPE_BOXED, &l,
+                            "remote-candidate", G_TYPE_BOXED, &r,
+                            NULL);
+#ifdef DELETE_ME
                     const GValue *vlocal = gst_structure_get_value(s, "local-candidate");
                     const GValue *vremote = gst_structure_get_value(s, "remote-candidate");
-                    unsigned int id = Session::idFromStream(vstream);
-                    FsCandidate *l = (FsCandidate *) g_value_get_boxed(vlocal);
-                    FsCandidate *r = (FsCandidate *) g_value_get_boxed(vremote);
+#endif
+                    unsigned int id = Session::idFromStream(stream);
+                    gst_object_unref(stream);
                     Session *s = conf->getSession(id);
                     if (s) {
                         // TODO:
@@ -224,13 +243,15 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     conf->onSendCodecsChanged(codecs);
                 } else if (gst_structure_has_name(s,
                         "farsight-component-state-changed")) {
-                    const GValue *vs = gst_structure_get_value(s, "stream");
+                    FsStream *fs = NULL;
+                    guint component = 0;
+                    gst_structure_get(message->structure,
+                        "stream", FS_TYPE_STREAM, &fs,
+                        "component", G_TYPE_UINT, &component,
+                        NULL);
                     const GValue *vstate =gst_structure_get_value(s, "state");
-                    const GValue *vcomp = gst_structure_get_value(s, "component");
                     FsStreamState state;
-                    FsStream *fs = (FsStream *) g_value_get_boxed(vs);
                     state = (FsStreamState) g_value_get_enum(vstate);
-                    guint component = g_value_get_uint(vcomp);
                     LOGGER(logit) << "Component " << component 
                         << " state changed to " << state << std::endl;
                 } else {

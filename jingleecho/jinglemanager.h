@@ -7,10 +7,12 @@
 #include <gloox/gloox.h>
 #include <gloox/iqhandler.h>
 #include <gloox/stanza.h>
+#include <glib.h>
 
 #include "jinglesession.h"
 
 #define CANDIDATE_TIMEOUT_MS    3000
+#define PERIODIC_TIMEOUT    150
 
 /** @brief Abstract class to handle incoming requests. 
 	Reimplement this to really do something with incoming jingle messages. 
@@ -31,15 +33,13 @@ class JingleActionHandler
 
 /** @brief Create manager for jingle sessions. 
     @author Petr Mensik <pihhan@cipis.net> */
-class JingleManager : public gloox::IqHandler
+class JingleManager
 {
     public:
         typedef std::map<std::string, JingleSession *> 	SessionMap;
 		
-	JingleManager(gloox::ClientBase *base);
+	JingleManager();
 	
-	virtual bool handleIq(gloox::Stanza *stanza);
-	virtual bool handleIqID(gloox::Stanza *stanza, int content);
 	
         /** @brief Initiate new audio session. */
 	JingleSession * initiateAudioSession(const gloox::JID &to);
@@ -51,19 +51,17 @@ class JingleManager : public gloox::IqHandler
         void            terminateSession(JingleSession *session, SessionReason reason = REASON_DECLINE);
 
 
-        void replyTerminate(const gloox::JID &to, SessionReason reason, const std::string &sid="");
 	JingleSession * getSession(const std::string &sid);
 	
 	void 			removeSession(const std::string &sid);
 	void			addSession(JingleSession *session);
 	static std::string	getSid(gloox::Stanza *stanza);
-        void                    replyAcknowledge(const gloox::Stanza *stanza);
 	
 	void registerActionHandler(JingleActionHandler *handler);
 
         SessionMap              allSessions();
 
-        gloox::JID  self();
+        virtual gloox::JID  self()=0;
 	
 
 	unsigned int randomPort();
@@ -71,22 +69,20 @@ class JingleManager : public gloox::IqHandler
 	
 	/** @brief Get list of IPs this machine has. */
 	CandidateList	    localUdpCandidates();
-	JingleTransport			    localTransport();
-    JingleTransport             emptyUdpTransport();
+	JingleTransport	    localTransport();
+        JingleTransport     emptyUdpTransport();
 	
-	JingleRtpContentDescription		audioDescription();
-    JingleContent                   audioContent();
+	JingleRtpContentDescription	audioDescription();
+        JingleContent                   audioContent();
 
 
-    static gloox::Stanza * createJingleStanza(const gloox::JID &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
-    static gloox::Stanza * createJingleStanza(JingleStanza *js, const std::string &id);
 
     JingleSession * initiateEmptySession(const gloox::JID &to, 
                 const gloox::JID &initiator = gloox::JID()  );
     JingleSession * initiateAudioSession(const gloox::JID &to, 
                 const gloox::JID &initiator=gloox::JID()    );
     
-    void            send(JingleStanza *js);
+    virtual void    send(JingleStanza *js)=0;
 
     void periodicSessionCheck(JingleSession *session);
     void startPeriodicTimer();
@@ -96,6 +92,7 @@ class JingleManager : public gloox::IqHandler
     void commentSession(JingleSession *session, const std::string &comment);
     bool sessionTimeout(JingleSession *session);
     void startSessionTimeout(JingleSession *session);
+    void destroySession(JingleSession *session);
 
     protected:
     static gboolean sessionTimeout_gcb(gpointer user_data);
@@ -108,5 +105,27 @@ class JingleManager : public gloox::IqHandler
         unsigned int        m_timerid;
 };
 
+/** @brief Wrap around for Gloox library. */
+class GlooxJingleManager :
+    public gloox::IqHandler,
+    public JingleManager
+{
+    public:
+	GlooxJingleManager(gloox::ClientBase *base);
+
+	virtual bool handleIq(gloox::Stanza *stanza);
+	virtual bool handleIqID(gloox::Stanza *stanza, int content);
+        virtual void    send(JingleStanza *js);
+        void replyTerminate(const gloox::JID &to, SessionReason reason, const std::string &sid="");
+        void    replyAcknowledge(const gloox::Stanza *stanza);
+        virtual gloox::JID  self();
+    
+    static gloox::Stanza * createJingleStanza(const gloox::JID &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
+    static gloox::Stanza * createJingleStanza(JingleStanza *js, const std::string &id);
+
+    protected:
+	gloox::ClientBase *m_base;
+
+};
 
 #endif

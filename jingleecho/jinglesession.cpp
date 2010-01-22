@@ -1,10 +1,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <cstring>
 
 #include "jinglesession.h"
 #include "logger/logger.h"
 
+#define RANDOM_ID_LENGTH 8
 unsigned int _jingle_seed = 0;
 
 using namespace gloox;
@@ -35,11 +37,22 @@ static const std::string action_descriptions[] = {
  *
  */
 
-JingleSession::JingleSession(ClientBase *base)
-	: m_client(base), m_state(JSTATE_NULL), m_lastaction(ACTION_NONE)
+JingleSession::JingleSession()
+	: m_state(JSTATE_NULL), m_lastaction(ACTION_NONE)
 {
-	m_sid = m_client->getID();
 	time((time_t *) &m_seed);
+        m_sid = randomId();
+}
+
+std::string JingleSession::randomId()
+{
+    static const char base[] = "01234567890abcdefghijklmnopqrstuvwxyz";
+    std::string id;
+    for (int len = 0; len<RANDOM_ID_LENGTH; len++) {
+        int i = rand_r(&m_seed) % sizeof(base);
+        id.append(1, base[i]);
+    }
+    return id;
 }
 
 void JingleSession::parse(const Stanza *stanza, bool remote)
@@ -94,388 +107,6 @@ void JingleSession::addParticipant(const JingleParticipant &p)
     m_participants.push_back(p);
 }
 
-/*
- *
- * JingleContent
- *
- */
-
-/** @brief Create content without any contents */
-JingleContent::JingleContent()
-    : m_creator(CREATOR_NONE), m_media(MEDIA_NONE), m_senders(SENDERS_UNKNOWN)
-{
-}
-
-/** @brief Create content from given transport and description parts. 
-    @param transport Transport class.
-    @param description Description class.
-    */
-JingleContent::JingleContent(const JingleTransport &transport, const JingleRtpContentDescription &description)
-	: m_transport(transport), m_description(description),
-          m_creator(CREATOR_NONE), m_media(MEDIA_NONE), m_senders(SENDERS_UNKNOWN)
-{
-}
-
-/** @brief Parse XML subtree of tag <content> to this structure. */
-void JingleContent::parse(const Tag *tag)
-{
-	if (!tag || tag->name() != "content")
-		return;
-	m_name = tag->findAttribute("name");
-        m_xmlns = tag->findAttribute("xmlns");
-
-	std::string media = tag->findAttribute("media");
-        if (media == "audio")
-            m_media = MEDIA_AUDIO;
-        else if (media == "video")
-            m_media = MEDIA_VIDEO;
-        else
-            m_media = MEDIA_NONE;
-
-	std::string creator = tag->findAttribute("creator");
-        if (creator == "initiator")
-            m_creator = CREATOR_INITIATOR;
-        else if (creator == "responder")
-            m_creator = CREATOR_RESPONDER;
-        else
-            m_creator = CREATOR_NONE;
-
-        std::string senders = tag->findAttribute("senders");
-        if (senders == "none")
-            m_senders = SENDERS_NONE;
-        else if(senders == "initiator")
-            m_senders = SENDERS_INITIATOR;
-        else if (senders == "responder") 
-            m_senders = SENDERS_RESPONDER;
-        else if (senders == "both")
-            m_senders = SENDERS_BOTH;
-        else 
-            m_senders = SENDERS_UNKNOWN;
-
-	std::string m_disposition = tag->findAttribute("disposition");
-	
-	Tag *desc = tag->findChild("description");
-
-	m_description = JingleRtpContentDescription();
-	m_description.parse(desc);
-	Tag *transport = tag->findChild("transport");
-	m_transport = JingleTransport();
-	m_transport.parse(transport);
-}
-
-JingleRtpContentDescription JingleContent::description() const
-{ 
-    return m_description;
-}
-
-JingleTransport JingleContent::transport() const
-{ 
-    return m_transport;
-}
-
-/** @brief Create xml subtree for content tag. */
-Tag * JingleContent::tag() const
-{
-    Tag *t = new Tag("content");
-    t->addAttribute("xmlns", m_xmlns);
-    if (!m_name.empty())
-            t->addAttribute("name", m_name);
-    switch (m_media) {
-        case MEDIA_AUDIO:
-            t->addAttribute("media", "audio"); break;
-        case MEDIA_VIDEO:
-            t->addAttribute("media", "video"); break;
-        case MEDIA_NONE:
-            break;
-    }
-
-    switch (m_creator) {
-        case CREATOR_INITIATOR:
-            t->addAttribute("creator", "initiator"); break;
-        case CREATOR_RESPONDER:
-            t->addAttribute("creator", "responder"); break;
-        case CREATOR_NONE:
-            break;
-    }
-
-    switch (m_senders) {
-        case SENDERS_NONE:
-            t->addAttribute("senders", "none"); break;
-        case SENDERS_INITIATOR:
-            t->addAttribute("senders", "initiator"); break;
-        case SENDERS_RESPONDER:
-            t->addAttribute("senders", "responder"); break;
-        case SENDERS_BOTH:
-            t->addAttribute("senders", "both"); break;
-        case SENDERS_UNKNOWN:
-            break;
-    }
-
-    Tag *transport = m_transport.tag();
-    if (transport)
-            t->addChild(transport);
-    Tag *description = m_description.tag();
-    if (description)
-            t->addChild(description);
-    return t;
-}
-
-std::string JingleContent::name() const
-{
-    return m_name;
-}
-
-JingleContent::Creator JingleContent::creator() const
-{
-    return m_creator;
-}
-
-MediaType   JingleContent::media() const
-{
-    return m_media;
-}
-
-std::string JingleContent::disposition() const
-{
-    return m_disposition;
-}
-
-JingleContent::Senders JingleContent::senders() const 
-{
-    return m_senders;
-}
-
-void JingleContent::setName(const std::string &name)
-{
-    m_name = name;
-}
-
-void JingleContent::setCreator(Creator creator)
-{
-    m_creator = creator;
-}
-
-void JingleContent::setMedia(MediaType media)
-{
-    m_media = media;
-}
-
-void JingleContent::setDisposition(const std::string &disposition)
-{
-    m_disposition = disposition;
-}
-
-void JingleContent::setSenders(JingleContent::Senders s)
-{
-    m_senders = s;
-}
-
-void JingleContent::setTransport(JingleTransport &transport)
-{
-    m_transport = transport;
-}
-
-void JingleContent::setDescription(JingleRtpContentDescription &desc)
-{
-    m_description = desc;
-}
-
-
-/*
- *
- * Jingle Transport
- *
- */
-
-void JingleTransport::parse(const Tag *tag)
-{
-	if (!tag || tag->name() != "transport")
-		return;
-	m_xmlns = tag->findAttribute("xmlns");
-        m_pwd = tag->findAttribute("pwd");
-        m_ufrag = tag->findAttribute("ufrag");
-	Tag::TagList candidates = tag->findChildren("candidate");
-	for (Tag::TagList::iterator it=candidates.begin(); it!=candidates.end(); ++it) {
-		JingleUdpCandidate c;
-		c.parse(*it);
-		addCandidate(c);
-	}
-}
-
-/** @brief Create transport XML subtree */
-Tag * JingleTransport::tag() const
-{
-    Tag *t = new Tag("transport", "xmlns", m_xmlns);
-    if (!m_pwd.empty())
-        t->addAttribute("pwd", m_pwd);
-    if (!m_ufrag.empty())
-        t->addAttribute("ufrag", m_ufrag);
-    for (CandidateList::const_iterator it = candidates.begin(); it!=candidates.end(); it++) {
-        t->addChild(it->tag());
-    }
-    return t;
-}
-
-void JingleTransport::addCandidate(const JingleCandidate &c)
-{
- 	candidates.push_back(c);
-}
-
-/*
- *
- * JingleCandidate
- *
- */
-
-JingleCandidate::JingleCandidate()
-    : component(0), port(0), generation(0), natType(NAT_NONE), 
-      candidateType(TYPE_HOST), reachable(REACHABLE_UNKNOWN)
-{
-}
-
-void JingleCandidate::parse(const Tag *tag)
-{
-	if (!tag || tag->name() != "candidate")
-		return;
-	component = atoi(tag->findAttribute("component").c_str());
-	ip 		= tag->findAttribute("ip");
-	port 	= atoi(tag->findAttribute("port").c_str());
-	id		= tag->findAttribute("id");
-	generation = atoi(tag->findAttribute("generation").c_str());
-}
-
-Tag* JingleCandidate::tag() const
-{
-	Tag *t = new Tag("candidate");
-	if (!t) return NULL;
-	t->addAttribute("component", component);
-	t->addAttribute("ip", ip);
-	t->addAttribute("port", (long) port);
-	t->addAttribute("id", id);
-	t->addAttribute("generation", generation);
-	return t;
-}
-
-/*
- *
- * JingleIceCandidate
- *
- */
-
-void JingleIceCandidate::parse(const Tag *tag)
-{
-	if (!tag || tag->name() != "candidate")
-		return;
-	JingleCandidate::parse(tag);
-	foundation	=	atoi(tag->findAttribute("foundation").c_str());
-	network		=	atoi(tag->findAttribute("network").c_str());
-	priority	=	atoi(tag->findAttribute("priority").c_str());
-	protocol	=	tag->findAttribute("protocol");
-	type		=	tag->findAttribute("type");
-	relAddr		=	tag->findAttribute("relAddr");
-	relPort		=	tag->findAttribute("relPort");
-}
-
-Tag * JingleIceCandidate::tag() const
-{
-	Tag *t = JingleCandidate::tag();
-	t->addAttribute("foundation", foundation);
-	t->addAttribute("network", network);
-	t->addAttribute("priority", priority);
-	t->addAttribute("protocol", protocol);
-	t->addAttribute("type", type);
-	if (!relAddr.empty())
-		t->addAttribute("relAddr", relAddr);
-	if (!relPort.empty())
-		t->addAttribute("relPort", relPort);
-	return t;
-}
-
-/*
- *
- * JingleRtpContentDescription
- *
- */
-
-/** @brief Fill class from given XML subtree, tag must be named <description> */
-void JingleRtpContentDescription::parse(const Tag *tag)
-{
-	if (!tag || tag->name() != "description")
-		return;
-	m_xmlns = tag->findAttribute("xmlns");
-	m_media = tag->findAttribute("media");
-        if (m_media == "audio") {
-            m_type = MEDIA_AUDIO;
-        } else if (m_media == "video") {
-            m_type = MEDIA_VIDEO;
-        } else {
-            m_type = MEDIA_NONE;
-        }
-	
-	Tag::TagList payloads = tag->findChildren("payload");
-	for (Tag::TagList::iterator it=payloads.begin(); it!=payloads.end(); ++it) {
-		JingleRtpPayload payload(*it);
-		addPayload(payload);
-	}
-}
-
-/** @brief Return XML subtree with description tag. */
-Tag *JingleRtpContentDescription::tag() const
-{
-	Tag *t = new Tag("description");
-	t->addAttribute("xmlns", m_xmlns);
-	if (!m_media.empty())
-		t->addAttribute("media", m_media);
-	for (PayloadList::const_iterator it=payloads.begin(); it!=payloads.end(); ++it) {
-		t->addChild(it->tag());
-	}
-	return t;
-}
-
-/*
- *
- * JingleRtpPayload
- *
- */
-
-JingleRtpPayload::JingleRtpPayload(const Tag *tag)
-    : id(0), clockrate(0), channels(1), maxptime(0), ptime(0)
-{
-    parse(tag);
-}
-	
-JingleRtpPayload::JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate, int channels)
-	: id(id), name(name), clockrate(clockrate), channels(channels), maxptime(0), ptime(0)
-{
-}
-
-void JingleRtpPayload::parse(const Tag *tag)
-{
-	if(!tag || tag->name() != "payload")
-		return;
-	id = atoi( tag->findAttribute("id").c_str() );
-	channels = atoi( tag->findAttribute("channels").c_str());
-	name = tag->findAttribute("name");
-	clockrate = atoi(tag->findAttribute("clockrate").c_str());
-	ptime = atoi( tag->findAttribute("ptime").c_str());
-	maxptime = atoi( tag->findAttribute("maxptime").c_str());
-}
-
-Tag * JingleRtpPayload::tag() const
-{
-	Tag *t = new Tag("payload");
-	if (!t) return NULL;
-	t->addAttribute("id", id);
-	t->addAttribute("name", name);
-	t->addAttribute("clockrate", (long) clockrate);
-	if (channels)
-		t->addAttribute("channels", channels);
-	if (ptime)
-		t->addAttribute("ptime", (long) ptime);
-	if (maxptime)
-		t->addAttribute("maxptime", (long) maxptime);
-	return t;
-}
 
 
 /*
@@ -643,7 +274,7 @@ JingleSession * JingleSession::createReply(JingleSession *remote)
 {
     if (!remote)
         return NULL;
-    JingleSession *reply = new JingleSession(remote->m_client);
+    JingleSession *reply = new JingleSession();
     reply->setSid(remote->sid());
     reply->setInitiator(remote->initiator());
     reply->setFrom(remote->to());

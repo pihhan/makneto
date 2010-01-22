@@ -19,6 +19,7 @@ class FstJingle
 {
     public:
     FstJingle();
+    virtual ~FstJingle();
         
     static FsCandidate * createFsCandidate(const JingleCandidate & candidate);
     static FsCodec * createFsCodec(const JingleRtpPayload & payload);

@@ -115,6 +115,7 @@ GstState QPipeline::pending_state()
 
 GstElement * QPipeline::element()
 {
+    gst_object_ref(m_pipe);
     return m_pipe;
 }
 
@@ -123,6 +124,7 @@ GstElement * QPipeline::element()
 */
 GstBus * QPipeline::bus()
 {
+    gst_object_ref(m_bus);
     return m_bus;
 }
 

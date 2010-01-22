@@ -13,6 +13,12 @@ FstJingle::FstJingle()
     conference = new Conference(pipeline);
 }
 
+FstJingle::~FstJingle()
+{
+    delete pipeline;
+    delete conference;
+}
+
 /** @brief Convert jingle structure to farsight format */
 FsCandidate * FstJingle::createFsCandidate(const JingleCandidate & candidate)
 {
@@ -38,7 +44,8 @@ JingleCandidate FstJingle::createJingleCandidate(const FsCandidate *candidate)
 {
     JingleCandidate jc;
 
-    jc.ip = candidate->ip;
+    if (candidate->ip)
+        jc.ip = candidate->ip;
     jc.port = candidate->port;
     //jc.foundation = candidate->foundation;
     jc.component = candidate->component_id;

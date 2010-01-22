@@ -323,7 +323,7 @@ unsigned int Session::idFromStream(FsStream *stream)
 /** @brief Get FsStream::id property from passed stream. */    
 unsigned int Session::idFromStream(const GValue *val)
 {
-    g_assert(val && G_VALUE_HOLDS_POINTER(val));
+    g_assert(val);
     FsStream *fs_stream = (FsStream *) g_value_get_pointer(val);
     return idFromStream(fs_stream);
 }

@@ -26,21 +26,22 @@ static gboolean periodic_timer(gpointer user_data)
 {
     JingleManager *manager = (JingleManager *) user_data;
     JingleManager::SessionMap all = manager->allSessions();
+    bool active = false;
     for (JingleManager::SessionMap::iterator it= all.begin(); it!= all.end(); it++) {
         JingleSession *session = (it->second);
-        manager->periodicSessionCheck(session);
+        if (session && (session->state() == JSTATE_ACTIVE 
+                     || session->state() == JSTATE_PENDING) ) {
+            manager->periodicSessionCheck(session);
+            active = true;
+        }
     }
-    return TRUE;
+    return (TRUE);
 }
 
 
-JingleManager::JingleManager(ClientBase *base)
-	: m_base(base), m_timerid(0)
+JingleManager::JingleManager()
+	: m_timerid(0)
 {
-	base->registerIqHandler(this, XMLNS_JINGLE);
-        base->disco()->addFeature(XMLNS_JINGLE);
-        base->disco()->addFeature(XMLNS_JINGLE_RAWUDP);
-        base->disco()->addFeature(XMLNS_JINGLE_RTP);
         m_seed = (unsigned int) time(NULL);
 }
 
@@ -50,109 +51,6 @@ std::string JingleManager::getSid(Stanza *stanza)
 	if (!jingle)
 		return std::string();
 	return jingle->findAttribute("sid");
-}
-
-bool JingleManager::handleIq(Stanza *stanza)
-{
-	return handleIqID(stanza, 0);
-}
-
-bool JingleManager::handleIqID(Stanza *stanza, int context)
-{
-	JingleSession *session = NULL;
-	std::string sid;
-	JingleSession *local_session = NULL;
-	SessionReason result = REASON_UNDEFINED;
-    JingleStanza *js = NULL;
-	
-	sid = getSid(stanza);
-	local_session = getSession(sid);
-    if (!sid.empty()) {
-        js = new JingleStanza();
-        js->parse(stanza);
-    }
-	
-	switch (stanza->subtype()) {
-		case StanzaIqGet:
-            LOGGER(logit) << "Obdrzeno Get pro jingle query od " 
-                << stanza->from() << std::endl;
-            return false;
-			break;
-		case StanzaIqSet:
-			local_session = getSession(sid);
-			if (js && js->valid()) {
-				switch (js->action()) {
-					case ACTION_INITIATE:
-                        session = new JingleSession(m_base);
-				        session->initiateFromRemote(js);
-                        session->setState(JSTATE_PENDING);
-						addSession(session);
-						if (m_handler) {
-							replyAcknowledge(stanza);
-							result = m_handler->handleNewSession(session);
-						} else return false;
-						break;
-					case ACTION_ACCEPT:
-						if (!local_session) {
-							LOGGER(logit) << "Jingle accept pro neexistujici session: " << sid << std::endl;
-							return false;
-						}
-						local_session->mergeFromRemote(js);
-                        acceptedAudioSession(local_session);
-						replyAcknowledge(stanza);
-						if (m_handler) {
-							result = m_handler->handleSessionAccept(local_session, session);
-						}
-						break;
-					case ACTION_TERMINATE:
-						if (m_handler && local_session) {
-                            local_session->setState(JSTATE_TERMINATED);
-						    replyAcknowledge(stanza);
-						    result = m_handler->handleSessionTermination(local_session);
-						} else return false;
-
-                    case ACTION_CONTENT_ADD:
-                    case ACTION_CONTENT_MODIFY:
-                    case ACTION_CONTENT_REJECT:
-						
-					default:
-						break;
-						
-				}
-			} else { // if jingle
-                Tag * query = stanza->findChild("query");
-                if (query) 
-                    LOGGER(logit) << "Query found inside jingle request" << std::endl;
-				return false;
-			}
-			break;
-		case StanzaIqResult:
-			sid = getSid(stanza);
-			local_session = getSession(sid);
-			if (local_session)
-				local_session->setAcknowledged(true);
-            else {
-                LOGGER(logit) << "Potvrzeni pro neznamou jingle session: " 
-                    << sid << std::endl;
-            }
-			break;
-		case StanzaIqError:
-			if (!local_session) {
-				LOGGER(logit) << "Chyba pro session, kterou neobsluhujeme! id:"
-                                << sid << std::endl;
-				return false;
-			}
-			if (m_handler) {
-				result = m_handler->handleSessionError(local_session, stanza);
-			} else {
-                LOGGER(logit) << "Chyba od " << stanza->from() 
-                    << " neobslouzena, chybi handler" << std::endl;
-            }
-            return true;
-		default:
-			return false;
-	}
-	return true;
 }
 
 
@@ -174,45 +72,11 @@ void JingleManager::removeSession(const std::string &sid)
 	m_sessions.erase(sid);
 }
 
-/** @brief Create iq stanza with jingle child instead of query. */
-Stanza * JingleManager::createJingleStanza(const gloox::JID &to, const std::string &id, enum StanzaSubType type, Tag *jingle)
-{
-        Tag *stanzatag = new Tag("iq");
-        stanzatag->addAttribute("id", id);
-        switch (type) {
-            case StanzaIqGet:
-                stanzatag->addAttribute("type", "get");
-                break;
-            case StanzaIqSet:
-                stanzatag->addAttribute("type", "set");
-                break;
-            case StanzaIqResult:
-                stanzatag->addAttribute("type", "result");
-                break;
-            case StanzaIqError:
-                stanzatag->addAttribute("type", "error");
-                break;
-            default:
-                return NULL;
-        }
-        if (to)
-            stanzatag->addAttribute("to", to.full());
-        stanzatag->addChild(jingle);
-        Stanza *stanza = new Stanza(stanzatag);
-        return stanza;
-}
-Stanza * JingleManager::createJingleStanza(JingleStanza *js, const std::string &id)
-{
-        Tag *t = js->tag();
-        Stanza *stanza = createJingleStanza(js->to(), id, StanzaIqSet, t);
-        return stanza;
-}
-
 JingleSession * JingleManager::initiateEmptySession(
         const gloox::JID &to, 
         const gloox::JID &initiator) 
 {
-	JingleSession *session = new JingleSession(m_base);
+	JingleSession *session = new JingleSession();
         if (!session) 
             return NULL;
         session->setSid(randomId());
@@ -283,31 +147,6 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
     return true;
 }
 
-/** @brief Create result reply to specified stanza with matching id. */
-void JingleManager::replyAcknowledge(const Stanza *stanza)
-{
-	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
-		Stanza *reply = Stanza::createIqStanza(stanza->from(), stanza->id(), StanzaIqResult);
-		m_base->send(reply);
-	}
-}
-
-/** @brief Create result reply to specified stanza with matching id. */
-void JingleManager::replyTerminate(const gloox::JID  &to, SessionReason reason, const std::string &sid)
-{
-    Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);
-    jingle->addAttribute("action", "session-terminate");
-    jingle->addAttribute("sid", sid);
-    Tag *r = new Tag(jingle, "reason");
-    new Tag(r, 
-            JingleSession::stringFromReason(reason));
-    
-    std::string id = m_base->getID();
-    Stanza *reply = Stanza::createIqStanza(to, id, StanzaIqSet, XMLNS_JINGLE, jingle);
-    m_base->trackID(this, id, 3);
-    m_base->send(reply);
-}
-
 
 /** @brief Send termination of this session over network, and shutdown this
     session. 
@@ -324,15 +163,6 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
     } else {
         LOGGER(logit) << "No data for session " << session->sid() << std::endl;
     }
-}
-
-/** @brief Send jingle stanza, so it is delivered back to me. */
-void JingleManager::send(JingleStanza *js)
-{
-    std::string id = m_base->getID();
-    Stanza *stanza = createJingleStanza(js, id);
-    m_base->trackID(this, id, 5);
-    m_base->send(stanza);
 }
 
 /** @brief Return simple local candidates.
@@ -455,7 +285,7 @@ void JingleManager::startPeriodicTimer()
     if (m_timerid != 0)
         stopPeriodicTimer();
 
-    m_timerid = g_timeout_add(100, periodic_timer, this);
+    m_timerid = g_timeout_add(PERIODIC_TIMEOUT, periodic_timer, this);
 }
 
 void JingleManager::stopPeriodicTimer()
@@ -493,11 +323,6 @@ JingleManager::SessionMap  JingleManager::allSessions()
     return m_sessions; 
 }
         
-gloox::JID JingleManager::self()
-{
-    return m_base->jid();
-}
-
 
 /** @brief Called on timeout, tries next in candidate list.  
     That usually means that candidates we used could not connect. 
@@ -550,4 +375,207 @@ gboolean JingleManager::sessionTimeout_gcb(gpointer user_data)
         delete p;
     return r;
 }
+
+/** @brief Will remove session from list, and free all its data. */
+void JingleManager::destroySession(JingleSession *session)
+{
+    m_sessions.erase(session->sid());
+    FstJingle *fst = static_cast<FstJingle *>(session->data());
+    delete fst;
+    session->setData(NULL);
+    delete session;
+}
+
+/*
+ *
+ * GlooxJingleManager
+ *
+ */
+GlooxJingleManager::GlooxJingleManager(ClientBase *base)
+    : m_base(base)
+{
+	base->registerIqHandler(this, XMLNS_JINGLE);
+        base->disco()->addFeature(XMLNS_JINGLE);
+        base->disco()->addFeature(XMLNS_JINGLE_RAWUDP);
+        base->disco()->addFeature(XMLNS_JINGLE_RTP);
+}
+
+bool GlooxJingleManager::handleIq(Stanza *stanza)
+{
+	return handleIqID(stanza, 0);
+}
+
+bool GlooxJingleManager::handleIqID(Stanza *stanza, int context)
+{
+	JingleSession *session = NULL;
+	std::string sid;
+	JingleSession *local_session = NULL;
+	SessionReason result = REASON_UNDEFINED;
+    JingleStanza *js = NULL;
+	
+	sid = getSid(stanza);
+	local_session = getSession(sid);
+    if (!sid.empty()) {
+        js = new JingleStanza();
+        js->parse(stanza);
+    }
+	
+    switch (stanza->subtype()) {
+            case StanzaIqGet:
+                LOGGER(logit) << "Obdrzeno Get pro jingle query od " 
+                    << stanza->from() << std::endl;
+                return false;
+                    break;
+            case StanzaIqSet:
+                    local_session = getSession(sid);
+                    if (js && js->valid()) {
+                            switch (js->action()) {
+                                    case ACTION_INITIATE:
+                    session = new JingleSession();
+                                    session->initiateFromRemote(js);
+                    session->setState(JSTATE_PENDING);
+                                            addSession(session);
+                                            if (m_handler) {
+                                                    replyAcknowledge(stanza);
+                                                    result = m_handler->handleNewSession(session);
+                                            } else return false;
+                                            break;
+                                    case ACTION_ACCEPT:
+                                            if (!local_session) {
+                                                    LOGGER(logit) << "Jingle accept pro neexistujici session: " << sid << std::endl;
+                                                    return false;
+                                            }
+                                            local_session->mergeFromRemote(js);
+                    acceptedAudioSession(local_session);
+                                            replyAcknowledge(stanza);
+                                            if (m_handler) {
+                                                    result = m_handler->handleSessionAccept(local_session, session);
+                                            }
+                                            break;
+                                    case ACTION_TERMINATE:
+                                            if (m_handler && local_session) {
+                        local_session->setState(JSTATE_TERMINATED);
+                                                replyAcknowledge(stanza);
+                                                result = m_handler->handleSessionTermination(local_session);
+                                            } else return false;
+
+                case ACTION_CONTENT_ADD:
+                case ACTION_CONTENT_MODIFY:
+                case ACTION_CONTENT_REJECT:
+                                            
+                                    default:
+                                            break;
+                                            
+                            }
+                    } else { // if jingle
+            Tag * query = stanza->findChild("query");
+            if (query) 
+                LOGGER(logit) << "Query found inside jingle request" << std::endl;
+                            return false;
+                    }
+                    break;
+            case StanzaIqResult:
+                    sid = getSid(stanza);
+                    local_session = getSession(sid);
+                    if (local_session)
+                            local_session->setAcknowledged(true);
+                    else {
+                        LOGGER(logit) << "Potvrzeni pro neznamou jingle session: " 
+                            << sid << std::endl;
+                    }
+                    break;
+            case StanzaIqError:
+                    if (!local_session) {
+                            LOGGER(logit) << "Chyba pro session, kterou neobsluhujeme! id:"
+                            << sid << std::endl;
+                            return false;
+                    }
+                    if (m_handler) {
+                            result = m_handler->handleSessionError(local_session, stanza);
+                    } else {
+            LOGGER(logit) << "Chyba od " << stanza->from() 
+                << " neobslouzena, chybi handler" << std::endl;
+        }
+        return true;
+            default:
+                    return false;
+    }
+    return true;
+}
+
+/** @brief Send jingle stanza, so it is delivered back to me. */
+void GlooxJingleManager::send(JingleStanza *js)
+{
+    std::string id = m_base->getID();
+    Stanza *stanza = createJingleStanza(js, id);
+    m_base->trackID(this, id, 5);
+    m_base->send(stanza);
+}
+
+/** @brief Create iq stanza with jingle child instead of query. */
+Stanza * GlooxJingleManager::createJingleStanza(const gloox::JID &to, const std::string &id, enum StanzaSubType type, Tag *jingle)
+{
+        Tag *stanzatag = new Tag("iq");
+        stanzatag->addAttribute("id", id);
+        switch (type) {
+            case StanzaIqGet:
+                stanzatag->addAttribute("type", "get");
+                break;
+            case StanzaIqSet:
+                stanzatag->addAttribute("type", "set");
+                break;
+            case StanzaIqResult:
+                stanzatag->addAttribute("type", "result");
+                break;
+            case StanzaIqError:
+                stanzatag->addAttribute("type", "error");
+                break;
+            default:
+                return NULL;
+        }
+        if (to)
+            stanzatag->addAttribute("to", to.full());
+        stanzatag->addChild(jingle);
+        Stanza *stanza = new Stanza(stanzatag);
+        return stanza;
+}
+
+
+Stanza * GlooxJingleManager::createJingleStanza(JingleStanza *js, const std::string &id)
+{
+        Tag *t = js->tag();
+        Stanza *stanza = createJingleStanza(js->to(), id, StanzaIqSet, t);
+        return stanza;
+}
+
+/** @brief Create result reply to specified stanza with matching id. */
+void GlooxJingleManager::replyAcknowledge(const Stanza *stanza)
+{
+	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
+		Stanza *reply = Stanza::createIqStanza(stanza->from(), stanza->id(), StanzaIqResult);
+		m_base->send(reply);
+	}
+}
+
+/** @brief Create result reply to specified stanza with matching id. */
+void GlooxJingleManager::replyTerminate(const gloox::JID  &to, SessionReason reason, const std::string &sid)
+{
+    Tag *jingle = new Tag("jingle", "xmlns", XMLNS_JINGLE);
+    jingle->addAttribute("action", "session-terminate");
+    jingle->addAttribute("sid", sid);
+    Tag *r = new Tag(jingle, "reason");
+    new Tag(r, 
+            JingleSession::stringFromReason(reason));
+    
+    std::string id = m_base->getID();
+    Stanza *reply = Stanza::createIqStanza(to, id, StanzaIqSet, XMLNS_JINGLE, jingle);
+    m_base->trackID(this, id, 3);
+    m_base->send(reply);
+}
+
+gloox::JID GlooxJingleManager::self()
+{
+    return m_base->jid();
+}
+
 
