@@ -12,6 +12,11 @@ QT += xml network
 DEPENDPATH += .
 INCLUDEPATH += .
 
+DEFINES += IRIS
+
+CONFIG += link_pkgconfig
+PKGCONFIG += farsight2-0.10
+
 # Input
 SOURCES += irisbot.cpp
 HEADERS += irisbot.h

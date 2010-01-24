@@ -9,8 +9,9 @@
 #define RANDOM_ID_LENGTH 8
 unsigned int _jingle_seed = 0;
 
+#ifdef GLOOX
 using namespace gloox;
-
+#endif
 
 static const std::string jingle_session_reason_desc[] = { "undefined", 
 		"alternative-session", "busy", "cancel", "connectivity-error", "decline", "expired", "failed-application", "failed-transport",

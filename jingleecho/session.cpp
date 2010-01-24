@@ -33,7 +33,7 @@ Session::~Session()
 
 FsStream *Session::createStream(FsParticipant *participant, const GList *lcandidates)
 {
-    GParameter param[3] = { {0},};
+    GParameter param[3];
     int paramcount = 0;
 
     if (lcandidates) {

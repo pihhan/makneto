@@ -24,8 +24,9 @@ extern GMainLoop    *loop;
 
 typedef std::pair<JingleSession *, JingleManager *> SessionManagerPair;
 
+#ifdef GLOOX
 using namespace gloox;
-
+#endif
 
 static gboolean periodic_timer(gpointer user_data)
 {

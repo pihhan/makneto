@@ -162,4 +162,14 @@ bool IrisJingleManager::take(const QDomElement &e)
     }
 }
 
+void IrisJingleManager::onDisconnect()
+{
+    // TODO: clean active sessions
+    LOGGER(logit) << "JingleManager task disconnected." << std::endl;
+}
+
+void IrisJingleManager::onGo()
+{
+    // we only receive, no sending here
+}
 

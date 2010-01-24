@@ -8,6 +8,8 @@
 #include <iris/xmpp.h>
 #include <iris/xmpp_message.h>
 
+#include "irisjinglemanager.h"
+
 namespace  XMPP {
 
 class Bot : public QObject
@@ -36,6 +38,8 @@ class Bot : public QObject
     XMPP::ClientStream *m_stream;
     XMPP::Connector *m_connector;
     XMPP::Jid       m_jid;
+
+    IrisJingleManager *m_jm;
 };
 
 } // namespace

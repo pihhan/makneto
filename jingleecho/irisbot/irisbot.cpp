@@ -13,13 +13,15 @@ using namespace XMPP;
 Bot::Bot(QObject *parent)
     : QObject(parent)
 {
+    m_client = new Client();
+    m_connector = new AdvancedConnector();
+    m_stream = new ClientStream(m_connector);
+
+    m_jm = new IrisJingleManager(m_client->rootTask());
 }
 
 void Bot::connectAs(const Jid &user)
 {
-    m_client = new Client();
-    m_connector = new AdvancedConnector();
-    m_stream = new ClientStream(m_connector);
 
     connect(m_stream, SIGNAL(connected()), this, SLOT(connected()));
     connect(m_stream, SIGNAL(authenticated()), this, SLOT(authenticated()));

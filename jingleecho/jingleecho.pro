@@ -14,7 +14,6 @@ CONFIG += staticlib
 QT += xml
 
 CONFIG += link_pkgconfig
-
 PKGCONFIG += farsight2-0.10
 
 
