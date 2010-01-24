@@ -4,9 +4,12 @@
 
 #include <string>
 #include <map>
+
+#ifdef GLOOX
 #include <gloox/gloox.h>
 #include <gloox/iqhandler.h>
 #include <gloox/stanza.h>
+#endif
 #include <glib.h>
 
 #include "jinglesession.h"
@@ -27,8 +30,10 @@ class JingleActionHandler
 		virtual SessionReason handleSessionAccept(JingleSession *session, JingleSession *update) = 0;
 		virtual SessionReason handleSessionChange(JingleSession *session, JingleSession *update) = 0;
 		virtual SessionReason handleSessionTermination(JingleSession *sesion) = 0;
+#ifdef GLOOX
                 /** @brief Handle error of session. Expect JingleSession might be null, if stanza did not contain session id. */
 		virtual SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza) = 0;
+#endif
 		
 };
 
@@ -59,7 +64,6 @@ class JingleManager
 	
 	void 			removeSession(const std::string &sid);
 	void			addSession(JingleSession *session);
-	static std::string	getSid(gloox::Stanza *stanza);
 	
 	void registerActionHandler(JingleActionHandler *handler);
 
@@ -98,6 +102,8 @@ class JingleManager
     void startSessionTimeout(JingleSession *session);
     void destroySession(JingleSession *session);
 
+    void setError(const std::string &errmsg);
+
     protected:
     static gboolean sessionTimeout_gcb(gpointer user_data);
     bool acceptedAudioSession(JingleSession *session);
@@ -109,6 +115,7 @@ class JingleManager
 };
 
 
+#ifdef GLOOX
 
 /** @brief Wrap around for Gloox library. 
     This class is implementation of JingleManager using gloox. 
@@ -126,6 +133,7 @@ class GlooxJingleManager :
         void replyTerminate(const PJid &to, SessionReason reason, const std::string &sid="");
         void    replyAcknowledge(const gloox::Stanza *stanza);
         virtual PJid  self();
+	static std::string	getSid(gloox::Stanza *stanza);
     
     static gloox::Stanza * createJingleStanza(const PJid &to, const std::string &id, enum gloox::StanzaSubType type, gloox::Tag *jingle);
     static gloox::Stanza * createJingleStanza(JingleStanza *js, const std::string &id);
@@ -135,5 +143,6 @@ class GlooxJingleManager :
 	gloox::ClientBase *m_base;
 
 };
+#endif
 
 #endif

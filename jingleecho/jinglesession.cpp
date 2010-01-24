@@ -55,6 +55,7 @@ std::string JingleSession::randomId()
     return id;
 }
 
+#ifdef GLOOX
 void JingleSession::parse(const Stanza *stanza, bool remote)
 {
 	Tag *jingle = stanza->findChild("jingle");
@@ -85,6 +86,7 @@ void JingleSession::parse(const Stanza *stanza, bool remote)
 			addLocalContent(content);
 	}
 }
+#endif
 
 void JingleSession::setJids(const PJid &initiator, const PJid &receiver)
 {
@@ -115,6 +117,7 @@ void JingleSession::addParticipant(const JingleParticipant &p)
  *
  */
 
+#ifdef GLOOX
 Tag * JingleSession::tag(SessionAction action) const
 {
 	Tag *t = new Tag("jingle");
@@ -142,6 +145,7 @@ Tag * JingleSession::tag(SessionAction action) const
 	}
 	return t;
 }
+#endif // GLOOX
 
 void JingleSession::addLocalContent(const JingleContent &content)
 {
@@ -302,24 +306,36 @@ void JingleSession::setCaller(bool caller)
 std::string JingleSession::describe()
 {
     std::string reply = "Jingle session id=\""+ m_sid + "\"\n";
-    reply += "initiator: " + m_initiator.full() + "\n";
-    reply += "from: " + m_from.full() + "\n";
-    reply += "to: " + m_to.full() + "\n";
-    reply += "remote: " + remote().full() + "\n";
+    reply += "initiator: " + m_initiator.fullStd() + "\n";
+    reply += "from: " + m_from.fullStd() + "\n";
+    reply += "to: " + m_to.fullStd() + "\n";
+    reply += "remote: " + remote().fullStd() + "\n";
     reply += "state: " + stringFromState(state()) + "\n";
     reply += "Local contents:\n";
     for (ContentList::const_iterator it=m_local_contents.begin(); 
             it!=m_local_contents.end(); it++) {
+#ifdef GLOOX
         gloox::Tag *t = it->tag();
         reply += "     "+ t->xml() + "\n";
         delete t;
+#else
+        QDomDocument doc;
+        QDomElement e = it->tag(doc);
+        reply += "     " + e.text().toStdString() + "\n";
+#endif
     }
     reply += "Remote contents:\n";
     for (ContentList::const_iterator it=m_remote_contents.begin(); 
             it!=m_remote_contents.end(); it++) {
+#ifdef GLOOX
         gloox::Tag *t = it->tag();
-        reply += "    "+ t->xml() + "\n";
+        reply += "     "+ t->xml() + "\n";
         delete t;
+#else
+        QDomDocument doc;
+        QDomElement e = it->tag(doc);
+        reply += "     " + e.text().toStdString() + "\n";
+#endif
     }
     return reply;
 }
@@ -575,7 +591,7 @@ JingleStanza::JingleStanza()
 }
 
 
-#ifdef GLOOX_API
+#ifdef GLOOX
 /** @brief Parse XML stanza to structure. */
 void JingleStanza::parse(const Stanza *stanza)
 {
@@ -653,9 +669,9 @@ Tag * JingleStanza::tag() const
     if (m_reason != REASON_UNDEFINED) {
         Tag *reason = new Tag("reason");
         std::string rstr = JingleSession::stringFromReason(m_reason);
-        Tag *child = new Tag(rstr);
+        Tag *child = new Tag(reason, rstr);
         if (m_reason == REASON_ALTERNATIVE_SESSION && !m_alternateSid.empty()) {
-            new Tag(reason, "sid", m_alternateSid);
+            new Tag(child, "sid", m_alternateSid);
         }
         if (!m_reasonText.empty())
             new Tag(reason, "text", m_reasonText);
@@ -668,7 +684,7 @@ Tag * JingleStanza::tag() const
 /** @brief Parse incoming XML stanza to structure. 
     Qt/Iris version.
 */
-void JingleStanza::parse(QDomElement &tag)
+void JingleStanza::parse(const QDomElement &tag)
 {
     QDomElement jingle = tag.firstChildElement("jingle");
     if (jingle.isNull())
@@ -702,9 +718,9 @@ void JingleStanza::parse(QDomElement &tag)
                 if (r != REASON_UNDEFINED)
                     m_reason = r;
                 if (r == REASON_ALTERNATIVE_SESSION) {
-                    Tag *sid = rchild.firstChildElement("sid");
+                    QDomElement sid = rchild.firstChildElement("sid");
                     if (!sid.isNull())
-                        m_alternateSid = sid->text().toStdString();
+                        m_alternateSid = sid.text().toStdString();
                 }
             }
         } // while rchild
@@ -718,19 +734,19 @@ void JingleStanza::parse(QDomElement &tag)
 QDomElement JingleStanza::tag(QDomDocument &doc) const
 {
     QDomElement t = doc.createElement("jingle");
-    t.addAttribute("xmlns", XMLNS_JINGLE);
-    t.addAttribute("sid", m_sid);
+    t.setAttribute("xmlns", XMLNS_JINGLE);
+    t.setAttribute("sid", m_sid.c_str());
 
     std::string straction = JingleSession::stringFromAction(m_action);
     if (!straction.empty()) 
-            t.addAttribute("action", straction);
+            t.setAttribute("action", straction.c_str());
     else LOGGER(logit) << "Prazdne action po prevedeni na retezec" 
             << m_action << std::endl;
             
     if (m_initiator)
-        t.addAttribute("initiator", m_initiator.full());
+        t.setAttribute("initiator", m_initiator.full());
     if (m_responder)
-        t.addAttribute("responder", m_responder.full());
+        t.setAttribute("responder", m_responder.full());
 
     for (ContentList::const_iterator it=m_contents.begin(); 
         it!=m_contents.end(); 
@@ -741,17 +757,17 @@ QDomElement JingleStanza::tag(QDomDocument &doc) const
     if (m_info != INFO_NONE) {
         std::string infostr = JingleSession::stringFromInfo(m_info);
         QDomElement info = doc.createElement("info");
-        info.addAttribute("xmlns", XMLNS_JINGLE_RTPINFO);
+        info.setAttribute("xmlns", XMLNS_JINGLE_RTPINFO);
         t.appendChild(info);
     }
 
     if (m_reason != REASON_UNDEFINED) {
         QDomElement reason = doc.createElement("reason");
         std::string rstr = JingleSession::stringFromReason(m_reason);
-        QDomElement child = doc.createElement(rstr);
+        QDomElement child = doc.createElement(rstr.c_str());
         if (m_reason == REASON_ALTERNATIVE_SESSION && !m_alternateSid.empty()) {
             QDomElement sid = doc.createElement("sid");
-            QDomText sidtext = doc.createTextNode(m_alternateSid.empty().c_str());
+            QDomText sidtext = doc.createTextNode(m_alternateSid.c_str());
             sid.appendChild(sidtext);
             child.appendChild(sid);
         }

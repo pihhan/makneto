@@ -8,9 +8,11 @@
 
 #include <string>
 
-#define GLOOX
 #ifdef GLOOX
 #include <gloox/jid.h>
+#endif
+#ifdef IRIS
+#include <iris/xmpp_jid.h>
 #endif
 
 #ifdef GLOOX
@@ -33,8 +35,10 @@ class PJid  : public XMPP::Jid
 #ifdef IRIS
     PJid(const QString &fulljid);
     PJid(const XMPP::Jid &jid);
-    const std::string & username() const;
-    const std::string & server() const;
+    std::string username() const;
+    std::string server() const;
+
+    operator bool() const;
 #endif 
 
 #ifdef GLOOX

@@ -22,10 +22,15 @@ INCLUDEPATH += $$IRISPATH/src
 INCLUDEPATH += $$IRISPATH/src/xmpp/xmpp-core
 INCLUDEPATH += $$IRISPATH/src/xmpp/xmpp-im
 
+INCLUDEPATH += ..
+
 #INCLUDEPATH += /home/pihhan/Projekty/xmpp/psi-git/iris/include
 #INCLUDEPATH += /home/pihhan/Projekty/xmpp/psi-git/iris/src
 
 LIBS += -L/home/pihhan/Projekty/xmpp/psi-git/iris/lib
 LIBS += -liris -lirisnet
+
+LIBS += -L..
+LIBS += -ljingleecho
 
 

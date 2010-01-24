@@ -2,7 +2,7 @@
 #include "pjid.h"
 
 #ifdef IRIS
-#include <xmpp/jid.h>
+#include <iris/xmpp_jid.h>
 #endif
 
 #ifdef GLOOX
@@ -55,6 +55,12 @@ std::string PJid::bareStd() const
 {
     return bare().toStdString();
 }
+
+PJid::operator bool() const
+{
+    return isValid();
+}
+
 #endif
 
 #ifdef GLOOX

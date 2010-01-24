@@ -1,4 +1,6 @@
 
+#include <glib.h>
+
 #include "codecs.h"
 
 /**
@@ -22,12 +24,12 @@ CodecSet::CodecSet()
 
 void CodecSet::addCodec(int id, const std::string &name, unsigned int rate)
 {
-    g_list_prepend(m_list, fs_codec_new(id, name.c_str(), FS_MEDIA_TYPE_AUDIO, rate));
+    m_list = g_list_prepend(m_list, fs_codec_new(id, name.c_str(), FS_MEDIA_TYPE_AUDIO, rate));
 }
 
-void CodecSet::addVideoCodec(id, const std::string &name, unsigned int rate)
+void CodecSet::addVideoCodec(int id, const std::string &name, unsigned int rate)
 {
-    g_list_prepend(m_videolist,
+    m_videolist = g_list_prepend(m_videolist,
         fs_codec_new(id, name.c_str(), FS_MEDIA_TYPE_VIDEO, rate)
     );
 }

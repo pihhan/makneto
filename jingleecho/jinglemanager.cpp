@@ -4,8 +4,11 @@
 #include <ctime>
 #include <utility>
 
+#ifdef GLOOX
 #include <gloox/stanza.h>
 #include <gloox/disco.h>
+#include <gloox/clientbase.h>
+#endif
 
 #include <glib.h>
 
@@ -45,14 +48,6 @@ JingleManager::JingleManager()
 	: m_timerid(0)
 {
         m_seed = (unsigned int) time(NULL);
-}
-
-std::string JingleManager::getSid(Stanza *stanza)
-{
-	Tag *jingle = stanza->findChild("jingle", "xmlns", XMLNS_JINGLE);
-	if (!jingle)
-		return std::string();
-	return jingle->findAttribute("sid");
 }
 
 
@@ -381,6 +376,13 @@ void JingleManager::destroySession(JingleSession *session)
     delete session;
 }
 
+void JingleManager::setError(const std::string &errmsg)
+{
+    LOGGER(logit) << errmsg << std::endl;
+}
+
+
+#ifdef GLOOX
 /*
  *
  * GlooxJingleManager
@@ -426,9 +428,9 @@ bool GlooxJingleManager::handleIqID(Stanza *stanza, int context)
                     if (js && js->valid()) {
                             switch (js->action()) {
                                     case ACTION_INITIATE:
-                    session = new JingleSession();
+                                    session = new JingleSession();
                                     session->initiateFromRemote(js);
-                    session->setState(JSTATE_PENDING);
+                                    session->setState(JSTATE_PENDING);
                                             addSession(session);
                                             if (m_handler) {
                                                     replyAcknowledge(stanza);
@@ -585,5 +587,15 @@ void GlooxJingleManager::commentSession(JingleSession *session, const std::strin
         m_base->send(s);
     }
 }
+
+std::string GlooxJingleManager::getSid(Stanza *stanza)
+{
+	Tag *jingle = stanza->findChild("jingle", "xmlns", XMLNS_JINGLE);
+	if (!jingle)
+		return std::string();
+	return jingle->findAttribute("sid");
+}
+
+#endif
 
 

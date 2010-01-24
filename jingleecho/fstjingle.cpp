@@ -4,7 +4,7 @@
 #include <glib.h>
 
 #include "fstjingle.h"
-#include "logger/logger.h"
+#include "logger.h"
 
 
 FstJingle::FstJingle()
@@ -198,7 +198,7 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
 bool FstJingle::createAudioSession(JingleSession *session)
 {
     bool result = true;
-    setNicknames(session->from().full(), session->to().full());
+    setNicknames(session->from().fullStd(), session->to().fullStd());
     ContentList lcl = session->localContents();
     ContentList rcl = session->remoteContents();
     ContentList::iterator lit = lcl.begin();

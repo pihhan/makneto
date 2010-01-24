@@ -1,27 +1,31 @@
-
+#include <string>
 #include <iris/xmpp_message.h>
+#include <xmpp_client.h>
+
 #include "irisjinglemanager.h"
+#include "logger/logger.h"
 
 using namespace XMPP;
 
 IrisJingleManager::IrisJingleManager(Task *parent)
-    : XMPP::Task(parent);
+    : XMPP::Task(parent)
 {
 }
 
-virtual void IrisJingleManager::send(JingleStanza *js)
+void IrisJingleManager::send(JingleStanza *js)
 {
     // TODO: create sender Task, that will notify us on reception.
-    std::string id = client()->getUniqueId().toStdString();
-    send(createJingleStanza(js, id, doc()));
+    std::string id = client()->genUniqueId().toStdString();
+    QDomElement e = createJingleStanza(js, id, doc());
+    XMPP::Task::send(e);
 }
 
-void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, const std::string &sid="")
+void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, const std::string &sid)
 {
     JingleStanza *js = new JingleStanza();
     js->setSid(sid);
     js->setTo(to);
-    js->setAction(ACTION_SESSION_TERMINATE);
+    js->setAction(ACTION_TERMINATE);
     js->setReason(reason);
 
     send(js);
@@ -30,44 +34,34 @@ void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, con
 void IrisJingleManager::replyAcknowledge(const QDomElement &e)
 {
     QDomElement iq = doc()->createElement("id");
-    iq.addAttribute("type", "result");
-    iq.addAttribute("id", e.attribute("id"));
-    iq.addAttribute("to", e.attribute("from"));
-    id.addAttribute("from", e.attribute("to"));
-    send(id);
+    iq.setAttribute("type", "result");
+    iq.setAttribute("id", e.attribute("id"));
+    iq.setAttribute("to", e.attribute("from"));
+    iq.setAttribute("from", e.attribute("to"));
+    XMPP::Task::send(iq);
 }
 
-virtual PJid  IrisJingleManager::self()
+PJid  IrisJingleManager::self()
 {
     return client()->jid();
 }
 
-static QDomElement createJingleStanza(
-    const PJid &to, 
-    const std::string &id, 
-    const std::string &type, 
-    gloox::Tag *jingle, 
-    QDomDocument *doc)
-{
 
-}
-
-
-static QDomElement IrisJingleManager::createJingleStanza(
+QDomElement IrisJingleManager::createJingleStanza(
     JingleStanza *js, 
     const std::string &id, 
     QDomDocument *doc)
 {
     QDomElement iq = doc->createElement("iq");
-    iq.addAttribute("to", js->to().full());
-    iq.addAttribute("type", "set");
-    iq.addAttribute("id", QString::fromStdString(id));
+    iq.setAttribute("to", js->to().full());
+    iq.setAttribute("type", "set");
+    iq.setAttribute("id", QString::fromStdString(id));
     iq.appendChild(js->tag(*doc));
     return iq;
 }
 
 
-virtual void IrisJingleManager::commentSession(
+void IrisJingleManager::commentSession(
     JingleSession *session, 
     const std::string &comment)
 {
@@ -83,29 +77,30 @@ virtual void IrisJingleManager::commentSession(
 */
 void IrisJingleManager::replyError(
     const QDomElement &e, 
-    const QString &errtag
+    const QString &errtag,
     const QString &type)
 {
+    QString ltype = type;
     QDomElement iq = doc()->createElement("iq");
-    iq.addAttribute("from", e.attribute("to"));
-    iq.addAttribute("to", e.attribute("from"));
-    iq.addAttribute("id", e.attribute("id"));
-    iq.addAttribute("type", "error");
+    iq.setAttribute("from", e.attribute("to"));
+    iq.setAttribute("to", e.attribute("from"));
+    iq.setAttribute("id", e.attribute("id"));
+    iq.setAttribute("type", "error");
     QDomElement error = doc()->createElement("error");
     if (type.isEmpty())
-        type = "cancel";
-    error.addAttribute("type", type);
+        ltype = "cancel";
+    error.setAttribute("type", ltype);
     QDomElement spec = doc()->createElement(errtag);
-    spec.addAttribute("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
+    spec.setAttribute("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
     iq.appendChild(error);
 
-    send(iq);
+    XMPP::Task::send(iq);
 }
 
 
 /*! \brief Accept incoming stanza, if it is type=set and XMLNS is XMLNS_JINGLE
 */
-virtual bool IrisJingleManager::take(const QDomElement &e)
+bool IrisJingleManager::take(const QDomElement &e)
 {
     QString type = e.attribute("type");
     QString from = e.attribute("from");
@@ -116,14 +111,14 @@ virtual bool IrisJingleManager::take(const QDomElement &e)
     if (xmlns == XMLNS_JINGLE && type == "set" && e.tagName() == "iq") {
         QString sid = jingle.attribute("sid");
         std::string ssid = sid.toStdString();
-        JingleSession *session = getSession(ssid);
+        //JingleSession *session = getSession(ssid);
         JingleStanza *js = new JingleStanza();
         js->parse(e);
         JingleSession *session = getSession(js->sid());
         switch (js->action()) {
             case ACTION_INITIATE:
                 if (session) {
-                    setError("Prichozi initiate pro existujici session!");
+                    logit << ("Prichozi initiate pro existujici session!") << std::endl;
                     replyError(e, "bad-request");
                 } else {
                     session = new JingleSession();
@@ -136,14 +131,14 @@ virtual bool IrisJingleManager::take(const QDomElement &e)
                 if (session) {
                     replyAcknowledge(e);
                 } else {
-                    setError("Jingle accept pro neexistujici session.");
+                    logit << ("Jingle accept pro neexistujici session.") << std::endl;
                     replyError(e, "service-unavailable");
                 }
                 
                 break;
             case ACTION_TERMINATE:
                 if (session) {
-                    sessionTerminate(session);
+                    terminateSession(session);
                     replyAcknowledge(e);
                 } else {
                     replyError(e, "service-unavailable");

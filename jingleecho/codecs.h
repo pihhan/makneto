@@ -2,8 +2,9 @@
 #ifndef CODECS_H
 #define CODECS_H
 
+#include <string>
 #include <gst/gst.h>
-#include <gst/farsight.h>
+#include <gst/farsight/fs-conference-iface.h>
 
 class CodecSet
 {

@@ -11,11 +11,17 @@ see http://xmpp.org/extensions/xep-0166.html
 #include <string>
 #include <list>
 
+#ifdef GLOOX
 #include <gloox/gloox.h>
 #include <gloox/stanza.h>
 #include <gloox/jid.h>
 #include <gloox/clientbase.h>
 #include <gloox/client.h>
+#endif
+
+#ifdef IRIS
+#include <QDomElement>
+#endif
 
 #include "pjid.h"
 
@@ -121,9 +127,15 @@ class JingleStanza
     void setReasonText(const std::string &text);
     void setAlternateSid(const std::string &sid);
 
+#ifdef GLOOX
     void parse(const gloox::Stanza *staza);
     /** @brief Get jingle tag for query. */
     gloox::Tag *tag() const;
+#endif
+#ifdef IRIS
+    void parse(const QDomElement &tag);
+    QDomElement tag(QDomDocument &doc) const;
+#endif
 
     void addContent(const JingleContent &content);
     void addContent(const ContentList &contents);
@@ -161,7 +173,6 @@ class JingleSession
 	
     static JingleSession *createReply(JingleSession *remote);
 	
-    void parse(const gloox::Stanza *staza, bool remote=false);
     void addContent(const JingleContent &content) 
         { addLocalContent(content); };
     void addLocalContent(const JingleContent &content);
@@ -173,7 +184,12 @@ class JingleSession
     void replaceLocalContent(const ContentList &list);
 	
     /** @brief Get jingle tag for query. */
+#ifdef GLOOX
+    void parse(const gloox::Stanza *staza, bool remote=false);
     gloox::Tag *tag(SessionAction action = ACTION_NONE) const;
+#endif
+#ifdef IRIS
+#endif
     
     std::string sid() const;
     SessionAction	action() const;
