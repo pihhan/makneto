@@ -10,6 +10,7 @@ INCLUDEPATH += ../ipv6
 INCLUDEPATH += ../logger
 INCLUDEPATH += ..
 
+CONFIG += debug
 CONFIG += staticlib
 QT += xml
 
@@ -42,7 +43,6 @@ HEADERS += codecs.h \
            pjid.h \
            qpipeline.h \
            session.h \
-           irisbot/irisjinglemanager.h \
            ipv6/v6interface.h
 SOURCES += \
            codecs.cpp \
@@ -60,4 +60,3 @@ SOURCES += \
            session.cpp \
            ../ipv6/v6interface.c \
            ../logger/logger.cpp \
-           irisbot/irisjinglemanager.cpp

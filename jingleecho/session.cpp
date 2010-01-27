@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 
 #include <gst/gstpad.h>
 #include "conference.h"
@@ -35,6 +36,8 @@ FsStream *Session::createStream(FsParticipant *participant, const GList *lcandid
 {
     GParameter param[3];
     int paramcount = 0;
+
+    memset(&param, 0, sizeof(param));
 
     if (lcandidates) {
         param[paramcount].name = "preferred-local-candidates";

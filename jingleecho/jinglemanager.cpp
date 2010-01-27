@@ -230,7 +230,7 @@ std::string JingleManager::randomId()
     static const char base[] = "01234567890abcdefghijklmnopqrstuvwxyz";
     std::string id;
     for (int len = 0; len<RANDOM_ID_LENGTH; len++) {
-        int i = rand_r(&m_seed) % sizeof(base);
+        int i = rand_r(&m_seed) % (sizeof(base)-1);
         id.append(1, base[i]);
     }
     return id;

@@ -186,20 +186,22 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
 
                 } else if (gst_structure_has_name(s, 
                         "farsight-new-local-candidate")) {
-                    const GValue *val = gst_structure_get_value(s, "candidate");
-                    const GValue *vstream = gst_structure_get_value(s, "stream");
                     FsCandidate *candidate = NULL;
                     FsStream *stream = NULL;
-                    gst_structure_get(message->structure, "stream", &stream, FS_TYPE_STREAM, NULL);
-                    unsigned int id;
-                    g_assert(val && vstream);
-                    candidate = (FsCandidate *) g_value_get_boxed(val);
-                    id = Session::idFromStream(stream);
-                    Session *session = conf->getSession(id);
-                    if (session)
-                        session->onNewLocalCandidate(candidate);
-                    conf->onNewLocalCandidate(candidate);
-                    gst_object_unref(stream);
+                    if (!gst_structure_get(message->structure, 
+                        "stream", &stream, G_TYPE_OBJECT, 
+                        "candidate", &candidate, G_TYPE_BOXED,
+                        NULL)) {
+                        LOGCF() << "failed to get stream and candidate" << std::endl;
+                    } else {
+                        unsigned int id = Session::idFromStream(stream);
+                        gst_object_unref(stream);
+
+                        Session *session = conf->getSession(id);
+                        if (session)
+                            session->onNewLocalCandidate(candidate);
+                        conf->onNewLocalCandidate(candidate);
+                    }
 
                 } else if (gst_structure_has_name(s, 
                         "farsight-local-candidates-prepared")) {

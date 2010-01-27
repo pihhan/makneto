@@ -1,7 +1,9 @@
 
 #include <iostream>
+
 #include <QApplication>
 #include <QtCrypto>
+#include <QSettings>
 
 #include "irisbot.h"
 
@@ -13,6 +15,8 @@
 #include <gst/gst.h>
 
 using namespace XMPP;
+
+QSettings *settings = NULL;
 
 Bot::Bot(QObject *parent)
     : QObject(parent)
@@ -31,9 +35,9 @@ void Bot::connectAs(const Jid &user)
     connect(m_stream, SIGNAL(authenticated()), this, SLOT(authenticated()));
     connect(m_stream, SIGNAL(needAuthParams(bool,bool,bool)), 
             this, SLOT(needAuthParams(bool,bool,bool)));
-    connect(m_stream, SIGNAL(incomingXml(QString)),
+    connect(m_client, SIGNAL(xmlIncoming(QString)),
             this, SLOT(incomingXml(QString)) );
-    connect(m_stream, SIGNAL(outgoingXml(QString)),
+    connect(m_client, SIGNAL(xmlOutgoing(QString)),
             this, SLOT(outgoingXml(QString)) );
     connect(m_stream, SIGNAL(warning(int)), this, SLOT(warning(int)) );
     connect(m_client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
@@ -63,19 +67,45 @@ void Bot::authenticated()
 
 void Bot::needAuthParams(bool user, bool pwd, bool realm)
 {
+    if (settings)
+        settings->beginGroup("xmpp");
     if (user) {
-        QString u = prompt("Zadej uzivatele");
+        QString u;
+        if (settings) {
+            u = settings->value("username").toString();
+            if (u.isEmpty()) {
+                QString jidstr = settings->value("jid").toString();
+                PJid jid(jidstr);
+                u = jid.node();
+            }
+        } 
+        if (u.isEmpty()) {
+            u = prompt("Zadej uzivatele");
+        }
         m_stream->setUsername(u);
     }
     if (pwd) {
-        QString p = prompt("Zadej viditelne heslo");
+        QString p;
+        if (settings) {
+             p = settings->value("password").toString();
+        }
+        if (p.isEmpty()) {
+            p = prompt("Zadej viditelne heslo");
+        }
         m_stream->setPassword(p);
     }
     if (realm) {
-        QString r = prompt("Zadej realm");
+        QString r;
+        if (settings) {
+            r = settings->value("realm").toString();
+        }
+        if (r.isEmpty())
+            QString r = prompt("Zadej realm");
         m_stream->setRealm(r);
     }
     m_stream->continueAfterParams();
+    if (settings)
+        settings->endGroup();
 }
 
 QString Bot::prompt(const QString &text)
@@ -90,6 +120,7 @@ void Bot::disconnected()
 {
     std::cout << "disconnected." << std::endl;
     std::cout << m_stream->errorText().toStdString() << std::endl;
+    QApplication::exit(0);
 }
 
 void Bot::warning(int w)
@@ -142,14 +173,33 @@ void Bot::rosterFinished(bool success, int code, const QString &errmsg)
     }
 }
 
+void printHelp(const char *myname)
+{
+    std::cout << "Pouziti:" << std::endl
+        << myname << " user@server/resource" << std::endl
+        << myname << " -f config.ini" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     char *jid = NULL;
     if (argc < 2) {
-        std::cerr << "Je treba zadat jid!" << std::endl;
+        printHelp(argv[0]);
         return 1;
     } else {
-        jid = argv[1];
+        if (!strcmp(argv[1], "-f") && argc>2) {
+            settings = new QSettings(argv[2], QSettings::IniFormat);
+            if (settings->status() != QSettings::NoError) {
+                std::cerr << "Nacitani souboru " << argv[2] 
+                        << " selhalo." << std::endl;
+                return 1;
+            } else {
+                QString j = settings->value("xmpp/jid").toString();
+                jid = strdup( j.toLocal8Bit().data());
+            }
+        } else {
+            jid = argv[1];
+        }
     }
 
     gst_init(&argc, &argv);
@@ -168,12 +218,12 @@ int main(int argc, char *argv[])
 
 void Bot::incomingXml(const QString &s)
 {
-    logit << "<<<" << s.toStdString() << std::endl;
+    logit << "<<< " << s.toStdString() << std::endl;
 }
 
 void Bot::outgoingXml(const QString &s)
 {
-    logit << ">>>" << s.toStdString() << std::endl;
+    logit << ">>> " << s.toStdString() << std::endl;
 }
 
 

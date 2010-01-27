@@ -19,7 +19,9 @@ PKGCONFIG += farsight2-0.10
 
 # Input
 SOURCES += irisbot.cpp
+SOURCES += irisjinglemanager.cpp
 HEADERS += irisbot.h
+HEADERS += irisjinglemanager.h
 
 IRISPATH = /home/pihhan/Projekty/xmpp/psi-git/iris
 INCLUDEPATH += $$IRISPATH/include

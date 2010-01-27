@@ -50,7 +50,7 @@ std::string JingleSession::randomId()
     static const char base[] = "01234567890abcdefghijklmnopqrstuvwxyz";
     std::string id;
     for (int len = 0; len<RANDOM_ID_LENGTH; len++) {
-        int i = rand_r(&m_seed) % sizeof(base);
+        int i = rand_r(&m_seed) % (sizeof(base)-1);
         id.append(1, base[i]);
     }
     return id;
@@ -396,6 +396,9 @@ JingleStanza * JingleSession::createStanzaAccept()
         stanza->setResponder(m_responder);
     if (m_local_contents.size() > 0)
         stanza->addContent(m_local_contents);
+    stanza->setTo(m_remote_jid);
+    stanza->setFrom(m_my_jid);
+
 
     return stanza;
 }
