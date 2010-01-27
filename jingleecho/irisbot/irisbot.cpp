@@ -8,6 +8,10 @@
 #include <xmpp/xmpp-im/xmpp_tasks.h>
 #include <xmpp/xmpp-im/xmpp_status.h>
 
+#include "logger/logger.h"
+
+#include <gst/gst.h>
+
 using namespace XMPP;
 
 Bot::Bot(QObject *parent)
@@ -27,6 +31,10 @@ void Bot::connectAs(const Jid &user)
     connect(m_stream, SIGNAL(authenticated()), this, SLOT(authenticated()));
     connect(m_stream, SIGNAL(needAuthParams(bool,bool,bool)), 
             this, SLOT(needAuthParams(bool,bool,bool)));
+    connect(m_stream, SIGNAL(incomingXml(QString)),
+            this, SLOT(incomingXml(QString)) );
+    connect(m_stream, SIGNAL(outgoingXml(QString)),
+            this, SLOT(outgoingXml(QString)) );
     connect(m_stream, SIGNAL(warning(int)), this, SLOT(warning(int)) );
     connect(m_client, SIGNAL(disconnected()), this, SLOT(disconnected()) );
     connect(m_client, SIGNAL(messageReceived(const Message&)),
@@ -139,10 +147,12 @@ int main(int argc, char *argv[])
     char *jid = NULL;
     if (argc < 2) {
         std::cerr << "Je treba zadat jid!" << std::endl;
+        return 1;
     } else {
         jid = argv[1];
     }
 
+    gst_init(&argc, &argv);
 
     QCA::Initializer qcainit;
     QApplication app(argc, argv);
@@ -154,6 +164,16 @@ int main(int argc, char *argv[])
 
     
     return 0;
+}
+
+void Bot::incomingXml(const QString &s)
+{
+    logit << "<<<" << s.toStdString() << std::endl;
+}
+
+void Bot::outgoingXml(const QString &s)
+{
+    logit << ">>>" << s.toStdString() << std::endl;
 }
 
 

@@ -28,6 +28,7 @@ INCLUDEPATH += $$IRISPATH/src/xmpp/xmpp-core
 INCLUDEPATH += $$IRISPATH/src/xmpp/xmpp-im
 
 INCLUDEPATH += ..
+INCLUDEPATH += ../..
 
 #INCLUDEPATH += /home/pihhan/Projekty/xmpp/psi-git/iris/include
 #INCLUDEPATH += /home/pihhan/Projekty/xmpp/psi-git/iris/src

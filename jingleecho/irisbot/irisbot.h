@@ -32,6 +32,8 @@ class Bot : public QObject
     void receiveMessage(const Message &m);
     void rosterFinished(bool success, int code, const QString &errmsg);
     void sessionStarted();
+    void incomingXml(const QString &s);
+    void outgoingXml(const QString &s);
 
     private:
     XMPP::Client    *m_client;
