@@ -18,6 +18,7 @@ class Bot : public QObject
 
     public:
     Bot(QObject *parent = 0);
+    virtual ~Bot();
 
     void connectAs(const XMPP::Jid &user);
     QString prompt(const QString &text);
@@ -38,7 +39,7 @@ class Bot : public QObject
     private:
     XMPP::Client    *m_client;
     XMPP::ClientStream *m_stream;
-    XMPP::Connector *m_connector;
+    XMPP::AdvancedConnector *m_connector;
     XMPP::Jid       m_jid;
 
     IrisJingleManager *m_jm;

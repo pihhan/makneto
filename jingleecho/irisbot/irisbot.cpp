@@ -21,11 +21,17 @@ QSettings *settings = NULL;
 Bot::Bot(QObject *parent)
     : QObject(parent)
 {
-    m_client = new Client();
-    m_connector = new AdvancedConnector();
-    m_stream = new ClientStream(m_connector);
+    m_client = new Client(parent);
+    m_connector = new AdvancedConnector(parent);
+    m_stream = new ClientStream(m_connector, NULL, parent);
 
     m_jm = new IrisJingleManager(m_client->rootTask());
+}
+
+Bot::~Bot()
+{
+    if (m_client)
+        delete m_client;
 }
 
 void Bot::connectAs(const Jid &user)
@@ -120,6 +126,8 @@ void Bot::disconnected()
 {
     std::cout << "disconnected." << std::endl;
     std::cout << m_stream->errorText().toStdString() << std::endl;
+
+    m_client->deleteLater();
     QApplication::exit(0);
 }
 
@@ -207,13 +215,10 @@ int main(int argc, char *argv[])
     QCA::Initializer qcainit;
     QApplication app(argc, argv);
 
-    Bot bot;
-    bot.connectAs(jid);
+    Bot *bot = new Bot();
+    bot->connectAs(jid);
 
-    app.exec();
-
-    
-    return 0;
+    return app.exec();
 }
 
 void Bot::incomingXml(const QString &s)

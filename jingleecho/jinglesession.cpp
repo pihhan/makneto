@@ -396,9 +396,7 @@ JingleStanza * JingleSession::createStanzaAccept()
         stanza->setResponder(m_responder);
     if (m_local_contents.size() > 0)
         stanza->addContent(m_local_contents);
-    stanza->setTo(m_remote_jid);
-    stanza->setFrom(m_my_jid);
-
+    
 
     return stanza;
 }
@@ -699,8 +697,8 @@ void JingleStanza::parse(const QDomElement &tag)
     std::string action = jingle.attribute("action").toStdString();
     m_action = JingleSession::actionFromString(action);
 
-    m_to = tag.attribute("from");
-    m_from = tag.attribute("to");
+    m_from = tag.attribute("from");
+    m_to = tag.attribute("to");
 
     QDomElement content = jingle.firstChildElement("content");
     while (!content.isNull()) {
