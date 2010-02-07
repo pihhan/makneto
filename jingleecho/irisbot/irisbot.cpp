@@ -12,11 +12,29 @@
 
 #include "logger/logger.h"
 
+#include <glib.h>
 #include <gst/gst.h>
+
+#include <QHostAddress>
+#include <QHostAddress>
 
 using namespace XMPP;
 
 QSettings *settings = NULL;
+
+char * calljid = NULL;
+char * configpath = NULL;
+char * myjid = NULL;
+char * password = NULL;
+
+static GOptionEntry entries[] = 
+{
+    { "config", 'c', 0, G_OPTION_ARG_STRING, &configpath, "Path to config file", NULL },
+    { "myjid", 'm', 0, G_OPTION_ARG_STRING, &myjid, "Full jid to use, if not specified by config file.", NULL },
+    { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password used to authenticate with.", NULL },
+    { "acall", 'a', 0, G_OPTION_ARG_STRING, &calljid, "Full jid to call, after going online.", NULL },
+    { 0, 0, 0, G_OPTION_ARG_NONE, 0, 0, 0 }
+};
 
 Bot::Bot(QObject *parent)
     : QObject(parent)
@@ -26,6 +44,12 @@ Bot::Bot(QObject *parent)
     m_stream = new ClientStream(m_connector, NULL, parent);
 
     m_jm = new IrisJingleManager(m_client->rootTask());
+
+    if (settings) {
+        QString stunhost = settings->value("xmpp/stun").toString();
+        if (!stunhost.isEmpty())
+            stunResolve(stunhost);
+    }
 }
 
 Bot::~Bot()
@@ -175,6 +199,12 @@ void Bot::rosterFinished(bool success, int code, const QString &errmsg)
         std::cout << "Roster received." << std::endl;
         Status s(Status::Online, "irisbot here!");
         m_client->setPresence(s);
+        if (calljid) {
+            PJid callee(calljid);
+            if (callee) {
+                m_jm->initiateAudioSession(callee, m_client->jid());
+            }
+        }
     } else {
         std::cout << "Roster retrieving failed, code " <<
             code << " reason: " << errmsg.toStdString() << std::endl;
@@ -190,24 +220,37 @@ void printHelp(const char *myname)
 
 int main(int argc, char *argv[])
 {
-    char *jid = NULL;
-    if (argc < 2) {
-        printHelp(argv[0]);
+    GOptionContext *context = NULL;
+    GError *error = NULL;
+
+    context = g_option_context_new("iris bot, jingle tester");
+    g_option_context_add_main_entries(context, entries, GETTEXT_PACKAGE);
+
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+        std::cerr << "Chypa parsovani parametru: " 
+                << error->message << std::endl;
+        std::cerr << g_option_context_get_help(context, true, 
+            g_option_context_get_main_group(context))
+                << std::endl;
         return 1;
-    } else {
-        if (!strcmp(argv[1], "-f") && argc>2) {
-            settings = new QSettings(argv[2], QSettings::IniFormat);
-            if (settings->status() != QSettings::NoError) {
-                std::cerr << "Nacitani souboru " << argv[2] 
-                        << " selhalo." << std::endl;
-                return 1;
-            } else {
-                QString j = settings->value("xmpp/jid").toString();
-                jid = strdup( j.toLocal8Bit().data());
-            }
+    }
+
+    if (configpath) {
+        settings = new QSettings(configpath, QSettings::IniFormat);
+        if (settings->status() != QSettings::NoError) {
+            std::cerr << "Nacitani souboru " << configpath
+                    << " selhalo:" << settings->status() << std::endl;
+            return 1;
         } else {
-            jid = argv[1];
+            QString j = settings->value("xmpp/jid").toString();
+            myjid = strdup( j.toLocal8Bit().data());
         }
+    }
+
+    if (!myjid) {
+        std::cerr << "JID pripojeni nebylo zadano, ani v konfiguraci. koncim."
+                  << std::endl;
+        return 1;
     }
 
     gst_init(&argc, &argv);
@@ -216,7 +259,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     Bot *bot = new Bot();
-    bot->connectAs(jid);
+    bot->connectAs(myjid);
 
     return app.exec();
 }
@@ -229,6 +272,30 @@ void Bot::incomingXml(const QString &s)
 void Bot::outgoingXml(const QString &s)
 {
     logit << ">>> " << s.toStdString() << std::endl;
+}
+
+void Bot::stunResolve(const QString &hostname)
+{
+    QHostAddress address(hostname);
+    if (address.protocol() != QAbstractSocket::UnknownNetworkLayerProtocol) {
+        // it is valid address, ipv4 or ipv6, no resolver is needed
+        m_jm->setStun(hostname.toStdString());
+    }
+    int rid = 
+    QHostInfo::lookupHost(hostname, this, SLOT(stunHostResolved(QHostInfo)));
+
+}
+
+void Bot::stunHostResolved(const QHostInfo info)
+{
+    if (info.error() == QHostInfo::NoError) {
+        QHostAddress a = info.addresses().first();
+        m_jm->setStun(a.toString().toStdString());
+    } else {
+        std::cerr << "Resolver  pro " << info.hostName().toStdString() 
+            << " vratil chybu: " 
+            << info.errorString().toStdString() << std::endl;
+    }
 }
 
 

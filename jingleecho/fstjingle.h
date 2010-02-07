@@ -53,6 +53,8 @@ class FstJingle
     bool updateLocalTransport(JingleContent &content);
     bool tryNextCandidate(JingleContent &content);
 
+    void setStun(const std::string &ip, int port = 0);
+
     QPipeline *pipeline;
     Conference *conference;
 };

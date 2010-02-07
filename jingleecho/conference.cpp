@@ -9,7 +9,7 @@
 
 Conference::Conference(GstElement *bin)
     : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0),
-      m_localCandidates(0), m_newLocalCandidates(0)
+      m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0)
 {
     m_pipeline = bin;
     gst_object_ref(m_pipeline);
@@ -29,7 +29,7 @@ Conference::Conference(GstElement *bin)
 
 Conference::Conference(QPipeline *pipeline)
     : m_qpipeline(pipeline),m_selfParticipant(0),m_remoteParticipant(0),
-      m_localCandidates(0), m_newLocalCandidates(0)
+      m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0)
 {
     m_pipeline = pipeline->element();
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipeline));
@@ -396,5 +396,21 @@ bool Conference::haveNewLocalCandidates()
 void Conference::increaseNewLocalCandidates()
 {
     m_newLocalCandidates++;
+}
+
+void Conference::setStun(const std::string &ip, int port)
+{
+    m_stunIp = ip;
+    m_stunPort = port;
+}
+
+std::string Conference::stunIp()
+{
+    return m_stunIp;
+}
+
+int Conference::stunPort()
+{
+    return m_stunPort;
 }
 

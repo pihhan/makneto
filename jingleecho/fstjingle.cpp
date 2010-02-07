@@ -195,6 +195,7 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     return true;
 }
 
+
 bool FstJingle::createAudioSession(JingleSession *session)
 {
     bool result = true;
@@ -417,4 +418,12 @@ bool FstJingle::tryNextCandidate(JingleContent &content)
     return (modified && next);
 }
 
+/** @brief Configure stun server IP address and port.
+    It has to be IP address, not general hostname. 
+    @param ip IP address in text format, dotted quad format for IPv4. 
+    @param port Port of stun server. If 0, default stun port will be used. */
+void FstJingle::setStun(const std::string &ip, int port)
+{
+    conference->setStun(ip, port);
+}
 

@@ -41,6 +41,7 @@ typedef enum {
     JSTATE_PENDING, // after session-initiate
     JSTATE_ACTIVE, // after session-accept
     JSTATE_TERMINATED, // after session-terminate
+    JSTATE_TIMEOUT, // did not receive reply from remote party in time.
 } SessionState;
 
 typedef enum {

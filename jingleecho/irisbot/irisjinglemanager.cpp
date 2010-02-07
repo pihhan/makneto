@@ -7,11 +7,21 @@
 
 using namespace XMPP;
 
+/* Default stun address. Used here, before i have better way to configure 
+    stun address from resolver or configuration. */
+static const std::string default_stun_ip = "212.71.150.10";
+
 IrisJingleManager::IrisJingleManager(Task *parent)
     : XMPP::Task(parent)
 {
+    setStun(default_stun_ip);
 }
 
+/** @brief Send stanza over XMPP.
+    @param js JingleStanza to be sent.
+    Generate unique ID for new iq stanza, convert JingleStanza to XML stanza
+    library cand send, and send over network.
+*/
 void IrisJingleManager::send(JingleStanza *js)
 {
     // TODO: create sender Task, that will notify us on reception.
@@ -20,6 +30,12 @@ void IrisJingleManager::send(JingleStanza *js)
     XMPP::Task::send(e);
 }
 
+/** @brief Send terminate request to specified JID, with reason and session id
+    from parameters.
+    @param to Target JID, must be full JID.
+    @param reason Reason why we terminate.
+    @param sid Id of session to terminate.
+*/
 void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, const std::string &sid)
 {
     JingleStanza *js = new JingleStanza();
@@ -31,6 +47,11 @@ void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, con
     send(js);
 }
 
+/** @brief Create small iq stanza to acknowledge stanza e.
+    @param e XML iq stanza we are acknowledging.
+    It will reverse from and to attributes, with id attribute same as e,
+    and send.
+*/
 void IrisJingleManager::replyAcknowledge(const QDomElement &e)
 {
     QDomElement iq = doc()->createElement("id");
@@ -124,12 +145,15 @@ bool IrisJingleManager::take(const QDomElement &e)
                     session = new JingleSession();
                     session->initiateFromRemote(js);
                     replyAcknowledge(e);
+                    emit sessionIncoming(session);
+                    // FIXME: emulate accepting from gui, react on signal
                     acceptAudioSession(session);
                 }
                 break;
             case ACTION_ACCEPT:
                 if (session) {
                     replyAcknowledge(e);
+                    emit sessionStateChanged(session);
                 } else {
                     logit << ("Jingle accept pro neexistujici session.") << std::endl;
                     replyError(e, "service-unavailable");
@@ -140,6 +164,7 @@ bool IrisJingleManager::take(const QDomElement &e)
                 if (session) {
                     terminateSession(session);
                     replyAcknowledge(e);
+                    emit sessionTerminated(session);
                 } else {
                     replyError(e, "service-unavailable");
 
@@ -150,10 +175,14 @@ bool IrisJingleManager::take(const QDomElement &e)
             case ACTION_INFO:
                 if (session) {
                     replyAcknowledge(e);
+                    modifySession(session, js);
+                    emit sessionStateChanged(session);
                 } else {
                     replyError(e, "bad-request");
                 }
                 break;
+            default:
+                LOGGER(logit) << "unhandled action " << js->action() << std::endl;
         }
 
         return true;
@@ -173,3 +202,8 @@ void IrisJingleManager::onGo()
     // we only receive, no sending here
 }
 
+void IrisJingleManager::setState(JingleSession *session, SessionState state)
+{
+    JingleManager::setState(session, state);
+    emit sessionStateChanged(session);
+}

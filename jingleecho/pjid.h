@@ -35,6 +35,7 @@ class PJid  : public XMPP::Jid
 #ifdef IRIS
     PJid(const QString &fulljid);
     PJid(const XMPP::Jid &jid);
+    PJid(const char *fulljid);
     std::string username() const;
     std::string server() const;
 

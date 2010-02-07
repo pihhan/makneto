@@ -46,7 +46,7 @@ static gboolean periodic_timer(gpointer user_data)
 
 
 JingleManager::JingleManager()
-	: m_timerid(0)
+	: m_timerid(0),m_stunPort(0)
 {
         m_seed = (unsigned int) time(NULL);
 }
@@ -114,7 +114,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     JingleContent newcontent = audioContent();
 
     session->addLocalContent(newcontent);
-    session->setState(JSTATE_ACTIVE);
+    setState(session, JSTATE_ACTIVE);
     session->setResponder(self());
     JingleStanza *js = session->createStanzaAccept();
 
@@ -133,7 +133,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 /** @brief Internal handle of confirmation or our outgoing call. */
 bool JingleManager::acceptedAudioSession(JingleSession *session)
 {
-    session->setState(JSTATE_ACTIVE);
+    setState(session, JSTATE_ACTIVE);
     
     FstJingle *fsj = new FstJingle();
     fsj->createAudioSession(session);
@@ -153,7 +153,7 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
 {
     JingleStanza *stanza = session->createStanzaTerminate(reason);
     send(stanza);
-    session->setState(JSTATE_TERMINATED);
+    setState(session, JSTATE_TERMINATED);
     if (session->data()) {
         FstJingle *fst = static_cast<FstJingle *>(session->data());
         fst->terminate();
@@ -377,10 +377,56 @@ void JingleManager::destroySession(JingleSession *session)
     delete session;
 }
 
+
+/** @brief Modify session from remote party information in stanza. */
+void JingleManager::modifySession(JingleSession *session, JingleStanza *stanza)
+{
+    FstJingle *fst = static_cast<FstJingle *>(session->data());
+    LOGGER(logit) << " modify session sid:" << session->sid() << std::endl;
+    switch (stanza->action()) {
+        case ACTION_INFO: // modify transport parameters, or codecs
+            if (fst) {
+                ContentList contents = stanza->contents();
+                for (ContentList::iterator it = contents.begin(); 
+                        it != contents.end(); it++) 
+                {
+                    fst->replaceRemoteContent(*it);
+                }
+            }
+            break;
+        default:
+            LOGGER(logit) << "unhandled modify session action "
+                    << stanza->action() << std::endl;
+            break;
+    }
+}
+
 void JingleManager::setError(const std::string &errmsg)
 {
     LOGGER(logit) << errmsg << std::endl;
 }
+
+void JingleManager::setStun(const std::string &ip, int port)
+{
+    m_stunIp = ip;
+    m_stunPort = port;
+}
+
+std::string JingleManager::stunIp() const
+{
+    return m_stunIp;
+}
+
+int JingleManager::stunPort() const
+{
+    return  m_stunPort;
+}
+
+void JingleManager::setState(JingleSession *session, SessionState state)
+{
+    session->setState(state);
+}
+
 
 
 #ifdef GLOOX
@@ -431,7 +477,7 @@ bool GlooxJingleManager::handleIqID(Stanza *stanza, int context)
                                     case ACTION_INITIATE:
                                     session = new JingleSession();
                                     session->initiateFromRemote(js);
-                                    session->setState(JSTATE_PENDING);
+                                    setState(session, JSTATE_PENDING);
                                             addSession(session);
                                             if (m_handler) {
                                                     replyAcknowledge(stanza);
@@ -452,9 +498,10 @@ bool GlooxJingleManager::handleIqID(Stanza *stanza, int context)
                                             break;
                                     case ACTION_TERMINATE:
                                             if (m_handler && local_session) {
-                        local_session->setState(JSTATE_TERMINATED);
+                                                setState(local_session, JSTATE_TERMINATED);
                                                 replyAcknowledge(stanza);
-                                                result = m_handler->handleSessionTermination(local_session);
+                                                if (m_handler)
+                                                    result = m_handler->handleSessionTermination(local_session);
                                             } else return false;
 
                 case ACTION_CONTENT_ADD:

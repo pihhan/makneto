@@ -11,6 +11,7 @@ class IrisJingleManager :
     public XMPP::Task,
     public JingleManager
 {
+    Q_OBJECT
     public:
 	IrisJingleManager(Task *parent);
 
@@ -24,6 +25,15 @@ class IrisJingleManager :
     static QDomElement createJingleStanza(JingleStanza *js, const std::string &id, QDomDocument *doc);
     virtual void commentSession(JingleSession *session, const std::string &comment);
     virtual bool take(const QDomElement &e);
+    virtual void setState(JingleSession *session, SessionState state);
+
+    signals:
+    /** @brief Emitted on change of existing session. */
+    void sessionStateChanged(JingleSession *session);
+    /** @brief Emitted on incoming session-initiate. */
+    void sessionIncoming(JingleSession *session);
+    /** @brief Emitted on end of session. */
+    void sessionTerminated(JingleSession *session);
 
     protected:
         virtual void onGo();

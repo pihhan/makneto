@@ -15,19 +15,23 @@ PJid::PJid()
 }
 
 #ifdef IRIS
+PJid::PJid(const QString &fulljid)
+    : XMPP::Jid(fulljid)
+{
+}
+
 PJid::PJid(const std::string &fulljid)
     : XMPP::Jid(fulljid.c_str())
 {
 }
 
-PJid::PJid(const QString &fulljid)
-    : XMPP::Jid(fulljid)
-{
-
-}
-    
 PJid::PJid(const XMPP::Jid &jid)
     : XMPP::Jid(jid)
+{
+}
+
+PJid::PJid(const char *fulljid)
+    : XMPP::Jid(fulljid)
 {
 }
 

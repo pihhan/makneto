@@ -68,6 +68,10 @@ class Conference
     void        resetNewLocalCandidates();
     bool        haveNewLocalCandidates();
 
+    void        setStun(const std::string &ip, int port=0);
+    std::string stunIp();
+    int         stunPort();
+
     private:
     void        increaseNewLocalCandidates();
 
@@ -79,6 +83,8 @@ class Conference
     SessionList     m_sessions;
     GList         * m_localCandidates;
     int         m_newLocalCandidates;
+    std::string   m_stunIp;
+    int           m_stunPort;
 };
 
 #endif

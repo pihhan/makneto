@@ -58,20 +58,20 @@ class JingleManager
 
         /** @brief Terminate passed session. */
         void            terminateSession(JingleSession *session, SessionReason reason = REASON_DECLINE);
+        void        modifySession(JingleSession *session, JingleStanza *stanza);
 
 
 	JingleSession * getSession(const std::string &sid);
 	
-	void 			removeSession(const std::string &sid);
-	void			addSession(JingleSession *session);
+	void 		removeSession(const std::string &sid);
+	void		addSession(JingleSession *session);
 	
 	void registerActionHandler(JingleActionHandler *handler);
 
-        SessionMap              allSessions();
+        SessionMap      allSessions();
 
         virtual PJid  self()=0;
 	
-
 	unsigned int randomPort();
 	std::string	randomId();
 	
@@ -98,11 +98,22 @@ class JingleManager
     bool runningPeriodicTimer();
 
     virtual void commentSession(JingleSession *session, const std::string &comment)=0;
+    /** @brief Set state for this session. 
+        @param session Session on which to change state.
+        @param state New state for session.
+        It can notify subsystems about state change, if reimplemented. 
+    */
+    virtual void setState(JingleSession *session, SessionState state);
+
     bool sessionTimeout(JingleSession *session);
     void startSessionTimeout(JingleSession *session);
     void destroySession(JingleSession *session);
 
     void setError(const std::string &errmsg);
+
+    void        setStun(const std::string &ip, int port = 0);
+    std::string stunIp() const;
+    int         stunPort() const;
 
     protected:
     static gboolean sessionTimeout_gcb(gpointer user_data);
@@ -112,6 +123,8 @@ class JingleManager
 	JingleActionHandler *m_handler;
         unsigned int        m_seed;
         unsigned int        m_timerid;
+        std::string         m_stunIp;
+        int                 m_stunPort;
 };
 
 

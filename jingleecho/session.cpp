@@ -9,7 +9,6 @@
 #include "logger/logger.h"
 #include "fstjingle.h"
 
-static const gchar     stun_ip[] = "212.71.150.10";
 
 Session::Session(Conference *conf)
     : m_conf(conf),m_session(NULL),m_lasterror(NULL),m_stream(NULL),
@@ -34,7 +33,7 @@ Session::~Session()
 
 FsStream *Session::createStream(FsParticipant *participant, const GList *lcandidates)
 {
-    GParameter param[3];
+    GParameter param[4];
     int paramcount = 0;
 
     memset(&param, 0, sizeof(param));
@@ -45,10 +44,16 @@ FsStream *Session::createStream(FsParticipant *participant, const GList *lcandid
         g_value_take_boxed(&param[paramcount].value, lcandidates);
         paramcount++;
     }
-    if (*stun_ip) {
+    if (!m_conf->stunIp().empty()) {
         param[paramcount].name = "stun-ip";
         g_value_init(&param[paramcount].value, G_TYPE_STRING);
-        g_value_set_static_string(&param[paramcount].value, stun_ip);
+        g_value_set_string(&param[paramcount].value, m_conf->stunIp().c_str());
+        paramcount++;
+    }
+    if (m_conf->stunPort() > 0) {
+        param[paramcount].name = "stun-port";
+        g_value_init(&param[paramcount].value, G_TYPE_UINT);
+        g_value_set_uint(&param[paramcount].value, m_conf->stunPort());
         paramcount++;
     }
     FsStream *stream = fs_session_new_stream(
