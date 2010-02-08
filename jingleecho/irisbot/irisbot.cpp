@@ -161,7 +161,7 @@ void Bot::disconnected()
     std::cout << m_stream->errorText().toStdString() << std::endl;
 
     //m_client->deleteLater();
-    QApplication::exit(0);
+    QCoreApplication::exit(0);
 }
 
 void Bot::warning(int w)
@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
     gst_init(&argc, &argv);
 
     QCA::Initializer qcainit;
-    QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
 
     Bot *bot = new Bot();
     bot->connectAs(myjid);
