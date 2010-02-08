@@ -122,6 +122,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     FstJingle *fsj = new FstJingle();
     fsj->createAudioSession(session);
     session->setData(fsj);
+    addSession(session);
 
     send(js);
     // start timeout timer
@@ -151,6 +152,11 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
 */
 void JingleManager::terminateSession(JingleSession *session, SessionReason reason)
 {
+    if (session->state() == JSTATE_TERMINATED) {
+        LOGGER(logit) << "Request to terminate already terminated session" << std::endl;
+        return;
+    }
+
     JingleStanza *stanza = session->createStanzaTerminate(reason);
     send(stanza);
     setState(session, JSTATE_TERMINATED);
@@ -253,7 +259,9 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 
 JingleContent   JingleManager::audioContent()
 {
-    return JingleContent(localTransport(), audioDescription() );
+    JingleContent c(localTransport(), audioDescription() );
+    c.setName("audiotest");
+    return c;
 }
 
 /** @brief Periodic check for new information, state change, something like 
@@ -322,13 +330,16 @@ JingleManager::SessionMap  JingleManager::allSessions()
 bool JingleManager::sessionTimeout(JingleSession *session)
 {
     LOGGER(logit) << "session timeout sid: " << session->sid() << std::endl;
-#if 0
-    // we do not have anywhere, if connection is successfully estabilished
-        if (session->state() == JSTATE_ACTIVE) {
-        // we think session is active, remove timeout
+
+    if (session->state() == JSTATE_TERMINATED) {
         return FALSE;
     }
-#endif
+    if (session->state() == JSTATE_ACTIVE) {
+        FstJingle *fst = static_cast<FstJingle*>(session->data());
+        if (fst && fst->isPlaying())
+            // pipeline is active, connection was successful
+            return FALSE;
+    }
 
     bool untried = false;
     ContentList cl = session->remoteContents();
@@ -388,7 +399,7 @@ void JingleManager::modifySession(JingleSession *session, JingleStanza *stanza)
     FstJingle *fst = static_cast<FstJingle *>(session->data());
     LOGGER(logit) << " modify session sid:" << session->sid() << std::endl;
     switch (stanza->action()) {
-        case ACTION_INFO: // modify transport parameters, or codecs
+        case ACTION_TRANSPORT_INFO: // modify transport parameters, or codecs
             if (fst) {
                 ContentList contents = stanza->contents();
                 for (ContentList::iterator it = contents.begin(); 

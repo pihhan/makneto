@@ -171,6 +171,8 @@ void Bot::receiveMessage(const Message &m)
    
     if (m.body() == "ping") {
         replyMessage(m, "pong!");
+    } else if (m.body().startsWith("I am iris bot,")) {
+        LOGGER(logit) << "Message loop detected. Not responding to message." << std::endl;
     } else if (!m.body().isEmpty()) {
         replyMessage(m, "I am iris bot, only thing i am able to do, is ping-pong.");
     }

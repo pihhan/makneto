@@ -86,9 +86,13 @@ void IrisJingleManager::commentSession(
     JingleSession *session, 
     const std::string &comment)
 {
+#if 0
     Message m(session->remote());
     m.setBody(QString::fromStdString(comment));
     client()->sendMessage(m);
+#else 
+    LOGGER(logit) << "Comment: " << comment << std::endl;
+#endif
 }
 
 /*! \brief Reply to passed stanza with error response.
@@ -153,6 +157,7 @@ bool IrisJingleManager::take(const QDomElement &e)
             case ACTION_ACCEPT:
                 if (session) {
                     replyAcknowledge(e);
+                    session->mergeFromRemote(js);
                     acceptedAudioSession(session);
                     emit sessionStateChanged(session);
                 } else {
@@ -173,7 +178,7 @@ bool IrisJingleManager::take(const QDomElement &e)
                         << ssid << std::endl;
                 }
                 break;
-            case ACTION_INFO:
+            case ACTION_TRANSPORT_INFO:
                 if (session) {
                     replyAcknowledge(e);
                     modifySession(session, js);

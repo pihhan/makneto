@@ -179,36 +179,39 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     GList *localCandidates = createSingleFsCandidateList(local.transport());
 
     session->setLocal(localCandidates);
-    session->createStream();
+    bool created = session->createStream();
     session->setRemote(remoteCandidates);
-
-    GList *localCodecs = createFsCodecList(local.description());
-    session->setLocalCodec(localCodecs);
 
     GList *remoteCodecs = createFsCodecList(remote.description());
     session->setRemoteCodec(remoteCodecs);
 
-    linkSink(session);
+    bool linked = linkSink(session);
 
     conference->addSession(session);
     LOGGER(logit) << "created Audio session" << std::endl;
-    return true;
+    return (created && linked);
 }
 
 
 bool FstJingle::createAudioSession(JingleSession *session)
 {
     bool result = true;
+    bool empty = true;
     setNicknames(session->from().fullStd(), session->to().fullStd());
     ContentList lcl = session->localContents();
     ContentList rcl = session->remoteContents();
     ContentList::iterator lit = lcl.begin();
     ContentList::iterator rit = rcl.begin();
+
     while (lit != lcl.end() && rit != rcl.end()) {
         result = result && createAudioSession(*lit, *rit);
         ++lit;
         ++rit;
+        empty = false;
     } 
+    if (empty)
+        LOGGER(logit) << "empty audio session created." << std::endl;
+
     LOGGER(logit) << "createAudioSession result: " << result << std::endl;
 
     bool paused = pipeline->setState(GST_STATE_PLAYING);
@@ -225,7 +228,7 @@ bool FstJingle::createAudioSession(JingleSession *session)
         << " pending " << pipeline->pending_state() << std::endl;
 #endif
     pipeline->describe();
-    return result && paused && playing;
+    return result && paused && playing && !empty;
 }
 
 /** @brief Replace previous content with this content. */
@@ -240,7 +243,7 @@ bool FstJingle::replaceRemoteContent(const JingleContent &content)
         session->setRemoteCodec(remoteCodecs);
         return true;
     } else {
-        LOGGER(logit) << "Content na nahrazeni nema odpovidajici session!" 
+        LOGGER(logit) << "Content na nahrazeni nema odpovidajici session! " 
             << content.name() << " media " << content.media() 
             << std::endl;
         return false;
@@ -255,7 +258,8 @@ bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleC
         FsCandidate *fscan = createFsCandidate(candidate);
         candidates = g_list_prepend(candidates, fscan);
         session->setRemote(candidates);
-        fs_candidate_list_destroy(candidates);
+        // TODO: lepsi spravu zdroju, tohle je primo prirazeno do session, nelze uvolnit.
+        // fs_candidate_list_destroy(candidates);
         LOGGER(logit) << "Nahrazuji vzdaleneho kandidata " 
                 << fscan->ip << ":" 
                 << fscan->port << " "
@@ -392,6 +396,8 @@ CandidateList   FstJingle::createJingleCandidateList(GList *candidates)
 
 /** @brief Try next candidate for this content. 
     @return true if there is next candidate to try, false otherwise.
+    It will mark current candidate unreachable, and mark next candidate
+    trying. If no more candidates, return false. 
 */
 bool FstJingle::tryNextCandidate(JingleContent &content)
 {
