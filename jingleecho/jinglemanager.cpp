@@ -285,6 +285,8 @@ void JingleManager::periodicSessionCheck(JingleSession *session)
                 JingleStanza *js = session->createStanza(ACTION_TRANSPORT_INFO);
                 js->replaceContents(modified);
                 send(js);
+
+                session->replaceLocalContent(cl);
             }
             fst->resetNewLocalCandidates();
         } // new candidates

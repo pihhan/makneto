@@ -111,7 +111,11 @@ void Bot::needAuthParams(bool user, bool pwd, bool realm)
                 PJid jid(jidstr);
                 u = jid.node();
             }
-        } 
+        }
+        if (u.isEmpty() && myjid) {
+            PJid jid(myjid);
+            u = jid.node();
+        }
         if (u.isEmpty()) {
             u = prompt("Zadej uzivatele");
         }
@@ -122,6 +126,8 @@ void Bot::needAuthParams(bool user, bool pwd, bool realm)
         if (settings) {
              p = settings->value("password").toString();
         }
+        if (p.isEmpty()) 
+            p = QString(password);
         if (p.isEmpty()) {
             p = prompt("Zadej viditelne heslo");
         }
@@ -295,6 +301,8 @@ void Bot::stunResolve(const QString &hostname)
 
 }
 
+/** @brief This slot uses resolved name from stunResolve, and configures Stun
+    server to found IP, if query was successful. */
 void Bot::stunHostResolved(const QHostInfo info)
 {
     if (info.error() == QHostInfo::NoError) {
