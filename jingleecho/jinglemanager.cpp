@@ -348,8 +348,10 @@ bool JingleManager::sessionTimeout(JingleSession *session)
         if (fst->tryNextCandidate(*it)) {
             untried = true;
         }
-
     } // for contents
+    // place change in availability in clients back to session
+    session->replaceRemoteContent(cl);
+
 
     if (!untried) {
         LOGGER(logit) << "No more candidates remains, " 

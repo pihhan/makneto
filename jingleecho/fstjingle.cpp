@@ -409,11 +409,13 @@ bool FstJingle::tryNextCandidate(JingleContent &content)
     {
         if (ci->reachable == JingleCandidate::REACHABLE_TRYING) {
             ci->reachable = JingleCandidate::REACHABLE_NO;
-            LOGGER(logit) << "Candidate marked unreachable" << std::endl;
+            LOGGER(logit) << "Candidate marked unreachable" 
+                << ci->ip << std::endl;
             modified = true;
-        } else if (ci->reachable == JingleCandidate::REACHABLE_UNKNOWN) {
+        } else if (ci->reachable == JingleCandidate::REACHABLE_UNKNOWN && !next) {
             ci->reachable = JingleCandidate::REACHABLE_TRYING;
-            LOGGER(logit) << "Candidate marked trying " << std::endl;
+            LOGGER(logit) << "Candidate marked trying "
+                << ci->ip << std::endl;
             modified = true;
             replaceRemoteCandidate(content.name(), *ci);
             next = true;
