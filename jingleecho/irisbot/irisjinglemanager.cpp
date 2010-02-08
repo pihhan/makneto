@@ -54,7 +54,7 @@ void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, con
 */
 void IrisJingleManager::replyAcknowledge(const QDomElement &e)
 {
-    QDomElement iq = doc()->createElement("id");
+    QDomElement iq = doc()->createElement("iq");
     iq.setAttribute("type", "result");
     iq.setAttribute("id", e.attribute("id"));
     iq.setAttribute("to", e.attribute("from"));
@@ -153,6 +153,7 @@ bool IrisJingleManager::take(const QDomElement &e)
             case ACTION_ACCEPT:
                 if (session) {
                     replyAcknowledge(e);
+                    acceptedAudioSession(session);
                     emit sessionStateChanged(session);
                 } else {
                     logit << ("Jingle accept pro neexistujici session.") << std::endl;

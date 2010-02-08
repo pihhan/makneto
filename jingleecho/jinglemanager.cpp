@@ -321,10 +321,14 @@ JingleManager::SessionMap  JingleManager::allSessions()
     more than one remote candidates at one time. */
 bool JingleManager::sessionTimeout(JingleSession *session)
 {
-    if (session->state() == JSTATE_ACTIVE) {
+    LOGGER(logit) << "session timeout sid: " << session->sid() << std::endl;
+#if 0
+    // we do not have anywhere, if connection is successfully estabilished
+        if (session->state() == JSTATE_ACTIVE) {
         // we think session is active, remove timeout
         return FALSE;
     }
+#endif
 
     bool untried = false;
     ContentList cl = session->remoteContents();

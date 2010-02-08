@@ -16,7 +16,6 @@
 #include <gst/gst.h>
 
 #include <QHostAddress>
-#include <QHostAddress>
 
 using namespace XMPP;
 
@@ -49,6 +48,10 @@ Bot::Bot(QObject *parent)
         QString stunhost = settings->value("xmpp/stun").toString();
         if (!stunhost.isEmpty())
             stunResolve(stunhost);
+
+        bool plainpass = settings->value("xmpp/plaintext").toBool();
+        if (plainpass)
+            m_stream->setAllowPlain(ClientStream::AllowPlain);
     }
 }
 
@@ -82,7 +85,7 @@ void Bot::connectAs(const Jid &user)
 void Bot::connected()
 {
     std::cout << "Connected." << std::endl;
-    Jid j = m_client->jid();
+    Jid j = m_stream->jid();
     m_client->start(j.domain(), j.node(), QString(), j.resource());
     std::cout << "Starting XMPP..." << std::endl;
 }
@@ -92,7 +95,7 @@ void Bot::authenticated()
     std::cout << "Authenticated." << std::endl;
     JT_Session *session = new JT_Session(m_client->rootTask());
     connect(session, SIGNAL(finished()), this, SLOT(sessionStarted()) );
-    session->go();
+    session->go(true);
 }
 
 void Bot::needAuthParams(bool user, bool pwd, bool realm)
@@ -151,7 +154,7 @@ void Bot::disconnected()
     std::cout << "disconnected." << std::endl;
     std::cout << m_stream->errorText().toStdString() << std::endl;
 
-    m_client->deleteLater();
+    //m_client->deleteLater();
     QApplication::exit(0);
 }
 
@@ -199,10 +202,14 @@ void Bot::rosterFinished(bool success, int code, const QString &errmsg)
         std::cout << "Roster received." << std::endl;
         Status s(Status::Online, "irisbot here!");
         m_client->setPresence(s);
+
         if (calljid) {
             PJid callee(calljid);
             if (callee) {
                 m_jm->initiateAudioSession(callee, m_client->jid());
+            } else {
+                std::cerr << "K zavolani predano neplatne JID" 
+                    << calljid << std::endl;
             }
         }
     } else {
