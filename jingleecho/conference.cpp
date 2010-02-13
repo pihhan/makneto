@@ -9,7 +9,8 @@
 
 Conference::Conference(GstElement *bin)
     : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0),
-      m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0)
+      m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0), 
+      m_lastErrorCode(NoError)
 {
     m_pipeline = bin;
     gst_object_ref(m_pipeline);
@@ -23,13 +24,15 @@ Conference::Conference(GstElement *bin)
     g_assert(m_fsconference);
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
         LOGCF() << "Chyba pri pridavani conference do pipeline" << std::endl;
+        setError(PipelineError, "Adding fsrtpconference to pipeline failed");
     }
 
 }
 
 Conference::Conference(QPipeline *pipeline)
     : m_qpipeline(pipeline),m_selfParticipant(0),m_remoteParticipant(0),
-      m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0)
+      m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0),
+      m_lastErrorCode(NoError)
 {
     m_pipeline = pipeline->element();
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipeline));
@@ -41,6 +44,7 @@ Conference::Conference(QPipeline *pipeline)
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
         LOGGER(logit) << "Chyba pri pridavani conference do pipeline" 
                 << std::endl;
+        setError(PipelineError, "Adding fsrtpconference to pipeline failed");
     }
 
 }
@@ -62,6 +66,7 @@ FsParticipant * Conference::createParticipant( const std::string &name)
     if (error) {
     LOGCF() << " fs_conference_new_participant: " <<
         error->message << std::endl;
+        setError(PipelineError, error->message);
     }
     return p;
 }
@@ -157,6 +162,8 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 gchar *debugmsg = NULL;
                 gst_message_parse_error(message, &error, &debugmsg);
                 LOGCF() << "Error: conference::messageCallback: " << debugmsg << std::endl;
+                conf->setError(PipelineError, debugmsg);
+                conf->reportError(debugmsg);
             }
             break;
         case GST_MESSAGE_WARNING:
@@ -165,6 +172,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 gchar *debugmsg = NULL;
                 gst_message_parse_warning(message, &error, &debugmsg);
                 LOGCF() << "Warning: conference::messageCallback: " << debugmsg << std::endl;
+                conf->reportWarning(debugmsg);
             }
         case GST_MESSAGE_ELEMENT:
             {
@@ -179,10 +187,13 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     if (FS_ERROR_IS_FATAL(error)) {
                         LOGGER(logit).printf("Farsight fatal error: %d %s %s",
                             error, error_msg, debug_msg);
+                        conf->reportFatalError(debug_msg);
                     } else {
                         LOGGER(logit).printf("Farsight non-fatal error: %d %s %s",
                             error, error_msg, debug_msg);
+                        conf->reportError(debug_msg);
                     }
+                    conf->setError(PipelineError, error_msg);
 
                 } else if (gst_structure_has_name(s, 
                         "farsight-new-local-candidate")) {
@@ -217,10 +228,6 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                             "local-candidate", G_TYPE_BOXED, &l,
                             "remote-candidate", G_TYPE_BOXED, &r,
                             NULL);
-#ifdef DELETE_ME
-                    const GValue *vlocal = gst_structure_get_value(s, "local-candidate");
-                    const GValue *vremote = gst_structure_get_value(s, "remote-candidate");
-#endif
                     unsigned int id = Session::idFromStream(stream);
                     gst_object_unref(stream);
                     Session *s = conf->getSession(id);
@@ -256,6 +263,24 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     state = (FsStreamState) g_value_get_enum(vstate);
                     LOGGER(logit) << "Component " << component 
                         << " state changed to " << state << std::endl;
+
+                    if (conf->m_reader) {
+                        FstStatusReader::StateType rstate = FstStatusReader::S_NONE;
+                        switch (state) {
+                            case GST_STATE_VOID_PENDING:
+                            case GST_STATE_NULL:
+                                rstate = FstStatusReader::S_STOPPED; 
+                                break;
+                            case GST_STATE_READY:
+                            case GST_STATE_PAUSED:
+                                rstate = FstStatusReader::S_STOPPED; 
+                                break;
+                            case GST_STATE_PLAYING:
+                                rstate = FstStatusReader::S_PLAYING;
+                                break;
+                        }
+                        conf->m_reader->reportState(rstate);
+                    }
                 } else {
                     const gchar *name = gst_structure_get_name(s);
                     std::cerr << "Neznama zprava na pipeline: " <<
@@ -297,6 +322,7 @@ void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
         GstPadLinkReturn r = gst_pad_link(pad, sinkpad);
         if (GST_PAD_LINK_FAILED(r)) {
             LOGCF() << "Link zdroje na sink selhal!" << r << std::endl;
+            setError(AudioOutputError, "Link to audio output failed.");
         } else {
             session->setSrcLinked(true);
         }
@@ -412,5 +438,50 @@ std::string Conference::stunIp()
 int Conference::stunPort()
 {
     return m_stunPort;
+}
+
+JingleFarsightErrors Conference::lastError()
+{
+    return m_lastErrorCode;
+}
+
+std::string         Conference::lastErrorMessage()
+{
+    return m_lastErrorMessage;
+}
+
+void Conference::setError(JingleFarsightErrors code, const std::string &message)
+{
+    m_lastErrorCode = code;
+    m_lastErrorMessage = message;
+}
+
+void Conference::setStatusReader(FstStatusReader *r)
+{
+    m_reader = r;
+}
+
+void Conference::reportError(const std::string &msg)
+{
+    if (m_reader)
+        m_reader->reportMsg(FstStatusReader::MSG_ERROR, msg);
+}
+
+void Conference::reportFatalError(const std::string &msg)
+{
+    if (m_reader)
+        m_reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, msg);
+}
+
+void Conference::reportWarning(const std::string &msg)
+{
+    if (m_reader)
+        m_reader->reportMsg(FstStatusReader::MSG_WARNING, msg);
+}
+
+void Conference::reportDebug(const std::string &msg)
+{
+    if (m_reader)
+        m_reader->reportMsg(FstStatusReader::MSG_DEBUG, msg);
 }
 

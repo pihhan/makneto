@@ -11,7 +11,19 @@
 
 #include "qpipeline.h"
 #include "session.h"
+#include "fststatusreader.h"
 
+typedef enum {
+    NoError = 0,
+    AudioInputError,
+    AudioOutputError,
+    VideoInputError,
+    VideoOutputError,
+    NetworkError,
+    NetworkTimeout,
+    PipelineError,
+    UnspecifiedError,
+} JingleFarsightErrors;
 
 typedef std::list<Session *>    SessionList;
 
@@ -72,6 +84,12 @@ class Conference
     std::string stunIp();
     int         stunPort();
 
+    JingleFarsightErrors lastError();
+    std::string         lastErrorMessage();
+    void                setError(JingleFarsightErrors code, const std::string &message = std::string());
+
+    void setStatusReader(FstStatusReader *r);
+
     private:
     void        increaseNewLocalCandidates();
 
@@ -85,6 +103,9 @@ class Conference
     int         m_newLocalCandidates;
     std::string   m_stunIp;
     int           m_stunPort;
+    JingleFarsightErrors m_lastErrorCode;
+    std::string         m_lastErrorMessage;
+    FstStatusReader     *m_reader;
 };
 
 #endif

@@ -435,3 +435,25 @@ void FstJingle::setStun(const std::string &ip, int port)
     conference->setStun(ip, port);
 }
 
+
+void FstJingle::setError(JingleFarsightErrors e)
+{
+    m_lastErrorCode = e;
+}
+
+JingleFarsightErrors FstJingle::lastError()
+{
+    JingleFarsightErrors e = conference->lastError();
+    if (e == NoError)
+        return m_lastErrorCode;
+    return e;
+}
+
+std::string FstJingle::lastErrorMessage()
+{
+    std::string msg = conference->lastErrorMessage();
+    if (msg.empty())
+        return m_lastErrorMessage;
+    else return msg;
+}
+

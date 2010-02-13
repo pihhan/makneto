@@ -13,6 +13,7 @@
 #include "conference.h"
 #include "qpipeline.h"
 
+
 /** @brief Class for converting my format for Jingle signalling to 
     farsight structures. Direct farsight session. */
 class FstJingle
@@ -55,8 +56,17 @@ class FstJingle
 
     void setStun(const std::string &ip, int port = 0);
 
+    void setError(JingleFarsightErrors);
+    JingleFarsightErrors lastError();
+    std::string         lastErrorMessage();
+
     QPipeline *pipeline;
     Conference *conference;
+
+    private:
+    JingleFarsightErrors m_lastErrorCode;
+    std::string         m_lastErrorMessage;
+    FstStatusReader     *m_reader;
 };
 
 #endif
