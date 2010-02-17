@@ -88,10 +88,17 @@ class Conference
     std::string         lastErrorMessage();
     void                setError(JingleFarsightErrors code, const std::string &message = std::string());
 
+    void reportError(const std::string &msg);
+    void reportFatalError(const std::string &msg);
+    void reportWarning(const std::string &msg);
+    void reportDebug(const std::string &msg);
+
+
     void setStatusReader(FstStatusReader *r);
 
     private:
     void        increaseNewLocalCandidates();
+    static std::string codecListToString(GList *codecs);
 
     QPipeline  * m_qpipeline;
     GstElement * m_pipeline;

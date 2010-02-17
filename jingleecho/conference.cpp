@@ -138,12 +138,12 @@ void Conference::onLocalCandidatesPrepared()
 
 void Conference::onRecvCodecsChanged(GList *codecs)
 {
-    LOGCF() << "Recv codecs changed" << std::endl;
+    LOGCF() << "Recv codecs changed" << codecListToString(codecs) << std::endl;
 }
 
 void Conference::onSendCodecsChanged(GList *codecs)
 {
-    LOGCF() << "Send codecs changed" << std::endl;
+    LOGCF() << "Send codecs changed" << codecListToString(codecs) << std::endl;
 }
 
 /** @brief Message callback handling messages received from pipeline bus.
@@ -266,7 +266,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
 
                     if (conf->m_reader) {
                         FstStatusReader::StateType rstate = FstStatusReader::S_NONE;
-                        switch (state) {
+                        switch (rstate) {
                             case GST_STATE_VOID_PENDING:
                             case GST_STATE_NULL:
                                 rstate = FstStatusReader::S_STOPPED; 
@@ -276,7 +276,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                                 rstate = FstStatusReader::S_STOPPED; 
                                 break;
                             case GST_STATE_PLAYING:
-                                rstate = FstStatusReader::S_PLAYING;
+                                rstate = FstStatusReader::S_RUNNING;
                                 break;
                         }
                         conf->m_reader->reportState(rstate);
@@ -483,5 +483,18 @@ void Conference::reportDebug(const std::string &msg)
 {
     if (m_reader)
         m_reader->reportMsg(FstStatusReader::MSG_DEBUG, msg);
+}
+
+std::string Conference::codecListToString(GList *codecs)
+{
+    std::ostringstream o;
+    GList *item = codecs;
+    while (item) {
+        gchar *str = fs_codec_to_string((FsCodec *)item->data);
+        o << str << std::endl;
+        g_free(str);
+        item = g_list_next(item);
+    }
+    return o.str();
 }
 
