@@ -60,13 +60,12 @@ FsStream *Session::createStream(FsParticipant *participant, const GList *lcandid
         m_session,
         participant,
         FS_DIRECTION_BOTH,
-        "rawudp",
+        m_conf->transmitter().c_str(),
         paramcount, param, &m_lasterror);
     if (m_lasterror) {
         LOGGER(logit) << " fs_session_new_stream:" 
                   << m_lasterror->message << std::endl;
     }
-    g_assert(stream);
     return stream;
 }
 

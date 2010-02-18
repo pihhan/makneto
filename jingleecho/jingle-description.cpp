@@ -167,3 +167,50 @@ QDomElement JingleRtpPayload::tag(QDomDocument &doc) const
 }
 
 #endif
+
+
+PayloadParameter::PayloadParameter(const std::string &name, int value)
+{
+    m_type = TYPE_INT;
+    m_name = name;
+    ivalue = value;
+    uivalue = ~0;
+}
+
+PayloadParameter::PayloadParameter(const std::string &name, unsigned int value)
+{
+    m_type = TYPE_UINT;
+    m_name = name;
+    uivalue = value;
+    ivalue = -1;
+}
+
+PayloadParameter::PayloadParameter(const std::string &name, const std::string &value)
+{
+    m_type = TYPE_STRING;
+    m_name = name;
+    svalue = value;
+    uivalue = ~0;
+    ivalue = -1;
+}
+
+int PayloadParameter::intValue()
+{
+    return ivalue;
+}
+
+unsigned int PayloadParameter::uintValue()
+{
+    return uivalue;
+}
+
+std::string PayloadParameter::stringValue()
+{
+    return svalue;
+}
+
+PayloadParameter::ParamType PayloadParameter::type()
+{
+    return m_type;
+}
+

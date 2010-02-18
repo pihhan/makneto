@@ -20,24 +20,26 @@ void qCritical(const std::string &msg)
 
 
 QPipeline::QPipeline()
-    : m_source(0), m_sourcefilter(0), m_sink(0), m_sinkfilter(0)
+    : m_source(0), m_sourcefilter(0), m_sink(0), m_sinkfilter(0), 
+      m_valid(false)
 {
     m_pipe = gst_pipeline_new("qpipeline");
-    g_assert(m_pipe);
+    if (!m_pipe) {
+        QPLOG() << "Gstreamer pipeline creation failed." << std::endl;
+        m_valid = false;
+        return;
+    }
     g_signal_connect(GST_BIN(m_pipe), "element-added", G_CALLBACK(elementAdded), this);
     g_signal_connect(GST_BIN(m_pipe), "element-removed", G_CALLBACK(elementRemoved), this);
     m_bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipe));
     m_pausable = true;
 
-    if (!m_pipe) {
-        qCritical("Created pipeline is NULL");
-        return;
-    }
     if (createAudioSource() && createAudioSink()) {
         add(m_source);
         add(m_sink);
     } else {
         QPLOG() << "creating sink our source failed" << std::endl;
+        m_valid = false;
     }
 
 #if 0
@@ -46,7 +48,7 @@ QPipeline::QPipeline()
         link(m_source, m_sourcefilter);        
     }
 #endif
-
+    m_valid = true;
 }
 
 QPipeline::~QPipeline()
@@ -160,6 +162,14 @@ bool QPipeline::createAudioSink()
     return (m_sink != NULL);
 }
 
+bool createVideoSource()
+{
+}
+
+bool createVideoSink()
+{
+}
+
 GstElement *QPipeline::getAudioSource()
 {
     return m_source;
@@ -252,3 +262,7 @@ bool QPipeline::createFilters()
     return true;
 }
 
+bool QPipeline::isValid()
+{
+    return m_valid;
+}

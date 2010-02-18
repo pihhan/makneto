@@ -32,6 +32,9 @@ class QPipeline
     bool createAudioSource();
     bool createAudioSink();
 
+    bool createVideoSource();
+    bool createVideoSink();
+
     GstElement *getAudioSource();
     GstElement *getAudioSink();
 
@@ -47,6 +50,9 @@ class QPipeline
     static void elementAdded(GstBin *bin, GstElement *element, gpointer pipeline);
     static void elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline);
 
+    /** @brief Check whether pipeline was created and no fatal error occured. */
+    bool    isValid();
+
     private:
 
     GstBus *m_bus;
@@ -56,7 +62,10 @@ class QPipeline
     GstElement *m_sourcefilter;
     GstElement *m_sink;
     GstElement *m_sinkfilter;
+    GstElement *m_videosource;
+    GstElement *m_videosink;
     bool m_pausable;
+    bool m_valid;
 };
 
 #endif // QPIPELINE_H

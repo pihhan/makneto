@@ -30,9 +30,7 @@ see http://xmpp.org/extensions/xep-0166.html
 #include "jingle-content.h"
 
 #define XMLNS_JINGLE		"urn:xmpp:jingle:1"
-#define XMLNS_JINGLE_ICE	"urn:xmpp:jingle:transports:ice-udp:1"
 #define XMLNS_JINGLE_RTP        "urn:xmpp:jingle:apps:rtp:1"
-#define XMLNS_JINGLE_RAWUDP     "urn:xmpp:jingle:transports:raw-udp:1"
 #define XMLNS_JINGLE_RTPINFO    "urn:xmpp:jingle:apps:rtp:info:1"
 
 

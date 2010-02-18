@@ -82,6 +82,8 @@ class JingleManager
 	
 	JingleRtpContentDescription	audioDescription();
         JingleContent                   audioContent();
+        JingleRtpContentDescription     videoDescription();
+        JingleContent                   videoContent();
 
 
 

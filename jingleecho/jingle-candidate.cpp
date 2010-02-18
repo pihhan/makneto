@@ -18,6 +18,11 @@ JingleCandidate::JingleCandidate()
 {
 }
 
+std::string JingleCandidate::xmlns() const
+{
+    return XMLNS_JINGLE_RAWUDP;
+}
+
 #ifdef GLOOX
 void JingleCandidate::parse(const Tag *tag)
 {
@@ -110,12 +115,19 @@ QDomElement JingleIceCandidate::tag(QDomDocument &doc) const
     t.setAttribute("foundation", foundation);
     t.setAttribute("network", network);
     t.setAttribute("priority", priority);
-    t.setAttribute("protocol", QString::fromStdString(protocol));
+    switch (protocol) {
+        case PR_UDP:
+            t.setAttribute("protocol", "udp"); break;
+        case PR_TCP:
+            t.setAttribute("protocol", "tcp"); break;
+        case PR_UNSPECIFIED:
+            break;
+    }
     t.setAttribute("type", QString::fromStdString(type));
     if (!relAddr.empty())
         t.setAttribute("relAddr", QString::fromStdString(relAddr));
-    if (!relPort.empty())
-        t.setAttribute("relPort", QString::fromStdString(relPort));
+    if (relPort != 0)
+        t.setAttribute("relPort", relPort);
     return t;
 }
 
@@ -127,11 +139,36 @@ void JingleIceCandidate::parse(const QDomElement &tag)
     foundation = tag.attribute("foundation").toInt();
     network = tag.attribute("network").toInt();
     priority = tag.attribute("priority").toInt();
-    protocol = tag.attribute("protocol").toStdString();
+    QString protostr = tag.attribute("protocol");
+    if (protostr == "udp")
+        protocol = PR_UDP;
+    else if (protostr == "tcp")
+        protocol = PR_TCP;
     type = tag.attribute("type").toStdString();
     relAddr = tag.attribute("relAddr").toStdString();
-    relPort = tag.attribute("relPort").toStdString();
+    relPort = tag.attribute("relPort").toUInt();
 }
 
 #endif //GLOOX_API
+
+JingleIceCandidate::JingleIceCandidate()
+    :  foundation(0), protocol(PR_UDP), priority(0)
+{
+}
+
+JingleIceCandidate::JingleIceCandidate(const JingleCandidate &candidate)
+    : JingleCandidate(candidate), foundation(0), protocol(PR_UDP), priority(0)
+{
+}
+
+JingleCandidate JingleIceCandidate::operator=(const JingleCandidate &c)
+{
+    JingleCandidate::operator=(c);
+    return c;
+}
+
+std::string JingleIceCandidate::xmlns() const
+{
+    return XMLNS_JINGLE_ICE;
+}
 

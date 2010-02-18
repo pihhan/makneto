@@ -7,10 +7,28 @@
 #include "logger.h"
 
 
-FstJingle::FstJingle()
+FstJingle::FstJingle(FstStatusReader *reader)
+    : m_lastErrorCode(NoError)
 {
+    m_reader = reader;
     pipeline = new QPipeline();
+    if (!pipeline || !pipeline->isValid()) {
+        LOGGER(logit) << "Pipeline failed." << std::endl;
+        setError(PipelineError);
+        if (reader) {
+            reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Pipeline creation failed.");
+            reader->reportState(FstStatusReader::S_FAILED);
+        }
+        return;
+    }
     conference = new Conference(pipeline);
+    if (!conference || (conference->lastError() != NoError)) {
+        if (reader) {
+            reader->reportMsg(FstStatusReader::MSG_ERROR, conference->lastErrorMessage());
+            reader->reportState(FstStatusReader::S_FAILED);
+        }
+    }
+
 }
 
 FstJingle::~FstJingle()
@@ -61,6 +79,39 @@ JingleCandidate FstJingle::createJingleCandidate(const FsCandidate *candidate)
             jc.candidateType = JingleCandidate::TYPE_UNKNOWN; break;
     }
     return jc;
+}
+
+/** @brief Create internal candidate representation.
+    @param candidate Farsight candidate structure
+    @param xmlns Transport namespace. One of XMLNS_JINGLE_ICE or XMLNS_JINGLE_RAWUDP.
+    @return Candidate in internal structure.
+*/
+JingleCandidate FstJingle::createJingleIceCandidate(const FsCandidate *candidate, const std::string &xmlns)
+{
+    if (xmlns == XMLNS_JINGLE_ICE) {
+        JingleIceCandidate jc = createJingleCandidate(candidate);
+
+        switch(candidate->proto) {
+            case FS_NETWORK_PROTOCOL_UDP:
+                jc.protocol = JingleIceCandidate::PR_UDP;
+                break;
+            case FS_NETWORK_PROTOCOL_TCP:
+                jc.protocol = JingleIceCandidate::PR_TCP;
+                break;
+        }
+
+        jc.priority = candidate->priority;
+        jc.relAddr = candidate->base_ip;
+        jc.relPort = candidate->base_port;
+
+        return jc;
+    } else if (xmlns == XMLNS_JINGLE_RAWUDP) {
+        return createJingleCandidate(candidate);
+    } else {
+        LOGGER(logit) << "Vyzadana tvorba candidate pro nepodporovane XMLNS: "
+                << xmlns << std::endl;
+        return JingleCandidate();
+    }
 }
 
 /** @brief Convert jingle rtp description to farsight codec.
@@ -192,7 +243,7 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     return (created && linked);
 }
 
-
+/** @brief Configure farsight session from passed JingleSession structure. */
 bool FstJingle::createAudioSession(JingleSession *session)
 {
     bool result = true;
@@ -204,6 +255,12 @@ bool FstJingle::createAudioSession(JingleSession *session)
     ContentList::iterator rit = rcl.begin();
 
     while (lit != lcl.end() && rit != rcl.end()) {
+        if (empty) {
+            std::string xmlns = rit->transport().xmlns();
+            std::string tr = xmlnsToTransmitter(xmlns);
+            if (!tr.empty()) 
+                conference->setTransmitter(tr);
+        }
         result = result && createAudioSession(*lit, *rit);
         ++lit;
         ++rit;
@@ -457,3 +514,14 @@ std::string FstJingle::lastErrorMessage()
     else return msg;
 }
 
+std::string FstJingle::xmlnsToTransmitter(const std::string &xmlns)
+{
+    if (xmlns == XMLNS_JINGLE_RAWUDP)
+        return "rawudp";
+    else if (xmlns == XMLNS_JINGLE_ICE)
+        return "nice";
+    else {
+        LOGGER(logit) << "Nepodporovane xmlns pro transport: " << xmlns << std::endl;
+        return std::string();
+    }
+}

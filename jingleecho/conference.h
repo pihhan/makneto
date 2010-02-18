@@ -96,6 +96,9 @@ class Conference
 
     void setStatusReader(FstStatusReader *r);
 
+    std::string transmitter() const;
+    void setTransmitter(const std::string &t);
+
     private:
     void        increaseNewLocalCandidates();
     static std::string codecListToString(GList *codecs);
@@ -113,6 +116,7 @@ class Conference
     JingleFarsightErrors m_lastErrorCode;
     std::string         m_lastErrorMessage;
     FstStatusReader     *m_reader;
+    std::string         m_transmitter;
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include <gst/farsight/fs-codec.h>
 
 #include "jinglesession.h"
+#include "fststatusreader.h"
 #include "conference.h"
 #include "qpipeline.h"
 
@@ -19,17 +20,9 @@
 class FstJingle
 {
     public:
-    FstJingle();
+    FstJingle(FstStatusReader *reader = NULL);
     virtual ~FstJingle();
         
-    static FsCandidate * createFsCandidate(const JingleCandidate & candidate);
-    static FsCodec * createFsCodec(const JingleRtpPayload & payload);
-    static GList * createFsCodecList(const JingleRtpContentDescription &description);
-    static GList * createFsCandidateList(const JingleTransport &transport);
-    static GList * createSingleFsCandidateList(const JingleTransport &transport);
-    static JingleCandidate createJingleCandidate(const FsCandidate *candidate);
-    static CandidateList   createJingleCandidateList(GList *candidates);
-
     void setNicknames(const std::string &local, const std::string &remote);
     bool linkSink(Session *session);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
@@ -39,8 +32,18 @@ class FstJingle
     std::string stateDescribe();
     bool terminate();
 
+    static FsCandidate * createFsCandidate(const JingleCandidate & candidate);
+    static FsCodec * createFsCodec(const JingleRtpPayload & payload);
+    static GList * createFsCodecList(const JingleRtpContentDescription &description);
+    static GList * createFsCandidateList(const JingleTransport &transport);
+    static GList * createSingleFsCandidateList(const JingleTransport &transport);
+    static JingleCandidate createJingleCandidate(const FsCandidate *candidate);
+    static JingleCandidate createJingleIceCandidate(const FsCandidate *candidate, const std::string &xmlns);
+    static CandidateList   createJingleCandidateList(GList *candidates);
+
     static std::string codecListToString(const GList *codeclist);
     static std::string toString(const FsCodec *codec);
+    static std::string xmlnsToTransmitter(const std::string &xmlns);
 
     bool isPlaying();
     bool isPaused();

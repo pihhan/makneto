@@ -6,11 +6,12 @@
 #include "logger/logger.h"
 
 #define LOGCF() (LOGGER(logit) << " conference " )
+#define DEFAULT_TRANSMITTER     "rawudp"
 
 Conference::Conference(GstElement *bin)
     : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0),
       m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0), 
-      m_lastErrorCode(NoError)
+      m_lastErrorCode(NoError), m_transmitter(DEFAULT_TRANSMITTER)
 {
     m_pipeline = bin;
     gst_object_ref(m_pipeline);
@@ -32,7 +33,7 @@ Conference::Conference(GstElement *bin)
 Conference::Conference(QPipeline *pipeline)
     : m_qpipeline(pipeline),m_selfParticipant(0),m_remoteParticipant(0),
       m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0),
-      m_lastErrorCode(NoError)
+      m_lastErrorCode(NoError), m_transmitter(DEFAULT_TRANSMITTER)
 {
     m_pipeline = pipeline->element();
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipeline));
@@ -496,5 +497,15 @@ std::string Conference::codecListToString(GList *codecs)
         item = g_list_next(item);
     }
     return o.str();
+}
+
+std::string Conference::transmitter() const
+{
+    return m_transmitter;
+}
+
+void Conference::setTransmitter(const std::string &t)
+{
+    m_transmitter = t;
 }
 

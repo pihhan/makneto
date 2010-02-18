@@ -257,10 +257,31 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 	return d;
 }
 
+/** @brief Create Video description.
+    @see http://www.iana.org/assignments/rtp-parameters
+    For now, not configurable.
+*/
+JingleRtpContentDescription     JingleManager::videoDescription()
+{
+    JingleRtpContentDescription d;
+    d.addPayload(JingleRtpPayload(96, "H263-1998", 90000));
+    d.addPayload(JingleRtpPayload(97, "H263-2000", 90000));
+    d.addPayload(JingleRtpPayload(98, "theora", 90000));
+
+    return d;
+}
+
 JingleContent   JingleManager::audioContent()
 {
     JingleContent c(localTransport(), audioDescription() );
     c.setName("audiotest");
+    return c;
+}
+
+JingleContent   JingleManager::videoContent()
+{
+    JingleContent c(localTransport(), videoDescription() );
+    c.setName("videotest");
     return c;
 }
 

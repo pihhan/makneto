@@ -81,3 +81,13 @@ void JingleTransport::parse(const QDomElement &tag)
 
 #endif
 
+std::string JingleTransport::xmlns()
+{
+    return m_xmlns;
+}
+
+void JingleTransport::setXmlns(const std::string &ns)
+{
+    m_xmlns = ns;
+}
+

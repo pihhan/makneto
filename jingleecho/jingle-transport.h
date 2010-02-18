@@ -22,6 +22,9 @@ class JingleTransport
 #endif
 
     void addCandidate(const JingleCandidate &c);
+
+    std::string xmlns();
+    void setXmlns(const std::string &ns);
 		
     std::string m_xmlns;
     std::string m_pwd;

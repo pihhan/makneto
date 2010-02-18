@@ -9,6 +9,9 @@
 #endif
 #include <list>
 
+#define XMLNS_JINGLE_ICE	"urn:xmpp:jingle:transports:ice-udp:1"
+#define XMLNS_JINGLE_RAWUDP     "urn:xmpp:jingle:transports:raw-udp:1"
+
 /** @brief Class with parameters for one transport candidate for one content. 
 */
 class JingleCandidate
@@ -45,6 +48,7 @@ class JingleCandidate
 #endif
 
     JingleCandidate();
+    virtual std::string xmlns() const;
 
     int             component;
     std::string     ip;
@@ -71,6 +75,8 @@ class JingleUdpCandidate : public JingleCandidate
 */
 class JingleIceCandidate : public JingleCandidate
 {
+    public:
+
 	typedef enum {
 		PR_UNSPECIFIED = 0,
 		PR_UDP,
@@ -84,15 +90,22 @@ class JingleIceCandidate : public JingleCandidate
     virtual void parse(const QDomElement &tag);
     virtual QDomElement tag(QDomDocument &doc) const;
 #endif
+
+    JingleIceCandidate();
+    JingleIceCandidate(const JingleCandidate &candidate);
+
+    JingleCandidate operator=(const JingleCandidate &c);
+
+    virtual std::string xmlns() const;
     	
     int     foundation;
     int     network;
+    Protocols     protocol;
     int     priority;
-    std::string     protocol;
     std::string     type;
 
     std::string     relAddr;
-    std::string     relPort;
+    unsigned int    relPort;
 };
 
 typedef std::list<JingleCandidate>	CandidateList;

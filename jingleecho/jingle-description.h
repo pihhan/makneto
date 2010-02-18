@@ -23,6 +23,34 @@ typedef enum {
         MEDIA_VIDEO
 } MediaType;
 
+/** @brief Parameter for class JingleRtpPayload. 
+    Allow basic type storage. */
+class PayloadParameter {
+    public:
+
+    typedef enum {
+        TYPE_INT,
+        TYPE_UINT,
+        TYPE_STRING
+    } ParamType;
+
+    PayloadParameter(const std::string &name, int value);
+    PayloadParameter(const std::string &name, unsigned int value);
+    PayloadParameter(const std::string &name, const std::string &value);
+
+    int intValue();
+    unsigned int uintValue();
+    std::string stringValue();
+    ParamType type();
+
+    private:
+    int ivalue;
+    std::string m_name;
+    unsigned int uivalue;
+    std::string svalue;
+    ParamType   m_type;
+};
+
 /** Class describing one RTP payload for session negotiation.
     @see http://xmpp.org/extensions/xep-0167.html
 	It describes one format the client is able to handle for RTP session
@@ -30,6 +58,8 @@ typedef enum {
 class JingleRtpPayload
 {
     public:
+    typedef std::list<PayloadParameter> ParamterList;
+
         JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
 		
     unsigned char   id; ///<! required
@@ -38,6 +68,8 @@ class JingleRtpPayload
     int             channels; ///!< recommended
     unsigned int    maxptime; ///!< optional
     unsigned int    ptime; ///!< optional
+
+
 	
 #ifdef GLOOX
     JingleRtpPayload(const gloox::Tag *tag);
@@ -50,6 +82,7 @@ class JingleRtpPayload
 #endif
 
 };
+
 
 /** @brief Class for description of one content transfered over RTP protocol.
 */
