@@ -40,6 +40,9 @@ class QPipeline
 
     GstPad * getAudioSourcePad();
     GstPad * getAudioSinkPad();
+
+    GstPad * getVideoSourcePad();
+    GstPad * getVideoSinkPad();
     
     bool createFilters();
 
@@ -63,7 +66,11 @@ class QPipeline
     GstElement *m_sink;
     GstElement *m_sinkfilter;
     GstElement *m_videosource;
+    GstElement *m_vsourcefilter;
     GstElement *m_videosink;
+    GstElement *m_vsinkfilter;
+    GstElement *m_localvideosink;
+    GstElement *m_videoinputtee;
     bool m_pausable;
     bool m_valid;
 };

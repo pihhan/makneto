@@ -22,12 +22,14 @@ Conference::Conference(GstElement *bin)
     gst_object_unref(bus);
 
     m_fsconference = gst_element_factory_make("fsrtpconference", NULL);
-    g_assert(m_fsconference);
+    if (!m_fsconference) {
+        setError(PipelineError, "Farsight conference creation failed.");
+        return;
+    }
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
         LOGCF() << "Chyba pri pridavani conference do pipeline" << std::endl;
         setError(PipelineError, "Adding fsrtpconference to pipeline failed");
     }
-
 }
 
 Conference::Conference(QPipeline *pipeline)

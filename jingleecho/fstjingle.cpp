@@ -6,7 +6,8 @@
 #include "fstjingle.h"
 #include "logger.h"
 
-
+/** @brief Create farsight abstraction class.
+    @param reader FstStatusReader pointer to class wanting messages about farsight pipeline, or NULL if not needed. */
 FstJingle::FstJingle(FstStatusReader *reader)
     : m_lastErrorCode(NoError)
 {
@@ -521,7 +522,8 @@ std::string FstJingle::xmlnsToTransmitter(const std::string &xmlns)
     else if (xmlns == XMLNS_JINGLE_ICE)
         return "nice";
     else {
-        LOGGER(logit) << "Nepodporovane xmlns pro transport: " << xmlns << std::endl;
+        LOGGER(logit) << "Nepodporovane xmlns pro transport: " << xmlns<<std::endl;
         return std::string();
     }
 }
+

@@ -12,7 +12,7 @@ class Conference;
 class Session
 {
     public:
-    Session(Conference *conf);
+    Session(Conference *conf, FsMediaType type = FS_MEDIA_TYPE_AUDIO);
     virtual ~Session();
 
     FsStream *createStream(FsParticipant *participant, const GList *lcandidates=NULL);
@@ -50,6 +50,8 @@ class Session
 
     FsSession   *sessionElement();
     FsStream    *streamElement();
+
+    FsMediaType type() const;
 
     /** @brief Farsight id for this session. Used to lookup this class
         from @class Conference when only farsight structures are handled. */

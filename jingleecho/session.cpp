@@ -9,15 +9,19 @@
 #include "logger/logger.h"
 #include "fstjingle.h"
 
-
-Session::Session(Conference *conf)
+/** @brief Create one media stream session.
+    @param conf Conference class, to which it will belong.
+    @param type Type of media transmitted with this session.
+*/
+Session::Session(Conference *conf, FsMediaType type)
     : m_conf(conf),m_session(NULL),m_lasterror(NULL),m_stream(NULL),
       m_localCandidates(NULL)
 {
     GError *err =NULL;
-    m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), FS_MEDIA_TYPE_AUDIO, &err);
+    m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), type, &err);
     if (err != NULL) {
         LOGGER(logit) << " fs_conference_new_session: "<< err->message << std::endl;  
+        conf->reportError(FstStatusReader::MSG_FATAL_ERROR, err->message);
         g_error_free(err);
     }
     g_assert(m_session);
@@ -335,4 +339,10 @@ unsigned int Session::idFromStream(const GValue *val)
     return idFromStream(fs_stream);
 }
 
+FsMediaType Session::type() const
+{
+    FsMediaType t = FS_MEDIA_TYPE_AUDIO;
+    g_object_get(G_OBJECT(fs_session), "media-type", &t, NULL);
+    return t;
+}
 

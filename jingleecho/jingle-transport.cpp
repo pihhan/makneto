@@ -13,7 +13,7 @@ void JingleTransport::addCandidate(const JingleCandidate &c)
  	candidates.push_back(c);
 }
 
-#ifdef GLOOX_API
+#ifdef GLOOX
 using namespace gloox;
 
 void JingleTransport::parse(const Tag *tag)
