@@ -251,6 +251,9 @@ class JingleSession
     /** @brief Generate random id. */
     std::string randomId();
 
+    int localContentsWithType(MediaType type);
+    int remoteContentsWithType(MediaType type);
+
     public:
         static SessionAction actionFromString(const std::string &action);
         static SessionReason reasonFromString(const std::string &reason);

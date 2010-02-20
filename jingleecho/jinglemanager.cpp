@@ -119,7 +119,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     JingleStanza *js = session->createStanzaAccept();
 
 
-    FstJingle *fsj = new FstJingle();
+    FstJingle *fsj = new FstJingle(session);
     fsj->createAudioSession(session);
     session->setData(fsj);
     addSession(session);
@@ -136,7 +136,7 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
 {
     setState(session, JSTATE_ACTIVE);
     
-    FstJingle *fsj = new FstJingle();
+    FstJingle *fsj = new FstJingle(session);
     fsj->createAudioSession(session);
 
     session->setData(fsj);

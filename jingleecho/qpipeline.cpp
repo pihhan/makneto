@@ -21,7 +21,7 @@ void qCritical(const std::string &msg)
 
 QPipeline::QPipeline()
     : m_source(0), m_sourcefilter(0), m_sink(0), m_sinkfilter(0), 
-      m_valid(false)
+      m_valid(false), m_video_enabled(false), m_audio_enabled(false)
 {
     m_pipe = gst_pipeline_new("qpipeline");
     if (!m_pipe) {
@@ -34,20 +34,6 @@ QPipeline::QPipeline()
     m_bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipe));
     m_pausable = true;
 
-    if (createAudioSource() && createAudioSink()) {
-        add(m_source);
-        add(m_sink);
-    } else {
-        QPLOG() << "creating sink our source failed" << std::endl;
-        m_valid = false;
-    }
-
-#if 0
-    createFilters();
-    if (m_sourcefilter) {
-        link(m_source, m_sourcefilter);        
-    }
-#endif
     m_valid = true;
 }
 
@@ -77,19 +63,21 @@ bool QPipeline::link(GstPad *srcpad, GstPad *dstpad)
             return true;
         case GST_PAD_LINK_WRONG_HIERARCHY:
         case GST_PAD_LINK_WRONG_DIRECTION:
-        case GST_PAD_LINK_WRONG_NOFORMAT:
         case GST_PAD_LINK_NOFORMAT:
         case GST_PAD_LINK_NOSCHED:
         case GST_PAD_LINK_REFUSED:
             return false;
     }
+    return false;
 }
 
 bool QPipeline::link(GstElement *src, GstPad *dstpad)
 {
     GstElement *dstelement = gst_pad_get_parent_element(dstpad);
     if (dstelement) {
-        gboolean r = gst_element_link_pads(src, NULL, dstelement, dstpad);
+        gchar *name = gst_pad_get_name(dstpad);
+        gboolean r = gst_element_link_pads(src, NULL, dstelement, name);
+        g_free(name);
         gst_object_unref(dstelement);
         return r;
     } else {
@@ -101,7 +89,9 @@ bool QPipeline::link(GstPad *srcpad, GstElement *dst)
 {
     GstElement *srcelement = gst_pad_get_parent_element(srcpad);
     if (srcelement) {
-        gboolean r = gst_element_link_pads(srcelement, srcpad, dst, NULL);
+        gchar *name = gst_pad_get_name(srcpad);
+        gboolean r = gst_element_link_pads(srcelement, name, dst, NULL);
+        g_free(name);
         gst_object_unref(srcelement);
         return r;
     } else {
@@ -204,7 +194,7 @@ bool QPipeline::createAudioSink()
     return (m_sink != NULL);
 }
 
-bool QPipeline::createVideoSource(const char *bindesc=NULL, const char *filter = NULL)
+bool QPipeline::createVideoSource(const char *bindesc, const char *filter)
 {
     GError *err = NULL;
     const gchar *env = g_getenv("VIDEOSOURCE");
@@ -237,7 +227,7 @@ bool QPipeline::createVideoSource(const char *bindesc=NULL, const char *filter =
 /** @brief Create output window for displaying of remote content, and filter it
     will use.
 */
-bool QPipeline::createVideoSink(const char *bindesc=NULL, const char *filter=NULL)
+bool QPipeline::createVideoSink(const char *bindesc, const char *filter)
 {
     GError *err = NULL;
     const gchar *element = bindesc;
@@ -264,7 +254,7 @@ bool QPipeline::createVideoSink(const char *bindesc=NULL, const char *filter=NUL
 
 /** @brief Create element for local video input loopback, as preview.
 */
-bool QPipeline::createLocalVideoSink(const char *bindesc=NULL, const char *filter = NULL)
+bool QPipeline::createLocalVideoSink(const char *bindesc, const char *filter)
 {
     GError *err = NULL;
     const gchar *element = bindesc;
@@ -292,10 +282,11 @@ bool QPipeline::createLocalVideoSink(const char *bindesc=NULL, const char *filte
 /** @brief Create element that will split input to network and local preview. */
 bool QPipeline::createVideoTee()
 {
-    m_videoinputtee = gst_element_factory_make("tee");
+    m_videoinputtee = gst_element_factory_make("tee", "video-source-tee");
     return (m_videoinputtee != NULL);
 }
 
+/** @brief Create elements for video input and output. */
 bool QPipeline::enableVideo(bool input, bool output)
 {
     if (input) {
@@ -311,6 +302,7 @@ bool QPipeline::enableVideo(bool input, bool output)
             }
         }
     }
+    
     if (output) {
         if (createVideoSink() && createLocalVideoSink()) {
             add(m_videosink);
@@ -333,6 +325,23 @@ bool QPipeline::enableVideo(bool input, bool output)
             link(m_videoinputtee, m_localvideosink);
         }
     }
+    m_video_enabled = true;
+    return true;
+}
+
+/** @brief Create audio source and sink. */
+bool QPipeline::enableAudio()
+{
+    if (createAudioSource() && createAudioSink()) {
+        add(m_source);
+        add(m_sink);
+        return true;
+    } else {
+        QPLOG() << "creating sink our source failed" << std::endl;
+        m_valid = false;
+        return false;
+    }
+    m_audio_enabled = true;
 }
 
 GstElement *QPipeline::getAudioSource()
@@ -345,7 +354,7 @@ GstElement *QPipeline::getAudioSink()
     return m_sink;
 }
 
-GstElement *QPippeline::getVideoSource()
+GstElement *QPipeline::getVideoSource()
 {
     return m_videosource;
 }
@@ -471,3 +480,14 @@ bool QPipeline::isValid()
 {
     return m_valid;
 }
+
+bool QPipeline::isVideoEnabled()
+{
+    return m_video_enabled;
+}
+
+bool QPipeline::isAudioEnabled()
+{
+    return m_audio_enabled;
+}
+

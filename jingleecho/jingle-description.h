@@ -19,8 +19,8 @@ class JingleContentDescription
 
 typedef enum {
         MEDIA_NONE = 0,
-        MEDIA_AUDIO,
-        MEDIA_VIDEO
+        MEDIA_AUDIO = (1 << 0),
+        MEDIA_VIDEO = (1 << 1)
 } MediaType;
 
 /** @brief Parameter for class JingleRtpPayload. 

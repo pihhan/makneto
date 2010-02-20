@@ -21,7 +21,7 @@ Session::Session(Conference *conf, FsMediaType type)
     m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), type, &err);
     if (err != NULL) {
         LOGGER(logit) << " fs_conference_new_session: "<< err->message << std::endl;  
-        conf->reportError(FstStatusReader::MSG_FATAL_ERROR, err->message);
+        conf->reportFatalError(err->message);
         g_error_free(err);
     }
     g_assert(m_session);
@@ -342,7 +342,7 @@ unsigned int Session::idFromStream(const GValue *val)
 FsMediaType Session::type() const
 {
     FsMediaType t = FS_MEDIA_TYPE_AUDIO;
-    g_object_get(G_OBJECT(fs_session), "media-type", &t, NULL);
+    g_object_get(G_OBJECT(m_session), "media-type", &t, NULL);
     return t;
 }
 

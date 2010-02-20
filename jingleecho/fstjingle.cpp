@@ -8,7 +8,7 @@
 
 /** @brief Create farsight abstraction class.
     @param reader FstStatusReader pointer to class wanting messages about farsight pipeline, or NULL if not needed. */
-FstJingle::FstJingle(FstStatusReader *reader)
+FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
     : m_lastErrorCode(NoError)
 {
     m_reader = reader;
@@ -22,6 +22,17 @@ FstJingle::FstJingle(FstStatusReader *reader)
         }
         return;
     }
+
+    if (!pipeline->enableAudio()) {
+        LOGGER(logit) << "Audio pipeline failed." << std::endl;
+        setError(PipelineError);
+        if (reader) {
+            reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Audio pipeline elements creation failed.");
+            reader->reportState(FstStatusReader::S_FAILED);
+        }
+        return;
+    }
+
     conference = new Conference(pipeline);
     if (!conference || (conference->lastError() != NoError)) {
         if (reader) {
@@ -59,6 +70,7 @@ FsCandidate * FstJingle::createFsCandidate(const JingleCandidate & candidate)
     return fscan;
 }
 
+/** @brief Create internal candidate structure from Farsight candidate. */
 JingleCandidate FstJingle::createJingleCandidate(const FsCandidate *candidate)
 {
     JingleCandidate jc;
@@ -180,32 +192,33 @@ GList * FstJingle::createSingleFsCandidateList(const JingleTransport &transport)
     }
 }
 
-bool FstJingle::linkSink(Session *session)
+/** @brief Link network sink of session to source of choosen type.
+    @param session FsSession wrap which sink it to be connected to source.
+    @param type Type of source to connect to sink. 
+*/
+bool FstJingle::linkSink(Session *session, FsMediaType type)
 {
-    GstPad *audiosrc = pipeline->getAudioSourcePad();
-    g_assert(audiosrc);
-#if 0
-    GstCaps *srccaps = gst_pad_get_caps(audiosrc);
-    GstCaps *fixed = gst_caps_new_simple("audio/x-raw-int",
-        "rate", G_TYPE_INT, 8000,
-        "channels", G_TYPE_INT, 1,
-        "width", G_TYPE_INT, 16,
-        NULL);
-    g_assert(fixed);
-    GstCaps *intersect = gst_caps_intersect(srccaps, fixed);
-    g_assert(intersect);
-    if (!gst_caps_is_fixed(intersect)) {
-        LOGGER(logit) << "intersect neni fixed" << std::endl;
+    GstPad *src = NULL;
+    
+    switch (type) {
+        case FS_MEDIA_TYPE_AUDIO:
+            src = pipeline->getAudioSourcePad();
+            break;
+        case FS_MEDIA_TYPE_VIDEO:
+            src = pipeline->getVideoSourcePad();
+            break;
     }
-    gst_pad_set_caps(audiosrc, intersect);
-    g_object_unref(fixed);
-    g_object_unref(srccaps);
-    g_object_unref(intersect);
-#endif
+    if (!src) {
+        setError(PipelineError, "Source pad is NULL");
+        return false;
+    }
 
     GstPad *sink = session->sink();
-    g_assert(audiosrc && sink);
-    GstPadLinkReturn r = gst_pad_link(audiosrc, sink);
+    if (!sink) {
+        setError(PipelineError, "Sink pad is NULL");
+        return false;
+    }
+    GstPadLinkReturn r = gst_pad_link(src, sink);
     if (GST_PAD_LINK_FAILED(r)) {
         LOGGER(logit) << "pad link zdroje selhal!" << r << std::endl;
     }
@@ -214,7 +227,7 @@ bool FstJingle::linkSink(Session *session)
     gchar * capsstr = gst_caps_to_string(caps);
     LOGGER(logit) << "fs sink has caps: " << capsstr << std::endl;
     g_free(capsstr);
-    gst_object_unref(audiosrc);
+    gst_object_unref(src);
     gst_caps_unref(caps);
     gst_object_unref(sink);
     return (GST_PAD_LINK_SUCCESSFUL(r));
@@ -223,7 +236,35 @@ bool FstJingle::linkSink(Session *session)
 /** @brief create audio session in farsight. */
 bool FstJingle::createAudioSession(const JingleContent &local, const JingleContent &remote)
 {
-    Session *session = new Session(conference);
+    MediaType mtype = local.description().type();
+    FsMediaType fstype = FS_MEDIA_TYPE_AUDIO;
+    switch (mtype) {
+        case MEDIA_AUDIO:
+            fstype = FS_MEDIA_TYPE_AUDIO; 
+            if (!pipeline->isAudioEnabled()) {
+                if (!pipeline->enableAudio()) {
+                    LOGGER(logit) << "enableAudio failed." << std::endl;
+                    setError(PipelineError, "pipeline enableAudio failed.");
+                    return false;
+                }
+            }
+            break;
+        case MEDIA_VIDEO:
+            fstype = FS_MEDIA_TYPE_VIDEO; 
+            if (!pipeline->isVideoEnabled()) {
+                if (!pipeline->enableVideo()) {
+                    LOGGER(logit) << "enableVideo failed." << std::endl;
+                    setError(PipelineError, "pipeline enableVideo failed.");
+                    return false;
+                }
+            }
+            break;
+        case MEDIA_NONE:
+            LOGGER(logit) << "requested creation of content with local type NONE" << std::endl;
+            break;
+    }
+
+    Session *session = new Session(conference, fstype);
     g_assert(session);
     session->setName(remote.name());
     
@@ -237,10 +278,14 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     GList *remoteCodecs = createFsCodecList(remote.description());
     session->setRemoteCodec(remoteCodecs);
 
-    bool linked = linkSink(session);
+    bool linked = linkSink(session, fstype);
 
     conference->addSession(session);
-    LOGGER(logit) << "created Audio session" << std::endl;
+    LOGGER(logit) << "Created session: " << remote.name() 
+        << " type: " << fstype
+        << " created: " << created
+        << " linked: " << linked
+        << std::endl;
     return (created && linked);
 }
 
@@ -255,17 +300,25 @@ bool FstJingle::createAudioSession(JingleSession *session)
     ContentList::iterator lit = lcl.begin();
     ContentList::iterator rit = rcl.begin();
 
-    while (lit != lcl.end() && rit != rcl.end()) {
+    while (lit != lcl.end()) {
+        bool found = false;
         if (empty) {
             std::string xmlns = rit->transport().xmlns();
             std::string tr = xmlnsToTransmitter(xmlns);
             if (!tr.empty()) 
                 conference->setTransmitter(tr);
         }
-        result = result && createAudioSession(*lit, *rit);
+
+        for (rit = rcl.begin(); rit != rcl.end(); rit++) {
+            // match by same types
+            // TODO: should i match by names?
+            if (lit->description().type() == rit->description().type()) {
+                found = true;
+                result = result && createAudioSession(*lit, *rit);
+                empty = false;
+            }
+        }
         ++lit;
-        ++rit;
-        empty = false;
     } 
     if (empty)
         LOGGER(logit) << "empty audio session created." << std::endl;
@@ -308,6 +361,10 @@ bool FstJingle::replaceRemoteContent(const JingleContent &content)
     }
 }
 
+/** @brief Replace remote candidate for specified content.
+    @param content Name of content to be replaced.
+    @param candidate New candidate that will be used.
+*/
 bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate)
 {
     Session *session = conference->getSession(content);
@@ -431,17 +488,20 @@ bool FstJingle::updateLocalTransport(JingleContent &content)
     }
     return false;
 }
-    
+   
+/** @brief Indicate, if there is new candidates since last reset. */ 
 bool FstJingle::haveNewLocalCandidates()
 {
     return conference->haveNewLocalCandidates();
 }
 
+/** @brief Confirm you have read current candidates. */
 void FstJingle::resetNewLocalCandidates()
 {
     conference->resetNewLocalCandidates();
 }
 
+/** @brief Return autodetected candidates for this host. */
 CandidateList   FstJingle::createJingleCandidateList(GList *candidates)
 {
     CandidateList cl;
@@ -494,9 +554,10 @@ void FstJingle::setStun(const std::string &ip, int port)
 }
 
 
-void FstJingle::setError(JingleFarsightErrors e)
+void FstJingle::setError(JingleFarsightErrors e, const std::string &msg)
 {
     m_lastErrorCode = e;
+    m_lastErrorMessage = msg;
 }
 
 JingleFarsightErrors FstJingle::lastError()
@@ -515,6 +576,9 @@ std::string FstJingle::lastErrorMessage()
     else return msg;
 }
 
+/** @brief Convert transport namespace to name of transmitter farsight supports.
+    @param xmlns XMLNS of transport element in jingle.
+    It will be rawudp, nice, or empty for unknown. */
 std::string FstJingle::xmlnsToTransmitter(const std::string &xmlns)
 {
     if (xmlns == XMLNS_JINGLE_RAWUDP)

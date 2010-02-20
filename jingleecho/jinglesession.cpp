@@ -578,6 +578,29 @@ void JingleSession::setAcknowledged(bool ack)
     m_acknowledged = ack;
 }
 
+int JingleSession::localContentsWithType(MediaType type)
+{
+    int count = 0;
+    for (ContentList::iterator it=m_local_contents.begin(); 
+        it!=m_local_contents.end(); it++) 
+    {
+        if (it->description().type() == type)
+            ++count;
+    }
+    return count;
+}
+
+int JingleSession::remoteContentsWithType(MediaType type)
+{
+    int count = 0;
+    for (ContentList::iterator it=m_remote_contents.begin(); 
+        it!=m_remote_contents.end(); it++) 
+    {
+        if (it->description().type() == type)
+            ++count;
+    }
+    return count;
+}
 
 
 /*
@@ -901,4 +924,5 @@ void JingleStanza::replaceContents(const ContentList &contents)
 {
     m_contents = contents;
 }
+
 

@@ -20,11 +20,11 @@
 class FstJingle
 {
     public:
-    FstJingle(FstStatusReader *reader = NULL);
+    FstJingle(JingleSession *js, FstStatusReader *reader = NULL);
     virtual ~FstJingle();
         
     void setNicknames(const std::string &local, const std::string &remote);
-    bool linkSink(Session *session);
+    bool linkSink(Session *session, FsMediaType type = FS_MEDIA_TYPE_AUDIO);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
     bool createAudioSession(JingleSession *session);
     bool replaceRemoteContent(const JingleContent &content);
@@ -59,7 +59,7 @@ class FstJingle
 
     void setStun(const std::string &ip, int port = 0);
 
-    void setError(JingleFarsightErrors);
+    void setError(JingleFarsightErrors, const std::string &msg = std::string());
     JingleFarsightErrors lastError();
     std::string         lastErrorMessage();
 

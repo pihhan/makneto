@@ -8,6 +8,12 @@
 #define DEFAULT_AUDIOSOURCE "audiotestsrc is-live=1 ! audio/x-raw-int,rate=8000 ! audioconvert "
 #define DEFAULT_AUDIOSINK   "audioconvert ! pulsesink"
 
+#define DEFAULT_VIDEOSOURCE "v4l2src"
+#define DEFAULT_VIDEOSOURCE_FILTER  "ffmpegcolorspace ! videoscale"
+
+#define DEFAULT_VIDEOSINK   "ximagesink"
+#define DEFAULT_VIDEOSINK_FILTER "ffmpegcolorspace ! videoscale"
+
 /** @brief Simple C++ wrapper for Gstreamer pipeline. */
 class QPipeline
 {
@@ -28,15 +34,26 @@ class QPipeline
         Both of them have to be already added inside this pipeline.
     */
     bool link(GstElement *source, GstElement *destination);
+    bool link(GstPad *srcpad, GstPad *dstpad);
+    bool link(GstElement *src, GstPad *dstpad);
+    bool link(GstPad *srcpad, GstElement *dst);
 
     bool createAudioSource();
     bool createAudioSink();
 
-    bool createVideoSource();
-    bool createVideoSink();
-
     GstElement *getAudioSource();
     GstElement *getAudioSink();
+
+    bool createVideoSource(const char *bindesc=NULL, const char *filter=NULL);
+    bool createVideoSink(const char *bindesc=NULL, const char *filter=NULL);
+    bool createLocalVideoSink(const char *bindesc=NULL, const char *filter=NULL);
+    bool createVideoTee();
+
+    bool enableVideo(bool input = true, bool output = true);
+    bool enableAudio();
+
+    bool isVideoEnabled();
+    bool isAudioEnabled();
 
     GstPad * getAudioSourcePad();
     GstPad * getAudioSinkPad();
@@ -44,6 +61,10 @@ class QPipeline
     GstPad * getVideoSourcePad();
     GstPad * getVideoSinkPad();
     
+    GstElement * getVideoSource();
+    GstElement * getVideoSink();
+    GstElement * getLocalVideoSink();
+
     bool createFilters();
 
     std::string describe();
@@ -70,9 +91,12 @@ class QPipeline
     GstElement *m_videosink;
     GstElement *m_vsinkfilter;
     GstElement *m_localvideosink;
+    GstElement *m_lvsinkfilter;
     GstElement *m_videoinputtee;
     bool m_pausable;
     bool m_valid;
+    bool m_video_enabled;
+    bool m_audio_enabled;
 };
 
 #endif // QPIPELINE_H
