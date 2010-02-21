@@ -83,6 +83,7 @@ class JingleRtpPayload
 
 };
 
+typedef std::list<JingleRtpPayload> PayloadList;
 
 /** @brief Class for description of one content transfered over RTP protocol.
 */
@@ -90,10 +91,12 @@ class JingleRtpContentDescription : public JingleContentDescription
 {
     public:
 
-    typedef std::list<JingleRtpPayload> PayloadList;
-	
-	void addPayload(const JingleRtpPayload &payload) 
-        { payloads.push_back(payload); }
+
+        JingleRtpContentDescription();
+        	
+	void addPayload(const JingleRtpPayload &payload);
+        void clearPayload();
+        int countPayload() const;
 
 #ifdef GLOOX	
 	virtual void parse(const gloox::Tag *tag);
@@ -103,14 +106,10 @@ class JingleRtpContentDescription : public JingleContentDescription
         virtual QDomElement tag(QDomDocument &doc) const;
 #endif
 
-        std::string media() const
-        { return m_media; }
-
-        std::string xmlns() const
-        { return m_xmlns; }
-
-        MediaType   type() const
-        { return m_type; }
+        std::string media() const;
+        std::string xmlns() const;
+        MediaType   type() const;
+        void setType(MediaType type);
 
     PayloadList payloads;
 	std::string	m_xmlns;

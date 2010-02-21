@@ -39,7 +39,7 @@ static const std::string action_descriptions[] = {
  */
 
 JingleSession::JingleSession()
-	: m_state(JSTATE_NULL), m_lastaction(ACTION_NONE)
+	: m_state(JSTATE_NULL), m_lastaction(ACTION_NONE), m_failed(false)
 {
 	time((time_t *) &m_seed);
         m_sid = randomId();
@@ -349,6 +349,16 @@ void * JingleSession::data()
 void JingleSession::setData(void *data)
 {
     m_data = data;
+}
+
+bool JingleSession::failed() const
+{
+    return m_failed;
+}
+
+void JingleSession::setFailed(bool failed)
+{
+    m_failed = failed;
 }
 
 JingleContent JingleSession::firstRemoteContent()

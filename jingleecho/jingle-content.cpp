@@ -40,13 +40,6 @@ void JingleContent::parse(const Tag *tag)
 	m_name = tag->findAttribute("name");
         m_xmlns = tag->findAttribute("xmlns");
 
-	std::string media = tag->findAttribute("media");
-        if (media == "audio")
-            m_media = MEDIA_AUDIO;
-        else if (media == "video")
-            m_media = MEDIA_VIDEO;
-        else
-            m_media = MEDIA_NONE;
 
 	std::string creator = tag->findAttribute("creator");
         if (creator == "initiator")
@@ -243,7 +236,7 @@ JingleContent::Creator JingleContent::creator() const
 
 MediaType   JingleContent::media() const
 {
-    return m_media;
+    return m_description.type();
 }
 
 std::string JingleContent::disposition() const
@@ -268,7 +261,7 @@ void JingleContent::setCreator(Creator creator)
 
 void JingleContent::setMedia(MediaType media)
 {
-    m_media = media;
+    m_description.setType(media);
 }
 
 void JingleContent::setDisposition(const std::string &disposition)

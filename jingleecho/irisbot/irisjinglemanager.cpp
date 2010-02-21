@@ -15,6 +15,9 @@ IrisJingleManager::IrisJingleManager(Task *parent)
     : XMPP::Task(parent)
 {
     setStun(default_stun_ip);
+
+    connect(this, SIGNAL(sessionIncoming(JingleSession*)), 
+            this, SLOT(sessionAccept(JingleSession*)) );
 }
 
 /** @brief Send stanza over XMPP.
@@ -91,7 +94,8 @@ void IrisJingleManager::commentSession(
     m.setBody(QString::fromStdString(comment));
     client()->sendMessage(m);
 #else 
-    LOGGER(logit) << "Comment: " << comment << std::endl;
+    LOGGER(logit) << "Sid: " << session->sid() 
+        << "Comment: " << comment << std::endl;
 #endif
 }
 
@@ -151,7 +155,7 @@ bool IrisJingleManager::take(const QDomElement &e)
                     replyAcknowledge(e);
                     emit sessionIncoming(session);
                     // FIXME: emulate accepting from gui, react on signal
-                    acceptAudioSession(session);
+                    //acceptAudioSession(session);
                 }
                 break;
             case ACTION_ACCEPT:
@@ -213,3 +217,9 @@ void IrisJingleManager::setState(JingleSession *session, SessionState state)
     JingleManager::setState(session, state);
     emit sessionStateChanged(session);
 }
+
+void IrisJingleManager::sessionAccept(JingleSession *session)
+{
+    acceptAudioSession(session);
+}
+

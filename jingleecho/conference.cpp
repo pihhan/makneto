@@ -3,6 +3,8 @@
 #include <sstream>
 
 #include "conference.h"
+#include "fstjingle.h"
+
 #include "logger/logger.h"
 
 #define LOGCF() (LOGGER(logit) << " conference " )
@@ -11,7 +13,7 @@
 Conference::Conference(GstElement *bin)
     : m_qpipeline(0),m_selfParticipant(0),m_remoteParticipant(0),
       m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0), 
-      m_lastErrorCode(NoError), m_transmitter(DEFAULT_TRANSMITTER)
+      m_lastErrorCode(NoError), m_reader(0), m_transmitter(DEFAULT_TRANSMITTER)
 {
     m_pipeline = bin;
     gst_object_ref(m_pipeline);
@@ -35,7 +37,7 @@ Conference::Conference(GstElement *bin)
 Conference::Conference(QPipeline *pipeline)
     : m_qpipeline(pipeline),m_selfParticipant(0),m_remoteParticipant(0),
       m_localCandidates(0), m_newLocalCandidates(0), m_stunPort(0),
-      m_lastErrorCode(NoError), m_transmitter(DEFAULT_TRANSMITTER)
+      m_lastErrorCode(NoError), m_reader(0), m_transmitter(DEFAULT_TRANSMITTER)
 {
     m_pipeline = pipeline->element();
     GstBus *bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipeline));
@@ -176,6 +178,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 gst_message_parse_warning(message, &error, &debugmsg);
                 LOGCF() << "Warning: conference::messageCallback: " << debugmsg << std::endl;
                 conf->reportWarning(debugmsg);
+                break;
             }
         case GST_MESSAGE_ELEMENT:
             {
@@ -203,10 +206,11 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     FsCandidate *candidate = NULL;
                     FsStream *stream = NULL;
                     if (!gst_structure_get(message->structure, 
-                        "stream", &stream, G_TYPE_OBJECT, 
-                        "candidate", &candidate, G_TYPE_BOXED,
+                        "stream", FS_TYPE_STREAM, &stream, 
+                        "candidate", FS_TYPE_CANDIDATE, &candidate,
                         NULL)) {
                         LOGCF() << "failed to get stream and candidate" << std::endl;
+                        return true;
                     } else {
                         unsigned int id = Session::idFromStream(stream);
                         gst_object_unref(stream);
@@ -226,17 +230,29 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     FsCandidate *l = NULL;
                     FsCandidate *r = NULL;
                     FsStream *stream = NULL;
-                    gst_structure_get(message->structure, 
+                    if (!gst_structure_get(message->structure, 
                             "stream", FS_TYPE_STREAM, &stream,
-                            "local-candidate", G_TYPE_BOXED, &l,
-                            "remote-candidate", G_TYPE_BOXED, &r,
-                            NULL);
+                            "local-candidate", FS_TYPE_CANDIDATE, &l,
+                            "remote-candidate", FS_TYPE_CANDIDATE, &r,
+                            NULL)) {
+                        LOGCF() << "gst_structure_get for " 
+                            << gst_structure_get_name(s) << " failed." 
+                            << std::endl;
+                        return true;
+                    }
                     unsigned int id = Session::idFromStream(stream);
                     gst_object_unref(stream);
                     Session *s = conf->getSession(id);
                     if (s) {
                         // TODO:
                         //s->onNewActivePair(l, r);
+                        LOGCF() << "Session " << s->name() 
+                            << " has new active pair "
+                            << l->ip << ":" << l->port
+                            << " <-> "
+                            << r->ip << ":" << r->port
+                            << " (only logged)"
+                            << std::endl;
                     }
                 } else if (gst_structure_has_name(s,
                         "farsight-recv-codecs-changed")) {
@@ -247,12 +263,23 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     conf->onRecvCodecsChanged(codecs);
 
                 } else if (gst_structure_has_name(s,
-                        "farsight-send-codecs-changed")) {
+                        "farsight-send-codecs-changed") ) {
                     const GValue *v = gst_structure_get_value(s, "codecs");
                     GList *codecs = NULL;
                     g_assert(v);
                     codecs = (GList *) g_value_get_boxed(v);
                     conf->onSendCodecsChanged(codecs);
+                } else if (gst_structure_has_name(s, 
+                        "farsight-send-codec-changed")) {
+                    const GValue *v = gst_structure_get_value(s, "codec");
+                    GList *codecs = NULL;
+                    FsCodec *codec;
+                    g_assert(v);
+                    codec = (FsCodec *) g_value_get_boxed(v);
+                    codecs = g_list_prepend(codecs, codec);
+                    conf->onSendCodecsChanged(codecs);
+                    fs_codec_list_destroy(codecs);
+
                 } else if (gst_structure_has_name(s,
                         "farsight-component-state-changed")) {
                     FsStream *fs = NULL;
@@ -284,6 +311,27 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                         }
                         conf->m_reader->reportState(rstate);
                     }
+                } else if (gst_structure_has_name(s,
+                        "farsight-codecs-changed")) {
+                    FsSession *fs = NULL;
+                    if (!gst_structure_get(message->structure,
+                            "session", FS_TYPE_SESSION, &fs,
+                            NULL)) {
+                        LOGCF() << "gst_structure_get failed for: " 
+                                << gst_structure_get_name(s) << std::endl;
+                    } else {
+                        Session *session = conf->getSession(fs);
+                        if (session) {
+                            GList *cl = session->getCodecListProperty("codecs");
+                            LOGCF() << "Session " << session->name() 
+                                << " changed codecs to " 
+                                << FstJingle::codecListToString(cl)
+                                << std::endl;
+                            fs_codec_list_destroy(cl);
+                        } else {
+                            LOGCF() << "session is NULL" << std::endl;
+                        }
+                    }
                 } else {
                     const gchar *name = gst_structure_get_name(s);
                     std::cerr << "Neznama zprava na pipeline: " <<
@@ -295,8 +343,18 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
             {
                 GstState olds, news, pending;
                 gst_message_parse_state_changed(message, &olds, &news, &pending);
-                LOGCF() << "Zmena stavu " << olds << " -> " << news 
-                        << " (" << pending << ")" << std::endl;
+                //LOGCF() << "Zmena stavu " << olds << " -> " << news 
+                //        << " (" << pending << ")" << std::endl;
+            }
+            break;
+        case GST_MESSAGE_STREAM_STATUS:
+            {
+                GstElement *e = NULL;
+                GstStreamStatusType type;
+                gst_message_parse_stream_status(message, &type, &e);
+                LOGCF() << "Stream status type " << type 
+                        << " from element " << gst_element_get_name(e)
+                        << std::endl;
             }
             break;
         default:
@@ -312,7 +370,8 @@ GstElement * Conference::conference()
     return m_fsconference;
 }
 
-/** @brief Handle notification from remote party to connect pad somewhere. */
+/** @brief Handle notification from remote party to connect pad somewhere. 
+    This method is invoked inside gstreamer thread, not main thread! */
 void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
 {
     LOGCF() << "Source pad added: " << gst_pad_get_name(pad) <<
@@ -367,6 +426,24 @@ Session * Conference::getSession(unsigned int id)
             it!=m_sessions.end(); it++) {
         if (*it && (*it)->id() == id)
             return *it;
+    }
+    return NULL;
+}
+
+/** @brief Get session by farsight session object. */ 
+Session *   Conference::getSession(FsSession *fs)
+{
+    for (SessionList::iterator it=m_sessions.begin(); 
+            it!=m_sessions.end(); it++) {
+        FsSession *tmp = NULL;
+        if (*it) {
+            tmp = (*it)->sessionElement();
+            if (tmp == fs) {
+                gst_object_unref(tmp);
+                return *it;
+            }
+            gst_object_unref(tmp);
+        }
     }
     return NULL;
 }
@@ -443,7 +520,7 @@ int Conference::stunPort()
     return m_stunPort;
 }
 
-JingleFarsightErrors Conference::lastError()
+JingleErrors Conference::lastError()
 {
     return m_lastErrorCode;
 }
@@ -453,7 +530,7 @@ std::string         Conference::lastErrorMessage()
     return m_lastErrorMessage;
 }
 
-void Conference::setError(JingleFarsightErrors code, const std::string &message)
+void Conference::setError(JingleErrors code, const std::string &message)
 {
     m_lastErrorCode = code;
     m_lastErrorMessage = message;

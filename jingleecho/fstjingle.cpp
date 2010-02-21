@@ -9,9 +9,8 @@
 /** @brief Create farsight abstraction class.
     @param reader FstStatusReader pointer to class wanting messages about farsight pipeline, or NULL if not needed. */
 FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
-    : m_lastErrorCode(NoError)
+    : m_lastErrorCode(NoError), m_reader(reader), m_unconfiguredCodecs(false)
 {
-    m_reader = reader;
     pipeline = new QPipeline();
     if (!pipeline || !pipeline->isValid()) {
         LOGGER(logit) << "Pipeline failed." << std::endl;
@@ -23,6 +22,7 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
         return;
     }
 
+#if 0
     if (!pipeline->enableAudio()) {
         LOGGER(logit) << "Audio pipeline failed." << std::endl;
         setError(PipelineError);
@@ -32,6 +32,7 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
         }
         return;
     }
+#endif
 
     conference = new Conference(pipeline);
     if (!conference || (conference->lastError() != NoError)) {
@@ -151,7 +152,7 @@ GList * FstJingle::createFsCodecList(const JingleRtpContentDescription &descript
             mediatype = FS_MEDIA_TYPE_VIDEO;
     }
 
-    for (JingleRtpContentDescription::PayloadList::const_reverse_iterator 
+    for (PayloadList::const_reverse_iterator 
             it= description.payloads.rbegin();
             it != description.payloads.rend(); it++) {
         FsCodec *codec = fs_codec_new(
@@ -275,8 +276,15 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
     bool created = session->createStream();
     session->setRemote(remoteCandidates);
 
+    JingleRtpContentDescription ld = local.description();
+    if (ld.countPayload() == 0) {
+        m_unconfiguredCodecs = true;
+    }
+
+#ifdef CODECS_TESTING
     GList *remoteCodecs = createFsCodecList(remote.description());
     session->setRemoteCodec(remoteCodecs);
+#endif
 
     bool linked = linkSink(session, fstype);
 
@@ -318,6 +326,11 @@ bool FstJingle::createAudioSession(JingleSession *session)
                 empty = false;
             }
         }
+        if (!found) {
+            LOGGER(logit) << "Local content " << lit->name()
+                << " type " << lit->description().type() 
+                << " does not have matching remote candidate." << std::endl;
+        }
         ++lit;
     } 
     if (empty)
@@ -338,7 +351,6 @@ bool FstJingle::createAudioSession(JingleSession *session)
     LOGGER(logit) << "Pipeline state " << pipeline->current_state() 
         << " pending " << pipeline->pending_state() << std::endl;
 #endif
-    pipeline->describe();
     return result && paused && playing && !empty;
 }
 
@@ -394,6 +406,7 @@ void FstJingle::setNicknames(const std::string &local, const std::string &remote
     conference->setNicknames(local, remote);
 }
 
+/** @brief Get debug string with state of pipeline and conference. */
 std::string FstJingle::stateDescribe()
 {
     std::ostringstream o;
@@ -427,6 +440,30 @@ std::string FstJingle::toString(const FsCodec *codec)
     return cppdesc;
 }
 
+/** @brief Create description for candidate. */
+std::string FstJingle::toString(const FsCandidate *candidate)
+{
+    std::ostringstream o;
+    if (!candidate)
+        return std::string();
+    o << "Candidate ";
+    if (candidate->ip)
+        o << "ip: " << candidate->ip << ":";
+    else 
+        o << "ip: any:";
+    o << candidate->port << " ";
+    if (candidate->foundation)
+        o << "foundation: " << candidate->foundation << " ";
+    o << "component: " << candidate->component_id << " ";
+    if (candidate->base_ip) {
+        o << "base: " << candidate->base_ip<<":"<<candidate->base_port << " ";
+    }
+    o << "type: " << candidate->type << " ";
+    
+    return o.str();
+}
+
+
 /** @brief Terminate current session. */
 bool FstJingle::terminate()
 {
@@ -448,6 +485,21 @@ bool FstJingle::isPaused()
 bool FstJingle::isReady()
 {
     return (pipeline->current_state() == GST_STATE_READY);
+}
+
+bool FstJingle::goPlaying()
+{
+    return pipeline->setState(GST_STATE_PLAYING);
+}
+
+bool FstJingle::goPaused()
+{
+    return pipeline->setState(GST_STATE_PAUSED);
+}
+
+bool FstJingle::goReady()
+{
+    return pipeline->setState(GST_STATE_READY);
 }
 
 bool FstJingle::haveLocalCandidates()
@@ -554,15 +606,16 @@ void FstJingle::setStun(const std::string &ip, int port)
 }
 
 
-void FstJingle::setError(JingleFarsightErrors e, const std::string &msg)
+void FstJingle::setError(JingleErrors e, const std::string &msg)
 {
     m_lastErrorCode = e;
     m_lastErrorMessage = msg;
+    LOGGER(logit) << msg << std::endl;
 }
 
-JingleFarsightErrors FstJingle::lastError()
+JingleErrors FstJingle::lastError()
 {
-    JingleFarsightErrors e = conference->lastError();
+    JingleErrors e = conference->lastError();
     if (e == NoError)
         return m_lastErrorCode;
     return e;
@@ -589,5 +642,51 @@ std::string FstJingle::xmlnsToTransmitter(const std::string &xmlns)
         LOGGER(logit) << "Nepodporovane xmlns pro transport: " << xmlns<<std::endl;
         return std::string();
     }
+}
+
+void FstJingle::setTransportXmlns(const std::string &xmlns)
+{
+    std::string t = xmlnsToTransmitter(xmlns);
+    if (!t.empty()) 
+        conference->setTransmitter(t);
+}
+
+/** @brief Update list of available codecs to description. */
+bool FstJingle::updateLocalDescription(JingleContent &content)
+{
+    Session *session = conference->getSession(content.name());
+    if (session) {
+        GList *codecs = session->getCodecListProperty("codecs");
+        GList *i = codecs;
+        JingleRtpContentDescription d = content.description();
+        d.clearPayload();
+        while (i) {
+            d.addPayload(createJinglePayload((FsCodec *) i->data) );
+            i = g_list_next(i);
+        }
+        content.setDescription(d);
+        fs_codec_list_destroy(codecs);
+        return true;
+    }
+    return false;
+}
+
+/** @brief Create Payload type from farsight codec. */
+JingleRtpPayload FstJingle::createJinglePayload(const FsCodec *codec)
+{
+    JingleRtpPayload payload(codec->id, codec->encoding_name, 
+        codec->clock_rate, codec->channels);
+    return payload;
+}
+
+PayloadList FstJingle::createJinglePayloadList(const GList *codecs)
+{
+    PayloadList pl;
+    const GList *i = codecs;
+    while (i) {
+        JingleRtpPayload pay = createJinglePayload((FsCodec *) i->data);
+        pl.push_back(pay);
+    }
+    return pl;
 }
 

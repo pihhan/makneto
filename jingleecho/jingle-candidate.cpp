@@ -23,6 +23,11 @@ std::string JingleCandidate::xmlns() const
     return XMLNS_JINGLE_RAWUDP;
 }
 
+void JingleCandidate::increaseGeneration() 
+{
+    ++generation;
+}
+
 #ifdef GLOOX
 void JingleCandidate::parse(const Tag *tag)
 {

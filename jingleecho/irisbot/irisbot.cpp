@@ -307,7 +307,9 @@ void Bot::stunHostResolved(const QHostInfo info)
 {
     if (info.error() == QHostInfo::NoError) {
         QHostAddress a = info.addresses().first();
-        m_jm->setStun(a.toString().toStdString());
+        std::string ip = a.toString().toStdString();
+        m_jm->setStun(ip);
+        LOGGER(logit) << "Stun resolved: " << ip << std::endl;
     } else {
         std::cerr << "Resolver  pro " << info.hostName().toStdString() 
             << " vratil chybu: " 

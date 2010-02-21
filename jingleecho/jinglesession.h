@@ -36,6 +36,7 @@ see http://xmpp.org/extensions/xep-0166.html
 
 typedef enum { 
     JSTATE_NULL = 0,
+    JSTATE_PRECONFIGURE, // wait for preparation of media pipeline
     JSTATE_PENDING, // after session-initiate
     JSTATE_ACTIVE, // after session-accept
     JSTATE_TERMINATED, // after session-terminate
@@ -239,6 +240,9 @@ class JingleSession
     void * data();
     void setData(void *data);
 
+    bool failed() const;
+    void setFailed(bool failed);
+
     JingleStanza *createStanza(SessionAction action);
     JingleStanza *createStanzaInitiate();
     JingleStanza *createStanzaInfo(SessionInfo info);
@@ -290,7 +294,7 @@ class JingleSession
     int                     m_localversion; ///!< local version number of changes
     int                     m_ackedversion; ///!< version number we received acks from remote
     void                    *m_data; ///!< Custom data about this session
-
+    bool                    m_failed;
 	
 };
 

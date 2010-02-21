@@ -1,11 +1,14 @@
 
+#include <cstdlib>
+
 #ifdef GLOOX
 #include <gloox/tag.h>
 #else
 #include <QDomElement>
 #endif
-#include <cstdlib>
+
 #include "jingle-description.h"
+#include "jinglesession.h"
 
 #ifdef GLOOX
 using namespace gloox;
@@ -16,6 +19,11 @@ using namespace gloox;
  * JingleRtpContentDescription
  *
  */
+
+JingleRtpContentDescription::JingleRtpContentDescription()
+    : m_xmlns(XMLNS_JINGLE_RTP), m_type(MEDIA_NONE)
+{
+}
 
 #ifdef GLOOX
 /** @brief Fill class from given XML subtree, tag must be named <description> */
@@ -45,8 +53,18 @@ Tag *JingleRtpContentDescription::tag() const
 {
 	Tag *t = new Tag("description");
 	t->addAttribute("xmlns", m_xmlns);
-	if (!m_media.empty())
-		t->addAttribute("media", m_media);
+        switch (m_type) {
+            case MEDIA_VIDEO:
+                t->addAttribute("media", "video");
+                break;
+            case MEDIA_AUDIO:
+                t->addAttribute("media", "audio");
+                break;
+            case MEDIA_NONE:
+	        if (!m_media.empty())
+		     t->addAttribute("media", m_media);
+                break;
+        }
 	for (PayloadList::const_iterator it=payloads.begin(); it!=payloads.end(); ++it) {
 		t->addChild(it->tag());
 	}
@@ -80,15 +98,54 @@ QDomElement JingleRtpContentDescription::tag(QDomDocument &doc) const
 {
     QDomElement t = doc.createElement("description");
     t.setAttribute("xmlns", QString::fromStdString(m_xmlns));
-    if (!m_media.empty()) 
-        t.setAttribute("media", QString::fromStdString(m_media));
+    switch (m_type) {
+        case MEDIA_VIDEO:
+            t.setAttribute("media", "video");
+            break;
+        case MEDIA_AUDIO:
+            t.setAttribute("media", "audio");
+            break;
+        case MEDIA_NONE:
+            if (!m_media.empty()) 
+                t.setAttribute("media", QString::fromStdString(m_media));
+            break;
+    }
 
     for (PayloadList::const_iterator it=payloads.begin(); it!=payloads.end(); ++it) {
             t.appendChild(it->tag(doc));
     }
     return t;
 }
-#endif // GLOOX_API
+#endif // GLOOX
+
+std::string JingleRtpContentDescription::media() const
+{ return m_media; }
+
+std::string JingleRtpContentDescription::xmlns() const
+{ return m_xmlns; }
+
+MediaType   JingleRtpContentDescription::type() const
+{ return m_type; }
+
+void JingleRtpContentDescription::setType(MediaType type)
+{
+    m_type = type;
+}
+
+void JingleRtpContentDescription::addPayload(const JingleRtpPayload &payload) 
+{ 
+    payloads.push_back(payload); 
+}
+
+void JingleRtpContentDescription::clearPayload()
+{
+    payloads.clear();
+}
+
+int JingleRtpContentDescription::countPayload() const
+{
+    return payloads.size();
+}
 
 /*
  *

@@ -289,6 +289,9 @@ bool QPipeline::createVideoTee()
 /** @brief Create elements for video input and output. */
 bool QPipeline::enableVideo(bool input, bool output)
 {
+    if (m_video_enabled)
+        return false;
+
     if (input) {
         if (createVideoSource() && createVideoTee()) {
             add(m_videosource);
@@ -332,6 +335,8 @@ bool QPipeline::enableVideo(bool input, bool output)
 /** @brief Create audio source and sink. */
 bool QPipeline::enableAudio()
 {
+    if (m_audio_enabled)
+        return false;
     if (createAudioSource() && createAudioSink()) {
         add(m_source);
         add(m_sink);

@@ -147,6 +147,8 @@ GstPad * Session::sink()
     return sink;
 }
 
+/** @brief Set local candidates for this stream. 
+    @param candidates GList of FsCandidate. There might be NULL candidate->ip. */
 void Session::setLocal(GList *candidates)
 {
     if (m_localCandidates)

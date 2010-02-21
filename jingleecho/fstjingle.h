@@ -40,14 +40,21 @@ class FstJingle
     static JingleCandidate createJingleCandidate(const FsCandidate *candidate);
     static JingleCandidate createJingleIceCandidate(const FsCandidate *candidate, const std::string &xmlns);
     static CandidateList   createJingleCandidateList(GList *candidates);
+    static JingleRtpPayload createJinglePayload(const FsCodec *codec);
+    static PayloadList createJinglePayloadList(const GList *codecs);
 
     static std::string codecListToString(const GList *codeclist);
     static std::string toString(const FsCodec *codec);
+    static std::string toString(const FsCandidate *candidate);
     static std::string xmlnsToTransmitter(const std::string &xmlns);
 
     bool isPlaying();
     bool isPaused();
     bool isReady();
+
+    bool goPlaying();
+    bool goPaused();
+    bool goReady();
 
     bool haveLocalCandidates();
     CandidateList   localCandidates();
@@ -57,19 +64,25 @@ class FstJingle
     bool updateLocalTransport(JingleContent &content);
     bool tryNextCandidate(JingleContent &content);
 
-    void setStun(const std::string &ip, int port = 0);
+    bool updateLocalDescription(JingleContent &content);
 
-    void setError(JingleFarsightErrors, const std::string &msg = std::string());
-    JingleFarsightErrors lastError();
-    std::string         lastErrorMessage();
+    void setStun(const std::string &ip, int port = 0);
+    void setTransportXmlns(const std::string &xmlns);
+
+    void setError(JingleErrors, const std::string &msg = std::string());
+    JingleErrors lastError();
+    std::string  lastErrorMessage();
+
+    bool unconfiguredCodecs();
 
     QPipeline *pipeline;
     Conference *conference;
 
     private:
-    JingleFarsightErrors m_lastErrorCode;
+    JingleErrors m_lastErrorCode;
     std::string         m_lastErrorMessage;
     FstStatusReader     *m_reader;
+    bool                m_unconfiguredCodecs;
 };
 
 #endif

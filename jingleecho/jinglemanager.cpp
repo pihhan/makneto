@@ -40,13 +40,20 @@ static gboolean periodic_timer(gpointer user_data)
             manager->periodicSessionCheck(session);
             active = true;
         }
+        if (session && (session->state() == JSTATE_PRECONFIGURE)) {
+            FstJingle *fsj = static_cast<FstJingle*>(session->data());
+            if (fsj) {
+                if (fsj->lastError() != NoError) {
+                } else if (fsj->isReady()) {
+                }
+            }
+        }
     }
     return (TRUE);
 }
 
-
 JingleManager::JingleManager()
-	: m_timerid(0),m_stunPort(0)
+	: m_handler(0), m_timerid(0),m_stunPort(0)
 {
         m_seed = (unsigned int) time(NULL);
 }
@@ -97,6 +104,17 @@ JingleSession * JingleManager::initiateAudioSession(
     session->addLocalContent(audioContent());
     JingleStanza *js = session->createStanzaInitiate();
 
+    FstJingle *fst = new FstJingle(session);
+    if (!fst || fst->lastError() != NoError) {
+        return NULL;
+    }
+    session->setData(fst);
+    if (!fst->createAudioSession(session)) {
+        return NULL;
+    }
+    if (!fst->goPaused())
+        return NULL;
+
     addSession(session);
    
     send(js); 
@@ -105,6 +123,19 @@ JingleSession * JingleManager::initiateAudioSession(
     return session;
 }
 
+JingleSession * JingleManager::initiateVideoSession(
+    const PJid &to,
+    const PJid &initiator)
+{
+    JingleSession *session = initiateEmptySession(to, initiator);
+    session->addLocalContent(videoContent());
+    addSession(session);
+
+    JingleStanza *js = session->createStanzaInitiate();
+    send(js);
+    delete js;
+    return session;
+}
 
 /** @brief Accept audio session. 
     create multimedia pipeline also. 
@@ -118,10 +149,14 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     session->setResponder(self());
     JingleStanza *js = session->createStanzaAccept();
 
-
-    FstJingle *fsj = new FstJingle(session);
-    fsj->createAudioSession(session);
-    session->setData(fsj);
+    FstJingle *fsj = static_cast<FstJingle *>(session->data());
+    if (!fsj) {
+        fsj = new FstJingle(session);
+        fsj->createAudioSession(session);
+        fsj->goPlaying();
+        session->setData(fsj);
+    }
+    LOGGER(logit) << "fstjingle state: " << fsj->stateDescribe() << std::endl;
     addSession(session);
 
     send(js);
@@ -134,16 +169,23 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 /** @brief Internal handle of confirmation or our outgoing call. */
 bool JingleManager::acceptedAudioSession(JingleSession *session)
 {
+    bool good = true;
     setState(session, JSTATE_ACTIVE);
     
-    FstJingle *fsj = new FstJingle(session);
-    fsj->createAudioSession(session);
+    FstJingle *fsj = static_cast<FstJingle*>(session->data());
+    if (!fsj) {
+        fsj = new FstJingle(session);
+        good = fsj->createAudioSession(session);
+    }
+    good = good && fsj->goPlaying();
+
+    LOGGER(logit) << "fstjingle state: " << fsj->stateDescribe() << std::endl;
 
     session->setData(fsj);
 
     startSessionTimeout(session);
     startPeriodicTimer();
-    return true;
+    return good;
 }
 
 
@@ -244,17 +286,18 @@ std::string JingleManager::randomId()
 
 JingleRtpContentDescription	JingleManager::audioDescription()
 {
-	JingleRtpContentDescription d;
-	d.m_xmlns = "urn:xmpp:jingle:apps:rtp:1";
+    JingleRtpContentDescription d;
+    d.m_xmlns = XMLNS_JINGLE_RTP;
     d.addPayload(JingleRtpPayload(0, "PCMU", 8000));
     d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
     d.addPayload(JingleRtpPayload(2, "G721", 8000));
     d.addPayload(JingleRtpPayload(3, "GSM", 8000));
 #ifdef USE_SPEEX
-	d.addPayload(JingleRtpPayload(97, "speex", 8000));
-	d.addPayload(JingleRtpPayload(96, "speex", 16000));
+    d.addPayload(JingleRtpPayload(97, "speex", 8000));
+    d.addPayload(JingleRtpPayload(96, "speex", 16000));
 #endif
-	return d;
+    d.setType(MEDIA_AUDIO);
+    return d;
 }
 
 /** @brief Create Video description.
@@ -264,10 +307,10 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
-    d.addPayload(JingleRtpPayload(96, "H263-1998", 90000));
-    d.addPayload(JingleRtpPayload(97, "H263-2000", 90000));
-    d.addPayload(JingleRtpPayload(98, "theora", 90000));
-
+    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
+    d.addPayload(JingleRtpPayload(101, "H263-2000", 90000));
+    d.addPayload(JingleRtpPayload(102, "theora", 90000));
+    d.setType(MEDIA_VIDEO);
     return d;
 }
 
@@ -275,6 +318,7 @@ JingleContent   JingleManager::audioContent()
 {
     JingleContent c(localTransport(), audioDescription() );
     c.setName("audiotest");
+    c.setMedia(MEDIA_AUDIO);
     return c;
 }
 
@@ -282,6 +326,7 @@ JingleContent   JingleManager::videoContent()
 {
     JingleContent c(localTransport(), videoDescription() );
     c.setName("videotest");
+    c.setMedia(MEDIA_AUDIO);
     return c;
 }
 
@@ -312,6 +357,37 @@ void JingleManager::periodicSessionCheck(JingleSession *session)
             fst->resetNewLocalCandidates();
         } // new candidates
     } // fst
+}
+
+/** @brief Wait until preconfigure stage finishes.
+    Terminate on error, send initiate on success. */
+bool JingleManager::periodicPreconfigureCheck(JingleSession *session)
+{
+    FstJingle *fsj = static_cast<FstJingle *>(session->data());
+    if (fsj) {
+        if (fsj->lastError() != NoError) {
+            reportError(session, fsj->lastError(), fsj->lastErrorMessage()); 
+            if (!session->localOriginated()) {
+                terminateSession(session, REASON_MEDIA_ERROR);
+            }
+            session->setFailed(true);
+        } else if (fsj->isReady()) {
+            JingleStanza *js = NULL;
+            if (session->localOriginated()) {
+                js = session->createStanzaInitiate();
+                setState(session, JSTATE_PENDING);
+            } else {
+                js = session->createStanzaAccept();
+                // TODO: set active only after acknowledge from user
+                setState(session, JSTATE_ACTIVE);
+            }
+            send(js); 
+            delete js;
+        }
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -467,7 +543,18 @@ void JingleManager::setState(JingleSession *session, SessionState state)
     session->setState(state);
 }
 
+void JingleManager::reportFailed(JingleSession *session)
+{
+    LOGGER(logit) << "Session " << session->sid() << " failed!" << std::endl;
+}
 
+void JingleManager::reportError(JingleSession *session, JingleErrors error, const std::string &msg)
+{
+    LOGGER(logit) << "ERROR: Session " << session->sid() << ": " 
+            << msg << " (" << error << ")" << std::endl;
+    if (m_handler)
+        m_handler->handleSessionError(session, error, msg);
+}
 
 #ifdef GLOOX
 /*

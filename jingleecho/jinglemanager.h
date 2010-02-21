@@ -13,6 +13,7 @@
 #include <glib.h>
 
 #include "jinglesession.h"
+#include "jingleerror.h"
 
 #define CANDIDATE_TIMEOUT_MS    3000
 #define PERIODIC_TIMEOUT    150
@@ -24,16 +25,20 @@
 */
 class JingleActionHandler
 {
-	public:
+    public:
 		
-		virtual SessionReason handleNewSession(JingleSession *session) = 0;
-		virtual SessionReason handleSessionAccept(JingleSession *session, JingleSession *update) = 0;
-		virtual SessionReason handleSessionChange(JingleSession *session, JingleSession *update) = 0;
-		virtual SessionReason handleSessionTermination(JingleSession *sesion) = 0;
+    virtual SessionReason handleNewSession(JingleSession *session) = 0;
+    virtual SessionReason handleSessionAccept(JingleSession *session, JingleSession *update) = 0;
+    virtual SessionReason handleSessionChange(JingleSession *session, JingleSession *update) = 0;
+    virtual SessionReason handleSessionTermination(JingleSession *sesion) = 0;
 #ifdef GLOOX
-                /** @brief Handle error of session. Expect JingleSession might be null, if stanza did not contain session id. */
-		virtual SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza) = 0;
+    /** @brief Handle error of session. Expect JingleSession might be null, if stanza did not contain session id. */
+    virtual SessionReason handleSessionError(JingleSession *session, const gloox::Stanza *stanza) = 0;
 #endif
+    virtual void handleSessionError(JingleSession *session, JingleErrors err, const std::string &msg, bool fatal=true);
+    /** @brief Get notification that preconfiguring is complete.
+        That means, pipeline was created without error. */
+    virtual void handleSessionPreconfigured(JingleSession *session);
 		
 };
 
@@ -91,10 +96,13 @@ class JingleManager
                 const PJid &initiator = PJid()  );
     JingleSession * initiateAudioSession(const PJid &to, 
                 const PJid &initiator=PJid()    );
+    JingleSession * initiateVideoSession(const PJid &to,
+                const PJid &initiator);
     
     virtual void    send(JingleStanza *js)=0;
 
     void periodicSessionCheck(JingleSession *session);
+    bool periodicPreconfigureCheck(JingleSession *session);
     void startPeriodicTimer();
     void stopPeriodicTimer();
     bool runningPeriodicTimer();
@@ -106,6 +114,8 @@ class JingleManager
         It can notify subsystems about state change, if reimplemented. 
     */
     virtual void setState(JingleSession *session, SessionState state);
+    virtual void reportFailed(JingleSession *session);
+    virtual void reportError(JingleSession *session, JingleErrors error, const std::string &msg);
 
     bool sessionTimeout(JingleSession *session);
     void startSessionTimeout(JingleSession *session);

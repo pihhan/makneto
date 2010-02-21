@@ -49,6 +49,7 @@ class JingleCandidate
 
     JingleCandidate();
     virtual std::string xmlns() const;
+    void increaseGeneration();
 
     int             component;
     std::string     ip;

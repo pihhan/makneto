@@ -27,6 +27,10 @@ class IrisJingleManager :
     virtual bool take(const QDomElement &e);
     virtual void setState(JingleSession *session, SessionState state);
 
+    public slots: 
+    /** @brief Accept incoming session. */
+    void sessionAccept(JingleSession *session);
+
     signals:
     /** @brief Emitted on change of existing session. */
     void sessionStateChanged(JingleSession *session);
