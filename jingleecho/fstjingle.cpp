@@ -14,7 +14,7 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
     pipeline = new QPipeline();
     if (!pipeline || !pipeline->isValid()) {
         LOGGER(logit) << "Pipeline failed." << std::endl;
-        setError(PipelineError);
+        setError(PipelineError, "QPipeline is invalid.");
         if (reader) {
             reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Pipeline creation failed.");
             reader->reportState(FstStatusReader::S_FAILED);
@@ -22,26 +22,16 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
         return;
     }
 
-#if 0
-    if (!pipeline->enableAudio()) {
-        LOGGER(logit) << "Audio pipeline failed." << std::endl;
-        setError(PipelineError);
-        if (reader) {
-            reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Audio pipeline elements creation failed.");
-            reader->reportState(FstStatusReader::S_FAILED);
-        }
-        return;
-    }
-#endif
-
     conference = new Conference(pipeline);
     if (!conference || (conference->lastError() != NoError)) {
+        setError(PipelineError, "Conference is invalid.");
         if (reader) {
             reader->reportMsg(FstStatusReader::MSG_ERROR, conference->lastErrorMessage());
             reader->reportState(FstStatusReader::S_FAILED);
         }
     }
 
+    setNicknames(js->from().fullStd(), js->to().fullStd());
 }
 
 FstJingle::~FstJingle()
@@ -75,10 +65,14 @@ FsCandidate * FstJingle::createFsCandidate(const JingleCandidate & candidate)
 JingleCandidate FstJingle::createJingleCandidate(const FsCandidate *candidate)
 {
     JingleCandidate jc;
+    std::string id;
 
     if (candidate->ip)
         jc.ip = candidate->ip;
     jc.port = candidate->port;
+    std::ostringstream o;
+    o << jc.ip << ":" << jc.port;
+    jc.id = o.str(); // FIXME: generate better and random identifier
     //jc.foundation = candidate->foundation;
     jc.component = candidate->component_id;
     switch (candidate->type) {
@@ -100,7 +94,9 @@ JingleCandidate FstJingle::createJingleCandidate(const FsCandidate *candidate)
     @param xmlns Transport namespace. One of XMLNS_JINGLE_ICE or XMLNS_JINGLE_RAWUDP.
     @return Candidate in internal structure.
 */
-JingleCandidate FstJingle::createJingleIceCandidate(const FsCandidate *candidate, const std::string &xmlns)
+JingleCandidate FstJingle::createJingleIceCandidate(
+    const FsCandidate *candidate, 
+    const std::string &xmlns)
 {
     if (xmlns == XMLNS_JINGLE_ICE) {
         JingleIceCandidate jc = createJingleCandidate(candidate);
@@ -234,8 +230,11 @@ bool FstJingle::linkSink(Session *session, FsMediaType type)
     return (GST_PAD_LINK_SUCCESSFUL(r));
 }
 
-/** @brief create audio session in farsight. */
-bool FstJingle::createAudioSession(const JingleContent &local, const JingleContent &remote)
+
+/** @brief Prepare session with type of local content passed. 
+    This is called before we know anything about remote side,
+    most important is to get list of local supported codecs. */
+bool FstJingle::prepareSession(const JingleContent &local)
 {
     MediaType mtype = local.description().type();
     FsMediaType fstype = FS_MEDIA_TYPE_AUDIO;
@@ -261,40 +260,111 @@ bool FstJingle::createAudioSession(const JingleContent &local, const JingleConte
             }
             break;
         case MEDIA_NONE:
+        case MEDIA_AUDIOVIDEO:
             LOGGER(logit) << "requested creation of content with local type NONE" << std::endl;
             break;
     }
 
     Session *session = new Session(conference, fstype);
     g_assert(session);
-    session->setName(remote.name());
-    
-    GList *remoteCandidates = createFsCandidateList(remote.transport());
-    GList *localCandidates = createSingleFsCandidateList(local.transport());
+    session->setName(local.name());
 
-    session->setLocal(localCandidates);
-    bool created = session->createStream();
-    session->setRemote(remoteCandidates);
-
-    JingleRtpContentDescription ld = local.description();
-    if (ld.countPayload() == 0) {
-        m_unconfiguredCodecs = true;
-    }
-
-#ifdef CODECS_TESTING
-    GList *remoteCodecs = createFsCodecList(remote.description());
-    session->setRemoteCodec(remoteCodecs);
-#endif
-
-    bool linked = linkSink(session, fstype);
+    GList *localCandidates = NULL;
+    // rawudp transmitter cannot work with more than one concurrent 
+    // local candidate
+    if (local.transport().xmlns() == XMLNS_JINGLE_RAWUDP)
+        localCandidates = createSingleFsCandidateList(local.transport());
+    else 
+        localCandidates = createFsCandidateList(local.transport());
+    if (localCandidates)
+        session->setLocal(localCandidates);
 
     conference->addSession(session);
+
+    bool linked = linkSink(session, fstype);
+    if (!linked)
+        setError(PipelineError, "Link of sink failed.");
+    return (session != NULL && linked);
+}
+
+/** @brief Prepare all local contents for this session. 
+    @return true if there are contents and was prepared, false if
+        there is not content to prepare or it was not successful. */
+bool FstJingle::prepareSession(JingleSession *session)
+{
+    ContentList cl = session->localContents();
+    bool success = true;
+    bool empty = true;
+
+    for (ContentList::iterator it = cl.begin(); it!=cl.end(); it++) {
+        success = success && prepareSession(*it);
+        if (!success) {
+            LOGGER(logit) << "Failed to prepare session for content " 
+                << it->name() << std::endl;
+        } else {
+            empty = false;
+        }
+    }
+    return (success && !empty && goPaused());
+}
+
+/** @brief Update remote settings for content, like new candidates or codecs. */
+bool FstJingle::updateRemote(
+    const JingleContent &remote, 
+    const std::string &target)
+{
+    Session *session = conference->getSession(remote.name());
+    if (session) {
+        bool created;
+        bool exist = session->haveStream();
+        if (!exist) {
+            FsParticipant *p = conference->getParticipant(target);
+            created = session->createStream(p);
+            if (!created) 
+                return false;
+        }
+
+        GList *remoteCandidates = createFsCandidateList(remote.transport());
+        if (remoteCandidates != NULL) {
+            session->setRemote(remoteCandidates);
+        }
+
+        GList *remoteCodecs = createFsCodecList(remote.description());
+        if (remoteCodecs != NULL)
+            session->setRemoteCodec(remoteCodecs);
+        return (exist || created);
+    } else {
+        return false;
+    }
+}
+
+/** @brief Update all remote content descriptions, candidates and codecs.
+    @return true if it updated, false if there was problem. 
+*/
+bool FstJingle::updateRemote(JingleSession *session)
+{
+    if (!session)
+        return false;
+    ContentList cl = session->remoteContents();
+    bool success = true;
+    for (ContentList::iterator it=cl.begin(); it!=cl.end(); it++) {
+        success = success && updateRemote(*it, session->remote().fullStd());
+    }
+    return success;
+}
+
+/** @brief create audio session in farsight. */
+bool FstJingle::createAudioSession(const JingleContent &local, const JingleContent &remote)
+{
+    // FIXME: they must have same name
+    bool prepared = prepareSession(local);
+    bool updated = updateRemote(remote);
+
     LOGGER(logit) << "Created session: " << remote.name() 
-        << " type: " << fstype
-        << " created: " << created
-        << " linked: " << linked
+        << " prepared: " << prepared
+        << " updated: " << updated
         << std::endl;
-    return (created && linked);
+    return (prepared && updated);
 }
 
 /** @brief Configure farsight session from passed JingleSession structure. */
@@ -354,6 +424,7 @@ bool FstJingle::createAudioSession(JingleSession *session)
     return result && paused && playing && !empty;
 }
 
+
 /** @brief Replace previous content with this content. */
 bool FstJingle::replaceRemoteContent(const JingleContent &content)
 {
@@ -362,9 +433,16 @@ bool FstJingle::replaceRemoteContent(const JingleContent &content)
 
     Session *session = conference->getSession(content.name());
     if (session) {
-        session->setRemote(remoteCandidates);
-        session->setRemoteCodec(remoteCodecs);
-        return true;
+        bool created = true;
+        if (!session->haveStream()) {
+            created = session->createStream();
+        }
+        if (remoteCandidates)
+            session->setRemote(remoteCandidates);
+        bool cod = true;
+        if (remoteCodecs)
+            cod = session->setRemoteCodec(remoteCodecs);
+        return (cod && created);
     } else {
         LOGGER(logit) << "Content na nahrazeni nema odpovidajici session! " 
             << content.name() << " media " << content.media() 
@@ -381,10 +459,16 @@ bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleC
 {
     Session *session = conference->getSession(content);
     if (session) {
+        bool exist = true;
+        if (!session->haveStream()) {
+            exist = session->createStream();
+        }
         GList *candidates = NULL;
         FsCandidate *fscan = createFsCandidate(candidate);
         candidates = g_list_prepend(candidates, fscan);
-        session->setRemote(candidates);
+        if (candidates)
+            session->setRemote(candidates);
+        fs_candidate_list_destroy(candidates);
         // TODO: lepsi spravu zdroju, tohle je primo prirazeno do session, nelze uvolnit.
         // fs_candidate_list_destroy(candidates);
         LOGGER(logit) << "Nahrazuji vzdaleneho kandidata " 
@@ -489,16 +573,19 @@ bool FstJingle::isReady()
 
 bool FstJingle::goPlaying()
 {
+    LOGGER(logit) << "setting to Playing" << std::endl;
     return pipeline->setState(GST_STATE_PLAYING);
 }
 
 bool FstJingle::goPaused()
 {
+    LOGGER(logit) << "setting to Paused" << std::endl;
     return pipeline->setState(GST_STATE_PAUSED);
 }
 
 bool FstJingle::goReady()
 {
+    LOGGER(logit) << "setting to Ready" << std::endl;
     return pipeline->setState(GST_STATE_READY);
 }
 
@@ -553,12 +640,16 @@ void FstJingle::resetNewLocalCandidates()
     conference->resetNewLocalCandidates();
 }
 
-/** @brief Return autodetected candidates for this host. */
-CandidateList   FstJingle::createJingleCandidateList(GList *candidates)
+/** @brief Return autodetected candidates for this host. 
+    @param candidates GList of FsCandidate *
+    @param anyip True to allow NULL ip in result, false to skip them. */
+CandidateList   FstJingle::createJingleCandidateList(GList *candidates, bool anyip)
 {
     CandidateList cl;
     while (candidates) {
-        cl.push_back(createJingleCandidate((FsCandidate *) candidates->data));
+        FsCandidate *c = static_cast<FsCandidate *>(candidates->data);
+        if (c && (c->ip || anyip))
+            cl.push_back(createJingleCandidate(c));
         candidates = g_list_next(candidates);
     }
     return cl;
@@ -610,7 +701,7 @@ void FstJingle::setError(JingleErrors e, const std::string &msg)
 {
     m_lastErrorCode = e;
     m_lastErrorMessage = msg;
-    LOGGER(logit) << msg << std::endl;
+    LOGGER(logit) << msg << " (" << msg << ")" << std::endl;
 }
 
 JingleErrors FstJingle::lastError()
@@ -651,7 +742,8 @@ void FstJingle::setTransportXmlns(const std::string &xmlns)
         conference->setTransmitter(t);
 }
 
-/** @brief Update list of available codecs to description. */
+/** @brief Update list of available codecs to description. 
+    @return true if content was updated from farsight, false if not. */
 bool FstJingle::updateLocalDescription(JingleContent &content)
 {
     Session *session = conference->getSession(content.name());
@@ -669,6 +761,22 @@ bool FstJingle::updateLocalDescription(JingleContent &content)
         return true;
     }
     return false;
+}
+
+/** @brief Update list of available codecs to each local content description. 
+    @return true if something was updated, false in other case. */
+bool FstJingle::updateLocalDescription(JingleSession *session)
+{
+    ContentList cl = session->localContents();
+    bool modified = false;
+    for (ContentList::iterator it = cl.begin(); it!=cl.end(); it++) {
+        if (updateLocalDescription(*it)) {
+            modified = true;
+        }
+    }
+    if (modified)
+        session->replaceLocalContent(cl);
+    return modified;
 }
 
 /** @brief Create Payload type from farsight codec. */

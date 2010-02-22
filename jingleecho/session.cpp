@@ -67,21 +67,34 @@ FsStream *Session::createStream(FsParticipant *participant, const GList *lcandid
         m_conf->transmitter().c_str(),
         paramcount, param, &m_lasterror);
     if (m_lasterror) {
-        LOGGER(logit) << " fs_session_new_stream:" 
+        LOGGER(logit) << " fs_session_new_stream: " 
                   << m_lasterror->message << std::endl;
     }
     return stream;
+}
+
+bool Session::createStream(FsParticipant *participant)
+{
+    m_stream = createStream(participant, m_localCandidates);
+    if (!m_stream) 
+        return false;
+    g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
+    g_signal_connect(m_stream, "error", G_CALLBACK(Session::streamError), this);
+    return (m_stream != NULL);
 }
 
 /** @brief Create farsight stream inside this structure, fill with remote participant
  *  from local conference, and local candidates set before calling this function. */
 bool Session::createStream()
 {
-    m_stream = createStream(m_conf->remoteParticipant(), m_localCandidates);
-    g_assert(m_stream);
-    g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
-    g_signal_connect(m_stream, "error", G_CALLBACK(Session::streamError), this);
-    return true;
+    return createStream(m_conf->remoteParticipant());
+}
+   
+/** @brief Check if stream is created. 
+    @return true if stream is already created, false otherwise. */ 
+bool Session::haveStream()
+{
+    return (m_stream != NULL);
 }
 
 void Session::setRemote(const std::string &ip, int port)

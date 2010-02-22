@@ -153,6 +153,7 @@ bool IrisJingleManager::take(const QDomElement &e)
                     session = new JingleSession();
                     session->initiateFromRemote(js);
                     replyAcknowledge(e);
+                    session->setCaller(false);
                     emit sessionIncoming(session);
                     // FIXME: emulate accepting from gui, react on signal
                     //acceptAudioSession(session);
@@ -180,6 +181,14 @@ bool IrisJingleManager::take(const QDomElement &e)
 
                     LOGGER(logit) << "Ukonceni session pro neznamou session: " 
                         << ssid << std::endl;
+                }
+                break;
+            case ACTION_INFO:
+                if (session) {
+                    replyAcknowledge(e);
+                    reportInfo(session, js->info());
+                } else {
+                    replyError(e, "service-unavailable");
                 }
                 break;
             case ACTION_TRANSPORT_INFO:
@@ -223,3 +232,7 @@ void IrisJingleManager::sessionAccept(JingleSession *session)
     acceptAudioSession(session);
 }
 
+void IrisJingleManager::reportInfo(JingleSession *session, SessionInfo info)
+{
+    emit sessionInfo(session, info);
+}

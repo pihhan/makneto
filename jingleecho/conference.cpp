@@ -62,18 +62,26 @@ Conference::~Conference()
     gst_object_unref(m_pipeline);
 }
 
-
-FsParticipant * Conference::createParticipant( const std::string &name)
+/** @brief Create new participant with this name, or get existing from cache. */
+FsParticipant * Conference::getParticipant(const std::string &name)
 {
-    GError *error = NULL;
-    FsParticipant *p = fs_conference_new_participant(
-        FS_CONFERENCE(m_fsconference), name.c_str(), &error );
-    if (error) {
-    LOGCF() << " fs_conference_new_participant: " <<
-        error->message << std::endl;
-        setError(PipelineError, error->message);
+    ParticipantMap::iterator it = m_participants.find(name);
+    if (it != m_participants.end()) {
+        return it->second;
+    } else {
+        GError *error = NULL;
+        FsParticipant *p = fs_conference_new_participant(
+            FS_CONFERENCE(m_fsconference), name.c_str(), &error );
+        if (error) {
+        LOGCF() << "fs_conference_new_participant: " << name << ": " <<
+            error->message << std::endl;
+            setError(PipelineError, error->message);
+        } else {
+            m_participants.insert(make_pair(name, p));
+        }
+
+        return p;
     }
-    return p;
 }
 
 GList * Conference::getLocalCandidates()
@@ -122,8 +130,10 @@ void Conference::setNicknames(const std::string &local, const std::string &remot
         g_object_unref(m_selfParticipant);
     if (m_remoteParticipant)
         g_object_unref(m_remoteParticipant);
-    m_selfParticipant = createParticipant(local);
-    m_remoteParticipant = createParticipant(remote);
+    if (!m_selfParticipant)
+        m_selfParticipant = getParticipant(local);
+    if (!m_remoteParticipant)
+        m_remoteParticipant = getParticipant(remote);
 }
 
 void Conference::onNewLocalCandidate(FsCandidate *candidate)
@@ -276,7 +286,7 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                     FsCodec *codec;
                     g_assert(v);
                     codec = (FsCodec *) g_value_get_boxed(v);
-                    codecs = g_list_prepend(codecs, codec);
+                    codecs = g_list_prepend(codecs, fs_codec_copy(codec));
                     conf->onSendCodecsChanged(codecs);
                     fs_codec_list_destroy(codecs);
 

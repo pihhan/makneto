@@ -25,15 +25,30 @@ char * calljid = NULL;
 char * configpath = NULL;
 char * myjid = NULL;
 char * password = NULL;
+gboolean audiocall = true;
+gboolean videocall = false;
+gboolean avcall = false;
+
+typedef enum {
+    CALL_NONE,
+    CALL_AUDIO,
+    CALL_VIDEO,
+    CALL_AUDIOVIDEO,
+} CallType;
 
 static GOptionEntry entries[] = 
 {
     { "config", 'c', 0, G_OPTION_ARG_STRING, &configpath, "Path to config file", NULL },
     { "myjid", 'm', 0, G_OPTION_ARG_STRING, &myjid, "Full jid to use, if not specified by config file.", NULL },
     { "password", 'p', 0, G_OPTION_ARG_STRING, &password, "Password used to authenticate with.", NULL },
-    { "acall", 'a', 0, G_OPTION_ARG_STRING, &calljid, "Full jid to call, after going online.", NULL },
+    { "target", 't', 0, G_OPTION_ARG_STRING, &calljid, "Full jid to call, after going online.", NULL },
+    { "acall", 'a', 0, G_OPTION_ARG_NONE, &audiocall, "Initiate audio call after going online.", NULL },
+    { "vcall", 'v', 0, G_OPTION_ARG_NONE, &videocall, "Initiate video call after going online.", NULL },
+    { "avcall", 'A', 0, G_OPTION_ARG_NONE, &avcall, "Initiate audio and video call after going online.", NULL },
     { 0, 0, 0, G_OPTION_ARG_NONE, 0, 0, 0 }
 };
+
+
 
 Bot::Bot(QObject *parent)
     : QObject(parent)
@@ -211,20 +226,32 @@ void Bot::rosterFinished(bool success, int code, const QString &errmsg)
         Status s(Status::Online, "irisbot here!");
         m_client->setPresence(s);
 
-        if (calljid) {
-            PJid callee(calljid);
-            if (callee) {
-                m_jm->initiateAudioSession(callee, m_client->jid());
-            } else {
-                std::cerr << "K zavolani predano neplatne JID" 
-                    << calljid << std::endl;
-            }
-        }
+        doCall();
     } else {
         std::cout << "Roster retrieving failed, code " <<
             code << " reason: " << errmsg.toStdString() << std::endl;
     }
 }
+
+void Bot::doCall()
+{
+    if (calljid) {
+        PJid callee(calljid);
+        if (callee) {
+            if (avcall || (audiocall && videocall)) {
+                m_jm->initiateAudioVideoSession(callee, m_client->jid());
+            } else if (audiocall) {
+                m_jm->initiateAudioSession(callee, m_client->jid());
+            } else if (videocall) {
+                m_jm->initiateVideoSession(callee, m_client->jid());
+            }
+        } else {
+            std::cerr << "K zavolani predano neplatne JID" 
+                << calljid << std::endl;
+        }
+    }
+}
+
 
 void printHelp(const char *myname)
 {

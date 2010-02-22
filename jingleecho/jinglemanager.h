@@ -72,6 +72,7 @@ class JingleManager
 	void		addSession(JingleSession *session);
 	
 	void registerActionHandler(JingleActionHandler *handler);
+        bool prepareFstSession(JingleSession *session);
 
         SessionMap      allSessions();
 
@@ -98,6 +99,8 @@ class JingleManager
                 const PJid &initiator=PJid()    );
     JingleSession * initiateVideoSession(const PJid &to,
                 const PJid &initiator);
+    JingleSession * initiateAudioVideoSession(const PJid &to,
+                const PJid &initiator);
     
     virtual void    send(JingleStanza *js)=0;
 
@@ -114,8 +117,10 @@ class JingleManager
         It can notify subsystems about state change, if reimplemented. 
     */
     virtual void setState(JingleSession *session, SessionState state);
+    virtual void reportInfo(JingleSession *session, SessionInfo info);
     virtual void reportFailed(JingleSession *session);
     virtual void reportError(JingleSession *session, JingleErrors error, const std::string &msg);
+    virtual void reportFatalError(JingleSession *session, JingleErrors error, const std::string &msg);
 
     bool sessionTimeout(JingleSession *session);
     void startSessionTimeout(JingleSession *session);

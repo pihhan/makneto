@@ -26,6 +26,7 @@ class IrisJingleManager :
     virtual void commentSession(JingleSession *session, const std::string &comment);
     virtual bool take(const QDomElement &e);
     virtual void setState(JingleSession *session, SessionState state);
+    virtual void reportInfo(JingleSession *session, SessionInfo info);
 
     public slots: 
     /** @brief Accept incoming session. */
@@ -38,6 +39,8 @@ class IrisJingleManager :
     void sessionIncoming(JingleSession *session);
     /** @brief Emitted on end of session. */
     void sessionTerminated(JingleSession *session);
+    /** @brief Emitted on incoming session info, like ringing, hold, mute. */
+    void sessionInfo(JingleSession *session, SessionInfo info);
 
     protected:
         virtual void onGo();

@@ -89,6 +89,8 @@ typedef enum {
     INFO_HOLD,
     INFO_MUTE,
     INFO_RINGING,
+    INFO_UNHOLD,
+    INFO_UNMUTE,
     INFO_LAST = INFO_RINGING
 } SessionInfo;
 
@@ -257,6 +259,12 @@ class JingleSession
 
     int localContentsWithType(MediaType type);
     int remoteContentsWithType(MediaType type);
+
+    bool codecsAreCompatible();
+    bool codecsAreCompatible(
+            const JingleContent &local, 
+            const JingleContent &remote);
+
 
     public:
         static SessionAction actionFromString(const std::string &action);

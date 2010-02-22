@@ -29,6 +29,7 @@ class Bot : public QObject
     QString prompt(const QString &text);
     void replyMessage(const XMPP::Message &m, const std::string &reply);
     void stunResolve(const QString &hostname);
+    void doCall();
 
     public slots:
     void connected();

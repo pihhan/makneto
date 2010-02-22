@@ -41,12 +41,8 @@ static gboolean periodic_timer(gpointer user_data)
             active = true;
         }
         if (session && (session->state() == JSTATE_PRECONFIGURE)) {
-            FstJingle *fsj = static_cast<FstJingle*>(session->data());
-            if (fsj) {
-                if (fsj->lastError() != NoError) {
-                } else if (fsj->isReady()) {
-                }
-            }
+            if (manager->periodicPreconfigureCheck(session))
+                active = true;
         }
     }
     return (TRUE);
@@ -77,6 +73,22 @@ void JingleManager::removeSession(const std::string &sid)
 	m_sessions.erase(sid);
 }
 
+/** @brief Create farsight session from jingle data, prepare. */
+bool JingleManager::prepareFstSession(JingleSession *session)
+{
+    FstJingle *fst = new FstJingle(session);
+    if (!fst || fst->lastError() != NoError) {
+        reportError(session, fst->lastError(), fst->lastErrorMessage());
+        return false;
+    }
+    session->setData(fst);
+    if (!fst->prepareSession(session)) {
+        reportError(session, fst->lastError(), fst->lastErrorMessage());
+        return false;
+    }
+    return fst->goPaused();
+}
+
 JingleSession * JingleManager::initiateEmptySession(
         const PJid &to, 
         const PJid &initiator) 
@@ -101,25 +113,19 @@ JingleSession * JingleManager::initiateAudioSession(
     const PJid &initiator)
 {
     JingleSession *session = initiateEmptySession(to, initiator);
+    if (!session)
+        return NULL;
     session->addLocalContent(audioContent());
-    JingleStanza *js = session->createStanzaInitiate();
 
-    FstJingle *fst = new FstJingle(session);
-    if (!fst || fst->lastError() != NoError) {
+    if (!prepareFstSession(session)) {
         return NULL;
     }
-    session->setData(fst);
-    if (!fst->createAudioSession(session)) {
-        return NULL;
-    }
-    if (!fst->goPaused())
-        return NULL;
 
+    setState(session, JSTATE_PRECONFIGURE);
     addSession(session);
-   
-    send(js); 
-    delete js;
-
+  
+    startSessionTimeout(session);
+    startPeriodicTimer();
     return session;
 }
 
@@ -129,11 +135,34 @@ JingleSession * JingleManager::initiateVideoSession(
 {
     JingleSession *session = initiateEmptySession(to, initiator);
     session->addLocalContent(videoContent());
-    addSession(session);
 
-    JingleStanza *js = session->createStanzaInitiate();
-    send(js);
-    delete js;
+    if (!prepareFstSession(session)) {
+        return NULL;
+    }
+
+    setState(session, JSTATE_PRECONFIGURE);
+    addSession(session);
+    startSessionTimeout(session);
+    startPeriodicTimer();
+    return session;
+}
+
+JingleSession * JingleManager::initiateAudioVideoSession(
+    const PJid &to,
+    const PJid &initiator)
+{
+    JingleSession *session = initiateEmptySession(to, initiator);
+    session->addLocalContent(audioContent());
+    session->addLocalContent(videoContent());
+
+    if (!prepareFstSession(session)) {
+        return NULL;
+    }
+
+    setState(session, JSTATE_PRECONFIGURE);
+    addSession(session);
+    startSessionTimeout(session);
+    startPeriodicTimer();
     return session;
 }
 
@@ -145,9 +174,8 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     JingleContent newcontent = audioContent();
 
     session->addLocalContent(newcontent);
-    setState(session, JSTATE_ACTIVE);
+//    setState(session, JSTATE_ACTIVE);
     session->setResponder(self());
-    JingleStanza *js = session->createStanzaAccept();
 
     FstJingle *fsj = static_cast<FstJingle *>(session->data());
     if (!fsj) {
@@ -156,10 +184,15 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
         fsj->goPlaying();
         session->setData(fsj);
     }
+    setState(session, JSTATE_PRECONFIGURE);
     LOGGER(logit) << "fstjingle state: " << fsj->stateDescribe() << std::endl;
     addSession(session);
 
+#if 0
+    // send after complete preconfiguration
+    JingleStanza *js = session->createStanzaAccept();
     send(js);
+#endif
     // start timeout timer
     startSessionTimeout(session);
     startPeriodicTimer();
@@ -170,18 +203,19 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 bool JingleManager::acceptedAudioSession(JingleSession *session)
 {
     bool good = true;
-    setState(session, JSTATE_ACTIVE);
     
     FstJingle *fsj = static_cast<FstJingle*>(session->data());
     if (!fsj) {
         fsj = new FstJingle(session);
         good = fsj->createAudioSession(session);
+        session->setData(fsj);
+    } else {
+        good = fsj->updateRemote(session);
     }
+    setState(session, JSTATE_ACTIVE);
     good = good && fsj->goPlaying();
 
     LOGGER(logit) << "fstjingle state: " << fsj->stateDescribe() << std::endl;
-
-    session->setData(fsj);
 
     startSessionTimeout(session);
     startPeriodicTimer();
@@ -288,6 +322,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 {
     JingleRtpContentDescription d;
     d.m_xmlns = XMLNS_JINGLE_RTP;
+#ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(0, "PCMU", 8000));
     d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
     d.addPayload(JingleRtpPayload(2, "G721", 8000));
@@ -295,6 +330,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 #ifdef USE_SPEEX
     d.addPayload(JingleRtpPayload(97, "speex", 8000));
     d.addPayload(JingleRtpPayload(96, "speex", 16000));
+#endif
 #endif
     d.setType(MEDIA_AUDIO);
     return d;
@@ -307,9 +343,11 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
+#ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
     d.addPayload(JingleRtpPayload(101, "H263-2000", 90000));
     d.addPayload(JingleRtpPayload(102, "theora", 90000));
+#endif
     d.setType(MEDIA_VIDEO);
     return d;
 }
@@ -371,7 +409,8 @@ bool JingleManager::periodicPreconfigureCheck(JingleSession *session)
                 terminateSession(session, REASON_MEDIA_ERROR);
             }
             session->setFailed(true);
-        } else if (fsj->isReady()) {
+        } else if (fsj->isPaused()) {
+            bool updated = fsj->updateLocalDescription(session);
             JingleStanza *js = NULL;
             if (session->localOriginated()) {
                 js = session->createStanzaInitiate();
@@ -488,7 +527,8 @@ void JingleManager::destroySession(JingleSession *session)
 {
     m_sessions.erase(session->sid());
     FstJingle *fst = static_cast<FstJingle *>(session->data());
-    delete fst;
+    if (fst)
+        delete fst;
     session->setData(NULL);
     delete session;
 }
@@ -554,6 +594,20 @@ void JingleManager::reportError(JingleSession *session, JingleErrors error, cons
             << msg << " (" << error << ")" << std::endl;
     if (m_handler)
         m_handler->handleSessionError(session, error, msg);
+}
+
+void JingleManager::reportFatalError(JingleSession *session, JingleErrors error, const std::string &msg)
+{
+    LOGGER(logit) << "FATAL ERROR: Session " << session->sid() << ": " 
+            << msg << " (" << error << ")" << std::endl;
+    if (m_handler)
+        m_handler->handleSessionError(session, error, msg);
+}
+
+void JingleManager::reportInfo(JingleSession *session, SessionInfo info)
+{
+    LOGGER(logit) << "SESSION INFO: " << session->sid() << " : " 
+        << JingleSession::stringFromInfo(info) << std::endl;
 }
 
 #ifdef GLOOX

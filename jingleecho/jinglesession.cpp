@@ -20,7 +20,7 @@ static const std::string jingle_session_reason_desc[] = { "undefined",
 	};
 
 static const std::string jingle_session_info_desc[] = {
-    "none", "active", "hold", "mute", "ringing", "!LAST!"
+    "none", "active", "hold", "mute", "ringing", "unhold", "unmute", "!LAST!"
 };
 
 static const std::string action_descriptions[] = { 
@@ -39,7 +39,8 @@ static const std::string action_descriptions[] = {
  */
 
 JingleSession::JingleSession()
-	: m_state(JSTATE_NULL), m_lastaction(ACTION_NONE), m_failed(false)
+	: m_state(JSTATE_NULL), m_lastaction(ACTION_NONE), m_am_caller(false),
+          m_data(0), m_failed(false)
 {
 	time((time_t *) &m_seed);
         m_sid = randomId();
@@ -610,6 +611,42 @@ int JingleSession::remoteContentsWithType(MediaType type)
             ++count;
     }
     return count;
+}
+
+bool JingleSession::codecsAreCompatible(
+    const JingleContent &local, 
+    const JingleContent &remote)
+{
+    JingleRtpContentDescription ld = local.description();
+    JingleRtpContentDescription rd = remote.description();
+    int matches = 0;
+    PayloadList lp = ld.payloads;
+    PayloadList rp = rd.payloads;
+    for (PayloadList::iterator l = lp.begin(); l!=lp.end(); l++) {
+        for (PayloadList::iterator r = rp.begin(); r!=rp.end(); r++) {
+            if (l->name == r->name)
+                matches++;
+        }
+
+    }
+    return (matches>0);
+}
+
+/** @brief Check whether remote and local codecs are compatible. */
+bool JingleSession::codecsAreCompatible()
+{
+    bool compatible = true;
+    for (ContentList::iterator li=m_local_contents.begin(); 
+        li!=m_local_contents.end(); li++) {
+
+        for (ContentList::iterator ri=m_remote_contents.begin(); 
+            ri!=m_remote_contents.end(); ri++) {
+            if (li->description().type() == ri->description().type()) {
+                compatible = compatible && codecsAreCompatible(*li, *ri);
+            }
+        }
+    }
+    return compatible;
 }
 
 

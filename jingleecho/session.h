@@ -15,10 +15,12 @@ class Session
     Session(Conference *conf, FsMediaType type = FS_MEDIA_TYPE_AUDIO);
     virtual ~Session();
 
-    FsStream *createStream(FsParticipant *participant, const GList *lcandidates=NULL);
+    FsStream *createStream(FsParticipant *participant, const GList *lcandidates);
+    bool createStream(FsParticipant *participant);
     /** @brief Create stream using local candidates already set 
         and remote participant of conference. */
     bool createStream();
+    bool haveStream();
 
     void setRemote(const std::string &ip, int port);
     void setRemote(GList *list);

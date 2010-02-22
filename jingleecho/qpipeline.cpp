@@ -303,7 +303,7 @@ bool QPipeline::enableVideo(bool input, bool output)
             } else {
                 link(m_videosource, m_videoinputtee);
             }
-        }
+        } else return false;
     }
     
     if (output) {
@@ -318,7 +318,7 @@ bool QPipeline::enableVideo(bool input, bool output)
                 add(m_lvsinkfilter);
                 link(m_lvsinkfilter, m_localvideosink);
             }
-        }
+        } else return false;
     }
 
     if (input && output) {
@@ -413,12 +413,24 @@ GstPad * QPipeline::getVideoSourcePad()
 
 void QPipeline::elementAdded(GstBin *bin, GstElement *element, gpointer pipeline)
 {
-    QPLOG() << "added element: " << gst_element_get_name(element) << std::endl;
+    gchar *n1, *n2;
+    n1 = gst_element_get_name(element);
+    n2 = gst_element_get_name(GST_ELEMENT(bin));
+    QPLOG() << "added element: " << n1
+        << " to " << n2 << std::endl;
+    g_free(n1);
+    g_free(n2);
 }
 
 void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline)
 {
-    QPLOG() << "removed element: " << gst_element_get_name(element) << std::endl;
+    gchar *n1, *n2;
+    n1 = gst_element_get_name(element);
+    n2 = gst_element_get_name(GST_ELEMENT(bin));
+    QPLOG() << "removed element: " << n1
+        << " from " << n2 << std::endl;
+    g_free(n1);
+    g_free(n2);
 }
 
 std::string QPipeline::binToString(GstElement *bin)

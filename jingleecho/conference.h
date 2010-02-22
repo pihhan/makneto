@@ -4,6 +4,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 
 #include <gst/gst.h>
 #include <gst/gstinterface.h>
@@ -16,6 +17,7 @@
 
 
 typedef std::list<Session *>    SessionList;
+typedef std::map<std::string, FsParticipant *>  ParticipantMap;
 
 /** Representation for one multimedia session between two people.
 */
@@ -31,7 +33,7 @@ class Conference
     GstElement * pipeline();
     GstElement * conference();
 
-    FsParticipant * createParticipant( const std::string &name);
+    FsParticipant * getParticipant( const std::string &name);
 
     void setInput(GstElement *input);
     void setOutput(GstElement *output);
@@ -108,6 +110,7 @@ class Conference
     std::string         m_lastErrorMessage;
     FstStatusReader     *m_reader;
     std::string         m_transmitter;
+    ParticipantMap      m_participants;
 };
 
 #endif

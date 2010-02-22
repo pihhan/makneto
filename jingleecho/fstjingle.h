@@ -25,8 +25,12 @@ class FstJingle
         
     void setNicknames(const std::string &local, const std::string &remote);
     bool linkSink(Session *session, FsMediaType type = FS_MEDIA_TYPE_AUDIO);
+    bool prepareSession(const JingleContent &local);
+    bool prepareSession(JingleSession *session);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
     bool createAudioSession(JingleSession *session);
+    bool updateRemote(const JingleContent &remote, const std::string &target = "");
+    bool updateRemote(JingleSession *session);
     bool replaceRemoteContent(const JingleContent &content);
     bool replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate);
     std::string stateDescribe();
@@ -39,7 +43,7 @@ class FstJingle
     static GList * createSingleFsCandidateList(const JingleTransport &transport);
     static JingleCandidate createJingleCandidate(const FsCandidate *candidate);
     static JingleCandidate createJingleIceCandidate(const FsCandidate *candidate, const std::string &xmlns);
-    static CandidateList   createJingleCandidateList(GList *candidates);
+    static CandidateList   createJingleCandidateList(GList *candidates, bool anyip = true);
     static JingleRtpPayload createJinglePayload(const FsCodec *codec);
     static PayloadList createJinglePayloadList(const GList *codecs);
 
@@ -65,6 +69,7 @@ class FstJingle
     bool tryNextCandidate(JingleContent &content);
 
     bool updateLocalDescription(JingleContent &content);
+    bool updateLocalDescription(JingleSession *session);
 
     void setStun(const std::string &ip, int port = 0);
     void setTransportXmlns(const std::string &xmlns);
