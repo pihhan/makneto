@@ -12,7 +12,7 @@ using namespace XMPP;
 static const std::string default_stun_ip = "212.71.150.10";
 
 IrisJingleManager::IrisJingleManager(Task *parent)
-    : XMPP::Task(parent)
+    : XMPP::Task(parent), JingleManager::JingleManager()
 {
     setStun(default_stun_ip);
 
@@ -173,8 +173,9 @@ bool IrisJingleManager::take(const QDomElement &e)
                 break;
             case ACTION_TERMINATE:
                 if (session) {
-                    terminateSession(session);
                     replyAcknowledge(e);
+                    setState(session, JSTATE_TERMINATED);
+                    terminateSession(session);
                     emit sessionTerminated(session);
                 } else {
                     replyError(e, "service-unavailable");

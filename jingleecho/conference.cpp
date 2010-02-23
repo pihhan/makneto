@@ -29,7 +29,7 @@ Conference::Conference(GstElement *bin)
         return;
     }
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
-        LOGCF() << "Chyba pri pridavani conference do pipeline" << std::endl;
+        LOGCF() << "Adding fsrtpconference to pipeline failed" << std::endl;
         setError(PipelineError, "Adding fsrtpconference to pipeline failed");
     }
 }
@@ -47,7 +47,7 @@ Conference::Conference(QPipeline *pipeline)
     m_fsconference = gst_element_factory_make("fsrtpconference", NULL);
     g_assert(m_fsconference);
     if (!gst_bin_add(GST_BIN(m_pipeline), m_fsconference)) {
-        LOGGER(logit) << "Chyba pri pridavani conference do pipeline" 
+        LOGGER(logit) << "Adding fsrtpconference to pipeline failed" 
                 << std::endl;
         setError(PipelineError, "Adding fsrtpconference to pipeline failed");
     }
@@ -317,8 +317,11 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
             }
         } else {
             const gchar *name = gst_structure_get_name(s);
-            LOGCF() << "Unknown element message on pipeline: " <<
+            gchar *srcname = gst_object_get_name(GST_OBJECT(message->src));
+            LOGCF() << "Unknown element message from " 
+                    << srcname << " on pipeline: " <<
                     name << std::endl;
+            g_free(srcname);
         }
     return false;
 }

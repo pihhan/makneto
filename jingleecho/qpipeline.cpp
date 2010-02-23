@@ -41,8 +41,52 @@ QPipeline::QPipeline()
 
 QPipeline::~QPipeline()
 {
+    GstIterator *i = gst_bin_iterate_elements(GST_BIN(m_pipe));
+    // walk pipeline and remove all elements
+    while (i) {
+        GstElement *e = NULL;
+        switch (gst_iterator_next(i, (void **) &e)) {
+            case GST_ITERATOR_OK:
+                if (!gst_bin_remove(GST_BIN(m_pipe), e)) {
+                    g_error("qpipeline remove failed on destroy for element %s",
+                        gst_object_get_name(GST_OBJECT(e)));
+                }
+                break;
+            case GST_ITERATOR_RESYNC:
+                gst_iterator_resync(i);
+                break;
+            case GST_ITERATOR_DONE:
+                gst_iterator_free(i);
+                i = NULL;
+                break;
+            case GST_ITERATOR_ERROR:
+                g_error("qpipeline iterator error on destroy");
+                gst_iterator_free(i);
+                i = NULL;
+                break;
+        }
+    }
+
+    // unref all local elements that are allocated
+    if (m_videosource) 
+        gst_object_unref(m_videosource);
+    if (m_vsourcefilter)
+        gst_object_unref(m_vsourcefilter);
+    if (m_videosink)
+        gst_object_unref(m_videosink);
+    if (m_vsinkfilter)
+        gst_object_unref(m_vsinkfilter);
+    if (m_localvideosink)
+        gst_object_unref(m_localvideosink);
+    if (m_lvsinkfilter)
+        gst_object_unref(m_lvsinkfilter);
+    if (m_videoinputtee)
+        gst_object_unref(m_videoinputtee);
+
+    // unref pipeline itself
     gst_object_unref(m_bus);
     gst_object_unref(m_pipe);
+
 }
 
 bool QPipeline::add(GstElement *element)
@@ -295,12 +339,6 @@ bool QPipeline::createLocalVideoSink(const char *bindesc, const char *filter)
 bool QPipeline::createVideoTee()
 {
     m_videoinputtee = gst_element_factory_make("tee", "video-source-tee");
-    if (m_videoinputtee) {
-        int number = 2;
-        g_object_set(G_OBJECT(m_videoinputtee), 
-                "num-src-pads", G_TYPE_INT,number, 
-                NULL);
-    }
     return (m_videoinputtee != NULL);
 }
 

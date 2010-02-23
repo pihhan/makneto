@@ -264,7 +264,9 @@ bool FstJingle::prepareSession(const JingleContent &local)
             LOGGER(logit) << "requested creation of content with local type NONE" << std::endl;
             break;
     }
-    LOGGER(logit) << "media type " << mtype << " fstype " << fstype << std::endl;
+    LOGGER(logit) << "Prepared content " << local.name() 
+        << " media type " << mtype 
+        << " fstype " << fstype << std::endl;
 
     Session *session = new Session(conference, fstype);
     g_assert(session);
@@ -324,17 +326,28 @@ bool FstJingle::updateRemote(
             if (!created) 
                 return false;
         }
+        LOGGER(logit) << "Updating remote content for " 
+            << remote.name() << std::endl;
 
         GList *remoteCandidates = createFsCandidateList(remote.transport());
         if (remoteCandidates != NULL) {
             session->setRemote(remoteCandidates);
+            LOGGER(logit) << "Updating remote candidates to: "
+                << candidateListToString(remoteCandidates) << std::endl;
+            fs_candidate_list_destroy(remoteCandidates);
         }
 
         GList *remoteCodecs = createFsCodecList(remote.description());
-        if (remoteCodecs != NULL)
+        if (remoteCodecs != NULL) {
             session->setRemoteCodec(remoteCodecs);
+            LOGGER(logit) << "Updating remote codecs to: "
+                << codecListToString(remoteCodecs) << std::endl;
+            fs_codec_list_destroy(remoteCodecs);
+        }
         return (exist || created);
     } else {
+        LOGGER(logit) << "Session not found for content: " 
+                << remote.name() << std::endl;
         return false;
     }
 }
@@ -435,17 +448,27 @@ bool FstJingle::replaceRemoteContent(const JingleContent &content)
     Session *session = conference->getSession(content.name());
     if (session) {
         bool created = true;
+        LOGGER(logit) << "Replacing remote content " << content.name() 
+            << std::endl;
         if (!session->haveStream()) {
             created = session->createStream();
         }
-        if (remoteCandidates)
+        if (remoteCandidates) {
             session->setRemote(remoteCandidates);
+            LOGGER(logit) << "Replacing remote candidates to: " 
+                << candidateListToString(remoteCandidates) << std::endl;
+            fs_candidate_list_destroy(remoteCandidates);
+        }
         bool cod = true;
-        if (remoteCodecs)
+        if (remoteCodecs) {
             cod = session->setRemoteCodec(remoteCodecs);
+            LOGGER(logit) << "Replacing remote codecs to: " 
+                << codecListToString(remoteCodecs) << std::endl;
+            fs_codec_list_destroy(remoteCodecs);
+        }
         return (cod && created);
     } else {
-        LOGGER(logit) << "Content na nahrazeni nema odpovidajici session! " 
+        LOGGER(logit) << "Content to replace does not have existing session " 
             << content.name() << " media " << content.media() 
             << std::endl;
         return false;
@@ -484,7 +507,7 @@ bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleC
         return true;
     } else {
         LOGGER(logit)
-        << "Nenalezena session pri nahrazovani vzdaleneho kandidata: " 
+        << "Farsight session not found for content: " 
         << content << std::endl;
     }
     return false;
@@ -518,6 +541,24 @@ std::string FstJingle::codecListToString(const GList *codeclist)
         description += toString(codec);
         first = false;
         codeclist = g_list_next(codeclist);
+    }
+    return description;
+}
+
+/** @brief Create string description of candidate list */
+std::string FstJingle::candidateListToString(const GList *candidates)
+{
+    std::string description;
+    bool first = true;
+    if (!candidates)
+        return description;
+    while (candidates) {
+        FsCandidate * c = (FsCandidate *) candidates->data;
+        if (!first)
+            description += ", ";
+        description += toString(c);
+        first = false;
+        candidates = g_list_next(candidates);
     }
     return description;
 }
@@ -559,6 +600,9 @@ bool FstJingle::terminate()
 {
     conference->removeAllSessions();
     pipeline->setState(GST_STATE_NULL);
+
+    delete conference;
+    delete pipeline;
     return true;
 }
 

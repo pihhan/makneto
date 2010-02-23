@@ -48,6 +48,7 @@ class FstJingle
     static PayloadList createJinglePayloadList(const GList *codecs);
 
     static std::string codecListToString(const GList *codeclist);
+    static std::string candidateListToString(const GList *codeclist);
     static std::string toString(const FsCodec *codec);
     static std::string toString(const FsCandidate *candidate);
     static std::string xmlnsToTransmitter(const std::string &xmlns);

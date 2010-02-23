@@ -49,7 +49,7 @@ static gboolean periodic_timer(gpointer user_data)
 }
 
 JingleManager::JingleManager()
-	: m_handler(0), m_timerid(0),m_stunPort(0)
+	: m_handler(0), m_seed(0), m_timerid(0),m_stunPort(0)
 {
         m_seed = (unsigned int) time(NULL);
 }
@@ -76,11 +76,15 @@ void JingleManager::removeSession(const std::string &sid)
 /** @brief Create farsight session from jingle data, prepare. */
 bool JingleManager::prepareFstSession(JingleSession *session)
 {
-    FstJingle *fst = new FstJingle(session);
+    FstJingle *fst = static_cast<FstJingle *>(session->data());
+    if (!fst)
+        fst = new FstJingle(session);
     if (!fst || fst->lastError() != NoError) {
         reportError(session, fst->lastError(), fst->lastErrorMessage());
         return false;
     }
+    if (!m_stunIp.empty())
+        fst->setStun(m_stunIp, m_stunPort);
     session->setData(fst);
     if (!fst->prepareSession(session)) {
         reportError(session, fst->lastError(), fst->lastErrorMessage());
@@ -199,10 +203,17 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     bool updated = false;
     FstJingle *fsj = static_cast<FstJingle *>(session->data());
     if (!fsj) {
-        fsj = new FstJingle(session);
-        session->setData(fsj);
         prepared = prepareFstSession(session);
+        if (!prepared) {
+            LOGGER(logit) << "prepareFstSession failed for session: " 
+                << session->sid() << std::endl;
+        }
+        fsj = static_cast<FstJingle *>(session->data());
         updated = fsj->updateRemote(session);
+        if (!updated) {
+            LOGGER(logit) << "updateRemote failed for session: " 
+                << session->sid() << std::endl;
+        }
         //fsj->createAudioSession(session);
         //fsj->goPlaying();
     } else {
@@ -241,7 +252,7 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
 
     LOGGER(logit) << "fstjingle state: " << fsj->stateDescribe() << std::endl;
 
-    startSessionTimeout(session);
+    // startSessionTimeout(session);
     startPeriodicTimer();
     return good;
 }
@@ -257,12 +268,17 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
         return;
     }
 
-    JingleStanza *stanza = session->createStanzaTerminate(reason);
-    send(stanza);
     setState(session, JSTATE_TERMINATED);
+
+    if (session->state() >= JSTATE_PENDING) {
+        // only terminate on remote side if we sent already something
+        JingleStanza *stanza = session->createStanzaTerminate(reason);
+        send(stanza);
+    }
     if (session->data()) {
         FstJingle *fst = static_cast<FstJingle *>(session->data());
         fst->terminate();
+        // delete fst;
         LOGGER(logit) << "Session found and terminated." << std::endl;
     } else {
         LOGGER(logit) << "No data for session " << session->sid() << std::endl;
@@ -536,6 +552,7 @@ bool JingleManager::sessionTimeout(JingleSession *session)
             << " session: " << session->sid() 
             << std::endl;
         terminateSession(session, REASON_MEDIA_ERROR);
+        reportFatalError(session, NetworkTimeoutError, "Session timed out.");
         return FALSE;
     }
     return TRUE;
@@ -544,7 +561,9 @@ bool JingleManager::sessionTimeout(JingleSession *session)
 void JingleManager::startSessionTimeout(JingleSession *session)
 {
     SessionManagerPair *p = new SessionManagerPair(session, this);
-    g_timeout_add(CANDIDATE_TIMEOUT_MS, JingleManager::sessionTimeout_gcb, p);
+    guint id = 
+        g_timeout_add(CANDIDATE_TIMEOUT_MS, JingleManager::sessionTimeout_gcb, p);
+    m_timers.insert( std::make_pair(session->sid(), id));
 }
 
 /** @brief Callback for glib, maps static call back to object method. 
@@ -567,6 +586,10 @@ void JingleManager::destroySession(JingleSession *session)
 {
     m_sessions.erase(session->sid());
     FstJingle *fst = static_cast<FstJingle *>(session->data());
+    UIntMap::iterator timer = m_timers.find(session->sid());
+    if (timer != m_timers.end()) {
+        g_source_remove(timer->second);
+    }
     if (fst)
         delete fst;
     session->setData(NULL);

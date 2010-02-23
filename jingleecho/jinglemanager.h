@@ -51,6 +51,7 @@ class JingleManager
 {
     public:
         typedef std::map<std::string, JingleSession *> 	SessionMap;
+        typedef std::map<std::string, unsigned int>     UIntMap;
 		
 	JingleManager();
 	
@@ -136,7 +137,8 @@ class JingleManager
     static gboolean sessionTimeout_gcb(gpointer user_data);
     bool acceptedAudioSession(JingleSession *session);
 	
-	SessionMap m_sessions;
+	SessionMap  m_sessions;
+        UIntMap     m_timers;
 	JingleActionHandler *m_handler;
         unsigned int        m_seed;
         unsigned int        m_timerid;
