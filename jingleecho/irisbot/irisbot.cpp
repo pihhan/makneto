@@ -25,7 +25,7 @@ char * calljid = NULL;
 char * configpath = NULL;
 char * myjid = NULL;
 char * password = NULL;
-gboolean audiocall = true;
+gboolean audiocall = false;
 gboolean videocall = false;
 gboolean avcall = false;
 
@@ -59,10 +59,15 @@ Bot::Bot(QObject *parent)
 
     m_jm = new IrisJingleManager(m_client->rootTask());
 
+    m_configureStun = false;
     if (settings) {
         QString stunhost = settings->value("xmpp/stun").toString();
-        if (!stunhost.isEmpty())
+
+        if (!stunhost.isEmpty()) {
             stunResolve(stunhost);
+            //m_configureStun = true;
+            //connect(this, SIGNAL(stunConfigured()), this, SLOT(doCall()));
+        }
 
         bool plainpass = settings->value("xmpp/plaintext").toBool();
         if (plainpass)
@@ -226,7 +231,8 @@ void Bot::rosterFinished(bool success, int code, const QString &errmsg)
         Status s(Status::Online, "irisbot here!");
         m_client->setPresence(s);
 
-        doCall();
+        if (!m_configureStun)
+            doCall();
     } else {
         std::cout << "Roster retrieving failed, code " <<
             code << " reason: " << errmsg.toStdString() << std::endl;
@@ -322,6 +328,7 @@ void Bot::stunResolve(const QString &hostname)
     if (address.protocol() != QAbstractSocket::UnknownNetworkLayerProtocol) {
         // it is valid address, ipv4 or ipv6, no resolver is needed
         m_jm->setStun(hostname.toStdString());
+        emit stunConfigured();
     }
     int rid = 
     QHostInfo::lookupHost(hostname, this, SLOT(stunHostResolved(QHostInfo)));
@@ -336,6 +343,7 @@ void Bot::stunHostResolved(const QHostInfo info)
         QHostAddress a = info.addresses().first();
         std::string ip = a.toString().toStdString();
         m_jm->setStun(ip);
+        emit stunConfigured();
         LOGGER(logit) << "Stun resolved: " << ip << std::endl;
     } else {
         std::cerr << "Resolver  pro " << info.hostName().toStdString() 
@@ -343,5 +351,4 @@ void Bot::stunHostResolved(const QHostInfo info)
             << info.errorString().toStdString() << std::endl;
     }
 }
-
 

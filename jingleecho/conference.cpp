@@ -161,6 +161,168 @@ void Conference::onSendCodecsChanged(GList *codecs)
     LOGCF() << "Send codecs changed" << codecListToString(codecs) << std::endl;
 }
 
+/** @brief Callback handle for element messages. */
+gboolean Conference::elementMessageCallback(GstMessage *message)
+{
+        Conference *conf = this;
+        const GstStructure *s = gst_message_get_structure(message);
+        LOGCF() << "Got element message with name: " 
+                <<  gst_structure_get_name(s) << std::endl;
+        if (gst_structure_has_name(s, "farsight-error")) {
+            gint error;
+            const gchar *error_msg = gst_structure_get_string(s, "error-msg");
+            const gchar *debug_msg = gst_structure_get_string(s, "debug-msg");
+            g_assert(gst_structure_get_enum(s, "error-no", FS_TYPE_ERROR, &error));
+            if (FS_ERROR_IS_FATAL(error)) {
+                LOGGER(logit).printf("Farsight fatal error: %d %s %s",
+                    error, error_msg, debug_msg);
+                conf->reportFatalError(debug_msg);
+            } else {
+                LOGGER(logit).printf("Farsight non-fatal error: %d %s %s",
+                    error, error_msg, debug_msg);
+                conf->reportError(debug_msg);
+            }
+            conf->setError(PipelineError, error_msg);
+
+        } else if (gst_structure_has_name(s, 
+                "farsight-new-local-candidate")) {
+            FsCandidate *candidate = NULL;
+            FsStream *stream = NULL;
+            if (!gst_structure_get(message->structure, 
+                "stream", FS_TYPE_STREAM, &stream, 
+                "candidate", FS_TYPE_CANDIDATE, &candidate,
+                NULL)) {
+                LOGCF() << "failed to get stream and candidate" << std::endl;
+                return true;
+            } else {
+                unsigned int id = Session::idFromStream(stream);
+                gst_object_unref(stream);
+
+                Session *session = conf->getSession(id);
+                if (session)
+                    session->onNewLocalCandidate(candidate);
+                conf->onNewLocalCandidate(candidate);
+            }
+
+        } else if (gst_structure_has_name(s, 
+                "farsight-local-candidates-prepared")) {
+            conf->onLocalCandidatesPrepared();
+
+        } else if (gst_structure_has_name(s,
+                "farsight-new-active-candidate-pair")) {
+            FsCandidate *l = NULL;
+            FsCandidate *r = NULL;
+            FsStream *stream = NULL;
+            if (!gst_structure_get(message->structure, 
+                    "stream", FS_TYPE_STREAM, &stream,
+                    "local-candidate", FS_TYPE_CANDIDATE, &l,
+                    "remote-candidate", FS_TYPE_CANDIDATE, &r,
+                    NULL)) {
+                LOGCF() << "gst_structure_get for " 
+                    << gst_structure_get_name(s) << " failed." 
+                    << std::endl;
+                return true;
+            }
+            unsigned int id = Session::idFromStream(stream);
+            gst_object_unref(stream);
+            Session *s = conf->getSession(id);
+            if (s) {
+                // TODO:
+                //s->onNewActivePair(l, r);
+                LOGCF() << "Session " << s->name() 
+                    << " has new active pair "
+                    << l->ip << ":" << l->port
+                    << " <-> "
+                    << r->ip << ":" << r->port
+                    << " (only logged)"
+                    << std::endl;
+            }
+        } else if (gst_structure_has_name(s,
+                "farsight-recv-codecs-changed")) {
+            const GValue *v = gst_structure_get_value(s, "codecs");
+            GList *codecs = NULL;
+            g_assert(v);
+            codecs = (GList *) g_value_get_boxed(v);
+            conf->onRecvCodecsChanged(codecs);
+
+        } else if (gst_structure_has_name(s,
+                "farsight-send-codecs-changed") ) {
+            const GValue *v = gst_structure_get_value(s, "codecs");
+            GList *codecs = NULL;
+            g_assert(v);
+            codecs = (GList *) g_value_get_boxed(v);
+            conf->onSendCodecsChanged(codecs);
+        } else if (gst_structure_has_name(s, 
+                "farsight-send-codec-changed")) {
+            const GValue *v = gst_structure_get_value(s, "codec");
+            GList *codecs = NULL;
+            FsCodec *codec;
+            g_assert(v);
+            codec = (FsCodec *) g_value_get_boxed(v);
+            codecs = g_list_prepend(codecs, fs_codec_copy(codec));
+            conf->onSendCodecsChanged(codecs);
+            fs_codec_list_destroy(codecs);
+
+        } else if (gst_structure_has_name(s,
+                "farsight-component-state-changed")) {
+            FsStream *fs = NULL;
+            guint component = 0;
+            gst_structure_get(message->structure,
+                "stream", FS_TYPE_STREAM, &fs,
+                "component", G_TYPE_UINT, &component,
+                NULL);
+            const GValue *vstate =gst_structure_get_value(s, "state");
+            FsStreamState state;
+            state = (FsStreamState) g_value_get_enum(vstate);
+            LOGGER(logit) << "Component " << component 
+                << " state changed to " << state << std::endl;
+
+            if (conf->m_reader) {
+                FstStatusReader::StateType rstate = FstStatusReader::S_NONE;
+                switch (rstate) {
+                    case GST_STATE_VOID_PENDING:
+                    case GST_STATE_NULL:
+                        rstate = FstStatusReader::S_STOPPED; 
+                        break;
+                    case GST_STATE_READY:
+                    case GST_STATE_PAUSED:
+                        rstate = FstStatusReader::S_STOPPED; 
+                        break;
+                    case GST_STATE_PLAYING:
+                        rstate = FstStatusReader::S_RUNNING;
+                        break;
+                }
+                conf->m_reader->reportState(rstate);
+            }
+        } else if (gst_structure_has_name(s,
+                "farsight-codecs-changed")) {
+            FsSession *fs = NULL;
+            if (!gst_structure_get(message->structure,
+                    "session", FS_TYPE_SESSION, &fs,
+                    NULL)) {
+                LOGCF() << "gst_structure_get failed for: " 
+                        << gst_structure_get_name(s) << std::endl;
+            } else {
+                Session *session = conf->getSession(fs);
+                if (session) {
+                    GList *cl = session->getCodecListProperty("codecs");
+                    LOGCF() << "Session " << session->name() 
+                        << " changed codecs to " 
+                        << FstJingle::codecListToString(cl)
+                        << std::endl;
+                    fs_codec_list_destroy(cl);
+                } else {
+                    LOGCF() << "session is NULL" << std::endl;
+                }
+            }
+        } else {
+            const gchar *name = gst_structure_get_name(s);
+            LOGCF() << "Unknown element message on pipeline: " <<
+                    name << std::endl;
+        }
+    return false;
+}
+
 /** @brief Message callback handling messages received from pipeline bus.
     @param bus Bus we received message from.
     @param message Message itself.
@@ -191,170 +353,27 @@ gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer 
                 break;
             }
         case GST_MESSAGE_ELEMENT:
+            return conf->elementMessageCallback(message);
+        case GST_MESSAGE_NEW_CLOCK:
             {
-                const GstStructure *s = gst_message_get_structure(message);
-                LOGCF() << "Got element message with name: " 
-                        <<  gst_structure_get_name(s) << std::endl;
-                if (gst_structure_has_name(s, "farsight-error")) {
-                    gint error;
-                    const gchar *error_msg = gst_structure_get_string(s, "error-msg");
-                    const gchar *debug_msg = gst_structure_get_string(s, "debug-msg");
-                    g_assert(gst_structure_get_enum(s, "error-no", FS_TYPE_ERROR, &error));
-                    if (FS_ERROR_IS_FATAL(error)) {
-                        LOGGER(logit).printf("Farsight fatal error: %d %s %s",
-                            error, error_msg, debug_msg);
-                        conf->reportFatalError(debug_msg);
-                    } else {
-                        LOGGER(logit).printf("Farsight non-fatal error: %d %s %s",
-                            error, error_msg, debug_msg);
-                        conf->reportError(debug_msg);
-                    }
-                    conf->setError(PipelineError, error_msg);
-
-                } else if (gst_structure_has_name(s, 
-                        "farsight-new-local-candidate")) {
-                    FsCandidate *candidate = NULL;
-                    FsStream *stream = NULL;
-                    if (!gst_structure_get(message->structure, 
-                        "stream", FS_TYPE_STREAM, &stream, 
-                        "candidate", FS_TYPE_CANDIDATE, &candidate,
-                        NULL)) {
-                        LOGCF() << "failed to get stream and candidate" << std::endl;
-                        return true;
-                    } else {
-                        unsigned int id = Session::idFromStream(stream);
-                        gst_object_unref(stream);
-
-                        Session *session = conf->getSession(id);
-                        if (session)
-                            session->onNewLocalCandidate(candidate);
-                        conf->onNewLocalCandidate(candidate);
-                    }
-
-                } else if (gst_structure_has_name(s, 
-                        "farsight-local-candidates-prepared")) {
-                    conf->onLocalCandidatesPrepared();
-
-                } else if (gst_structure_has_name(s,
-                        "farsight-new-active-candidate-pair")) {
-                    FsCandidate *l = NULL;
-                    FsCandidate *r = NULL;
-                    FsStream *stream = NULL;
-                    if (!gst_structure_get(message->structure, 
-                            "stream", FS_TYPE_STREAM, &stream,
-                            "local-candidate", FS_TYPE_CANDIDATE, &l,
-                            "remote-candidate", FS_TYPE_CANDIDATE, &r,
-                            NULL)) {
-                        LOGCF() << "gst_structure_get for " 
-                            << gst_structure_get_name(s) << " failed." 
-                            << std::endl;
-                        return true;
-                    }
-                    unsigned int id = Session::idFromStream(stream);
-                    gst_object_unref(stream);
-                    Session *s = conf->getSession(id);
-                    if (s) {
-                        // TODO:
-                        //s->onNewActivePair(l, r);
-                        LOGCF() << "Session " << s->name() 
-                            << " has new active pair "
-                            << l->ip << ":" << l->port
-                            << " <-> "
-                            << r->ip << ":" << r->port
-                            << " (only logged)"
-                            << std::endl;
-                    }
-                } else if (gst_structure_has_name(s,
-                        "farsight-recv-codecs-changed")) {
-                    const GValue *v = gst_structure_get_value(s, "codecs");
-                    GList *codecs = NULL;
-                    g_assert(v);
-                    codecs = (GList *) g_value_get_boxed(v);
-                    conf->onRecvCodecsChanged(codecs);
-
-                } else if (gst_structure_has_name(s,
-                        "farsight-send-codecs-changed") ) {
-                    const GValue *v = gst_structure_get_value(s, "codecs");
-                    GList *codecs = NULL;
-                    g_assert(v);
-                    codecs = (GList *) g_value_get_boxed(v);
-                    conf->onSendCodecsChanged(codecs);
-                } else if (gst_structure_has_name(s, 
-                        "farsight-send-codec-changed")) {
-                    const GValue *v = gst_structure_get_value(s, "codec");
-                    GList *codecs = NULL;
-                    FsCodec *codec;
-                    g_assert(v);
-                    codec = (FsCodec *) g_value_get_boxed(v);
-                    codecs = g_list_prepend(codecs, fs_codec_copy(codec));
-                    conf->onSendCodecsChanged(codecs);
-                    fs_codec_list_destroy(codecs);
-
-                } else if (gst_structure_has_name(s,
-                        "farsight-component-state-changed")) {
-                    FsStream *fs = NULL;
-                    guint component = 0;
-                    gst_structure_get(message->structure,
-                        "stream", FS_TYPE_STREAM, &fs,
-                        "component", G_TYPE_UINT, &component,
-                        NULL);
-                    const GValue *vstate =gst_structure_get_value(s, "state");
-                    FsStreamState state;
-                    state = (FsStreamState) g_value_get_enum(vstate);
-                    LOGGER(logit) << "Component " << component 
-                        << " state changed to " << state << std::endl;
-
-                    if (conf->m_reader) {
-                        FstStatusReader::StateType rstate = FstStatusReader::S_NONE;
-                        switch (rstate) {
-                            case GST_STATE_VOID_PENDING:
-                            case GST_STATE_NULL:
-                                rstate = FstStatusReader::S_STOPPED; 
-                                break;
-                            case GST_STATE_READY:
-                            case GST_STATE_PAUSED:
-                                rstate = FstStatusReader::S_STOPPED; 
-                                break;
-                            case GST_STATE_PLAYING:
-                                rstate = FstStatusReader::S_RUNNING;
-                                break;
-                        }
-                        conf->m_reader->reportState(rstate);
-                    }
-                } else if (gst_structure_has_name(s,
-                        "farsight-codecs-changed")) {
-                    FsSession *fs = NULL;
-                    if (!gst_structure_get(message->structure,
-                            "session", FS_TYPE_SESSION, &fs,
-                            NULL)) {
-                        LOGCF() << "gst_structure_get failed for: " 
-                                << gst_structure_get_name(s) << std::endl;
-                    } else {
-                        Session *session = conf->getSession(fs);
-                        if (session) {
-                            GList *cl = session->getCodecListProperty("codecs");
-                            LOGCF() << "Session " << session->name() 
-                                << " changed codecs to " 
-                                << FstJingle::codecListToString(cl)
-                                << std::endl;
-                            fs_codec_list_destroy(cl);
-                        } else {
-                            LOGCF() << "session is NULL" << std::endl;
-                        }
-                    }
-                } else {
-                    const gchar *name = gst_structure_get_name(s);
-                    std::cerr << "Neznama zprava na pipeline: " <<
-                            name << std::endl;
-                }
+                GstClock *clock = NULL;
+                gchar *clock_name = NULL;
+                gst_message_parse_new_clock(message, &clock);
+                clock_name = gst_object_get_name(GST_OBJECT(clock));
+                LOGCF() << "Installed new clock on pipeline: " 
+                    << clock_name << std::endl;
+                g_free(clock_name);
             }
             break;
         case GST_MESSAGE_STATE_CHANGED:
             {
                 GstState olds, news, pending;
                 gst_message_parse_state_changed(message, &olds, &news, &pending);
-                //LOGCF() << "Zmena stavu " << olds << " -> " << news 
-                //        << " (" << pending << ")" << std::endl;
+                char *name = gst_object_get_name(GST_OBJECT(message->src));
+                LOGCF() << "Zmena stavu " << name << ": " << olds 
+                        << " -> " << news 
+                        << " (" << pending << ")" << std::endl;
+                g_free(name);
             }
             break;
         case GST_MESSAGE_STREAM_STATUS:
@@ -388,18 +407,41 @@ void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
             " with codec: " << fs_codec_to_string(codec) <<  std::endl;
     if (!m_qpipeline)
         return;
-    GstPad *sinkpad = m_qpipeline->getAudioSinkPad();
+    GstPad *sinkpad = NULL;
+    switch (session->type()) {
+        case FS_MEDIA_TYPE_AUDIO:
+            sinkpad = m_qpipeline->getAudioSinkPad();
+            break;
+        case FS_MEDIA_TYPE_VIDEO:
+            sinkpad = m_qpipeline->getVideoSinkPad();
+            break;
+
+    }
+    if (!sinkpad) {
+        LOGCF() << "Src pad cannot be linked, sinkpad is missing!" << std::endl;
+        return;
+    }
     if (!gst_pad_is_linked(sinkpad)) {
-        LOGCF() << "linkuji pad na audio sink" << std::endl;
+        LOGCF() << "linking media " << session->name()
+            << "source to sink..." << std::endl;
         GstPadLinkReturn r = gst_pad_link(pad, sinkpad);
         if (GST_PAD_LINK_FAILED(r)) {
-            LOGCF() << "Link zdroje na sink selhal!" << r << std::endl;
-            setError(AudioOutputError, "Link to audio output failed.");
+            LOGCF() << "Link of source " << session->name() 
+                << " to sink failed!" << r << std::endl;
+            setError(AudioOutputError, "Link to sink failed.");
         } else {
             session->setSrcLinked(true);
         }
     } else {
-        LOGCF() << "sink je uz prilinkovan!" << std::endl;
+        LOGCF() << "sink is already linked!" << std::endl;
+    }
+    GstPadTemplate *tmpl = gst_pad_get_pad_template(sinkpad);
+    if (tmpl) {
+        // pad with template is propably requested dynamic pad
+        // FIXME: do something here?
+    } else {
+        // pad without is static
+        gst_object_unref(sinkpad);
     }
 }
 

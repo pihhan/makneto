@@ -54,6 +54,7 @@ class Conference
     void onLocalCandidatesPrepared();
     void onNewLocalCandidate(FsCandidate *candidate);
 
+    gboolean elementMessageCallback(GstMessage *message);
     static gboolean messageCallback(GstBus *bus, GstMessage *message, gpointer user_data);
     
     void srcPadAdded(Session *session, GstPad *pad, FsCodec *codec);

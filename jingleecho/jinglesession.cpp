@@ -426,6 +426,7 @@ JingleStanza * JingleSession::createStanzaTerminate(SessionReason reason)
     return stanza;
 }
 
+/** @brief Initiate session from incoming session-initiate request. */
 void JingleSession::initiateFromRemote(const JingleStanza *stanza)
 {
     m_sid = stanza->sid();
@@ -439,6 +440,7 @@ void JingleSession::initiateFromRemote(const JingleStanza *stanza)
     m_to = stanza->to();
 }
 
+/** @brief Update remote candidates from incoming session-accept stanza. */
 bool JingleSession::mergeFromRemote(const JingleStanza *stanza)
 {
 	if (!stanza)
@@ -649,6 +651,22 @@ bool JingleSession::codecsAreCompatible()
     return compatible;
 }
 
+/** @brief Check whether contents need payload. 
+    @return true if at least one content does not have any payload 
+    in description, false otherwise. */
+bool JingleSession::needLocalPayload()
+{
+    bool haspayload = true;
+    for (ContentList::iterator it=m_local_contents.begin(); 
+        it!=m_local_contents.end(); it++) 
+    {
+        JingleRtpContentDescription d = it->description();
+        if (d.countPayload() <= 0) {
+            haspayload = false;
+        }
+    }
+    return (!haspayload);
+}
 
 /*
  *

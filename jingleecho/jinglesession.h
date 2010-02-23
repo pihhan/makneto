@@ -264,6 +264,7 @@ class JingleSession
     bool codecsAreCompatible(
             const JingleContent &local, 
             const JingleContent &remote);
+    bool needLocalPayload();
 
 
     public:

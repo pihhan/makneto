@@ -15,7 +15,7 @@
 #include "jinglesession.h"
 #include "jingleerror.h"
 
-#define CANDIDATE_TIMEOUT_MS    3000
+#define CANDIDATE_TIMEOUT_MS    30000
 #define PERIODIC_TIMEOUT    150
 
 /** @brief Abstract class to handle incoming requests. 

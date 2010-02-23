@@ -31,6 +31,7 @@ class Session
     GstPad * sink();
 
     GList *getLocalCandidates();
+    GList *getNewLocalCandidates();
     void clearLocalCandidates();
 
     FsCodec *currentSendCodec();
@@ -78,6 +79,7 @@ class Session
     GError      *m_lasterror;
     FsStream    *m_stream;
     GList       *m_localCandidates;
+    GList       *m_newLocalCandidates;
     std::string  m_name;
     bool         m_srclinked;
 };

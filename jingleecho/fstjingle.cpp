@@ -264,6 +264,7 @@ bool FstJingle::prepareSession(const JingleContent &local)
             LOGGER(logit) << "requested creation of content with local type NONE" << std::endl;
             break;
     }
+    LOGGER(logit) << "media type " << mtype << " fstype " << fstype << std::endl;
 
     Session *session = new Session(conference, fstype);
     g_assert(session);
@@ -465,16 +466,21 @@ bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleC
         }
         GList *candidates = NULL;
         FsCandidate *fscan = createFsCandidate(candidate);
+        if (!fscan || !fscan->ip) {
+            fs_candidate_destroy(fscan);
+            LOGGER(logit) << "Skipping remote candidate without destination IP" << std::endl;
+            return false;
+        }
         candidates = g_list_prepend(candidates, fscan);
         if (candidates)
             session->setRemote(candidates);
-        fs_candidate_list_destroy(candidates);
         // TODO: lepsi spravu zdroju, tohle je primo prirazeno do session, nelze uvolnit.
         // fs_candidate_list_destroy(candidates);
-        LOGGER(logit) << "Nahrazuji vzdaleneho kandidata " 
-                << fscan->ip << ":" 
+        LOGGER(logit) << "Replacing remote candidate to " 
+                << ((fscan->ip) ? fscan->ip : "(any)") << ":" 
                 << fscan->port << " "
                 << "na content: " << content << std::endl;
+        fs_candidate_list_destroy(candidates);
         return true;
     } else {
         LOGGER(logit)
@@ -617,7 +623,7 @@ bool FstJingle::updateLocalTransport(JingleContent &content)
 {
     Session *fs = conference->getSession(content.name());
     if (fs) {
-        GList * candidates = fs->getLocalCandidates();
+        GList * candidates = fs->getNewLocalCandidates();
         CandidateList cl = createJingleCandidateList(candidates);
         fs_candidate_list_destroy(candidates);
         JingleTransport jt = content.transport();

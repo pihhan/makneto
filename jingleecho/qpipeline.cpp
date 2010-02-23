@@ -21,6 +21,8 @@ void qCritical(const std::string &msg)
 
 QPipeline::QPipeline()
     : m_source(0), m_sourcefilter(0), m_sink(0), m_sinkfilter(0), 
+      m_videosource(0), m_vsourcefilter(0), m_videosink(0), m_vsinkfilter(0),
+      m_localvideosink(0), m_lvsinkfilter(0), m_videoinputtee(0),
       m_valid(false), m_video_enabled(false), m_audio_enabled(false)
 {
     m_pipe = gst_pipeline_new("qpipeline");
@@ -199,7 +201,15 @@ bool QPipeline::createVideoSource(const char *bindesc, const char *filter)
     GError *err = NULL;
     const gchar *env = g_getenv("VIDEOSOURCE");
     if (bindesc) {
-        m_videosource = gst_parse_bin_from_description(bindesc, TRUE, &err);
+        m_videosource = gst_element_factory_make(bindesc, "video-source");
+//        m_videosource = gst_parse_bin_from_description(bindesc, TRUE, &err);
+        if (!m_videosource)
+            return false;
+        if (std::string(bindesc) == "videotestsrc") {
+            g_object_set(G_OBJECT(m_videosource),
+                "is-live", (gboolean) TRUE, 
+                NULL);
+        }
     } else if (env) {
         m_videosource = gst_parse_bin_from_description(env, TRUE, &err);
     } else {
@@ -238,8 +248,9 @@ bool QPipeline::createVideoSink(const char *bindesc, const char *filter)
         }
     }
     m_videosink = gst_element_factory_make(element, "remote-video-sink");
-    if (m_videosink) {
+    if (!m_videosink) {
         QPLOG() << "vytvareni video vystupu selhalo." << std::endl;
+        return false;
     }
     if (filter) {
         m_vsinkfilter = gst_parse_bin_from_description(filter, TRUE, &err);
@@ -267,6 +278,7 @@ bool QPipeline::createLocalVideoSink(const char *bindesc, const char *filter)
     m_localvideosink = gst_element_factory_make(element, "local-video-sink");
     if (!m_localvideosink) {
         QPLOG() << "vytvareni video vystupu selhalo. " << std::endl;
+        return false;
     }
     if (filter) {
         m_lvsinkfilter = gst_parse_bin_from_description(filter, TRUE, &err);
@@ -283,6 +295,12 @@ bool QPipeline::createLocalVideoSink(const char *bindesc, const char *filter)
 bool QPipeline::createVideoTee()
 {
     m_videoinputtee = gst_element_factory_make("tee", "video-source-tee");
+    if (m_videoinputtee) {
+        int number = 2;
+        g_object_set(G_OBJECT(m_videoinputtee), 
+                "num-src-pads", G_TYPE_INT,number, 
+                NULL);
+    }
     return (m_videoinputtee != NULL);
 }
 
@@ -291,45 +309,46 @@ bool QPipeline::enableVideo(bool input, bool output)
 {
     if (m_video_enabled)
         return false;
+    bool success = true;
 
     if (input) {
-        if (createVideoSource() && createVideoTee()) {
-            add(m_videosource);
-            add(m_videoinputtee);
+        if (createVideoSource("videotestsrc") && createVideoTee()) {
+            success = success && add(m_videosource);
+            success = success && add(m_videoinputtee);
             if (m_vsourcefilter) {
-                add(m_vsourcefilter);
-                link(m_videosource, m_vsourcefilter);
-                link(m_vsourcefilter, m_videoinputtee);
+                success = success && add(m_vsourcefilter);
+                success = success && link(m_videosource, m_vsourcefilter);
+                success = success && link(m_vsourcefilter, m_videoinputtee);
             } else {
-                link(m_videosource, m_videoinputtee);
+                success = success && link(m_videosource, m_videoinputtee);
             }
         } else return false;
     }
     
     if (output) {
         if (createVideoSink() && createLocalVideoSink()) {
-            add(m_videosink);
-            add(m_localvideosink);
+            success = success && add(m_videosink);
+            success = success && add(m_localvideosink);
             if (m_vsinkfilter) {
-                add(m_vsinkfilter);
-                link(m_vsinkfilter, m_videosink);
+                success = success && add(m_vsinkfilter);
+                success = success && link(m_vsinkfilter, m_videosink);
             }
             if (m_lvsinkfilter) {
-                add(m_lvsinkfilter);
-                link(m_lvsinkfilter, m_localvideosink);
+                success = success && add(m_lvsinkfilter);
+                success = success && link(m_lvsinkfilter, m_localvideosink);
             }
         } else return false;
     }
 
     if (input && output) {
         if (m_lvsinkfilter) {
-            link(m_videoinputtee, m_lvsinkfilter);
+            success = success && link(m_videoinputtee, m_lvsinkfilter);
         } else {
-            link(m_videoinputtee, m_localvideosink);
+            success = success && link(m_videoinputtee, m_localvideosink);
         }
     }
     m_video_enabled = true;
-    return true;
+    return success;
 }
 
 /** @brief Create audio source and sink. */
@@ -389,10 +408,16 @@ GstPad * QPipeline::getAudioSinkPad()
 GstPad * QPipeline::getVideoSinkPad()
 {
     GstPad *pad = NULL;
+    GstElement *sink = NULL;
     if (m_vsinkfilter) {
-        pad = gst_element_get_static_pad(m_vsinkfilter, "sink");
+        sink = m_vsinkfilter;
     } else if (m_videosink) {
-        pad = gst_element_get_static_pad(m_videosink, "sink");
+        sink = m_videosink;
+    }
+    if (sink) {
+        pad = gst_element_get_static_pad(sink, "sink");
+        if (!pad)
+            pad = gst_element_get_request_pad(sink, "sink%d");
     }
     return pad;
 }
@@ -400,12 +425,43 @@ GstPad * QPipeline::getVideoSinkPad()
 GstPad * QPipeline::getVideoSourcePad()
 {
     GstPad *pad = NULL;
+    GstElement *sourceelm = NULL;
     if (m_videoinputtee) {
-        pad = gst_element_get_static_pad(m_videoinputtee, "src");
+        sourceelm = m_videoinputtee;
     } else if (m_vsourcefilter) {
-        pad = gst_element_get_static_pad(m_vsourcefilter, "src");
+        sourceelm = m_vsourcefilter;
     } else if (m_videosink) {
-        pad = gst_element_get_static_pad(m_videosource, "src");
+        sourceelm = m_videosink;
+    }
+    if (sourceelm) {
+        pad = gst_element_get_static_pad(sourceelm, "src");
+        if (!pad) 
+            pad = gst_element_get_request_pad(sourceelm, "src%d");
+    }
+    if (!pad) {
+        QPLOG() << "Video source pad not yet found" << std::endl;
+        GstIterator *i = gst_element_iterate_src_pads(sourceelm);
+        GstPad *pad = NULL;
+        bool done = false;
+        do {
+            switch (gst_iterator_next(i, (void **) &pad)) {
+                case GST_ITERATOR_DONE:
+                    done = true;
+                    break;
+                case GST_ITERATOR_OK:
+                    QPLOG() << "src pad: " << gst_pad_get_name(pad) 
+                        << " is linked " << gst_pad_is_linked(pad) << std::endl;
+                        gst_object_unref(pad);
+                    break;
+                case GST_ITERATOR_RESYNC:
+                    gst_iterator_resync(i);
+                    break;
+                case GST_ITERATOR_ERROR:
+                    done = true;
+                    QPLOG() << "Src pad iterator error" << std::endl;
+                    break;
+            }
+        } while (!done);
     }
     return pad;
 }

@@ -29,7 +29,6 @@ class Bot : public QObject
     QString prompt(const QString &text);
     void replyMessage(const XMPP::Message &m, const std::string &reply);
     void stunResolve(const QString &hostname);
-    void doCall();
 
     public slots:
     void connected();
@@ -42,6 +41,11 @@ class Bot : public QObject
     void sessionStarted();
     void incomingXml(const QString &s);
     void outgoingXml(const QString &s);
+    void doCall();
+
+    signals:
+    /** @brief Emitted when STUN server is configured. */
+    void stunConfigured();
 
     private slots:
     void stunHostResolved(const QHostInfo info);
@@ -51,6 +55,7 @@ class Bot : public QObject
     XMPP::ClientStream *m_stream;
     XMPP::AdvancedConnector *m_connector;
     XMPP::Jid       m_jid;
+    bool            m_configureStun;
 
     IrisJingleManager *m_jm;
 };

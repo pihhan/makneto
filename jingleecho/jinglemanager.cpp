@@ -171,28 +171,48 @@ JingleSession * JingleManager::initiateAudioVideoSession(
 */
 JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
 {
-    JingleContent newcontent = audioContent();
+    ContentList rcl = session->remoteContents();
+    for (ContentList::iterator it = rcl.begin(); it!=rcl.end(); it++) {
+        JingleContent newcontent = audioContent();
+        switch (it->description().type()) {
+            case MEDIA_AUDIO:
+                newcontent = audioContent();
+                break;
+            case MEDIA_VIDEO:
+                newcontent = videoContent();
+                break;
+            case MEDIA_NONE:
+            case MEDIA_AUDIOVIDEO:
+                reportError(session, NegotiationError,
+                    std::string("unknown type of content ") + it->name());
+                break;
+        }
+        newcontent.setName(it->name()); // set the same name as remote.
+        session->addLocalContent(newcontent);
+    }
 
-    session->addLocalContent(newcontent);
 //    setState(session, JSTATE_ACTIVE);
     session->setResponder(self());
+    session->setCaller(false);
 
+    bool prepared = false;
+    bool updated = false;
     FstJingle *fsj = static_cast<FstJingle *>(session->data());
     if (!fsj) {
         fsj = new FstJingle(session);
-        fsj->createAudioSession(session);
-        fsj->goPlaying();
         session->setData(fsj);
+        prepared = prepareFstSession(session);
+        updated = fsj->updateRemote(session);
+        //fsj->createAudioSession(session);
+        //fsj->goPlaying();
+    } else {
+        LOGGER(logit) << "Accepting session with existing FstJingle pipeline!" 
+            << std::endl;
     }
     setState(session, JSTATE_PRECONFIGURE);
     LOGGER(logit) << "fstjingle state: " << fsj->stateDescribe() << std::endl;
     addSession(session);
 
-#if 0
-    // send after complete preconfiguration
-    JingleStanza *js = session->createStanzaAccept();
-    send(js);
-#endif
     // start timeout timer
     startSessionTimeout(session);
     startPeriodicTimer();
@@ -211,6 +231,10 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
         session->setData(fsj);
     } else {
         good = fsj->updateRemote(session);
+        if (!good) {
+           LOGGER(logit) << "updateRemote failed for session " 
+                << session->sid() << std::endl; 
+        }
     }
     setState(session, JSTATE_ACTIVE);
     good = good && fsj->goPlaying();
@@ -239,7 +263,7 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
     if (session->data()) {
         FstJingle *fst = static_cast<FstJingle *>(session->data());
         fst->terminate();
-        LOGGER(logit) << "Audio session found and terminated." << std::endl;
+        LOGGER(logit) << "Session found and terminated." << std::endl;
     } else {
         LOGGER(logit) << "No data for session " << session->sid() << std::endl;
     }
@@ -343,6 +367,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
+    d.addPayload(JingleRtpPayload(97, "H264", 90000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
     d.addPayload(JingleRtpPayload(101, "H263-2000", 90000));
@@ -364,7 +389,7 @@ JingleContent   JingleManager::videoContent()
 {
     JingleContent c(localTransport(), videoDescription() );
     c.setName("videotest");
-    c.setMedia(MEDIA_AUDIO);
+    c.setMedia(MEDIA_VIDEO);
     return c;
 }
 
@@ -403,25 +428,40 @@ bool JingleManager::periodicPreconfigureCheck(JingleSession *session)
 {
     FstJingle *fsj = static_cast<FstJingle *>(session->data());
     if (fsj) {
+        LOGGER(logit) << "Preconfigure check" << std::endl;
         if (fsj->lastError() != NoError) {
             reportError(session, fsj->lastError(), fsj->lastErrorMessage()); 
             if (!session->localOriginated()) {
                 terminateSession(session, REASON_MEDIA_ERROR);
             }
             session->setFailed(true);
+            LOGGER(logit) << "Preconfigure failed for session " 
+                << session->sid() << std::endl;
         } else if (fsj->isPaused()) {
-            bool updated = fsj->updateLocalDescription(session);
+            if (session->needLocalPayload()) {
+                bool updated = fsj->updateLocalDescription(session);
+                LOGGER(logit) << "Updated local description " << updated 
+                    <<std::endl;
+            }
             JingleStanza *js = NULL;
             if (session->localOriginated()) {
                 js = session->createStanzaInitiate();
                 setState(session, JSTATE_PENDING);
             } else {
                 js = session->createStanzaAccept();
-                // TODO: set active only after acknowledge from user
+                // TODO: set active only after acknowledge from remote
+                fsj->goPlaying();
                 setState(session, JSTATE_ACTIVE);
             }
             send(js); 
             delete js;
+            LOGGER(logit) << "Preconfigure complete for session " 
+                << session->sid() << std::endl;
+        } else {
+            LOGGER(logit) << "Not yet playing " 
+                << " ready " << fsj->isReady() 
+                << " paused " << fsj->isPaused() 
+                << " playing " << fsj->isPlaying() << std::endl;
         }
         return true;
     } else {
@@ -580,6 +620,8 @@ int JingleManager::stunPort() const
 
 void JingleManager::setState(JingleSession *session, SessionState state)
 {
+    LOGGER(logit) << "Setting session " << session->sid() 
+        << "state to " << state << std::endl;
     session->setState(state);
 }
 

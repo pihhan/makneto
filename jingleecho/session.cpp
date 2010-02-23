@@ -15,7 +15,7 @@
 */
 Session::Session(Conference *conf, FsMediaType type)
     : m_conf(conf),m_session(NULL),m_lasterror(NULL),m_stream(NULL),
-      m_localCandidates(NULL)
+      m_localCandidates(NULL), m_newLocalCandidates(NULL)
 {
     GError *err =NULL;
     m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), type, &err);
@@ -301,6 +301,11 @@ GList * Session::getLocalCandidates()
     return fs_candidate_list_copy(m_localCandidates);
 }
 
+GList * Session::getNewLocalCandidates()
+{
+    return fs_candidate_list_copy(m_newLocalCandidates);
+}
+
 void Session::clearLocalCandidates()
 {
     if (m_localCandidates)
@@ -311,7 +316,7 @@ void Session::clearLocalCandidates()
 void Session::onNewLocalCandidate(FsCandidate *candidate)
 {
     FsCandidate *copy = fs_candidate_copy(candidate);
-    m_localCandidates = g_list_prepend(m_localCandidates, copy);
+    m_newLocalCandidates = g_list_prepend(m_newLocalCandidates, copy);
 }
 
 FsSession   *Session::sessionElement()

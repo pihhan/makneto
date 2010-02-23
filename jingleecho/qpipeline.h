@@ -9,9 +9,9 @@
 #define DEFAULT_AUDIOSINK   "audioconvert ! pulsesink"
 
 #define DEFAULT_VIDEOSOURCE "v4l2src"
-#define DEFAULT_VIDEOSOURCE_FILTER  "ffmpegcolorspace ! videoscale"
+#define DEFAULT_VIDEOSOURCE_FILTER  "capsfilter caps=video/x-raw-yuv,width=640 ! ffmpegcolorspace ! videoscale"
 
-#define DEFAULT_VIDEOSINK   "ximagesink"
+#define DEFAULT_VIDEOSINK   "xvimagesink"
 #define DEFAULT_VIDEOSINK_FILTER "ffmpegcolorspace ! videoscale"
 
 /** @brief Simple C++ wrapper for Gstreamer pipeline. */
