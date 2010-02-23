@@ -350,15 +350,22 @@ bool QPipeline::enableVideo(bool input, bool output)
     bool success = true;
 
     if (input) {
+#ifdef USE_TEE
         if (createVideoSource("videotestsrc") && createVideoTee()) {
             success = success && add(m_videosource);
             success = success && add(m_videoinputtee);
+#else
+        if (createVideoSource("videotestsrc")) {
+            success = success && add(m_videosource);
+#endif
             if (m_vsourcefilter) {
                 success = success && add(m_vsourcefilter);
                 success = success && link(m_videosource, m_vsourcefilter);
+#ifdef USE_TEE
                 success = success && link(m_vsourcefilter, m_videoinputtee);
             } else {
                 success = success && link(m_videosource, m_videoinputtee);
+#endif
             }
         } else return false;
     }
@@ -366,19 +373,21 @@ bool QPipeline::enableVideo(bool input, bool output)
     if (output) {
         if (createVideoSink() && createLocalVideoSink()) {
             success = success && add(m_videosink);
-            success = success && add(m_localvideosink);
             if (m_vsinkfilter) {
                 success = success && add(m_vsinkfilter);
                 success = success && link(m_vsinkfilter, m_videosink);
             }
+#ifdef USE_TEE
+            success = success && add(m_localvideosink);
             if (m_lvsinkfilter) {
                 success = success && add(m_lvsinkfilter);
                 success = success && link(m_lvsinkfilter, m_localvideosink);
             }
+#endif
         } else return false;
     }
 
-    if (input && output) {
+    if (input && output && m_videoinputtee) {
         if (m_lvsinkfilter) {
             success = success && link(m_videoinputtee, m_lvsinkfilter);
         } else {

@@ -63,8 +63,9 @@ class JingleManager
         JingleSession * acceptAudioSession(JingleSession *session);
 
         /** @brief Terminate passed session. */
-        void            terminateSession(JingleSession *session, SessionReason reason = REASON_DECLINE);
-        void        modifySession(JingleSession *session, JingleStanza *stanza);
+        void    terminateSession(JingleSession *session, SessionReason reason = REASON_DECLINE);
+        void    terminateAllSessions(SessionReason reason = REASON_SUCCESS);
+        void    modifySession(JingleSession *session, JingleStanza *stanza);
 
 
 	JingleSession * getSession(const std::string &sid);

@@ -285,6 +285,16 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
     }
 }
 
+/** @brief Terminate all sessions on manager.
+    Useful to terminate when quitting. */
+void JingleManager::terminateAllSessions(SessionReason reason)
+{
+    for (SessionMap::iterator it = m_sessions.begin();
+        it!=m_sessions.end(); it++) {
+        terminateSession(it->second, reason);
+    }
+}
+
 /** @brief Return simple local candidates.
     Get them by enumerating local interfaces for addreses. */
 CandidateList JingleManager::localUdpCandidates()
