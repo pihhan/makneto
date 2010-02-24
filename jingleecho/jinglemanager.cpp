@@ -372,7 +372,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 {
     JingleRtpContentDescription d;
     d.m_xmlns = XMLNS_JINGLE_RTP;
-    d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
+//    d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(0, "PCMU", 8000));
     d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
@@ -394,7 +394,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
-    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
+//    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(97, "H264", 90000));
     d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));

@@ -127,11 +127,11 @@ JingleCandidate FstJingle::createJingleIceCandidate(
 /** @brief Convert jingle rtp description to farsight codec.
 
     For now, it always create audio content. */
-FsCodec * FstJingle::createFsCodec(const JingleRtpPayload & payload)
+FsCodec * FstJingle::createFsCodec(const JingleRtpPayload & payload, FsMediaType type)
 {
     // TODO: pridat media type do payload!
     FsCodec *codec = fs_codec_new(payload.id, payload.name.c_str(),
-            FS_MEDIA_TYPE_AUDIO, payload.clockrate);
+            type, payload.clockrate);
     for (JingleRtpPayload::ParameterList::const_iterator 
         it=payload.parameters.begin();
         it!=payload.parameters.end(); 
@@ -152,18 +152,26 @@ GList * FstJingle::createFsCodecList(const JingleRtpContentDescription &descript
     GList *codeclist = NULL;
     FsMediaType mediatype = FS_MEDIA_TYPE_AUDIO;
 
-    if (!description.media().empty()) {
-        if (description.media() == "audio")
-            mediatype = FS_MEDIA_TYPE_AUDIO;
-        else if (description.media() == "video")
-            mediatype = FS_MEDIA_TYPE_VIDEO;
+    switch (description.type()) {
+        case MEDIA_AUDIO:
+            mediatype = FS_MEDIA_TYPE_AUDIO; break;
+        case MEDIA_VIDEO:
+            mediatype = FS_MEDIA_TYPE_VIDEO; break;
+        case MEDIA_NONE:
+        case MEDIA_AUDIOVIDEO:
+            if (!description.media().empty()) {
+                if (description.media() == "audio")
+                    mediatype = FS_MEDIA_TYPE_AUDIO;
+                else if (description.media() == "video")
+                    mediatype = FS_MEDIA_TYPE_VIDEO;
+            }
+            break;
     }
 
     for (PayloadList::const_reverse_iterator 
             it= description.payloads.rbegin();
             it != description.payloads.rend(); it++) {
-        FsCodec *codec = fs_codec_new(
-            it->id, it->name.c_str(), mediatype, it->clockrate);
+        FsCodec *codec = createFsCodec(*it, mediatype);
         codeclist = g_list_prepend(codeclist, codec);
     }
     return codeclist;
@@ -244,7 +252,8 @@ bool FstJingle::linkSink(Session *session, FsMediaType type)
 
 /** @brief Prepare session with type of local content passed. 
     This is called before we know anything about remote side,
-    most important is to get list of local supported codecs. */
+    most important is to get list of local supported codecs. 
+    Here is created FsSession class from conference. */
 bool FstJingle::prepareSession(const JingleContent &local)
 {
     MediaType mtype = local.description().type();
@@ -644,7 +653,7 @@ bool FstJingle::isNull()
 /** @brief Return true if local media preconfiguration is complete. */
 bool FstJingle::isPreconfigured()
 {
-    return (isPaused() && conference->codecsReady());
+    return ((isPaused() || isPlaying()) && conference->codecsReady());
 }
 
 bool FstJingle::goPlaying()

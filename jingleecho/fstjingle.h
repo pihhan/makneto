@@ -37,7 +37,7 @@ class FstJingle
     bool terminate();
 
     static FsCandidate * createFsCandidate(const JingleCandidate & candidate);
-    static FsCodec * createFsCodec(const JingleRtpPayload & payload);
+    static FsCodec * createFsCodec(const JingleRtpPayload & payload, FsMediaType type=FS_MEDIA_TYPE_AUDIO);
     static GList * createFsCodecList(const JingleRtpContentDescription &description);
     static GList * createFsCandidateList(const JingleTransport &transport);
     static GList * createSingleFsCandidateList(const JingleTransport &transport);
