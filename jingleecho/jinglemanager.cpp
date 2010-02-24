@@ -334,7 +334,7 @@ CandidateList JingleManager::localUdpCandidates()
 JingleTransport JingleManager::localTransport()
 {
 	JingleTransport t;
-	t.m_xmlns = XMLNS_JINGLE_RAWUDP;
+	t.m_xmlns = XMLNS_JINGLE_ICE;
 	t.m_ufrag = randomId();
 	t.m_pwd = randomId();
 	t.candidates = localUdpCandidates();

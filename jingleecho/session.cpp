@@ -73,6 +73,8 @@ FsStream *Session::createStream(FsParticipant *participant, const GList *lcandid
     return stream;
 }
 
+/** @brief Create stream for one participant. 
+    @return true if stream was created successfully, false otherwise. */
 bool Session::createStream(FsParticipant *participant)
 {
     m_stream = createStream(participant, m_localCandidates);

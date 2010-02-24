@@ -22,6 +22,7 @@ class JingleTransport
 #endif
 
     void addCandidate(const JingleCandidate &c);
+    void setCandidatesReachable(JingleCandidate::ReachableType r);
 
     std::string xmlns();
     void setXmlns(const std::string &ns);

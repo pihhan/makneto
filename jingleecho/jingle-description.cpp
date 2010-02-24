@@ -41,7 +41,7 @@ void JingleRtpContentDescription::parse(const Tag *tag)
             m_type = MEDIA_NONE;
         }
 	
-	Tag::TagList payloads = tag->findChildren("payload");
+	Tag::TagList payloads = tag->findChildren("payload-type");
 	for (Tag::TagList::iterator it=payloads.begin(); it!=payloads.end(); ++it) {
 		JingleRtpPayload payload(*it);
 		addPayload(payload);
@@ -86,7 +86,7 @@ void JingleRtpContentDescription::parse(const QDomElement &tag)
     } else {
         m_type = MEDIA_NONE;
     }
-    QDomNodeList payloads = tag.elementsByTagName("payload");
+    QDomNodeList payloads = tag.elementsByTagName("payload-type");
     for (unsigned int i = 0; i < payloads.length(); i++) {
         QDomElement n = payloads.at(i).toElement();
         JingleRtpPayload payload(n);
@@ -168,7 +168,7 @@ JingleRtpPayload::JingleRtpPayload(const Tag *tag)
 	
 void JingleRtpPayload::parse(const Tag *tag)
 {
-	if(!tag || tag->name() != "payload")
+	if(!tag || tag->name() != "payload-type")
 		return;
 	id = atoi( tag->findAttribute("id").c_str() );
 	channels = atoi( tag->findAttribute("channels").c_str());
@@ -188,7 +188,7 @@ void JingleRtpPayload::parse(const Tag *tag)
 
 Tag * JingleRtpPayload::tag() const
 {
-	Tag *t = new Tag("payload");
+	Tag *t = new Tag("payload-type");
 	if (!t) return NULL;
 	t->addAttribute("id", id);
 	t->addAttribute("name", name);
@@ -219,7 +219,7 @@ JingleRtpPayload::JingleRtpPayload(const QDomElement &tag)
 
 void JingleRtpPayload::parse(const QDomElement &tag)
 {
-    if (tag.tagName() != "payload")
+    if (tag.tagName() != "payload-type")
         return;
     id = tag.attribute("id").toInt();
     channels = tag.attribute("channels").toInt();
@@ -240,7 +240,7 @@ void JingleRtpPayload::parse(const QDomElement &tag)
 /** @brief Convert payload to QDomElement tag. */
 QDomElement JingleRtpPayload::tag(QDomDocument &doc) const
 {
-    QDomElement t = doc.createElement("payload");
+    QDomElement t = doc.createElement("payload-type");
     t.setAttribute("id", id);
     t.setAttribute("name", QString::fromStdString(name));
     t.setAttribute("clockrate", clockrate);

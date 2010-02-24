@@ -91,3 +91,12 @@ void JingleTransport::setXmlns(const std::string &ns)
     m_xmlns = ns;
 }
 
+/** @brief Set reachable type for all candidates contained. */
+void JingleTransport::setCandidatesReachable(JingleCandidate::ReachableType r)
+{
+    for (CandidateList::iterator it=candidates.begin(); it!=candidates.end(); it++) {
+        it->reachable = r;
+    }
+}
+
+

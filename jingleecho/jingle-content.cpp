@@ -125,7 +125,7 @@ void JingleContent::parse(const QDomElement &tag)
 	if (tag.tagName() != "content")
 		return;
 	m_name = tag.attribute("name").toStdString();
-        m_xmlns = tag.attribute("xmlns").toStdString();
+        //m_xmlns = tag.attribute("xmlns").toStdString();
 
 	std::string media = tag.attribute("media").toStdString();
         if (media == "audio")
@@ -170,7 +170,7 @@ void JingleContent::parse(const QDomElement &tag)
 QDomElement JingleContent::tag(QDomDocument &doc) const
 {
     QDomElement t = doc.createElement("content");
-    t.setAttribute("xmlns", QString::fromStdString(m_xmlns));
+    //t.setAttribute("xmlns", QString::fromStdString(m_xmlns));
     if (!m_name.empty())
             t.setAttribute("name", QString::fromStdString(m_name));
     switch (m_media) {
@@ -179,6 +179,7 @@ QDomElement JingleContent::tag(QDomDocument &doc) const
         case MEDIA_VIDEO:
             t.setAttribute("media", "video"); break;
         case MEDIA_NONE:
+        case MEDIA_AUDIOVIDEO:
             break;
     }
 
@@ -283,4 +284,5 @@ void JingleContent::setDescription(JingleRtpContentDescription &desc)
 {
     m_description = desc;
 }
+
 
