@@ -323,7 +323,7 @@ bool FstJingle::prepareSession(JingleSession *session)
             empty = false;
         }
     }
-    return (success && !empty && goPaused());
+    return (success && !empty && goPlaying());
 }
 
 /** @brief Update remote settings for content, like new candidates or codecs. */
@@ -636,6 +636,17 @@ bool FstJingle::isReady()
     return (pipeline->current_state() == GST_STATE_READY);
 }
 
+bool FstJingle::isNull()
+{
+    return (pipeline->current_state() == GST_STATE_NULL);
+}
+
+/** @brief Return true if local media preconfiguration is complete. */
+bool FstJingle::isPreconfigured()
+{
+    return (isPaused() && conference->codecsReady());
+}
+
 bool FstJingle::goPlaying()
 {
     LOGGER(logit) << "setting to Playing" << std::endl;
@@ -652,6 +663,12 @@ bool FstJingle::goReady()
 {
     LOGGER(logit) << "setting to Ready" << std::endl;
     return pipeline->setState(GST_STATE_READY);
+}
+
+bool FstJingle::goNull()
+{
+    LOGGER(logit) << "setting to Null" << std::endl;
+    return pipeline->setState(GST_STATE_NULL);
 }
 
 bool FstJingle::haveLocalCandidates()
@@ -813,6 +830,10 @@ bool FstJingle::updateLocalDescription(JingleContent &content)
 {
     Session *session = conference->getSession(content.name());
     if (session) {
+        if (!session->codecsReady()) {
+            LOGGER(logit) << "Updating local contents " << content.name() 
+                << " with codecs not ready!" << std::endl;
+        }
         GList *codecs = session->getCodecListProperty("codecs");
         GList *i = codecs;
         JingleRtpContentDescription d = content.description();

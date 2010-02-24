@@ -56,10 +56,13 @@ class FstJingle
     bool isPlaying();
     bool isPaused();
     bool isReady();
+    bool isNull();
+    bool isPreconfigured();
 
     bool goPlaying();
     bool goPaused();
     bool goReady();
+    bool goNull();
 
     bool haveLocalCandidates();
     CandidateList   localCandidates();

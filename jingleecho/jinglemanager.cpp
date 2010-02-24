@@ -90,7 +90,7 @@ bool JingleManager::prepareFstSession(JingleSession *session)
         reportError(session, fst->lastError(), fst->lastErrorMessage());
         return false;
     }
-    return fst->goPaused();
+    return true;
 }
 
 JingleSession * JingleManager::initiateEmptySession(
@@ -372,7 +372,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 {
     JingleRtpContentDescription d;
     d.m_xmlns = XMLNS_JINGLE_RTP;
-//    d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
+    d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(0, "PCMU", 8000));
     d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
@@ -394,7 +394,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
-//    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
+    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(97, "H264", 90000));
     d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
@@ -465,7 +465,7 @@ bool JingleManager::periodicPreconfigureCheck(JingleSession *session)
             session->setFailed(true);
             LOGGER(logit) << "Preconfigure failed for session " 
                 << session->sid() << std::endl;
-        } else if (fsj->isPaused()) {
+        } else if (fsj->isPreconfigured()) {
             if (session->needLocalPayload()) {
                 bool updated = fsj->updateLocalDescription(session);
                 LOGGER(logit) << "Updated local description " << updated 
@@ -489,7 +489,9 @@ bool JingleManager::periodicPreconfigureCheck(JingleSession *session)
             LOGGER(logit) << "Not yet playing " 
                 << " ready " << fsj->isReady() 
                 << " paused " << fsj->isPaused() 
-                << " playing " << fsj->isPlaying() << std::endl;
+                << " playing " << fsj->isPlaying() 
+                << " preconfigured " << fsj->isPreconfigured()
+                << std::endl;
         }
         return true;
     } else {

@@ -93,6 +93,8 @@ class Conference
     std::string transmitter() const;
     void setTransmitter(const std::string &t);
 
+    bool codecsReady() const;
+
     private:
     void        increaseNewLocalCandidates();
     static std::string codecListToString(GList *codecs);

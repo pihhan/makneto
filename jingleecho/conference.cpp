@@ -643,3 +643,24 @@ void Conference::setTransmitter(const std::string &t)
     m_transmitter = t;
 }
 
+/** @brief Check whether all sessions have codecs ready. 
+    @return true if all session are ready and there is at least one, 
+    false in other case. */
+bool Conference::codecsReady() const
+{
+    bool ready = true;
+    bool empty = true;
+    for (SessionList::const_iterator it=m_sessions.begin(); 
+        it!=m_sessions.end(); 
+        it++) 
+    {
+        ready = ready && (*it)->codecsReady();
+        empty = false;
+        if (!ready) {
+            LOGGER(logit) << "Session " << (*it)->name() 
+                << " is not ready" << std::endl;
+        }
+    }
+    return (ready && !empty);
+}
+

@@ -801,7 +801,9 @@ void JingleStanza::parse(const QDomElement &tag)
     if (!reason.isNull()) {
         QDomElement rchild = reason.firstChildElement();
         while (!rchild.isNull()) {
-            if (!rchild.hasAttribute("xmlns")) {
+            if (rchild.tagName() == "text") {
+                m_reasonText = rchild.text().toStdString();
+            } else if (!rchild.hasAttribute("xmlns")) {
                 std::string tagname = rchild.tagName().toStdString();
                 SessionReason r = JingleSession::reasonFromString(tagname);
 
@@ -813,6 +815,7 @@ void JingleStanza::parse(const QDomElement &tag)
                         m_alternateSid = sid.text().toStdString();
                 }
             }
+            rchild = rchild.nextSiblingElement();
         } // while rchild
     } // if reason 
 
