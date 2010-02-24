@@ -247,6 +247,8 @@ bool FstJingle::prepareSession(const JingleContent &local)
                     setError(PipelineError, "pipeline enableAudio failed.");
                     return false;
                 }
+            } else {
+                LOGGER(logit) << "enableAudio succeed" << std::endl;
             }
             break;
         case MEDIA_VIDEO:
@@ -257,6 +259,8 @@ bool FstJingle::prepareSession(const JingleContent &local)
                     setError(PipelineError, "pipeline enableVideo failed.");
                     return false;
                 }
+            } else {
+                LOGGER(logit) << "enableVideo succeed" << std::endl;
             }
             break;
         case MEDIA_NONE:

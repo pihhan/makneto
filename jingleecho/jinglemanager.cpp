@@ -372,6 +372,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 {
     JingleRtpContentDescription d;
     d.m_xmlns = XMLNS_JINGLE_RTP;
+    d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(0, "PCMU", 8000));
     d.addPayload(JingleRtpPayload(8, "PCMA", 8000));
@@ -393,8 +394,9 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
-    d.addPayload(JingleRtpPayload(97, "H264", 90000));
+    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
 #ifdef AUTODETECT_PAYLOAD
+    d.addPayload(JingleRtpPayload(97, "H264", 90000));
     d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
     d.addPayload(JingleRtpPayload(101, "H263-2000", 90000));
     d.addPayload(JingleRtpPayload(102, "theora", 90000));
@@ -545,10 +547,14 @@ bool JingleManager::sessionTimeout(JingleSession *session)
             return FALSE;
     }
 
+    
     bool untried = false;
     ContentList cl = session->remoteContents();
+    FstJingle *fst = static_cast<FstJingle *>(session->data());
+    LOGGER(logit) << "Session " << session->sid() << " timed out, state: "
+        << fst->stateDescribe() << std::endl;
+
     for (ContentList::iterator it=cl.begin(); it!= cl.end(); it++) {
-        FstJingle *fst = static_cast<FstJingle *>(session->data());
         if (fst->tryNextCandidate(*it)) {
             untried = true;
         }

@@ -220,6 +220,8 @@ bool QPipeline::createAudioSource()
     if (!m_source && err) {
         QPLOG() << " gst_parse_bin_from_description: " <<
             err->message << std::endl;
+    } else {
+        gst_object_set_name(GST_OBJECT(m_source), "audio-source-bin");
     }
     return (m_source != NULL);
 }
@@ -236,6 +238,8 @@ bool QPipeline::createAudioSink()
     if (!m_sink && err) {
         QPLOG() << " gst_parse_bin_from_description: " <<
             err->message << std::endl;
+    } else {
+        gst_object_set_name(GST_OBJECT(m_sink), "audio-sink-bin");
     }
     return (m_sink != NULL);
 }
@@ -272,6 +276,8 @@ bool QPipeline::createVideoSource(const char *bindesc, const char *filter)
     }
     if (err) {
         QPLOG() << "vytvareni video filtru zdroje selhalo: " << err->message << std::endl;
+    } else {
+        gst_object_set_name(GST_OBJECT(m_vsourcefilter), "vsource-filter-bin");
     }
 
 
@@ -303,6 +309,8 @@ bool QPipeline::createVideoSink(const char *bindesc, const char *filter)
     }
     if (err) {
         QPLOG() << "vytvareni filtru video vystupu selhalo: " << err->message << std::endl;
+    } else {
+        gst_object_set_name(GST_OBJECT(m_vsinkfilter), "vsink-filter-bin");
     }
     return (m_videosink != NULL);
 }
@@ -348,43 +356,46 @@ bool QPipeline::enableVideo(bool input, bool output)
     if (m_video_enabled)
         return false;
     bool success = true;
+    bool use_tee = false;
 
     if (input) {
-#ifdef USE_TEE
-        if (createVideoSource("videotestsrc") && createVideoTee()) {
-            success = success && add(m_videosource);
-            success = success && add(m_videoinputtee);
-#else
         if (createVideoSource("videotestsrc")) {
             success = success && add(m_videosource);
-#endif
+            if (use_tee) { 
+                if (createVideoTee()) {
+                    success = success && add(m_videoinputtee);
+                } else return false;
+            }
             if (m_vsourcefilter) {
                 success = success && add(m_vsourcefilter);
                 success = success && link(m_videosource, m_vsourcefilter);
-#ifdef USE_TEE
-                success = success && link(m_vsourcefilter, m_videoinputtee);
-            } else {
+                if (use_tee)
+                    success = success && link(m_vsourcefilter, m_videoinputtee);
+            } else if (use_tee) {
                 success = success && link(m_videosource, m_videoinputtee);
-#endif
             }
         } else return false;
     }
     
     if (output) {
-        if (createVideoSink() && createLocalVideoSink()) {
+        if (createVideoSink()) {
             success = success && add(m_videosink);
             if (m_vsinkfilter) {
                 success = success && add(m_vsinkfilter);
                 success = success && link(m_vsinkfilter, m_videosink);
             }
-#ifdef USE_TEE
-            success = success && add(m_localvideosink);
-            if (m_lvsinkfilter) {
-                success = success && add(m_lvsinkfilter);
-                success = success && link(m_lvsinkfilter, m_localvideosink);
-            }
-#endif
         } else return false;
+        if (use_tee) { 
+            if (createLocalVideoSink()) {
+                success = success && add(m_localvideosink);
+                if (m_lvsinkfilter) {
+                    success = success && add(m_lvsinkfilter);
+                    success = success && link(m_lvsinkfilter, m_localvideosink);
+                }
+            } else {
+                return false;
+            }
+        }
     }
 
     if (input && output && m_videoinputtee) {
@@ -509,6 +520,7 @@ GstPad * QPipeline::getVideoSourcePad()
                     break;
             }
         } while (!done);
+        gst_iterator_free(i);
     }
     return pad;
 }
@@ -546,7 +558,11 @@ std::string QPipeline::binToString(GstElement *bin)
     while(!done) {
         switch (gst_iterator_next(it, (void **) &element)) {
             case GST_ITERATOR_OK:
-                o << gst_element_get_name(element) << ", ";
+                o << gst_element_get_name(element);
+                if (GST_STATE_PENDING(element) != GST_STATE_VOID_PENDING)
+                    o << "(" << GST_STATE(element) 
+                      << "/" << GST_STATE_PENDING(element) << ")";
+                o << ", ";
                 gst_object_unref(element);
                 break;
             case GST_ITERATOR_RESYNC:
@@ -570,8 +586,8 @@ std::string QPipeline::describe()
     std::ostringstream o;
 
     o << "Pipeline: " << gst_element_get_name(m_pipe) << std::endl 
-      << " momentalni stav: " << current_state() 
-      << " cekajici stav: " << pending_state() << std::endl;
+      << " states current: " << current_state() 
+      << " pending: " << pending_state() << std::endl;
 
     o << "Elements: ";
     o << binToString(m_pipe);

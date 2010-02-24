@@ -42,6 +42,7 @@ class Bot : public QObject
     void incomingXml(const QString &s);
     void outgoingXml(const QString &s);
     void doCall();
+    void terminateAll();
 
     signals:
     /** @brief Emitted when STUN server is configured. */

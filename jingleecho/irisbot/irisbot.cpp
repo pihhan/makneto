@@ -306,7 +306,9 @@ int main(int argc, char *argv[])
     QCA::Initializer qcainit;
     QCoreApplication app(argc, argv);
 
+
     Bot *bot = new Bot();
+    QObject::connect(&app, SIGNAL(aboutToQuit()), bot, SLOT(terminateAll()));
     bot->connectAs(myjid);
 
     return app.exec();
@@ -352,3 +354,9 @@ void Bot::stunHostResolved(const QHostInfo info)
     }
 }
 
+
+void Bot::terminateAll()
+{
+    std::cerr << "Budeme koncit!" << std::endl;
+    m_jm->terminateAllSessions();
+}
