@@ -132,6 +132,17 @@ FsCodec * FstJingle::createFsCodec(const JingleRtpPayload & payload)
     // TODO: pridat media type do payload!
     FsCodec *codec = fs_codec_new(payload.id, payload.name.c_str(),
             FS_MEDIA_TYPE_AUDIO, payload.clockrate);
+    for (JingleRtpPayload::ParameterList::const_iterator 
+        it=payload.parameters.begin();
+        it!=payload.parameters.end(); 
+        it++) 
+    {
+        fs_codec_add_optional_parameter(
+            codec,
+            it->name().c_str(), 
+            it->stringValue().c_str()
+        );
+    }
     return codec;
 }
 
@@ -838,6 +849,14 @@ JingleRtpPayload FstJingle::createJinglePayload(const FsCodec *codec)
 {
     JingleRtpPayload payload(codec->id, codec->encoding_name, 
         codec->clock_rate, codec->channels);
+    const GList *parameters = codec->optional_params;
+    while (parameters) {
+        FsCodecParameter *p = (FsCodecParameter *) parameters->data;
+        if (p) {
+            payload.add(PayloadParameter(p->name, p->value));
+        }
+        parameters = g_list_next(parameters);
+    }
     return payload;
 }
 

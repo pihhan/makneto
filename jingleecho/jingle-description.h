@@ -39,10 +39,11 @@ class PayloadParameter {
     PayloadParameter(const std::string &name, unsigned int value);
     PayloadParameter(const std::string &name, const std::string &value);
 
-    int intValue();
-    unsigned int uintValue();
-    std::string stringValue();
-    ParamType type();
+    int intValue() const;
+    unsigned int uintValue() const;
+    std::string stringValue() const;
+    ParamType type() const;
+    std::string name() const;
 
     private:
     int ivalue;
@@ -59,7 +60,7 @@ class PayloadParameter {
 class JingleRtpPayload
 {
     public:
-    typedef std::list<PayloadParameter> ParamterList;
+    typedef std::list<PayloadParameter> ParameterList;
 
         JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
 		
@@ -70,7 +71,9 @@ class JingleRtpPayload
     unsigned int    maxptime; ///!< optional
     unsigned int    ptime; ///!< optional
 
+    ParameterList   parameters;
 
+    void add(const PayloadParameter &p); 
 	
 #ifdef GLOOX
     JingleRtpPayload(const gloox::Tag *tag);

@@ -106,6 +106,7 @@ QDomElement JingleRtpContentDescription::tag(QDomDocument &doc) const
             t.setAttribute("media", "audio");
             break;
         case MEDIA_NONE:
+        case MEDIA_AUDIOVIDEO:
             if (!m_media.empty()) 
                 t.setAttribute("media", QString::fromStdString(m_media));
             break;
@@ -175,6 +176,14 @@ void JingleRtpPayload::parse(const Tag *tag)
 	clockrate = atoi(tag->findAttribute("clockrate").c_str());
 	ptime = atoi( tag->findAttribute("ptime").c_str());
 	maxptime = atoi( tag->findAttribute("maxptime").c_str());
+
+        Tag::TagList tagp = findChildren("parameter");
+        for (Tag::TagList::iterator i=tagp.begin(); i!=tagp.end(); it++) {
+            add(PayloadParameter(
+                (*i)->findAttribute("name"), 
+                (*i)->findAttribute("value"))
+            );
+        }
 }
 
 Tag * JingleRtpPayload::tag() const
@@ -190,10 +199,18 @@ Tag * JingleRtpPayload::tag() const
 		t->addAttribute("ptime", (long) ptime);
 	if (maxptime)
 		t->addAttribute("maxptime", (long) maxptime);
+
+        for (ParameterList::iterator it=parameters.begin(); 
+            it!=parameters.end(); it++)  
+        {
+            Tag *param = new Tag(t, "parameter");
+            param->addAttribute("name", it->name());
+            param->addAttribute("value", it->stringValue());
+        }
 	return t;
 }
 
-#else // GLOOX_API
+#else // GLOOX
 
 JingleRtpPayload::JingleRtpPayload(const QDomElement &tag)
 {
@@ -210,8 +227,17 @@ void JingleRtpPayload::parse(const QDomElement &tag)
     clockrate = tag.attribute("clockrate").toInt();
     ptime = tag.attribute("ptime").toInt();
     maxptime = tag.attribute("maxptime").toInt();
+
+    QDomElement parameter = tag.firstChildElement("parameter");
+    while (!parameter.isNull()) {
+        std::string name = parameter.attribute("name").toStdString();
+        std::string value = parameter.attribute("value").toStdString();
+        add(PayloadParameter(name, value));
+        parameter = parameter.nextSiblingElement("parameter");
+    }
 }
 
+/** @brief Convert payload to QDomElement tag. */
 QDomElement JingleRtpPayload::tag(QDomDocument &doc) const
 {
     QDomElement t = doc.createElement("payload");
@@ -220,11 +246,33 @@ QDomElement JingleRtpPayload::tag(QDomDocument &doc) const
     t.setAttribute("clockrate", clockrate);
     t.setAttribute("ptime", ptime);
     t.setAttribute("maxptime", maxptime);
+
+    for (ParameterList::const_iterator it=parameters.begin();
+        it!=parameters.end(); it++) 
+    {
+        QDomElement p = doc.createElement("parameter");
+        p.setAttribute("name", QString::fromStdString(it->name()));
+        p.setAttribute("value", QString::fromStdString(it->stringValue()));
+        t.appendChild(p);
+    }
     return t;
 }
 
 #endif
 
+/** @brief Add new parameter to payload. */
+void JingleRtpPayload::add(const PayloadParameter &p)
+{
+    parameters.push_back(p);
+}
+
+
+
+/*
+ *
+ * PayloadParameter
+ *
+ */
 
 PayloadParameter::PayloadParameter(const std::string &name, int value)
 {
@@ -251,23 +299,29 @@ PayloadParameter::PayloadParameter(const std::string &name, const std::string &v
     ivalue = -1;
 }
 
-int PayloadParameter::intValue()
+int PayloadParameter::intValue() const
 {
     return ivalue;
 }
 
-unsigned int PayloadParameter::uintValue()
+unsigned int PayloadParameter::uintValue() const
 {
     return uivalue;
 }
 
-std::string PayloadParameter::stringValue()
+std::string PayloadParameter::stringValue() const
 {
     return svalue;
 }
 
-PayloadParameter::ParamType PayloadParameter::type()
+PayloadParameter::ParamType PayloadParameter::type() const
 {
     return m_type;
 }
+
+std::string PayloadParameter::name() const
+{
+    return m_name;
+}
+
 

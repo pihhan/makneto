@@ -868,6 +868,7 @@ QDomElement JingleStanza::tag(QDomDocument &doc) const
             child.appendChild(rtext);
         }
         reason.appendChild(child);
+        t.appendChild(reason);
     }
     return t;
 }
