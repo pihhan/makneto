@@ -172,7 +172,8 @@ void Session::setLocal(GList *candidates)
 }
 
 /** @brief React on incoming source data pad.
-    Connect new pad to sink at conference. */
+    Connect new pad to sink at conference. 
+    This is called from gstreamer thread! */
 void Session::srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data)
 {
     Session *session = (Session *) user_data;

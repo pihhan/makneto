@@ -43,6 +43,8 @@ HEADERS += codecs.h \
            pjid.h \
            qpipeline.h \
            session.h \
+           payloadparameter.h \
+           mediaconfig.h \
            ipv6/v6interface.h
 SOURCES += \
            codecs.cpp \
@@ -58,5 +60,7 @@ SOURCES += \
            pjid.cpp \
            qpipeline.cpp \
            session.cpp \
+           payloadparameter.cpp \
+           mediaconfig.cpp \
            ../ipv6/v6interface.c \
            ../logger/logger.cpp \

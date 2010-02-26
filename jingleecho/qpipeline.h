@@ -8,6 +8,9 @@
 #define DEFAULT_AUDIOSOURCE "audiotestsrc is-live=1 ! audio/x-raw-int,rate=8000 ! audioconvert "
 #define DEFAULT_AUDIOSINK   "audioconvert ! pulsesink"
 
+#define DEFAULT_AUDIOSOURCE_FILTER "audioconvert ! audioresample"
+#define DEFAULT_AUDIOSINK_FILTER    "audioconvert ! audioresample"
+
 #define DEFAULT_VIDEOSOURCE "v4l2src"
 #define DEFAULT_VIDEOSOURCE_FILTER  "capsfilter caps=video/x-raw-yuv,width=640 ! ffmpegcolorspace ! videoscale"
 

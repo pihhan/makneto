@@ -4,6 +4,8 @@
 #include <string>
 #include <list>
 
+#include "payloadparameter.h"
+
 #ifdef GLOOX
 #include <gloox/tag.h>
 #else // IRIS
@@ -23,35 +25,6 @@ typedef enum {
         MEDIA_VIDEO = (1 << 1),
         MEDIA_AUDIOVIDEO = (MEDIA_AUDIO|MEDIA_VIDEO)
 } MediaType;
-
-/** @brief Parameter for class JingleRtpPayload. 
-    Allow basic type storage. */
-class PayloadParameter {
-    public:
-
-    typedef enum {
-        TYPE_INT,
-        TYPE_UINT,
-        TYPE_STRING
-    } ParamType;
-
-    PayloadParameter(const std::string &name, int value);
-    PayloadParameter(const std::string &name, unsigned int value);
-    PayloadParameter(const std::string &name, const std::string &value);
-
-    int intValue() const;
-    unsigned int uintValue() const;
-    std::string stringValue() const;
-    ParamType type() const;
-    std::string name() const;
-
-    private:
-    int ivalue;
-    std::string m_name;
-    unsigned int uivalue;
-    std::string svalue;
-    ParamType   m_type;
-};
 
 /** Class describing one RTP payload for session negotiation.
     @see http://xmpp.org/extensions/xep-0167.html
