@@ -6,12 +6,23 @@
     and output to user display. */
 TestMediaConfig::TestMediaConfig()
 {
-    m_videoInput = MediaDevice("videotestsrc");
-    m_videoOutput = MediaDevice("ximagesink");
-    m_localVideoOutput = MediaDevice("ximagesink");
-    m_audioInput = MediaDevice("audiotestsrc");
-    m_audioInput.addParameter(PayloadParameter("is-live", 1));
-    m_audioInput.addParameter(PayloadParameter("freq", 220));
-    m_audioOutput = MediaDevice("pulsesink");
-    m_ringOutput = MediaDevice("pulsesink");
+    MediaDevice vInput = MediaDevice("videotestsrc");
+    vInput.setFilter("ffmpegcolorspace ! videoscale");
+    setVideoInput(vInput);
+
+    MediaDevice vOutput = MediaDevice("xvimagesink");
+    vOutput.setFilter("ffmpegcolorspace ! videoscale");
+    setVideoOutput(vOutput);
+    setLocalVideoOutput(vOutput);
+
+    MediaDevice audioInput = MediaDevice("audiotestsrc");
+    audioInput.addParameter(PayloadParameter("is-live", 1));
+    audioInput.addParameter(PayloadParameter("freq", 220));
+    audioInput.setFilter("audioconvert ! audioresample");
+    setAudioInput(audioInput);
+
+    MediaDevice audioOutput = MediaDevice("pulsesink");
+    audioOutput.setFilter("audioconvert ! audioresample");
+    setAudioOutput(audioOutput);
+    setRingOutput(audioOutput);
 }

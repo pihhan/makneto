@@ -2,6 +2,7 @@
 #include <sstream>
 #include <gst/gst.h>
 #include "qpipeline.h"
+#include "testmediaconfig.h"
 
 #ifdef QT
 #include <QDebug>
@@ -35,6 +36,7 @@ QPipeline::QPipeline()
     g_signal_connect(GST_BIN(m_pipe), "element-removed", G_CALLBACK(elementRemoved), this);
     m_bus = gst_pipeline_get_bus(GST_PIPELINE(m_pipe));
     m_pausable = true;
+    m_config = TestMediaConfig();
 
     m_valid = true;
 }
@@ -220,6 +222,9 @@ bool QPipeline::createAudioSource()
         QPLOG() << "Cannot make element \"" << d.element() << "\"" << std::endl;
         return false;
     }
+    if (!configureElement(m_asource, d.parameters)) {
+        QPLOG() << " configureElement failed for audio source" << std::endl;
+    }
     if (d.element() == "audiotestsrc")
         g_object_set(G_OBJECT(m_asource), "is-live", (gboolean) TRUE, NULL);
 
@@ -249,6 +254,9 @@ bool QPipeline::createAudioSink()
         QPLOG() << "Cannot make element \"" << d.element() << "\"" << std::endl;
         return false;
     }
+    if (!configureElement(m_asink, d.parameters)) {
+        QPLOG() << " configureElement failed for audio sink" << std::endl;
+    }
 
     if (!d.filter().empty()) {
         const char *filter = d.filter().c_str();
@@ -275,6 +283,9 @@ bool QPipeline::createVideoSource()
         QPLOG() << "Video source element \"" << d.element()
             << "\" creation failed." << std::endl;
         return false;
+    }
+    if (!configureElement(m_videosource, d.parameters)) {
+        QPLOG() << " configureElement failed for video source" << std::endl;
     }
     if (d.element() == "videotestsrc") {
         g_object_set(G_OBJECT(m_videosource),
@@ -309,11 +320,16 @@ bool QPipeline::createVideoSink()
         QPLOG() << "Creating of " << d.element() << " failed." << std::endl;
         return false;
     }
+    if (!configureElement(m_videosink, d.parameters)) {
+        QPLOG() << " configureElement failed for video sink" << std::endl;
+    }
+
     if (!d.filter().empty()) {
         m_vsinkfilter = gst_parse_bin_from_description(
             d.filter().c_str(), TRUE, &err);
         if (err) {
             QPLOG() << "Creating of video sink filter failed: " << err->message << std::endl;
+            return false;
         } else {
             gst_object_set_name(GST_OBJECT(m_vsinkfilter), "vsink-filter-bin");
         }
@@ -335,12 +351,16 @@ bool QPipeline::createLocalVideoSink()
             << d.element() << " failed." << std::endl;
         return false;
     }
+    if (!configureElement(m_localvideosink, d.parameters)) {
+        QPLOG() << " configureElement failed for local video sink" << std::endl;
+    }
 
     if (!d.filter().empty()) {
         m_lvsinkfilter = gst_parse_bin_from_description(
             d.filter().c_str(), TRUE, &err);
         if (err) {
             QPLOG() << "Creating of local video sink filter failed: " << err->message << std::endl;
+            return false;
         } else {
             gst_object_set_name(GST_OBJECT(m_lvsinkfilter), "vsink-filter-bin");
         }
@@ -365,6 +385,7 @@ bool QPipeline::enableVideo(bool input, bool output)
 
     if (input) {
         if (createVideoSource()) {
+            QPLOG() << "video source created." << std::endl;
             success = success && add(m_videosource);
             if (use_tee) { 
                 if (createVideoTee()) {
@@ -384,6 +405,7 @@ bool QPipeline::enableVideo(bool input, bool output)
     
     if (output) {
         if (createVideoSink()) {
+            QPLOG() << "video sink created." << std::endl;
             success = success && add(m_videosink);
             if (m_vsinkfilter) {
                 success = success && add(m_vsinkfilter);
@@ -512,13 +534,15 @@ GstPad * QPipeline::getVideoSourcePad()
         sourceelm = m_videoinputtee;
     } else if (m_vsourcefilter) {
         sourceelm = m_vsourcefilter;
-    } else if (m_videosink) {
-        sourceelm = m_videosink;
+    } else if (m_videosource) {
+        sourceelm = m_videosource;
     }
     if (sourceelm) {
         pad = gst_element_get_static_pad(sourceelm, "src");
         if (!pad) 
             pad = gst_element_get_request_pad(sourceelm, "src%d");
+    } else {
+        QPLOG() << "Video source is not created." << std::endl;
     }
     if (!pad) {
         QPLOG() << "Video source pad not yet found" << std::endl;
@@ -532,7 +556,8 @@ GstPad * QPipeline::getVideoSourcePad()
                     break;
                 case GST_ITERATOR_OK:
                     QPLOG() << "src pad: " << gst_pad_get_name(pad) 
-                        << " is linked " << gst_pad_is_linked(pad) << std::endl;
+                        << " is linked " << gst_pad_is_linked(pad) 
+                        << " " << std::endl;
                         gst_object_unref(pad);
                     break;
                 case GST_ITERATOR_RESYNC:
@@ -572,6 +597,7 @@ void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer pipeli
     g_free(n2);
 }
 
+/** @brief Create string description of bin elements. */
 std::string QPipeline::binToString(GstElement *bin)
 {
     std::ostringstream o;
@@ -593,7 +619,7 @@ std::string QPipeline::binToString(GstElement *bin)
                 gst_iterator_resync(it);
                 break;
             case GST_ITERATOR_ERROR:
-                QPLOG() << "Chyba iteratoru" << std::endl;
+                QPLOG() << "Iterator error" << std::endl;
                 done = TRUE;
                 break;
             case GST_ITERATOR_DONE:
@@ -618,6 +644,7 @@ std::string QPipeline::describe()
     return o.str();
 }
 
+// TODO: delete, it is obsolete
 bool QPipeline::createFilters()
 {
     m_asourcefilter = gst_element_factory_make("capsfilter", "sourcefilter");
