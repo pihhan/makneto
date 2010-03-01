@@ -20,7 +20,7 @@ void qCritical(const std::string &msg)
 
 
 QPipeline::QPipeline()
-    : m_source(0), m_sourcefilter(0), m_sink(0), m_sinkfilter(0), 
+    : m_asource(0), m_asourcefilter(0), m_asink(0), m_asinkfilter(0), 
       m_videosource(0), m_vsourcefilter(0), m_videosink(0), m_vsinkfilter(0),
       m_localvideosink(0), m_lvsinkfilter(0), m_videoinputtee(0),
       m_valid(false), m_video_enabled(false), m_audio_enabled(false)
@@ -208,137 +208,142 @@ GstBus * QPipeline::bus()
     return m_bus;
 }
 
+/** @brief Create audio source element and its filter. 
+    @return true if it was successful, false otherwise. */
 bool QPipeline::createAudioSource()
 {
-    const gchar *env = g_getenv("AUDIOSOURCE");
     GError *err = NULL;
-    if (env) {
-        m_source = gst_parse_bin_from_description(env, TRUE, &err);
-    } else {
-        m_source = gst_parse_bin_from_description(DEFAULT_AUDIOSOURCE, TRUE, &err);
+    MediaDevice d = m_config.audioInput();
+
+    m_asource = gst_element_factory_make(d.element().c_str(), "audio-source");
+    if (!m_asource) {
+        QPLOG() << "Cannot make element \"" << d.element() << "\"" << std::endl;
+        return false;
     }
-    if (!m_source && err) {
-        QPLOG() << " gst_parse_bin_from_description: " <<
-            err->message << std::endl;
-    } else {
-        gst_object_set_name(GST_OBJECT(m_source), "audio-source-bin");
+    if (d.element() == "audiotestsrc")
+        g_object_set(G_OBJECT(m_asource), "is-live", (gboolean) TRUE, NULL);
+
+    if (!d.filter().empty()) {
+        const char *filter = d.filter().c_str();
+        m_asourcefilter = gst_parse_bin_from_description(filter, TRUE, &err);
+        if (err) {
+            QPLOG() << " gst_parse_bin_from_description: " <<
+                err->message << std::endl;
+                return false;
+        } else {
+            gst_object_set_name(GST_OBJECT(m_asourcefilter), "audio-source-filter");
+        }
     }
-    return (m_source != NULL);
+    return (m_asource != NULL);
 }
 
+/** @brief Create audio output element.
+    @return True if output was successfully created, false on the other case. */
 bool QPipeline::createAudioSink()
 {
-    const gchar *env = g_getenv("AUDIOSINK");
     GError *err = NULL;
-    if (env) {
-        m_sink = gst_parse_bin_from_description(env, TRUE, &err);
-    } else {
-        m_sink = gst_parse_bin_from_description(DEFAULT_AUDIOSINK, TRUE, &err);
+    MediaDevice d = m_config.audioInput();
+
+    m_asink = gst_element_factory_make(d.element().c_str(), "audio-sink");
+    if (!m_asink) {
+        QPLOG() << "Cannot make element \"" << d.element() << "\"" << std::endl;
+        return false;
     }
-    if (!m_sink && err) {
-        QPLOG() << " gst_parse_bin_from_description: " <<
-            err->message << std::endl;
-    } else {
-        gst_object_set_name(GST_OBJECT(m_sink), "audio-sink-bin");
+
+    if (!d.filter().empty()) {
+        const char *filter = d.filter().c_str();
+        m_asinkfilter = gst_parse_bin_from_description(filter, TRUE, &err);
+        if (err) {
+            QPLOG() << " gst_parse_bin_from_description: " <<
+                err->message << std::endl;
+                return false;
+        } else {
+            gst_object_set_name(GST_OBJECT(m_asinkfilter), "audio-sink-filter");
+        }
     }
-    return (m_sink != NULL);
+    return (m_asink != NULL);
 }
 
-bool QPipeline::createVideoSource(const char *bindesc, const char *filter)
+bool QPipeline::createVideoSource()
 {
     GError *err = NULL;
-    const gchar *env = g_getenv("VIDEOSOURCE");
-    if (bindesc) {
-        m_videosource = gst_element_factory_make(bindesc, "video-source");
-//        m_videosource = gst_parse_bin_from_description(bindesc, TRUE, &err);
-        if (!m_videosource)
-            return false;
-        if (std::string(bindesc) == "videotestsrc") {
-            g_object_set(G_OBJECT(m_videosource),
-                "is-live", (gboolean) TRUE, 
-                NULL);
-        }
-    } else if (env) {
-        m_videosource = gst_parse_bin_from_description(env, TRUE, &err);
-    } else {
-        m_videosource = gst_parse_bin_from_description(DEFAULT_VIDEOSOURCE, TRUE, &err);
+    MediaDevice d = m_config.videoInput();
+
+    m_videosource = gst_element_factory_make(
+        d.element().c_str(), "video-source");
+    if (!m_videosource) {
+        QPLOG() << "Video source element \"" << d.element()
+            << "\" creation failed." << std::endl;
+        return false;
     }
-    if (err) {
-        QPLOG() << "vytvareni video zdroje selhalo: " << err->message << std::endl;
-        g_error_free(err);
-        err = NULL;
+    if (d.element() == "videotestsrc") {
+        g_object_set(G_OBJECT(m_videosource),
+            "is-live", (gboolean) TRUE, 
+            NULL);
     }
 
-    if (filter) {
+    if (!d.filter().empty()) {
+        const char *filter = d.filter().c_str();
         m_vsourcefilter = gst_parse_bin_from_description(filter, TRUE, &err);
-    } else {
-        m_vsourcefilter = gst_parse_bin_from_description(DEFAULT_VIDEOSOURCE_FILTER, TRUE, &err);
+        if (err) {
+            QPLOG() << "Parsing video filter bin failed: " << err->message << std::endl;
+            return false;
+        } else {
+            gst_object_set_name(GST_OBJECT(m_vsourcefilter), "vsource-filter-bin");
+        }
     }
-    if (err) {
-        QPLOG() << "vytvareni video filtru zdroje selhalo: " << err->message << std::endl;
-    } else {
-        gst_object_set_name(GST_OBJECT(m_vsourcefilter), "vsource-filter-bin");
-    }
-
 
     return (m_videosource != NULL);
 }
 
-/** @brief Create output window for displaying of remote content, and filter it
-    will use.
+/** @brief Create output window for displaying of remote content, 
+    and filter it will use.
 */
-bool QPipeline::createVideoSink(const char *bindesc, const char *filter)
+bool QPipeline::createVideoSink()
 {
     GError *err = NULL;
-    const gchar *element = bindesc;
-    if (!element) {
-        element = g_getenv("VIDEOSINK");
-        if (!element) {
-            element = DEFAULT_VIDEOSINK;
-        }
-    }
-    m_videosink = gst_element_factory_make(element, "remote-video-sink");
+    MediaDevice d = m_config.videoOutput();
+    m_videosink = gst_element_factory_make(
+        d.element().c_str(), "remote-video-sink");
     if (!m_videosink) {
-        QPLOG() << "vytvareni video vystupu selhalo." << std::endl;
+        QPLOG() << "Creating of " << d.element() << " failed." << std::endl;
         return false;
     }
-    if (filter) {
-        m_vsinkfilter = gst_parse_bin_from_description(filter, TRUE, &err);
-    } else if (DEFAULT_VIDEOSINK_FILTER) {
-        m_vsinkfilter = gst_parse_bin_from_description(DEFAULT_VIDEOSINK_FILTER, TRUE, &err);
-    }
-    if (err) {
-        QPLOG() << "vytvareni filtru video vystupu selhalo: " << err->message << std::endl;
-    } else {
-        gst_object_set_name(GST_OBJECT(m_vsinkfilter), "vsink-filter-bin");
+    if (!d.filter().empty()) {
+        m_vsinkfilter = gst_parse_bin_from_description(
+            d.filter().c_str(), TRUE, &err);
+        if (err) {
+            QPLOG() << "Creating of video sink filter failed: " << err->message << std::endl;
+        } else {
+            gst_object_set_name(GST_OBJECT(m_vsinkfilter), "vsink-filter-bin");
+        }
     }
     return (m_videosink != NULL);
 }
 
 /** @brief Create element for local video input loopback, as preview.
 */
-bool QPipeline::createLocalVideoSink(const char *bindesc, const char *filter)
+bool QPipeline::createLocalVideoSink()
 {
     GError *err = NULL;
-    const gchar *element = bindesc;
-    if (!element) {
-        element = g_getenv("VIDEOSINK");
-        if (!element) {
-            element = DEFAULT_VIDEOSINK;
-        }
-    }
-    m_localvideosink = gst_element_factory_make(element, "local-video-sink");
+    MediaDevice d = m_config.localVideoOutput();
+
+    m_localvideosink = gst_element_factory_make(
+        d.element().c_str(), "local-video-sink");
     if (!m_localvideosink) {
-        QPLOG() << "vytvareni video vystupu selhalo. " << std::endl;
+        QPLOG() << "Creating of local video sink element " 
+            << d.element() << " failed." << std::endl;
         return false;
     }
-    if (filter) {
-        m_lvsinkfilter = gst_parse_bin_from_description(filter, TRUE, &err);
-    } else if (DEFAULT_VIDEOSINK_FILTER) {
-        m_lvsinkfilter = gst_parse_bin_from_description(DEFAULT_VIDEOSINK_FILTER, TRUE, &err);
-    }
-    if (err) {
-        QPLOG() << "vytvareni filtru video vystupu selhalo: " << err->message << std::endl;
+
+    if (!d.filter().empty()) {
+        m_lvsinkfilter = gst_parse_bin_from_description(
+            d.filter().c_str(), TRUE, &err);
+        if (err) {
+            QPLOG() << "Creating of local video sink filter failed: " << err->message << std::endl;
+        } else {
+            gst_object_set_name(GST_OBJECT(m_lvsinkfilter), "vsink-filter-bin");
+        }
     }
     return (m_localvideosink != NULL);
 }
@@ -359,7 +364,7 @@ bool QPipeline::enableVideo(bool input, bool output)
     bool use_tee = false;
 
     if (input) {
-        if (createVideoSource("videotestsrc")) {
+        if (createVideoSource()) {
             success = success && add(m_videosource);
             if (use_tee) { 
                 if (createVideoTee()) {
@@ -409,31 +414,44 @@ bool QPipeline::enableVideo(bool input, bool output)
     return success;
 }
 
-/** @brief Create audio source and sink. */
+/** @brief Create audio source and sink, create filters if needed. */
 bool QPipeline::enableAudio()
 {
+    bool sink = true;
+    bool source =true;
     if (m_audio_enabled)
         return false;
-    if (createAudioSource() && createAudioSink()) {
-        add(m_source);
-        add(m_sink);
-        return true;
-    } else {
-        QPLOG() << "creating sink our source failed" << std::endl;
+    if ((source = createAudioSource())) {
+        add(m_asource);
+        if (m_asourcefilter) {
+            add(m_asourcefilter);
+            source = source && link(m_asource, m_asourcefilter);
+        }
+    } 
+    if ((sink = createAudioSink())) {
+        add(m_asink);
+        if (m_asinkfilter) {
+            add(m_asinkfilter);
+            sink = sink && link(m_asinkfilter, m_asink);
+        }
+    } 
+    if (!source || !sink) {
+        QPLOG() << "creating sink or source failed" << std::endl;
         m_valid = false;
         return false;
     }
     m_audio_enabled = true;
+    return (source && sink);
 }
 
 GstElement *QPipeline::getAudioSource()
 {
-    return m_source;
+    return m_asource;
 }
 
 GstElement *QPipeline::getAudioSink()
 {
-    return m_sink;
+    return m_asink;
 }
 
 GstElement *QPipeline::getVideoSource()
@@ -453,13 +471,19 @@ GstElement * QPipeline::getLocalVideoSink()
 
 GstPad * QPipeline::getAudioSourcePad()
 {
-    GstPad *pad = gst_element_get_static_pad(m_source, "src");
+    GstElement *srce = m_asource;
+    if (m_asourcefilter)
+        srce = m_asourcefilter;
+    GstPad *pad = gst_element_get_static_pad(srce, "src");
     return pad;
 }
 
 GstPad * QPipeline::getAudioSinkPad()
 {
-    GstPad *pad = gst_element_get_static_pad(m_sink, "sink");
+    GstElement *sinke = m_asink;
+    if (m_asinkfilter)
+        sinke = m_asinkfilter;
+    GstPad *pad = gst_element_get_static_pad(sinke, "sink");
     return pad;
 }
 
@@ -596,19 +620,20 @@ std::string QPipeline::describe()
 
 bool QPipeline::createFilters()
 {
-    m_sourcefilter = gst_element_factory_make("capsfilter", "sourcefilter");
-    g_assert(m_sourcefilter);
+    m_asourcefilter = gst_element_factory_make("capsfilter", "sourcefilter");
+    if (!m_asourcefilter)
+        return false;
     GstCaps *fixed = gst_caps_new_simple("audio/x-raw-int",
         "rate", G_TYPE_INT, 8000,
         "channels", G_TYPE_INT, 1,
         "width", G_TYPE_INT, 16,
         NULL);
     g_assert(fixed);    
-    g_object_set(G_OBJECT(m_sourcefilter), "caps", fixed, NULL);
+    g_object_set(G_OBJECT(m_asourcefilter), "caps", fixed, NULL);
     gst_caps_unref(fixed);
-    add(m_sourcefilter);
+    add(m_asourcefilter);
 
-    m_sinkfilter = NULL;
+    m_asinkfilter = NULL;
     return true;
 }
 
@@ -625,5 +650,81 @@ bool QPipeline::isVideoEnabled()
 bool QPipeline::isAudioEnabled()
 {
     return m_audio_enabled;
+}
+
+MediaConfig QPipeline::mediaConfig()
+{
+    return m_config;
+}
+
+void QPipeline::setMediaConfig(const MediaConfig &c)
+{
+    m_config = c;
+}
+
+/** @brief configure parameters from map of payloadparameters.
+    It will check type of parameter
+*/
+bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
+{
+    bool success = true;
+    char *objname = (gst_object_get_name(GST_OBJECT(e)));
+    GObjectClass *klass = G_OBJECT_GET_CLASS(G_OBJECT(e));
+    if (!klass) {
+        QPLOG() << "object class not returned on object" << objname << std::endl;
+        g_free(objname);
+        return false;
+    }
+
+    for (PayloadParameterMap::iterator i=p.begin(); i!=p.end(); i++) {
+        const char *paramname = i->first.c_str();
+        PayloadParameter & p = i->second;
+        GParamSpec *spec = NULL;
+        spec = g_object_class_find_property(klass, paramname);
+        if (!spec) {
+            QPLOG() << "object spec not found for property " 
+                << i->first << " on object " << objname << std::endl;
+            success = false;
+            continue;
+        }
+        switch (spec->value_type) {
+            case G_TYPE_STRING:
+                g_object_set(G_OBJECT(e), 
+                    paramname, p.stringValue().c_str(), NULL);
+                break;
+            case G_TYPE_INT:
+                g_object_set(G_OBJECT(e),
+                    paramname, p.intValue(), NULL);
+                break;
+            case G_TYPE_UINT:
+                g_object_set(G_OBJECT(e),
+                    paramname, p.uintValue(), NULL);
+                break;
+                
+        }
+
+#if 0
+        switch(i->second.type()) {
+            case PayloadParameter::STRING:
+                success = success && 
+                    g_object_set(G_OBJECT(e), i->first.c_str(), 
+                        i->second.stringValue().c_str(), NULL);
+                break;
+            case PayloadParameter::INT:
+                success = success && 
+                    g_object_set(G_OBJECT(e), i->first.c_str(), 
+                        i->second.intValue(), NULL);
+                break;
+            case PayloadParameter::UINT:
+                success = success && 
+                    g_object_set(G_OBJECT(e), i->first.c_str(), 
+                        i->second.uintValue(), NULL);
+                break;
+                
+        }
+#endif
+    }
+    g_free(objname);
+    return true;
 }
 

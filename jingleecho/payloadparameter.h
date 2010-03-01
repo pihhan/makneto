@@ -16,6 +16,7 @@ class PayloadParameter {
     typedef enum {
         TYPE_INT,
         TYPE_UINT,
+        TYPE_BOOL,
         TYPE_STRING
     } ParamType;
 

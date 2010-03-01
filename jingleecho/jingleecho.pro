@@ -45,6 +45,7 @@ HEADERS += codecs.h \
            session.h \
            payloadparameter.h \
            mediaconfig.h \
+           testmediaconfig.cpp \
            ipv6/v6interface.h
 SOURCES += \
            codecs.cpp \
@@ -62,5 +63,6 @@ SOURCES += \
            session.cpp \
            payloadparameter.cpp \
            mediaconfig.cpp \
+           testmediaconfig.cpp \
            ../ipv6/v6interface.c \
            ../logger/logger.cpp \
