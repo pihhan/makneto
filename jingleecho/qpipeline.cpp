@@ -1,6 +1,7 @@
 
 #include <sstream>
 #include <gst/gst.h>
+#include <gst/interfaces/xoverlay.h>
 #include "qpipeline.h"
 #include "testmediaconfig.h"
 
@@ -225,8 +226,10 @@ bool QPipeline::createAudioSource()
     if (!configureElement(m_asource, d.parameters)) {
         QPLOG() << " configureElement failed for audio source" << std::endl;
     }
+#if 0
     if (d.element() == "audiotestsrc")
         g_object_set(G_OBJECT(m_asource), "is-live", (gboolean) TRUE, NULL);
+#endif
 
     if (!d.filter().empty()) {
         const char *filter = d.filter().c_str();
@@ -287,11 +290,13 @@ bool QPipeline::createVideoSource()
     if (!configureElement(m_videosource, d.parameters)) {
         QPLOG() << " configureElement failed for video source" << std::endl;
     }
+#if 0
     if (d.element() == "videotestsrc") {
         g_object_set(G_OBJECT(m_videosource),
             "is-live", (gboolean) TRUE, 
             NULL);
     }
+#endif
 
     if (!d.filter().empty()) {
         const char *filter = d.filter().c_str();
@@ -433,6 +438,8 @@ bool QPipeline::enableVideo(bool input, bool output)
         }
     }
     m_video_enabled = true;
+    QPLOG() << "Enabled video with config: " << std::endl 
+            << m_config.describe() << std::endl;
     return success;
 }
 
@@ -463,6 +470,8 @@ bool QPipeline::enableAudio()
         return false;
     }
     m_audio_enabled = true;
+    QPLOG() << "Enabled audio with config: " << std::endl 
+            << m_config.describe() << std::endl;
     return (source && sink);
 }
 
@@ -709,10 +718,19 @@ bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
         GParamSpec *spec = NULL;
         spec = g_object_class_find_property(klass, paramname);
         if (!spec) {
-            QPLOG() << "object spec not found for property " 
-                << i->first << " on object " << objname << std::endl;
-            success = false;
-            continue;
+            if (i->first == "xwindow-id" 
+                && gst_element_implements_interface(e, GST_TYPE_X_OVERLAY)) {
+                unsigned long winid = p.ulongValue();
+                QPLOG() << "Configuring video sink to window id: " 
+                    << winid << std::endl;
+                //gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(e), winid);
+                continue;
+            } else {
+                QPLOG() << "object spec not found for property " 
+                    << i->first << " on object " << objname << std::endl;
+                success = false;
+                continue;
+            }
         }
         switch (spec->value_type) {
             case G_TYPE_STRING:
@@ -730,26 +748,6 @@ bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
                 
         }
 
-#if 0
-        switch(i->second.type()) {
-            case PayloadParameter::STRING:
-                success = success && 
-                    g_object_set(G_OBJECT(e), i->first.c_str(), 
-                        i->second.stringValue().c_str(), NULL);
-                break;
-            case PayloadParameter::INT:
-                success = success && 
-                    g_object_set(G_OBJECT(e), i->first.c_str(), 
-                        i->second.intValue(), NULL);
-                break;
-            case PayloadParameter::UINT:
-                success = success && 
-                    g_object_set(G_OBJECT(e), i->first.c_str(), 
-                        i->second.uintValue(), NULL);
-                break;
-                
-        }
-#endif
     }
     g_free(objname);
     return true;

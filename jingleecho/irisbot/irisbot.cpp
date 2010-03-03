@@ -11,6 +11,8 @@
 #include <xmpp/xmpp-im/xmpp_status.h>
 
 #include "logger/logger.h"
+#include "testmediaconfig.h"
+#include "jinglevideowindow.h"
 
 #include <glib.h>
 #include <gst/gst.h>
@@ -244,12 +246,19 @@ void Bot::doCall()
     if (calljid) {
         PJid callee(calljid);
         if (callee) {
+            TestMediaConfig cfg;
             if (avcall || (audiocall && videocall)) {
-                m_jm->initiateAudioVideoSession(callee, m_client->jid());
+                JingleVideoWindow *videowin = new JingleVideoWindow();
+                videowin->setVisible(true);
+                videowin->updateMediaConfig(cfg);
+                m_jm->initiateAudioVideoSession(callee, m_client->jid(), cfg);
             } else if (audiocall) {
-                m_jm->initiateAudioSession(callee, m_client->jid());
+                m_jm->initiateAudioSession(callee, m_client->jid(), cfg);
             } else if (videocall) {
-                m_jm->initiateVideoSession(callee, m_client->jid());
+                JingleVideoWindow *videowin = new JingleVideoWindow();
+                videowin->setVisible(true);
+                videowin->updateMediaConfig(cfg);
+                m_jm->initiateVideoSession(callee, m_client->jid(), cfg);
             }
         } else {
             std::cerr << "K zavolani predano neplatne JID" 
@@ -304,7 +313,7 @@ int main(int argc, char *argv[])
     gst_init(&argc, &argv);
 
     QCA::Initializer qcainit;
-    QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
 
 
     Bot *bot = new Bot();

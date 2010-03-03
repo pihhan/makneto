@@ -42,6 +42,8 @@ class MediaDevice
     bool haveParameter(const std::string &key) const;
     PayloadParameter parameter(const std::string &key) const;
 
+    std::string describe() const;
+
     PayloadParameterMap parameters;
     private:
 
@@ -77,6 +79,8 @@ class MediaConfig
     const std::string &environ,
     const std::string &default_element,
     const std::string &default_filter);
+
+    std::string describe() const;
 
     private:
     MediaDevice m_videoInput;

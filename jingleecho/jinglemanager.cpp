@@ -74,23 +74,28 @@ void JingleManager::removeSession(const std::string &sid)
 }
 
 /** @brief Create farsight session from jingle data, prepare. */
-bool JingleManager::prepareFstSession(JingleSession *session)
+bool JingleManager::prepareFstSession(
+    JingleSession *session, 
+    const MediaConfig &config)
 {
     FstJingle *fst = static_cast<FstJingle *>(session->data());
-    if (!fst)
+    if (!fst) {
         fst = new FstJingle(session);
+    }
     if (!fst || fst->lastError() != NoError) {
         reportError(session, fst->lastError(), fst->lastErrorMessage());
         return false;
+    } else {
+        fst->setMediaConfig(config);
+        if (!m_stunIp.empty())
+            fst->setStun(m_stunIp, m_stunPort);
+        session->setData(fst);
+        if (!fst->prepareSession(session)) {
+            reportError(session, fst->lastError(), fst->lastErrorMessage());
+            return false;
+        }
+        return true;
     }
-    if (!m_stunIp.empty())
-        fst->setStun(m_stunIp, m_stunPort);
-    session->setData(fst);
-    if (!fst->prepareSession(session)) {
-        reportError(session, fst->lastError(), fst->lastErrorMessage());
-        return false;
-    }
-    return true;
 }
 
 JingleSession * JingleManager::initiateEmptySession(
@@ -114,14 +119,15 @@ JingleSession * JingleManager::initiateEmptySession(
 
 JingleSession * JingleManager::initiateAudioSession(
     const PJid &to, 
-    const PJid &initiator)
+    const PJid &initiator,
+    const MediaConfig &config)
 {
     JingleSession *session = initiateEmptySession(to, initiator);
     if (!session)
         return NULL;
     session->addLocalContent(audioContent());
 
-    if (!prepareFstSession(session)) {
+    if (!prepareFstSession(session, config)) {
         return NULL;
     }
 
@@ -135,12 +141,13 @@ JingleSession * JingleManager::initiateAudioSession(
 
 JingleSession * JingleManager::initiateVideoSession(
     const PJid &to,
-    const PJid &initiator)
+    const PJid &initiator,
+    const MediaConfig &config)
 {
     JingleSession *session = initiateEmptySession(to, initiator);
     session->addLocalContent(videoContent());
 
-    if (!prepareFstSession(session)) {
+    if (!prepareFstSession(session, config)) {
         return NULL;
     }
 
@@ -153,13 +160,14 @@ JingleSession * JingleManager::initiateVideoSession(
 
 JingleSession * JingleManager::initiateAudioVideoSession(
     const PJid &to,
-    const PJid &initiator)
+    const PJid &initiator,
+    const MediaConfig &config)
 {
     JingleSession *session = initiateEmptySession(to, initiator);
     session->addLocalContent(audioContent());
     session->addLocalContent(videoContent());
 
-    if (!prepareFstSession(session)) {
+    if (!prepareFstSession(session, config)) {
         return NULL;
     }
 
@@ -173,7 +181,9 @@ JingleSession * JingleManager::initiateAudioVideoSession(
 /** @brief Accept audio session. 
     create multimedia pipeline also. 
 */
-JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
+JingleSession * JingleManager::acceptAudioSession(
+    JingleSession *session, 
+    const MediaConfig &config)
 {
     ContentList rcl = session->remoteContents();
     for (ContentList::iterator it = rcl.begin(); it!=rcl.end(); it++) {
@@ -203,7 +213,7 @@ JingleSession * JingleManager::acceptAudioSession(JingleSession *session)
     bool updated = false;
     FstJingle *fsj = static_cast<FstJingle *>(session->data());
     if (!fsj) {
-        prepared = prepareFstSession(session);
+        prepared = prepareFstSession(session, config);
         if (!prepared) {
             LOGGER(logit) << "prepareFstSession failed for session: " 
                 << session->sid() << std::endl;
@@ -394,7 +404,7 @@ JingleRtpContentDescription	JingleManager::audioDescription()
 JingleRtpContentDescription     JingleManager::videoDescription()
 {
     JingleRtpContentDescription d;
-//    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
+    d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));
 #ifdef AUTODETECT_PAYLOAD
     d.addPayload(JingleRtpPayload(97, "H264", 90000));
     d.addPayload(JingleRtpPayload(100, "H263-1998", 90000));

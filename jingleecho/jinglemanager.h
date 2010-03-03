@@ -14,6 +14,7 @@
 
 #include "jinglesession.h"
 #include "jingleerror.h"
+#include "mediaconfig.h"
 
 #define CANDIDATE_TIMEOUT_MS    30000
 #define PERIODIC_TIMEOUT    150
@@ -60,7 +61,8 @@ class JingleManager
 	JingleSession * initiateAudioSession(const PJid &to);
 
         /** @brief Accept new audio session. */
-        JingleSession * acceptAudioSession(JingleSession *session);
+        JingleSession * acceptAudioSession(JingleSession *session, 
+            const MediaConfig &config = MediaConfig());
 
         /** @brief Terminate passed session. */
         void    terminateSession(JingleSession *session, SessionReason reason = REASON_DECLINE);
@@ -74,7 +76,8 @@ class JingleManager
 	void		addSession(JingleSession *session);
 	
 	void registerActionHandler(JingleActionHandler *handler);
-        bool prepareFstSession(JingleSession *session);
+        bool prepareFstSession(JingleSession *session, 
+            const MediaConfig &config = MediaConfig());
 
         SessionMap      allSessions();
 
@@ -98,11 +101,14 @@ class JingleManager
     JingleSession * initiateEmptySession(const PJid &to, 
                 const PJid &initiator = PJid()  );
     JingleSession * initiateAudioSession(const PJid &to, 
-                const PJid &initiator=PJid()    );
+                const PJid &initiator=PJid(),
+                const MediaConfig &config=MediaConfig());
     JingleSession * initiateVideoSession(const PJid &to,
-                const PJid &initiator);
+                const PJid &initiator=PJid(),
+                const MediaConfig &config=MediaConfig());
     JingleSession * initiateAudioVideoSession(const PJid &to,
-                const PJid &initiator);
+                const PJid &initiator = PJid(),
+                const MediaConfig &config=MediaConfig());
     
     virtual void    send(JingleStanza *js)=0;
 

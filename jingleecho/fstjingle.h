@@ -11,6 +11,7 @@
 
 #include "jinglesession.h"
 #include "fststatusreader.h"
+#include "mediaconfig.h"
 #include "conference.h"
 #include "qpipeline.h"
 
@@ -83,6 +84,11 @@ class FstJingle
     std::string  lastErrorMessage();
 
     bool unconfiguredCodecs();
+
+    void reportFatalError(const std::string &msg);
+    void reportError(const std::string &msg);
+
+    void setMediaConfig(const MediaConfig &cfg);
 
     QPipeline *pipeline;
     Conference *conference;

@@ -4,6 +4,7 @@
 
 #include "irisjinglemanager.h"
 #include "logger/logger.h"
+#include "testmediaconfig.h"
 
 using namespace XMPP;
 
@@ -230,7 +231,7 @@ void IrisJingleManager::setState(JingleSession *session, SessionState state)
 
 void IrisJingleManager::sessionAccept(JingleSession *session)
 {
-    acceptAudioSession(session);
+    acceptAudioSession(session, TestMediaConfig());
 }
 
 void IrisJingleManager::reportInfo(JingleSession *session, SessionInfo info)

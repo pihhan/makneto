@@ -1,4 +1,5 @@
 
+#include <sstream>
 #include <glib.h>
 #include "mediaconfig.h"
 
@@ -100,6 +101,18 @@ void MediaConfig::setRingOutput(const MediaDevice &c)
     m_ringOutput = c;
 }
 
+/** @brief Create description of all devices in this config. */
+std::string MediaConfig::describe() const
+{
+    std::ostringstream o;
+    o << "VideoInput: " << m_videoInput.describe() << std::endl;
+    o << "VideoOutput: " << m_videoOutput.describe() << std::endl;
+    o << "AudioInput: " << m_audioInput.describe() << std::endl;
+    o << "AudioOutput: " << m_audioOutput.describe() << std::endl;
+    o << "RingOutput: " << m_ringOutput.describe() << std::endl;
+    o << "LocalVideoOutput: " << m_localVideoOutput.describe() << std::endl;
+    return o.str();
+}
 
 
 /*
@@ -171,5 +184,23 @@ PayloadParameter MediaDevice::parameter(const std::string &key) const
     } else {
         return PayloadParameter("", 0);
     }
+}
+
+/** @brief Create string with description of this device. */
+std::string MediaDevice::describe() const
+{
+    std::ostringstream o;
+    o << "Device " << m_element;
+    if (m_filter.empty()) {
+        o << " without filter ";
+    } else {
+        o << " with filter=\"" << m_filter << "\"";
+    }
+    for (PayloadParameterMap::const_iterator i=parameters.begin();
+        i!= parameters.end(); i++) 
+    {
+        o << " " << i->first << "=\"" << i->second.stringValue() << "\"";
+    }
+    return o.str();
 }
 

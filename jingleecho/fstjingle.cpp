@@ -15,9 +15,9 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
     if (!pipeline || !pipeline->isValid()) {
         LOGGER(logit) << "Pipeline failed." << std::endl;
         setError(PipelineError, "QPipeline is invalid.");
-        if (reader) {
-            reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Pipeline creation failed.");
-            reader->reportState(FstStatusReader::S_FAILED);
+        if (m_reader) {
+            m_reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Pipeline creation failed.");
+            m_reader->reportState(FstStatusReader::S_FAILED);
         }
         return;
     }
@@ -25,9 +25,9 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
     conference = new Conference(pipeline);
     if (!conference || (conference->lastError() != NoError)) {
         setError(PipelineError, "Conference is invalid.");
-        if (reader) {
-            reader->reportMsg(FstStatusReader::MSG_ERROR, conference->lastErrorMessage());
-            reader->reportState(FstStatusReader::S_FAILED);
+        if (m_reader) {
+            m_reader->reportMsg(FstStatusReader::MSG_ERROR, conference->lastErrorMessage());
+            m_reader->reportState(FstStatusReader::S_FAILED);
         }
     }
 
@@ -899,5 +899,27 @@ PayloadList FstJingle::createJinglePayloadList(const GList *codecs)
         pl.push_back(pay);
     }
     return pl;
+}
+
+void FstJingle::reportFatalError(const std::string &msg)
+{
+    LOGGER(logit) << "FATAL ERROR: " << msg << std::endl;
+    if (m_reader) {
+        m_reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, msg);
+        m_reader->reportState(FstStatusReader::S_FAILED);
+    }
+}
+
+void FstJingle::reportError(const std::string &msg)
+{
+    LOGGER(logit) << "ERROR: " << msg << std::endl;
+    if (m_reader) {
+        m_reader->reportMsg(FstStatusReader::MSG_ERROR, msg);
+    }
+}
+
+void FstJingle::setMediaConfig(const MediaConfig &cfg)
+{
+    pipeline->setMediaConfig(cfg);
 }
 

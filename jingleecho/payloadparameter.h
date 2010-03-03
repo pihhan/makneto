@@ -16,16 +16,19 @@ class PayloadParameter {
     typedef enum {
         TYPE_INT,
         TYPE_UINT,
+        TYPE_ULONG,
         TYPE_BOOL,
         TYPE_STRING
     } ParamType;
 
     PayloadParameter(const std::string &name, int value);
     PayloadParameter(const std::string &name, unsigned int value);
+    PayloadParameter(const std::string &name, unsigned long value);
     PayloadParameter(const std::string &name, const std::string &value);
 
     int intValue() const;
     unsigned int uintValue() const;
+    unsigned long ulongValue() const;
     std::string stringValue() const;
     ParamType type() const;
     std::string name() const;
@@ -34,6 +37,7 @@ class PayloadParameter {
     int ivalue;
     std::string m_name;
     unsigned int uivalue;
+    unsigned long ulvalue;
     std::string svalue;
     ParamType   m_type;
 };

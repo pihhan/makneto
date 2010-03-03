@@ -16,12 +16,15 @@ DEFINES += IRIS
 
 CONFIG += link_pkgconfig
 PKGCONFIG += farsight2-0.10
+PKGCONFIG += gstreamer-interfaces-0.10
 
 # Input
 SOURCES += irisbot.cpp
-SOURCES += irisjinglemanager.cpp
+SOURCES += irisjinglemanager.cpp \
+           jinglevideowindow.cpp
 HEADERS += irisbot.h
-HEADERS += irisjinglemanager.h
+HEADERS += irisjinglemanager.h \
+           jinglevideowindow.h
 
 IRISPATH = /home/pihhan/Projekty/xmpp/psi-git/iris
 INCLUDEPATH += $$IRISPATH/include

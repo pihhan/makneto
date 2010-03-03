@@ -315,6 +315,9 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
                     LOGCF() << "session is NULL" << std::endl;
                 }
             }
+        } else if (gst_structure_has_name(s,
+                "prepare-xwindow-id")) {
+            LOGCF() << "Received prepare-xwindow-id." << std::endl;
         } else {
             const gchar *name = gst_structure_get_name(s);
             gchar *srcname = gst_object_get_name(GST_OBJECT(message->src));
