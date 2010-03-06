@@ -7,6 +7,7 @@
 #include "logger/logger.h"
 
 JingleVideoWindow::JingleVideoWindow()
+    : m_session(0)
 {
     m_localVideo = new QWidget();
     m_localVideo->resize(320,240);
@@ -25,6 +26,8 @@ JingleVideoWindow::JingleVideoWindow()
     m_hold_btn = new QPushButton(tr("Hold"));
     m_terminate_btn = new QPushButton(tr("Terminate"));
 
+    m_msglabel = new QLabel();
+
     QHBoxLayout *buttonlayout = new QHBoxLayout();
     buttonlayout->addWidget(m_mute_btn);
     buttonlayout->addWidget(m_hold_btn);
@@ -33,6 +36,7 @@ JingleVideoWindow::JingleVideoWindow()
     QVBoxLayout *formlayout = new QVBoxLayout();
     formlayout->addLayout(videolayout);
     formlayout->addLayout(buttonlayout);
+    formlayout->addWidget(m_msglabel);
    
     setLayout(formlayout); 
 }
@@ -63,5 +67,20 @@ void JingleVideoWindow::updateMediaConfig(MediaConfig &config)
         << localVideoWindowId() << std::endl;   
 
     QApplication::syncX();
+}
+
+void JingleVideoWindow::setSession(QtJingleSession *qjs)
+{
+    m_session = qjs;
+}
+
+QtJingleSession * JingleVideoWindow::session()
+{
+    return m_session;
+}
+
+void JingleVideoWindow::setMessage(const QString &msg)
+{
+    m_msglabel->setText(msg);
 }
 

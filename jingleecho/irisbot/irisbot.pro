@@ -21,10 +21,12 @@ PKGCONFIG += gstreamer-interfaces-0.10
 # Input
 SOURCES += irisbot.cpp
 SOURCES += irisjinglemanager.cpp \
-           jinglevideowindow.cpp
+           jinglevideowindow.cpp \
+           qtjinglesession.cpp
 HEADERS += irisbot.h
 HEADERS += irisjinglemanager.h \
-           jinglevideowindow.h
+           jinglevideowindow.h \
+           qtjinglesession.h
 
 IRISPATH = /home/pihhan/Projekty/xmpp/psi-git/iris
 INCLUDEPATH += $$IRISPATH/include

@@ -4,8 +4,10 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QLabel>
 
 #include "mediaconfig.h"
+#include "qtjinglesession.h"
 
 /** @brief Class for video dialog window. */
 class JingleVideoWindow : public QWidget 
@@ -18,6 +20,10 @@ class JingleVideoWindow : public QWidget
     unsigned long localVideoWindowId();
 
     void updateMediaConfig(MediaConfig &config);
+    void setSession(QtJingleSession *qjs);
+    QtJingleSession *session();
+
+    void setMessage(const QString &msg);
 
     private:
 
@@ -26,6 +32,8 @@ class JingleVideoWindow : public QWidget
     QPushButton *m_mute_btn;
     QPushButton *m_hold_btn;
     QPushButton *m_terminate_btn;
+    QLabel      *m_msglabel;
+    QtJingleSession *m_session;
 };
 
 #endif

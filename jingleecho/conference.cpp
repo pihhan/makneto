@@ -58,8 +58,8 @@ Conference::~Conference()
 {
     removeAllSessions();
 
-    gst_object_unref(m_fsconference);
-    gst_object_unref(m_pipeline);
+    //gst_object_unref(m_fsconference); // is unrefed with pipeline
+    //gst_object_unref(m_pipeline);
 }
 
 /** @brief Create new participant with this name, or get existing from cache. */
@@ -274,25 +274,38 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
             const GValue *vstate =gst_structure_get_value(s, "state");
             FsStreamState state;
             state = (FsStreamState) g_value_get_enum(vstate);
+
+            Session *session = conf->getSession(fs);
             LOGGER(logit) << "Component " << component 
                 << " state changed to " << state << std::endl;
 
+
             if (conf->m_reader) {
-                FstStatusReader::StateType rstate = FstStatusReader::S_NONE;
-                switch (rstate) {
-                    case GST_STATE_VOID_PENDING:
-                    case GST_STATE_NULL:
-                        rstate = FstStatusReader::S_STOPPED; 
-                        break;
-                    case GST_STATE_READY:
-                    case GST_STATE_PAUSED:
-                        rstate = FstStatusReader::S_STOPPED; 
-                        break;
-                    case GST_STATE_PLAYING:
-                        rstate = FstStatusReader::S_RUNNING;
-                        break;
+                std::string name;
+                if (session)
+                    name = session->name();
+                gchar *participantname = NULL;
+                g_object_get(G_OBJECT(fs), 
+                    "participant", &participantname, 
+                    NULL);
+
+                PipelineStateType rstate = S_NONE;
+                switch (state) {
+                    case FS_STREAM_STATE_FAILED:
+                        rstate = S_FAILED; break;
+                    case FS_STREAM_STATE_DISCONNECTED:
+                        rstate = S_DISCONNECTED; break;
+                    case FS_STREAM_STATE_GATHERING:
+                        rstate = S_GATHERING; break;
+                    case FS_STREAM_STATE_CONNECTING:
+                        rstate = S_CONNECTING; break;
+                    case FS_STREAM_STATE_CONNECTED:
+                        rstate = S_CONNECTED; break;
+                    case FS_STREAM_STATE_READY:
+                        rstate = S_ESTABLISHED; break;
                 }
-                conf->m_reader->reportState(rstate);
+                conf->m_reader->contentStatusChanged(rstate, name, participantname);
+                g_free(participantname);
             }
         } else if (gst_structure_has_name(s,
                 "farsight-codecs-changed")) {
@@ -502,6 +515,19 @@ Session *   Conference::getSession(FsSession *fs)
             }
             gst_object_unref(tmp);
         }
+    }
+    return NULL;
+}
+
+/** @brief Get session object by its stream. */
+Session * Conference::getSession(FsStream *stream)
+{
+    FsSession *fs = NULL;
+    g_object_get(G_OBJECT(stream), "session", &fs, NULL);
+    if (fs) {
+        Session *s = getSession(fs);
+        gst_object_unref(GST_OBJECT(fs));
+        return s;
     }
     return NULL;
 }

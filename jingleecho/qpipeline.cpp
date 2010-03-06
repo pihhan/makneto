@@ -44,6 +44,8 @@ QPipeline::QPipeline()
 
 QPipeline::~QPipeline()
 {
+    setState(GST_STATE_NULL);
+
     GstIterator *i = gst_bin_iterate_elements(GST_BIN(m_pipe));
     // walk pipeline and remove all elements
     while (i) {
@@ -250,7 +252,7 @@ bool QPipeline::createAudioSource()
 bool QPipeline::createAudioSink()
 {
     GError *err = NULL;
-    MediaDevice d = m_config.audioInput();
+    MediaDevice d = m_config.audioOutput();
 
     m_asink = gst_element_factory_make(d.element().c_str(), "audio-sink");
     if (!m_asink) {
@@ -465,7 +467,8 @@ bool QPipeline::enableAudio()
         }
     } 
     if (!source || !sink) {
-        QPLOG() << "creating sink or source failed" << std::endl;
+        QPLOG() << "creating sink or source failed" 
+            << m_config.describe() << std::endl;
         m_valid = false;
         return false;
     }
@@ -723,7 +726,7 @@ bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
                 unsigned long winid = p.ulongValue();
                 QPLOG() << "Configuring video sink to window id: " 
                     << winid << std::endl;
-                //gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(e), winid);
+                gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(e), winid);
                 continue;
             } else {
                 QPLOG() << "object spec not found for property " 
@@ -741,12 +744,18 @@ bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
                 g_object_set(G_OBJECT(e),
                     paramname, p.intValue(), NULL);
                 break;
+            case G_TYPE_BOOLEAN:
+                g_object_set(G_OBJECT(e),
+                    paramname, (gboolean) p.intValue(), NULL);
+                break;
             case G_TYPE_UINT:
                 g_object_set(G_OBJECT(e),
                     paramname, p.uintValue(), NULL);
                 break;
                 
         }
+        QPLOG() << "Setting parameter " << paramname 
+                << " of " << objname << std::endl;
 
     }
     g_free(objname);

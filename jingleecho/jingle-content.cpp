@@ -250,6 +250,11 @@ JingleContent::Senders JingleContent::senders() const
     return m_senders;
 }
 
+JingleContent::State    JingleContent::state() const
+{
+    return m_state;
+}
+
 void JingleContent::setName(const std::string &name)
 {
     m_name = name;
@@ -285,4 +290,7 @@ void JingleContent::setDescription(JingleRtpContentDescription &desc)
     m_description = desc;
 }
 
-
+void JingleContent::setState(State s)
+{
+    m_state = s;
+}

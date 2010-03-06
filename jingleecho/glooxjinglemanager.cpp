@@ -21,6 +21,10 @@
 #include "glooxjinglemanager.h"
 
 #ifdef GLOOX
+using namespace gloox;
+#endif
+
+#ifdef GLOOX
 /*
  *
  * GlooxJingleManager
@@ -187,10 +191,10 @@ Stanza * GlooxJingleManager::createJingleStanza(JingleStanza *js, const std::str
 /** @brief Create result reply to specified stanza with matching id. */
 void GlooxJingleManager::replyAcknowledge(const Stanza *stanza)
 {
-	if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
-		Stanza *reply = Stanza::createIqStanza(stanza->from(), stanza->id(), StanzaIqResult);
-		m_base->send(reply);
-	}
+    if (stanza->subtype() == StanzaIqSet || stanza->subtype() == StanzaIqGet) {
+            Stanza *reply = Stanza::createIqStanza(stanza->from(), stanza->id(), StanzaIqResult);
+            m_base->send(reply);
+    }
 }
 
 /** @brief Create result reply to specified stanza with matching id. */

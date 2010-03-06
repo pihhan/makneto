@@ -9,7 +9,8 @@
 /** @brief Create farsight abstraction class.
     @param reader FstStatusReader pointer to class wanting messages about farsight pipeline, or NULL if not needed. */
 FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
-    : m_lastErrorCode(NoError), m_reader(reader), m_unconfiguredCodecs(false)
+    : m_lastErrorCode(NoError), m_reader(reader), m_unconfiguredCodecs(false),
+      m_state(S_PREPARING)
 {
     pipeline = new QPipeline();
     if (!pipeline || !pipeline->isValid()) {
@@ -17,7 +18,7 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
         setError(PipelineError, "QPipeline is invalid.");
         if (m_reader) {
             m_reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, "Pipeline creation failed.");
-            m_reader->reportState(FstStatusReader::S_FAILED);
+            m_reader->reportState(S_FAILED);
         }
         return;
     }
@@ -27,7 +28,7 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
         setError(PipelineError, "Conference is invalid.");
         if (m_reader) {
             m_reader->reportMsg(FstStatusReader::MSG_ERROR, conference->lastErrorMessage());
-            m_reader->reportState(FstStatusReader::S_FAILED);
+            m_reader->reportState(S_FAILED);
         }
     }
 
@@ -36,8 +37,10 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
 
 FstJingle::~FstJingle()
 {
-    delete pipeline;
-    delete conference;
+    if (conference)
+        delete conference;
+    if (pipeline)
+        delete pipeline;
 }
 
 /** @brief Convert jingle structure to farsight format */
@@ -622,8 +625,8 @@ std::string FstJingle::toString(const FsCandidate *candidate)
 /** @brief Terminate current session. */
 bool FstJingle::terminate()
 {
-    conference->removeAllSessions();
     pipeline->setState(GST_STATE_NULL);
+    conference->removeAllSessions();
 
     delete conference;
     delete pipeline;
@@ -650,10 +653,14 @@ bool FstJingle::isNull()
     return (pipeline->current_state() == GST_STATE_NULL);
 }
 
-/** @brief Return true if local media preconfiguration is complete. */
+/** @brief Return true if local media preconfiguration is complete. 
+    That means conference element is paused or running, pipeline is ready
+    or more. */
 bool FstJingle::isPreconfigured()
 {
-    return ((isPaused() || isPlaying()) && conference->codecsReady());
+    bool confstate = (GST_STATE(conference->conference()) >= GST_STATE_PAUSED);
+    bool pipestate = (pipeline->current_state() >= GST_STATE_READY);
+    return (confstate && pipestate && conference->codecsReady());
 }
 
 bool FstJingle::goPlaying()
@@ -821,7 +828,7 @@ std::string FstJingle::xmlnsToTransmitter(const std::string &xmlns)
     else if (xmlns == XMLNS_JINGLE_ICE)
         return "nice";
     else {
-        LOGGER(logit) << "Nepodporovane xmlns pro transport: " << xmlns<<std::endl;
+        LOGGER(logit) << "Unsupported transport namespace: " << xmlns<<std::endl;
         return std::string();
     }
 }
@@ -906,7 +913,8 @@ void FstJingle::reportFatalError(const std::string &msg)
     LOGGER(logit) << "FATAL ERROR: " << msg << std::endl;
     if (m_reader) {
         m_reader->reportMsg(FstStatusReader::MSG_FATAL_ERROR, msg);
-        m_reader->reportState(FstStatusReader::S_FAILED);
+        setState(S_FAILED);
+        //m_reader->reportState(FstStatusReader::S_FAILED);
     }
 }
 
@@ -921,5 +929,18 @@ void FstJingle::reportError(const std::string &msg)
 void FstJingle::setMediaConfig(const MediaConfig &cfg)
 {
     pipeline->setMediaConfig(cfg);
+}
+
+void FstJingle::setState(PipelineStateType s)
+{
+    m_state = s;
+    if (m_reader) {
+        m_reader->reportState(s);
+    }
+}
+
+PipelineStateType FstJingle::state() const
+{
+    return m_state;
 }
 

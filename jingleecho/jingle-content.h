@@ -59,6 +59,14 @@ class JingleContent
                 CREATOR_RESPONDER
         } Creator;
 
+        typedef enum {
+                STATE_NONE = 0,
+                STATE_FAILED,
+                STATE_DISCONNECTED,
+                STATE_CONNECTING,
+                STATE_CONNECTED,
+                STATE_ESTABLISHED,
+        } State;
 
         typedef std::list<JingleTransport>  TransportList;
         
@@ -86,6 +94,7 @@ class JingleContent
         MediaType   media() const;
         std::string disposition() const;
         Senders     senders() const;
+        State       state() const;
 
         void setName(const std::string &name);
         void setCreator(Creator creator);
@@ -94,6 +103,7 @@ class JingleContent
         void setSenders(Senders s);
         void setTransport(JingleTransport &transport);
         void setDescription(JingleRtpContentDescription &desc);
+        void setState(State s);
 
     private:
     JingleTransport     m_transport;
@@ -105,6 +115,7 @@ class JingleContent
     std::string m_disposition; // what type of content is inside
     Senders     m_senders;
     JingleParticipant   m_owner;
+    State       m_state;
 };
 
 typedef std::list<JingleContent>	ContentList;

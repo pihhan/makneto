@@ -111,6 +111,15 @@ class JingleIceCandidate : public JingleCandidate
 
 typedef std::list<JingleCandidate>	CandidateList;
 
+/** @brief Class to hold local and remote pairs. */
+class JingleCandidatePair
+{
+    public:
+    JingleCandidatePair();
+
+    JingleCandidate local;
+    JingleCandidate remote;
+};
 
 
 #endif

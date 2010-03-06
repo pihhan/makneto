@@ -3,6 +3,7 @@
 #include <xmpp_client.h>
 
 #include "irisjinglemanager.h"
+#include "qtjinglesession.h"
 #include "logger/logger.h"
 #include "testmediaconfig.h"
 
@@ -17,8 +18,6 @@ IrisJingleManager::IrisJingleManager(Task *parent)
 {
     setStun(default_stun_ip);
 
-    connect(this, SIGNAL(sessionIncoming(JingleSession*)), 
-            this, SLOT(sessionAccept(JingleSession*)) );
 }
 
 /** @brief Send stanza over XMPP.
@@ -49,6 +48,11 @@ void IrisJingleManager::replyTerminate(const PJid &to, SessionReason reason, con
     js->setReason(reason);
 
     send(js);
+
+    QtJingleSession *qjs = getQtSession(sid);
+    if (qjs) {
+        qjs->reportTerminate(reason);
+    }
 }
 
 /** @brief Create small iq stanza to acknowledge stanza e.
@@ -148,13 +152,16 @@ bool IrisJingleManager::take(const QDomElement &e)
         switch (js->action()) {
             case ACTION_INITIATE:
                 if (session) {
-                    logit << ("Prichozi initiate pro existujici session!") << std::endl;
+                    LOGGER(logit) << ("Incoming initiate-session with sid of existing session!") << std::endl;
                     replyError(e, "bad-request");
                 } else {
                     session = new JingleSession();
                     session->initiateFromRemote(js);
                     replyAcknowledge(e);
                     session->setCaller(false);
+                    QtJingleSession *qjs = new QtJingleSession(session, this);
+                    addSession(qjs);
+                    emit sessionIncoming(qjs);
                     emit sessionIncoming(session);
                     // FIXME: emulate accepting from gui, react on signal
                     //acceptAudioSession(session);
@@ -166,6 +173,9 @@ bool IrisJingleManager::take(const QDomElement &e)
                     session->mergeFromRemote(js);
                     acceptedAudioSession(session);
                     emit sessionStateChanged(session);
+                    QtJingleSession *qjs = getQtSession(session);
+                    if (qjs) 
+                        qjs->reportAccepted();
                 } else {
                     logit << ("Jingle accept pro neexistujici session.") << std::endl;
                     replyError(e, "service-unavailable");
@@ -178,6 +188,9 @@ bool IrisJingleManager::take(const QDomElement &e)
                     setState(session, JSTATE_TERMINATED);
                     terminateSession(session);
                     emit sessionTerminated(session);
+                    QtJingleSession *qjs = getQtSession(session);
+                    if (qjs) 
+                        qjs->reportTerminate(js->reason());
                 } else {
                     replyError(e, "service-unavailable");
 
@@ -236,5 +249,60 @@ void IrisJingleManager::sessionAccept(JingleSession *session)
 
 void IrisJingleManager::reportInfo(JingleSession *session, SessionInfo info)
 {
+    QtJingleSession *qjs = getQtSession(session);
     emit sessionInfo(session, info);
+    if (qjs) {
+        qjs->reportInfo(info);
+    }
 }
+
+void IrisJingleManager::reportError(JingleSession *session, JingleErrors error, const std::string &msg)
+{
+    QtJingleSession *qjs = getQtSession(session);
+    LOGGER(logit) << "ERROR: " << msg << "(" << error << ")" << std::endl;
+    if (qjs) {
+        qjs->reportError(error, msg);
+    }
+}
+
+void IrisJingleManager::reportFatalError(JingleSession *session, JingleErrors error, const std::string &msg)
+{
+    QtJingleSession *qjs = getQtSession(session);
+    LOGGER(logit) << "FATAL ERROR: " << msg << "(" << error << ")" << std::endl;
+    if (qjs) {
+        qjs->reportFatalError(error, msg);
+    }
+}
+
+QtJingleSession * IrisJingleManager::getQtSession(const QString &sid)
+{
+    QtJingleSessionMap::iterator i = m_qtsessions.find(sid);
+    if (i!=m_qtsessions.end())
+        return i.value();
+    else 
+        return NULL;
+}
+
+QtJingleSession * IrisJingleManager::getQtSession(const std::string &sid)
+{
+    QString q = QString::fromStdString(sid);
+    return getQtSession(q);
+}
+
+QtJingleSession * IrisJingleManager::getQtSession(JingleSession *js)
+{
+    QString q = QString::fromStdString(js->sid());
+    return getQtSession(q);
+}
+
+void IrisJingleManager::addSession(QtJingleSession *qjs)
+{
+    QString sid = QString::fromStdString(qjs->session()->sid());
+    m_qtsessions.insert(sid, qjs);
+}
+
+void IrisJingleManager::removeSession(QtJingleSession *qjs)
+{
+    m_qtsessions.remove(qjs->qsid());
+}
+

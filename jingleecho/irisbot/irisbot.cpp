@@ -75,6 +75,9 @@ Bot::Bot(QObject *parent)
         if (plainpass)
             m_stream->setAllowPlain(ClientStream::AllowPlain);
     }
+
+    connect(m_jm, SIGNAL(sessionIncoming(QtJingleSession*)), 
+            this, SLOT(incomingCall(QtJingleSession*)) );
 }
 
 Bot::~Bot()
@@ -369,3 +372,15 @@ void Bot::terminateAll()
     std::cerr << "Budeme koncit!" << std::endl;
     m_jm->terminateAllSessions();
 }
+
+void Bot::incomingCall(QtJingleSession *js)
+{
+    TestMediaConfig config;
+    m_videowindow = new JingleVideoWindow();
+    m_videowindow->setVisible(true);
+    m_videowindow->updateMediaConfig(config);
+    js->setMediaConfig(config);
+    m_videowindow->setSession(js);
+    js->accept();
+}
+

@@ -10,6 +10,7 @@
 #include <iris/xmpp_message.h>
 
 #include "irisjinglemanager.h"
+#include "jinglevideowindow.h"
 
 #ifndef GETTEXT_PACKAGE
 #define GETTEXT_PACKAGE "irisbot"
@@ -43,6 +44,7 @@ class Bot : public QObject
     void outgoingXml(const QString &s);
     void doCall();
     void terminateAll();
+    void incomingCall(QtJingleSession *js);
 
     signals:
     /** @brief Emitted when STUN server is configured. */
@@ -58,7 +60,8 @@ class Bot : public QObject
     XMPP::Jid       m_jid;
     bool            m_configureStun;
 
-    IrisJingleManager *m_jm;
+    IrisJingleManager   *m_jm;
+    JingleVideoWindow   *m_videowindow;
 };
 
 } // namespace

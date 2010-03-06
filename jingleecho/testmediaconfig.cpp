@@ -7,6 +7,7 @@
 TestMediaConfig::TestMediaConfig()
 {
     MediaDevice vInput = MediaDevice("videotestsrc");
+    vInput.addParameter(PayloadParameter("is-live", 1));
     vInput.setFilter("ffmpegcolorspace ! videoscale");
     setVideoInput(vInput);
 

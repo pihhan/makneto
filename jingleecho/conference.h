@@ -64,6 +64,7 @@ class Conference
     Session *   getSession(const std::string &name);
     Session *   getSession(unsigned int id);
     Session *   getSession(FsSession *fs);
+    Session *   getSession(FsStream *stream);
     bool        removeSession(const std::string &name);
     void        removeAllSessions();
 

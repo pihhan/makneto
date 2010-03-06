@@ -90,6 +90,9 @@ class FstJingle
 
     void setMediaConfig(const MediaConfig &cfg);
 
+    PipelineStateType state() const;
+    void setState(PipelineStateType s);
+
     QPipeline *pipeline;
     Conference *conference;
 
@@ -98,6 +101,7 @@ class FstJingle
     std::string         m_lastErrorMessage;
     FstStatusReader     *m_reader;
     bool                m_unconfiguredCodecs;
+    PipelineStateType   m_state;
 };
 
 #endif
