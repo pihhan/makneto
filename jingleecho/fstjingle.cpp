@@ -325,6 +325,8 @@ bool FstJingle::prepareSession(JingleSession *session)
     ContentList cl = session->localContents();
     bool success = true;
     bool empty = true;
+    
+    setState(S_PREPARING);
 
     for (ContentList::iterator it = cl.begin(); it!=cl.end(); it++) {
         success = success && prepareSession(*it);
@@ -335,6 +337,7 @@ bool FstJingle::prepareSession(JingleSession *session)
             empty = false;
         }
     }
+
     return (success && !empty && goPlaying());
 }
 

@@ -15,28 +15,12 @@
     @param conf Conference class, to which it will belong.
     @param type Type of media transmitted with this session.
 */
-Stream(Session *session, FsParticipant *participant, const GList *lcandidates = NULL)
-    : m_confsession(session)
+Stream::Stream(Session *session, FsParticipant *participant, const GList *lcandidates)
+    : m_confsession(session),m_stream(0), m_state(S_NONE)
 {
-    m_session = session->streamElement();
     m_stream = createStream(participant, lcandidates);
     g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Stream::srcPadAdded), this);
     g_signal_connect(m_stream, "error", G_CALLBACK(Stream::streamError), this);
-}
-
-Session::Session(Conference *conf, FsMediaType type)
-    : m_conf(conf),m_session(NULL),m_lasterror(NULL),m_stream(NULL),
-      m_localCandidates(NULL), m_newLocalCandidates(NULL)
-{
-    GError *err =NULL;
-    m_session = fs_conference_new_session(FS_CONFERENCE(conf->conference()), type, &err);
-    if (err != NULL) {
-        LOGGER(logit) << " fs_conference_new_session: "<< err->message << std::endl;  
-        conf->reportFatalError(err->message);
-        g_error_free(err);
-    }
-    g_assert(m_session);
-    g_signal_connect(m_session, "error", G_CALLBACK(Session::sessionError), this); 
 }
 
 Stream::~Stream()
@@ -58,29 +42,34 @@ FsStream *Stream::createStream(FsParticipant *participant, const GList *lcandida
 
     memset(&param, 0, sizeof(param));
 
+    Conference *conf = m_confsession->conference();
+
     if (lcandidates) {
         param[paramcount].name = "preferred-local-candidates";
         g_value_init(&param[paramcount].value, FS_TYPE_CANDIDATE_LIST);
         g_value_take_boxed(&param[paramcount].value, lcandidates);
         paramcount++;
     }
-    if (!m_conf->stunIp().empty()) {
+    if (!conf->stunIp().empty()) {
         param[paramcount].name = "stun-ip";
         g_value_init(&param[paramcount].value, G_TYPE_STRING);
-        g_value_set_string(&param[paramcount].value, m_conf->stunIp().c_str());
+        g_value_set_string(&param[paramcount].value, conf->stunIp().c_str());
         paramcount++;
     }
-    if (m_conf->stunPort() > 0) {
+    if (conf->stunPort() > 0) {
         param[paramcount].name = "stun-port";
         g_value_init(&param[paramcount].value, G_TYPE_UINT);
-        g_value_set_uint(&param[paramcount].value, m_conf->stunPort());
+        g_value_set_uint(&param[paramcount].value, conf->stunPort());
         paramcount++;
     }
+
+    const gchar *transmitter = conf->transmitter().c_str();
+
     FsStream *stream = fs_session_new_stream(
         m_session,
         participant,
         FS_DIRECTION_BOTH,
-        m_conf->transmitter().c_str(),
+        transmitter,
         paramcount, param, &m_lasterror);
     if (m_lasterror) {
         LOGGER(logit) << " fs_session_new_stream: " 
@@ -146,6 +135,7 @@ void Stream::setLocal(GList *candidates)
 /** @brief Configure local port, any address on host will be used. */
 void Stream::setLocalPort(unsigned int port)
 {
+    const gchar *foundation = "foundation";
     if (m_localCandidates)
         fs_candidate_list_destroy(m_localCandidates);
     FsCandidate * candidate = fs_candidate_new(foundation, 1, 
@@ -161,15 +151,15 @@ void Stream::srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer
 {
     Stream *s = (Stream *) user_data;
     LOGGER(logit) << "Source pad added" << std::endl;
-    s->session()->m_conf->srcPadAdded(session, pad, codec);
+    s->session()->conference()->srcPadAdded(s->session(), pad, codec);
 }
 
 void Stream::streamError(FsStream *self, FsError errno, gchar *error_msg,
     gchar *debug_msg, gpointer user_data)
 {
-    Session *session = (Session *) user_data;
+    Stream *s = (Stream *) user_data;
     LOGGER(logit).printf("Error on stream %p(%p): %d, %s, %s",
-        self, session, errno, error_msg, debug_msg);
+        self, s, errno, error_msg, debug_msg);
 }
 
 /** @brief Return list of codecs of data we received. */
@@ -188,26 +178,17 @@ GList *Stream::getCodecListProperty(const char *name)
     return list;
 }
 
+/** @brief Create text description of this stream and its state. */
 std::string Stream::describe()
 {
     std::ostringstream o("RTP stream ");
-    o << " name: " << m_name;
-    if (m_stream) 
-        o << " has stream";
+    o << " participant: " << participantName();
+    o << " direction: " << direction();
     o << std::endl;
 
-    GstPad *s = sink();
-    if (s) {
-        gchar *name = gst_pad_get_name(s);
-        o << "sink pad: " << name;
-        o << " active: " << gst_pad_is_active(s);
-        g_free(name);
-    }
-    FsCodec * codec = currentSendCodec();
-    if (codec)
-        o<< " send codec: " << FstJingle::toString(codec);
-    o << " codec preferences: " << FstJingle::codecListToString(getCodecListProperty("codec-preferences")) << std::endl;
-    o << " codecs: " << FstJingle::codecListToString(getCodecListProperty("codecs"));
+    o << " remote-codecs: " << FstJingle::codecListToString(getCodecListProperty("remote-codecs")) << std::endl;
+    o << " negotiated-codecs: " << FstJingle::codecListToString(getCodecListProperty("negotiated-codecs"));
+    o << " current-recv: " << FstJingle::codecListToString(getCodecListProperty("current-recv-codecs"));
     return o.str(); 
 }
 
@@ -265,7 +246,7 @@ FsStream    *Stream::streamElement()
 }
 
 /** @brief Get farsight object of participant for this stream. */
-FsParticipant *Stream::participant()
+FsParticipant *Stream::participant() const
 {
     FsParticipant *p = NULL;
     g_object_get(G_OBJECT(m_stream), "participant", &p, NULL);
@@ -273,13 +254,47 @@ FsParticipant *Stream::participant()
 }
 
 /** @brief Get name of participant of this stream. */
-std::string Stream::participantName()
+std::string Stream::participantName() const
 {
     FsParticipant *p = participant();
     gchar *name = NULL;
     g_object_get(G_OBJECT(p), "cname", &name, NULL);
     std::string pname(name);
     g_free(name);
+    gst_object_unref(GST_OBJECT(p));
     return pname;
+}
+
+PipelineStateType Stream::state() const
+{
+    return m_state;
+}
+
+void Stream::setState(PipelineStateType state)
+{
+    m_state = state;
+}
+
+void Stream::setDirection(FsStreamDirection d)
+{
+    g_object_set(G_OBJECT(m_stream), "direction", d, NULL);
+}
+
+FsStreamDirection Stream::direction() const
+{
+    FsStreamDirection d = FS_DIRECTION_NONE;
+    g_object_get(G_OBJECT(m_stream), "direction", &d, NULL);
+    return d;
+}
+
+/** @brief Return name of this stream, created from name of session and 
+    name of participant. */
+std::string Stream::name() const
+{
+    std::string name;
+    if (m_confsession)
+        name = m_confsession->name() + ",";
+    name += participantName();
+    return name;
 }
 

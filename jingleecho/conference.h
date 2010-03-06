@@ -50,9 +50,15 @@ class Conference
     { return m_remoteParticipant; }
 
     void onRecvCodecsChanged(GList *codecs);
+    void onRecvCodecsChanged(GstMessage *message);
     void onSendCodecsChanged(GList *codecs);
-    void onLocalCandidatesPrepared();
+    void onLocalCandidatesPrepared(GstMessage *message);
     void onNewLocalCandidate(FsCandidate *candidate);
+
+    void onComponentStateChanged(GstMessage *message);
+    void onNewActiveCandidate(GstMessage *message);
+    void onCodecsChanged(GstMessage *message);
+    void onFarsightError(GstMessage *message);
 
     gboolean elementMessageCallback(GstMessage *message);
     static gboolean messageCallback(GstBus *bus, GstMessage *message, gpointer user_data);
@@ -65,6 +71,8 @@ class Conference
     Session *   getSession(unsigned int id);
     Session *   getSession(FsSession *fs);
     Session *   getSession(FsStream *stream);
+    Stream      *getStream(FsStream *stream);
+    Stream      *getStream(const std::string &component, const std::string &participant);
     bool        removeSession(const std::string &name);
     void        removeAllSessions();
 

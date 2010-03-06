@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <gst/gstpad.h>
+#include "stream.h"
 #include "conference.h"
 
 #include "logger/logger.h"
@@ -40,54 +41,20 @@ Conference * Session::conference()
     return m_conf;
 }
 
-FsStream *Session::createStream(FsParticipant *participant, const GList *lcandidates)
+/** @brief Create new stream for this session. */
+Stream *Session::createStream(FsParticipant *participant, const GList *lcandidates)
 {
-    GParameter param[4];
-    int paramcount = 0;
-
-    memset(&param, 0, sizeof(param));
-
-    if (lcandidates) {
-        param[paramcount].name = "preferred-local-candidates";
-        g_value_init(&param[paramcount].value, FS_TYPE_CANDIDATE_LIST);
-        g_value_take_boxed(&param[paramcount].value, lcandidates);
-        paramcount++;
-    }
-    if (!m_conf->stunIp().empty()) {
-        param[paramcount].name = "stun-ip";
-        g_value_init(&param[paramcount].value, G_TYPE_STRING);
-        g_value_set_string(&param[paramcount].value, m_conf->stunIp().c_str());
-        paramcount++;
-    }
-    if (m_conf->stunPort() > 0) {
-        param[paramcount].name = "stun-port";
-        g_value_init(&param[paramcount].value, G_TYPE_UINT);
-        g_value_set_uint(&param[paramcount].value, m_conf->stunPort());
-        paramcount++;
-    }
-    FsStream *stream = fs_session_new_stream(
-        m_session,
-        participant,
-        FS_DIRECTION_BOTH,
-        m_conf->transmitter().c_str(),
-        paramcount, param, &m_lasterror);
-    if (m_lasterror) {
-        LOGGER(logit) << " fs_session_new_stream: " 
-                  << m_lasterror->message << std::endl;
-    }
-    return stream;
+    Stream *s = new Stream(this, participant, lcandidates);
+    return s;
 }
 
 /** @brief Create stream for one participant. 
     @return true if stream was created successfully, false otherwise. */
 bool Session::createStream(FsParticipant *participant)
 {
-    m_stream = createStream(participant, m_localCandidates);
-    if (!m_stream) 
-        return false;
-    g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Session::srcPadAdded), this);
-    g_signal_connect(m_stream, "error", G_CALLBACK(Session::streamError), this);
-    return (m_stream != NULL);
+    Stream *s = createStream(participant, m_localCandidates);
+    m_streams.push_back(s);
+    return (s != NULL);
 }
 
 /** @brief Create farsight stream inside this structure, fill with remote participant
@@ -146,16 +113,12 @@ void Session::setLocalCodec(GList *codecs)
 
 bool Session::setRemoteCodec(GList *codecs)
 {
-    if (m_stream) {
-        bool r=  fs_stream_set_remote_codecs(m_stream, codecs, &m_lasterror);
-        if (m_lasterror) {
-            LOGGER(logit) << "fs_stream_set_remote_codecs: "
-                << m_lasterror->message << std::endl;
-            resetError();
-        }
-        return r;
+    if (firstStream()) {
+        firstStream()->setRemoteCodec(codecs);
+        return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 /** @brief Returns sink pad, where should be sended data sent to.
@@ -176,24 +139,6 @@ void Session::setLocal(GList *candidates)
     m_localCandidates = fs_candidate_list_copy(candidates);
 }
 
-/** @brief React on incoming source data pad.
-    Connect new pad to sink at conference. 
-    This is called from gstreamer thread! */
-void Session::srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data)
-{
-    Session *session = (Session *) user_data;
-    LOGGER(logit) << "Source pad added" << std::endl;
-    session->m_conf->srcPadAdded(session, pad, codec);
-}
-
-void Session::streamError(FsStream *self, FsError errno, gchar *error_msg,
-    gchar *debug_msg, gpointer user_data)
-{
-    Session *session = (Session *) user_data;
-    LOGGER(logit).printf("Error on stream %p(%p): %d, %s, %s",
-        self, session, errno, error_msg, debug_msg);
-}
-
 void Session::sessionError(FsSession *self, FsError errno, gchar *error_msg,
     gchar *debug_msg, gpointer user_data)
 {
@@ -209,13 +154,20 @@ FsCodec *Session::currentSendCodec()
     return codec;
 }
 
-GList * Session::currentRecvCodec()
+#if 0
+GList * Session::currentRecvCodec(const std::string &participant)
 {
-    GList *codec = NULL;
-    if (m_stream)
-        g_object_get(G_OBJECT(m_stream), "current-recv-codecs", &codec, NULL);
-    return codec;
+    Stream *s = NULL;
+    if (participant.empty()) 
+        s = firstStream();
+    else
+        s = getStream(participant);
+    if (s)
+        return s->currentRecvCodec();
+    else 
+        return NULL;
 }
+#endif
 
 /** @brief Return state of codecs.
  * property "codecs-ready" of m_session. */
@@ -275,6 +227,11 @@ std::string Session::describe()
         o<< " send codec: " << FstJingle::toString(codec);
     o << " codec preferences: " << FstJingle::codecListToString(getCodecListProperty("codec-preferences")) << std::endl;
     o << " codecs: " << FstJingle::codecListToString(getCodecListProperty("codecs"));
+    o << "Streams: " << std::endl;
+    for (StreamList::const_iterator it=m_streams.begin(); it!=m_streams.end(); it++) {
+        o << (*it)->describe() << std::endl;
+    }
+
     return o.str(); 
 }
 
@@ -374,5 +331,42 @@ FsMediaType Session::type() const
     FsMediaType t = FS_MEDIA_TYPE_AUDIO;
     g_object_get(G_OBJECT(m_session), "media-type", &t, NULL);
     return t;
+}
+
+/** @brief Get first stream of this session. */
+Stream *Session::firstStream()
+{
+    if (m_streams.empty())
+        return NULL;
+    else
+        return m_streams.front();
+}
+
+/** @brief Find stream class by participant name. 
+    @param participant Name of participant, if empty, any participant. */
+Stream *Session::getStream(const std::string &participant)
+{
+    if (participant.empty())
+        return firstStream();
+
+    for (StreamList::iterator it=m_streams.begin(); it!=m_streams.end(); it++) {
+        if (participant == (*it)->participantName())
+            return (*it);
+    }
+    return NULL;
+}
+
+/** @brief Find stream class by farsight stream class.
+    Use this on messages callback. */
+Stream *Session::getStream(FsStream *stream)
+{
+    for (StreamList::iterator it=m_streams.begin(); it!=m_streams.end(); it++) {
+        if (stream == (*it)->streamElement()) {
+            gst_object_unref(GST_OBJECT(stream));
+            return (*it);
+        }
+        gst_object_unref(GST_OBJECT(stream));
+    }
+    return NULL;
 }
 

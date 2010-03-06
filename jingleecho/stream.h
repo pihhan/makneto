@@ -5,6 +5,11 @@
 #include <glib.h>
 #include <gst/gst.h>
 #include <gst/farsight/fs-codec.h>
+#include <gst/farsight/fs-participant.h>
+#include <gst/farsight/fs-stream.h>
+#include <gst/farsight/fs-conference-iface.h>
+
+#include "fststatusreader.h"
 
 class Conference;
 class Session;
@@ -27,7 +32,8 @@ class Stream
     void setLocalCodec(GList *codecs);
     bool setRemoteCodec(GList *codecs);
 
-    GstPad * sink();
+    void setDirection(FsStreamDirection d);
+    FsStreamDirection direction() const;
 
     GList *getLocalCandidates();
     GList *getNewLocalCandidates();
@@ -47,7 +53,13 @@ class Stream
     FsSession   *sessionElement();
     FsStream    *streamElement();
 
-    FsParticipant *participant();
+    FsParticipant *participant() const;
+    std::string participantName() const;
+
+    std::string name() const;
+
+    PipelineStateType   state() const;
+    void        setState(PipelineStateType state);
 
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);

@@ -43,6 +43,7 @@ HEADERS += codecs.h \
            pjid.h \
            qpipeline.h \
            session.h \
+           stream.h \
            payloadparameter.h \
            mediaconfig.h \
            testmediaconfig.cpp \
@@ -61,6 +62,7 @@ SOURCES += \
            pjid.cpp \
            qpipeline.cpp \
            session.cpp \
+           stream.cpp \
            payloadparameter.cpp \
            mediaconfig.cpp \
            testmediaconfig.cpp \

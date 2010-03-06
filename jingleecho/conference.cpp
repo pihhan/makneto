@@ -2,7 +2,9 @@
 #include <iostream>
 #include <sstream>
 
+#include <gst/farsight/fs-stream.h>
 #include "conference.h"
+#include "stream.h"
 #include "fstjingle.h"
 
 #include "logger/logger.h"
@@ -144,8 +146,24 @@ void Conference::onNewLocalCandidate(FsCandidate *candidate)
     m_localCandidates = g_list_prepend(m_localCandidates, copy);
 }
 
-void Conference::onLocalCandidatesPrepared()
+void Conference::onLocalCandidatesPrepared(GstMessage *message)
 {
+    FsStream *fsstream = NULL;
+    if (!gst_structure_get(message->structure, 
+        "stream", FS_TYPE_STREAM, &fsstream,
+        NULL)) {
+        LOGCF() << "gst_structure_get/stream failed" << std::endl;
+        return;
+    }
+    Stream *my_stream = getStream(fsstream);
+    if (my_stream) {
+        if (my_stream->state() <= S_GATHERING) {
+            my_stream->setState(S_GATHERED);
+            LOGCF() << "Setting stream " << my_stream->participantName() 
+                << " to gathered state." << std::endl;
+        }
+    }
+
     m_newLocalCandidates++;
     LOGCF() << "Local candidates prepared: " 
             << m_newLocalCandidates << std::endl;
@@ -156,9 +174,183 @@ void Conference::onRecvCodecsChanged(GList *codecs)
     LOGCF() << "Recv codecs changed" << codecListToString(codecs) << std::endl;
 }
 
+void Conference::onRecvCodecsChanged(GstMessage *message)
+{
+    FsStream *fss = NULL;
+    GList *codecs = NULL;
+    if (!gst_structure_get(message->structure,
+        "codecs", FS_TYPE_CODEC_LIST, &codecs,
+        "stream", FS_TYPE_STREAM, &fss,
+        NULL)) {
+        LOGCF() << "Could not get properties from recv-codecs-changed message" << std::endl;
+        return;
+    }
+    onRecvCodecsChanged(codecs);
+    gst_object_unref(GST_OBJECT(fss));
+    fs_codec_list_destroy(codecs);
+}
+
 void Conference::onSendCodecsChanged(GList *codecs)
 {
     LOGCF() << "Send codecs changed" << codecListToString(codecs) << std::endl;
+}
+
+/** @brief Handler for farsight message, emitted when state of stream is changed. */
+void Conference::onComponentStateChanged(GstMessage *message)
+{
+    FsStream *fs = NULL;
+    guint component = 0;
+    FsStreamState state = FS_STREAM_STATE_FAILED;
+    if (!gst_structure_get(message->structure,
+        "stream", FS_TYPE_STREAM, &fs,
+        "component", G_TYPE_UINT, &component,
+        "state", G_TYPE_ENUM, &state,
+        NULL)) {
+        LOGCF() << "gst_structure_get failed" << std::endl;
+    }
+#if 0
+    const GValue *vstate =gst_structure_get_value(message->structure, "state");
+    FsStreamState state = (FsStreamState) g_value_get_enum(vstate);
+#endif
+    PipelineStateType pipestate = S_NONE;
+    switch (state) {
+        case FS_STREAM_STATE_FAILED:
+            pipestate = S_FAILED; break;
+        case FS_STREAM_STATE_DISCONNECTED:
+            pipestate = S_DISCONNECTED; break;
+        case FS_STREAM_STATE_GATHERING:
+            pipestate = S_GATHERING; break;
+        case FS_STREAM_STATE_CONNECTING:
+            pipestate = S_CONNECTING; break;
+        case FS_STREAM_STATE_CONNECTED:
+            pipestate = S_CONNECTED; break;
+        case FS_STREAM_STATE_READY:
+            pipestate = S_ESTABLISHED; break;
+    }
+
+    Stream *stream = getStream(fs);
+    if (stream && pipestate != S_NONE && component == FS_COMPONENT_RTP) {
+        stream->setState(pipestate);
+    }
+
+    Session *session = getSession(fs);
+    g_assert(stream && session);
+    LOGGER(logit) << "Session " << session->name()
+        << " stream " << stream->participantName()
+        << " changed component " << component 
+        << " state to " << state << std::endl;
+
+    if (m_reader) {
+        std::string name;
+        if (session)
+            name = session->name();
+        gchar *participantname = NULL;
+        g_object_get(G_OBJECT(fs), 
+            "participant", &participantname, 
+            NULL);
+
+        PipelineStateType rstate = S_NONE;
+        switch (state) {
+            case FS_STREAM_STATE_FAILED:
+                rstate = S_FAILED; break;
+            case FS_STREAM_STATE_DISCONNECTED:
+                rstate = S_DISCONNECTED; break;
+            case FS_STREAM_STATE_GATHERING:
+                rstate = S_GATHERING; break;
+            case FS_STREAM_STATE_CONNECTING:
+                rstate = S_CONNECTING; break;
+            case FS_STREAM_STATE_CONNECTED:
+                rstate = S_CONNECTED; break;
+            case FS_STREAM_STATE_READY:
+                rstate = S_ESTABLISHED; break;
+        }
+
+        m_reader->contentStatusChanged(rstate, name, participantname);
+        g_free(participantname);
+    }
+
+}
+
+/** @brief Handler of message emitted for new active candidate. */
+void Conference::onNewActiveCandidate(GstMessage *message)
+{
+    FsCandidate *l = NULL;
+    FsCandidate *r = NULL;
+    FsStream *stream = NULL;
+    if (!gst_structure_get(message->structure, 
+            "stream", FS_TYPE_STREAM, &stream,
+            "local-candidate", FS_TYPE_CANDIDATE, &l,
+            "remote-candidate", FS_TYPE_CANDIDATE, &r,
+            NULL)) {
+        LOGCF() << "gst_structure_get for " 
+            << gst_structure_get_name(message->structure) << " failed." 
+            << std::endl;
+        return ;
+    }
+    Stream *my_stream = getStream(stream);
+    gst_object_unref(stream);
+    Session *s = my_stream->session();
+    if (s) {
+        // TODO:
+        //s->onNewActivePair(l, r);
+        LOGCF() << "Session " << s->name() 
+            << " stream " << my_stream->participantName()
+            << " has new active pair "
+            << l->ip << ":" << l->port
+            << " <-> "
+            << r->ip << ":" << r->port
+            << " (only logged)"
+            << std::endl;
+    }
+
+    JingleCandidatePair pair;
+    pair.local = FstJingle::createJingleCandidate(l);
+    pair.remote = FstJingle::createJingleCandidate(r);
+    if (m_reader) {
+        m_reader->contentCandidatesActive(pair, s->name());
+    }
+}
+
+void Conference::onCodecsChanged(GstMessage *message)
+{
+    FsSession *fs = NULL;
+    if (!gst_structure_get(message->structure,
+            "session", FS_TYPE_SESSION, &fs,
+            NULL)) {
+        LOGCF() << "gst_structure_get failed for: " 
+                << gst_structure_get_name(message->structure) << std::endl;
+    } else {
+        Session *session = getSession(fs);
+        if (session) {
+            GList *cl = session->getCodecListProperty("codecs");
+            LOGCF() << "Session " << session->name() 
+                << " changed codecs to " 
+                << FstJingle::codecListToString(cl)
+                << std::endl;
+            fs_codec_list_destroy(cl);
+        } else {
+            LOGCF() << "session is NULL" << std::endl;
+        }
+    }
+}
+
+void Conference::onFarsightError(GstMessage *message)
+{
+    gint error;
+    GstStructure *s = message->structure;
+    const gchar *error_msg = gst_structure_get_string(s, "error-msg");
+    const gchar *debug_msg = gst_structure_get_string(s, "debug-msg");
+    g_assert(gst_structure_get_enum(s, "error-no", FS_TYPE_ERROR, &error));
+    if (FS_ERROR_IS_FATAL(error)) {
+        LOGGER(logit).printf("Farsight fatal error: %d %s %s",
+            error, error_msg, debug_msg);
+        reportFatalError(debug_msg);
+    } else {
+        LOGGER(logit).printf("Farsight non-fatal error: %d %s %s",
+            error, error_msg, debug_msg);
+        reportError(debug_msg);
+    }
+    setError(PipelineError, error_msg);
 }
 
 /** @brief Callback handle for element messages. */
@@ -169,21 +361,7 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
         LOGCF() << "Got element message with name: " 
                 <<  gst_structure_get_name(s) << std::endl;
         if (gst_structure_has_name(s, "farsight-error")) {
-            gint error;
-            const gchar *error_msg = gst_structure_get_string(s, "error-msg");
-            const gchar *debug_msg = gst_structure_get_string(s, "debug-msg");
-            g_assert(gst_structure_get_enum(s, "error-no", FS_TYPE_ERROR, &error));
-            if (FS_ERROR_IS_FATAL(error)) {
-                LOGGER(logit).printf("Farsight fatal error: %d %s %s",
-                    error, error_msg, debug_msg);
-                conf->reportFatalError(debug_msg);
-            } else {
-                LOGGER(logit).printf("Farsight non-fatal error: %d %s %s",
-                    error, error_msg, debug_msg);
-                conf->reportError(debug_msg);
-            }
-            conf->setError(PipelineError, error_msg);
-
+            onFarsightError(message);
         } else if (gst_structure_has_name(s, 
                 "farsight-new-local-candidate")) {
             FsCandidate *candidate = NULL;
@@ -206,44 +384,15 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
 
         } else if (gst_structure_has_name(s, 
                 "farsight-local-candidates-prepared")) {
-            conf->onLocalCandidatesPrepared();
+            onLocalCandidatesPrepared(message);
 
         } else if (gst_structure_has_name(s,
                 "farsight-new-active-candidate-pair")) {
-            FsCandidate *l = NULL;
-            FsCandidate *r = NULL;
-            FsStream *stream = NULL;
-            if (!gst_structure_get(message->structure, 
-                    "stream", FS_TYPE_STREAM, &stream,
-                    "local-candidate", FS_TYPE_CANDIDATE, &l,
-                    "remote-candidate", FS_TYPE_CANDIDATE, &r,
-                    NULL)) {
-                LOGCF() << "gst_structure_get for " 
-                    << gst_structure_get_name(s) << " failed." 
-                    << std::endl;
-                return true;
-            }
-            unsigned int id = Session::idFromStream(stream);
-            gst_object_unref(stream);
-            Session *s = conf->getSession(id);
-            if (s) {
-                // TODO:
-                //s->onNewActivePair(l, r);
-                LOGCF() << "Session " << s->name() 
-                    << " has new active pair "
-                    << l->ip << ":" << l->port
-                    << " <-> "
-                    << r->ip << ":" << r->port
-                    << " (only logged)"
-                    << std::endl;
-            }
+            onNewActiveCandidate(message);
+
         } else if (gst_structure_has_name(s,
                 "farsight-recv-codecs-changed")) {
-            const GValue *v = gst_structure_get_value(s, "codecs");
-            GList *codecs = NULL;
-            g_assert(v);
-            codecs = (GList *) g_value_get_boxed(v);
-            conf->onRecvCodecsChanged(codecs);
+            onRecvCodecsChanged(message);
 
         } else if (gst_structure_has_name(s,
                 "farsight-send-codecs-changed") ) {
@@ -265,69 +414,10 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
 
         } else if (gst_structure_has_name(s,
                 "farsight-component-state-changed")) {
-            FsStream *fs = NULL;
-            guint component = 0;
-            gst_structure_get(message->structure,
-                "stream", FS_TYPE_STREAM, &fs,
-                "component", G_TYPE_UINT, &component,
-                NULL);
-            const GValue *vstate =gst_structure_get_value(s, "state");
-            FsStreamState state;
-            state = (FsStreamState) g_value_get_enum(vstate);
-
-            Session *session = conf->getSession(fs);
-            LOGGER(logit) << "Component " << component 
-                << " state changed to " << state << std::endl;
-
-
-            if (conf->m_reader) {
-                std::string name;
-                if (session)
-                    name = session->name();
-                gchar *participantname = NULL;
-                g_object_get(G_OBJECT(fs), 
-                    "participant", &participantname, 
-                    NULL);
-
-                PipelineStateType rstate = S_NONE;
-                switch (state) {
-                    case FS_STREAM_STATE_FAILED:
-                        rstate = S_FAILED; break;
-                    case FS_STREAM_STATE_DISCONNECTED:
-                        rstate = S_DISCONNECTED; break;
-                    case FS_STREAM_STATE_GATHERING:
-                        rstate = S_GATHERING; break;
-                    case FS_STREAM_STATE_CONNECTING:
-                        rstate = S_CONNECTING; break;
-                    case FS_STREAM_STATE_CONNECTED:
-                        rstate = S_CONNECTED; break;
-                    case FS_STREAM_STATE_READY:
-                        rstate = S_ESTABLISHED; break;
-                }
-                conf->m_reader->contentStatusChanged(rstate, name, participantname);
-                g_free(participantname);
-            }
+            onComponentStateChanged(message);
         } else if (gst_structure_has_name(s,
                 "farsight-codecs-changed")) {
-            FsSession *fs = NULL;
-            if (!gst_structure_get(message->structure,
-                    "session", FS_TYPE_SESSION, &fs,
-                    NULL)) {
-                LOGCF() << "gst_structure_get failed for: " 
-                        << gst_structure_get_name(s) << std::endl;
-            } else {
-                Session *session = conf->getSession(fs);
-                if (session) {
-                    GList *cl = session->getCodecListProperty("codecs");
-                    LOGCF() << "Session " << session->name() 
-                        << " changed codecs to " 
-                        << FstJingle::codecListToString(cl)
-                        << std::endl;
-                    fs_codec_list_destroy(cl);
-                } else {
-                    LOGCF() << "session is NULL" << std::endl;
-                }
-            }
+            onCodecsChanged(message);
         } else if (gst_structure_has_name(s,
                 "prepare-xwindow-id")) {
             LOGCF() << "Received prepare-xwindow-id." << std::endl;
@@ -531,6 +621,29 @@ Session * Conference::getSession(FsStream *stream)
     }
     return NULL;
 }
+
+/** @brief Get stream wrapper by farsight FsStream */
+Stream  * Conference::getStream(FsStream *stream)
+{
+    Session *ses = getSession(stream);
+    Stream *s = NULL;
+    if (ses) {
+       s = ses->getStream(stream);
+    }
+    return s;
+}
+
+/** @brief Get stream class by name of component(session) and name of participant(stream) */
+Stream  * Conference::getStream(const std::string &component, const std::string &participant)
+{
+    Session *ses = getSession(component);
+    Stream *s = NULL;
+    if (ses) {
+       s = ses->getStream(participant);
+    }
+    return s;
+}
+
 
 /** @brief remove and terminate one session with name. 
     @return true if session was terminated, false otherwise. */

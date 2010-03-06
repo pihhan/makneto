@@ -6,7 +6,13 @@
 #include <gst/gst.h>
 #include <gst/farsight/fs-codec.h>
 
+#include <list>
+#include <string>
+
 class Conference;
+class Stream;
+
+typedef std::list<Stream *> StreamList;
 
 /** @brief Represents one media session and tools for working with that. */
 class Session
@@ -17,12 +23,16 @@ class Session
 
     Conference *conference();
 
-    FsStream *createStream(FsParticipant *participant, const GList *lcandidates);
+    Stream *createStream(FsParticipant *participant, const GList *lcandidates);
     bool createStream(FsParticipant *participant);
     /** @brief Create stream using local candidates already set 
         and remote participant of conference. */
     bool createStream();
     bool haveStream();
+
+    Stream *firstStream();
+    Stream *getStream(const std::string &participant);
+    Stream *getStream(FsStream *stream);
 
     void setRemote(const std::string &ip, int port);
     void setRemote(GList *list);
@@ -84,6 +94,7 @@ class Session
     GList       *m_newLocalCandidates;
     std::string  m_name;
     bool         m_srclinked;
+    StreamList   m_streams;
 };
 
 
