@@ -103,6 +103,8 @@ class Conference
     void setTransmitter(const std::string &t);
 
     bool codecsReady() const;
+    PipelineStateType maxStreamState(const std::string &participant=std::string() );
+    PipelineStateType minStreamState(const std::string &participant = std::string() );
 
     private:
     void        increaseNewLocalCandidates();

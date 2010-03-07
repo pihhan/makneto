@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QCloseEvent>
 
 #include "mediaconfig.h"
 #include "qtjinglesession.h"
@@ -24,6 +25,13 @@ class JingleVideoWindow : public QWidget
     QtJingleSession *session();
 
     void setMessage(const QString &msg);
+
+    public Q_SLOTS:
+    void terminated(SessionReason reason);
+
+
+    protected:
+    virtual void closeEvent(QCloseEvent *event);
 
     private:
 

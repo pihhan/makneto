@@ -16,7 +16,8 @@
     @param type Type of media transmitted with this session.
 */
 Stream::Stream(Session *session, FsParticipant *participant, const GList *lcandidates)
-    : m_confsession(session),m_stream(0), m_state(S_NONE)
+    : m_confsession(session),m_lasterror(0),m_stream(0),
+      m_localCandidates(0), m_newLocalCandidates(0), m_state(S_NONE)
 {
     m_stream = createStream(participant, lcandidates);
     g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Stream::srcPadAdded), this);
@@ -27,7 +28,6 @@ Stream::~Stream()
 {
     fs_candidate_list_destroy(m_localCandidates);
     g_object_unref(m_stream);
-    g_object_unref(m_session);
 }
 
 Session *Stream::session()
@@ -65,8 +65,9 @@ FsStream *Stream::createStream(FsParticipant *participant, const GList *lcandida
 
     const gchar *transmitter = conf->transmitter().c_str();
 
+    FsSession *fssession = m_confsession->sessionElement();
     FsStream *stream = fs_session_new_stream(
-        m_session,
+        fssession,
         participant,
         FS_DIRECTION_BOTH,
         transmitter,
@@ -75,6 +76,7 @@ FsStream *Stream::createStream(FsParticipant *participant, const GList *lcandida
         LOGGER(logit) << " fs_session_new_stream: " 
                   << m_lasterror->message << std::endl;
     }
+    gst_object_unref(GST_OBJECT(fssession));
     return stream;
 }
 
@@ -99,7 +101,6 @@ void Stream::setRemote(const std::string &ip, int port)
 /** @brief set remote candidates from GList of (FsCandidate *) */
 void Stream::setRemote(GList *list)
 {
-    g_assert(m_session);
     fs_stream_set_remote_candidates(m_stream, list, &m_lasterror);
     if (m_lasterror) {
         LOGGER(logit) << "fs_stream_set_remote_candidates: " 
@@ -150,7 +151,8 @@ void Stream::setLocalPort(unsigned int port)
 void Stream::srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data)
 {
     Stream *s = (Stream *) user_data;
-    LOGGER(logit) << "Source pad added" << std::endl;
+    g_assert(s);
+    LOGGER(logit) << "Source pad added on stream " << s->name() << std::endl;
     s->session()->conference()->srcPadAdded(s->session(), pad, codec);
 }
 
@@ -200,16 +202,6 @@ void Stream::resetError()
     m_lasterror = NULL;
 }
 
-bool Session::isSrcLinked()
-{
-    return m_srclinked;
-}
-
-void Session::setSrcLinked(bool linked)
-{
-    m_srclinked = linked;
-}
-
 GList * Stream::getLocalCandidates()
 {
     return fs_candidate_list_copy(m_localCandidates);
@@ -235,7 +227,7 @@ void Stream::onNewLocalCandidate(FsCandidate *candidate)
 
 FsSession   *Stream::sessionElement()
 {
-    gst_object_ref(m_session);
+    FsSession *m_session = m_confsession->sessionElement();
     return m_session;
 }
 

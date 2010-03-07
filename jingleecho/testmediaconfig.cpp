@@ -14,7 +14,10 @@ TestMediaConfig::TestMediaConfig()
     MediaDevice vOutput = MediaDevice("xvimagesink");
     vOutput.setFilter("ffmpegcolorspace ! videoscale");
     setVideoOutput(vOutput);
-    setLocalVideoOutput(vOutput);
+
+    MediaDevice localVideoOutput = vOutput;
+    localVideoOutput.addParameter(PayloadParameter("async", 0));
+    setLocalVideoOutput(localVideoOutput);
 
     MediaDevice audioInput = MediaDevice("audiotestsrc");
     audioInput.addParameter(PayloadParameter("is-live", 1));

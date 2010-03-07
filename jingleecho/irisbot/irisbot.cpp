@@ -254,14 +254,20 @@ void Bot::doCall()
                 JingleVideoWindow *videowin = new JingleVideoWindow();
                 videowin->setVisible(true);
                 videowin->updateMediaConfig(cfg);
-                m_jm->initiateAudioVideoSession(callee, m_client->jid(), cfg);
+                JingleSession *js;
+                js = m_jm->initiateAudioVideoSession(callee, m_client->jid(), cfg);
+                QtJingleSession *qjs = new QtJingleSession(js, m_jm);
+                videowin->setSession(qjs);
             } else if (audiocall) {
-                m_jm->initiateAudioSession(callee, m_client->jid(), cfg);
+                JingleSession *js;
+                js = m_jm->initiateAudioSession(callee, m_client->jid(), cfg);
             } else if (videocall) {
                 JingleVideoWindow *videowin = new JingleVideoWindow();
                 videowin->setVisible(true);
                 videowin->updateMediaConfig(cfg);
-                m_jm->initiateVideoSession(callee, m_client->jid(), cfg);
+                JingleSession *js;
+                js = m_jm->initiateVideoSession(callee, m_client->jid(), cfg);
+                videowin->setSession(new QtJingleSession(js, m_jm));
             }
         } else {
             std::cerr << "K zavolani predano neplatne JID" 

@@ -15,7 +15,7 @@
     @param type Type of media transmitted with this session.
 */
 Session::Session(Conference *conf, FsMediaType type)
-    : m_conf(conf),m_session(NULL),m_lasterror(NULL),m_stream(NULL),
+    : m_conf(conf),m_session(NULL),m_lasterror(NULL),
       m_localCandidates(NULL), m_newLocalCandidates(NULL)
 {
     GError *err =NULL;
@@ -32,7 +32,6 @@ Session::Session(Conference *conf, FsMediaType type)
 Session::~Session()
 {
     fs_candidate_list_destroy(m_localCandidates);
-    g_object_unref(m_stream);
     g_object_unref(m_session);
 }
 
@@ -68,36 +67,20 @@ bool Session::createStream()
     @return true if stream is already created, false otherwise. */ 
 bool Session::haveStream()
 {
-    return (m_stream != NULL);
+    return (m_streams.size() > 0);
 }
 
 void Session::setRemote(const std::string &ip, int port)
 {
-    const gchar *foundation = "foundation-test";
-
-    FsCandidate * candidate = fs_candidate_new(foundation, 1, 
-        FS_CANDIDATE_TYPE_HOST, FS_NETWORK_PROTOCOL_UDP,
-        ip.c_str(), port);
-
-    GList *candidates = g_list_prepend(NULL, candidate);
-
-    g_assert(m_stream);
-
-    fs_stream_set_remote_candidates(m_stream, candidates, &m_lasterror);
-
-    fs_candidate_list_destroy(candidates);
+    if (m_streams.size() > 0)
+        m_streams.front()->setRemote(ip, port);
 }
 
 /** @brief set remote candidates from GList of (FsCandidate *) */
 void Session::setRemote(GList *list)
 {
-    g_assert(m_session);
-    fs_stream_set_remote_candidates(m_stream, list, &m_lasterror);
-    if (m_lasterror) {
-        LOGGER(logit) << "fs_stream_set_remote_candidates: " 
-            << m_lasterror->message << std::endl;
-        resetError();    
-    }
+    if (m_streams.size() > 0)
+        m_streams.front()->setRemote(list);
 }
 
 void Session::setLocalCodec(GList *codecs)
@@ -211,8 +194,6 @@ std::string Session::describe()
     o << " codecs ready: " << codecsReady();
     o << " ssrc: " << rtpSsrc();
     o << " rtcp timeout: " << rtcpTimeout();
-    if (m_stream) 
-        o << " has stream";
     o << std::endl;
 
     GstPad *s = sink();
@@ -294,8 +275,9 @@ FsSession   *Session::sessionElement()
 
 FsStream    *Session::streamElement()
 {
-    gst_object_ref(m_stream);
-    return m_stream;
+    if (firstStream())
+        return firstStream()->streamElement();
+    return NULL;
 }
 
 unsigned int Session::id()
@@ -368,5 +350,10 @@ Stream *Session::getStream(FsStream *stream)
         gst_object_unref(GST_OBJECT(stream));
     }
     return NULL;
+}
+
+StreamList Session::streams()
+{
+    return m_streams;
 }
 

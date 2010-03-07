@@ -177,3 +177,13 @@ std::string JingleIceCandidate::xmlns() const
     return XMLNS_JINGLE_ICE;
 }
 
+
+/*
+ *
+ * JingleCandidatePair
+ *
+ */
+JingleCandidatePair::JingleCandidatePair()
+{
+}
+

@@ -99,6 +99,11 @@ bool QPipeline::add(GstElement *element)
     return gst_bin_add(GST_BIN(m_pipe), element);
 }
 
+bool QPipeline::remove(GstElement *element)
+{
+    return gst_bin_remove(GST_BIN(m_pipe), element);
+}
+
 bool QPipeline::link(GstElement *source, GstElement *destination)
 {
     return gst_element_link(source, destination);
@@ -369,7 +374,7 @@ bool QPipeline::createLocalVideoSink()
             QPLOG() << "Creating of local video sink filter failed: " << err->message << std::endl;
             return false;
         } else {
-            gst_object_set_name(GST_OBJECT(m_lvsinkfilter), "vsink-filter-bin");
+            gst_object_set_name(GST_OBJECT(m_lvsinkfilter), "local-vsink-filter-bin");
         }
     }
     return (m_localvideosink != NULL);
@@ -388,7 +393,7 @@ bool QPipeline::enableVideo(bool input, bool output)
     if (m_video_enabled)
         return false;
     bool success = true;
-    bool use_tee = false;
+    bool use_tee = true;
 
     if (input) {
         if (createVideoSource()) {
@@ -402,10 +407,13 @@ bool QPipeline::enableVideo(bool input, bool output)
             if (m_vsourcefilter) {
                 success = success && add(m_vsourcefilter);
                 success = success && link(m_videosource, m_vsourcefilter);
-                if (use_tee)
+                if (use_tee) {
                     success = success && link(m_vsourcefilter, m_videoinputtee);
-            } else if (use_tee) {
-                success = success && link(m_videosource, m_videoinputtee);
+                } else {
+                }
+            } else { 
+                if (use_tee) 
+                    success = success && link(m_videosource, m_videoinputtee);
             }
         } else return false;
     }

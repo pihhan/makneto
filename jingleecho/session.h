@@ -75,6 +75,8 @@ class Session
     static      unsigned int idFromStream(FsStream *stream);
     static      unsigned int idFromStream(const GValue *val);
 
+    StreamList      streams();
+
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
     static void streamError(FsStream *self, FsError errno, gchar *error_msg,
@@ -89,7 +91,6 @@ class Session
     Conference *m_conf;
     FsSession *m_session;
     GError      *m_lasterror;
-    FsStream    *m_stream;
     GList       *m_localCandidates;
     GList       *m_newLocalCandidates;
     std::string  m_name;

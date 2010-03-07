@@ -273,18 +273,22 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
 */
 void JingleManager::terminateSession(JingleSession *session, SessionReason reason)
 {
-    if (session->state() == JSTATE_TERMINATED) {
+#if 0
+        if (session->state() == JSTATE_TERMINATED) {
         LOGGER(logit) << "Request to terminate already terminated session" << std::endl;
         return;
     }
+#endif
 
-    setState(session, JSTATE_TERMINATED);
 
-    if (session->state() >= JSTATE_PENDING) {
+    if (session->state() == JSTATE_PENDING || session->state() == JSTATE_ACTIVE) {
         // only terminate on remote side if we sent already something
         JingleStanza *stanza = session->createStanzaTerminate(reason);
         send(stanza);
     }
+    if (session->state() != JSTATE_TERMINATED)
+        setState(session, JSTATE_TERMINATED);
+
     if (session->data()) {
         FstJingle *fst = static_cast<FstJingle *>(session->data());
         fst->terminate();
@@ -293,6 +297,8 @@ void JingleManager::terminateSession(JingleSession *session, SessionReason reaso
     } else {
         LOGGER(logit) << "No data for session " << session->sid() << std::endl;
     }
+    LOGGER(logit) << "Session " << session->sid() 
+        << " terminated." << std::endl;
 }
 
 /** @brief Terminate all sessions on manager.

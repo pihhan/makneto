@@ -16,6 +16,7 @@ class QPipeline
     virtual ~QPipeline();
 
     bool add(GstElement *element);
+    bool remove(GstElement *element);
 
     GstBus *bus();
     GstElement *element();

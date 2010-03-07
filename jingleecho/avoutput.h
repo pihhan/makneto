@@ -43,10 +43,10 @@ class AVOutput
 
     private:
     std::string participant;
-    GstElement *vsink;
-    GstElement *asink;
-    GstElement *afilter;
-    GstElement *vfilter;
+    GstElement *m_vsink;
+    GstElement *m_asink;
+    GstElement *m_afilter;
+    GstElement *m_vfilter;
     MediaDevice m_audioconfig;
     MediaDevice m_videoconfig;
     QPipeline   *m_pipeline;

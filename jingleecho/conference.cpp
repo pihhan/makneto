@@ -806,3 +806,55 @@ bool Conference::codecsReady() const
     return (ready && !empty);
 }
 
+/** @brief Get biggest state any stream has. */
+PipelineStateType Conference::maxStreamState(const std::string &participant)
+{
+    PipelineStateType max = S_NONE;
+    bool checkParticipant = !participant.empty();
+
+    for (SessionList::iterator si=m_sessions.begin(); 
+        si!=m_sessions.end(); si++) 
+    {
+        Session *session = *si;
+        StreamList slist = session->streams();
+        for (StreamList::iterator stri=slist.begin(); 
+            stri!=slist.end(); stri++) 
+        {
+            Stream *stream = *stri;
+            if (stream && 
+                (!checkParticipant || stream->participantName() == participant)
+                && stream->state() > max) {
+                    max = stream->state();
+            }
+        }
+
+    }
+    return max;
+}
+
+/** @brief Get lowest stream state.
+    @param participant Name of participant to check. If empty, all participants are checked. */
+PipelineStateType Conference::minStreamState(const std::string &participant)
+{
+    PipelineStateType min = S_FAILED;
+    bool checkParticipant = !participant.empty();
+    for (SessionList::iterator si=m_sessions.begin(); 
+        si!=m_sessions.end(); si++) 
+    {
+        Session *session = *si;
+        StreamList slist = session->streams();
+        for (StreamList::iterator stri=slist.begin(); 
+            stri!=slist.end(); stri++) 
+        {
+            Stream *stream = *stri;
+            if (stream && 
+                (!checkParticipant || stream->participantName() == participant)
+                && stream->state() < min) {
+                    min = stream->state();
+            }
+        }
+
+    }
+    return min;
+}
+

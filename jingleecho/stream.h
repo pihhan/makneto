@@ -71,7 +71,6 @@ class Stream
     void resetError();
 
     Session     *m_confsession;
-    FsSession *m_session;
     GError      *m_lasterror;
     FsStream    *m_stream;
     GList       *m_localCandidates;

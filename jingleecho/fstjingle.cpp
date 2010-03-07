@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <vector>
+
 #include <glib.h>
 
 #include "fstjingle.h"
@@ -350,18 +352,22 @@ bool FstJingle::updateRemote(
     if (session) {
         bool created;
         bool exist = session->haveStream();
-        if (!exist) {
+        Stream *stream = session->getStream(target);
+        if (!stream) {
             FsParticipant *p = conference->getParticipant(target);
             created = session->createStream(p);
             if (!created) 
                 return false;
+            stream = session->getStream(target);
         }
+
+
         LOGGER(logit) << "Updating remote content for " 
             << remote.name() << std::endl;
 
         GList *remoteCandidates = createFsCandidateList(remote.transport());
         if (remoteCandidates != NULL) {
-            session->setRemote(remoteCandidates);
+            stream->setRemote(remoteCandidates);
             LOGGER(logit) << "Updating remote candidates to: "
                 << candidateListToString(remoteCandidates) << std::endl;
             fs_candidate_list_destroy(remoteCandidates);
@@ -369,7 +375,7 @@ bool FstJingle::updateRemote(
 
         GList *remoteCodecs = createFsCodecList(remote.description());
         if (remoteCodecs != NULL) {
-            session->setRemoteCodec(remoteCodecs);
+            stream->setRemoteCodec(remoteCodecs);
             LOGGER(logit) << "Updating remote codecs to: "
                 << codecListToString(remoteCodecs) << std::endl;
             fs_codec_list_destroy(remoteCodecs);
@@ -764,17 +770,28 @@ CandidateList   FstJingle::createJingleCandidateList(GList *candidates, bool any
 bool FstJingle::tryNextCandidate(JingleContent &content)
 {
     bool modified = false;
+    std::vector<bool>   component_updated(5, false);
     bool next = false;
+
     JingleTransport jt = content.transport();
     for (CandidateList::iterator ci = jt.candidates.begin(); 
                 ci!= jt.candidates.end(); ci++) 
     {
+        next = ((component_updated.size()+1) >= ci->component 
+            && component_updated.at(ci->component));
+
         if (ci->reachable == JingleCandidate::REACHABLE_TRYING) {
             ci->reachable = JingleCandidate::REACHABLE_NO;
             LOGGER(logit) << "Candidate marked unreachable" 
                 << ci->ip << std::endl;
             modified = true;
-        } else if (ci->reachable == JingleCandidate::REACHABLE_UNKNOWN && !next) {
+
+        } else if (ci->reachable == JingleCandidate::REACHABLE_UNKNOWN 
+                && !next) {
+            if (component_updated.size() >= ci->component)
+                component_updated.resize(ci->component+1, false);
+            component_updated.assign(ci->component, true);
+
             ci->reachable = JingleCandidate::REACHABLE_TRYING;
             LOGGER(logit) << "Candidate marked trying "
                 << ci->ip << std::endl;

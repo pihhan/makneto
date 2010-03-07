@@ -144,13 +144,13 @@ class JingleManager
     static gboolean sessionTimeout_gcb(gpointer user_data);
     bool acceptedAudioSession(JingleSession *session);
 	
-	SessionMap  m_sessions;
-        UIntMap     m_timers;
-	JingleActionHandler *m_handler;
-        unsigned int        m_seed;
-        unsigned int        m_timerid;
-        std::string         m_stunIp;
-        int                 m_stunPort;
+    SessionMap  m_sessions;
+    UIntMap     m_timers;
+    JingleActionHandler *m_handler;
+    unsigned int        m_seed;
+    unsigned int        m_timerid;
+    std::string         m_stunIp;
+    int                 m_stunPort;
 };
 
 
