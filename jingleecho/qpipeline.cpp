@@ -488,26 +488,31 @@ bool QPipeline::enableAudio()
 
 GstElement *QPipeline::getAudioSource()
 {
+    gst_object_ref(GST_OBJECT(m_asource));
     return m_asource;
 }
 
 GstElement *QPipeline::getAudioSink()
 {
+    gst_object_ref(GST_OBJECT(m_asink));
     return m_asink;
 }
 
 GstElement *QPipeline::getVideoSource()
 {
+    gst_object_ref(GST_OBJECT(m_videosource));
     return m_videosource;
 }
 
 GstElement * QPipeline::getVideoSink()
 {
+    gst_object_ref(GST_OBJECT(m_videosink));
     return m_videosink;
 }
 
 GstElement * QPipeline::getLocalVideoSink()
 {
+    gst_object_ref(GST_OBJECT(m_localvideosink));
     return m_localvideosink;
 }
 

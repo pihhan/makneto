@@ -28,6 +28,7 @@ class JingleVideoWindow : public QWidget
 
     public Q_SLOTS:
     void terminated(SessionReason reason);
+    void failed();
 
 
     protected:

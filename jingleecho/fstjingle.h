@@ -3,6 +3,7 @@
 #define FSJINGLE_H
 
 #include <string>
+#include <list>
 #include <gst/gst.h>
 #include <gst/gstinterface.h>
 #include <gst/farsight/fs-conference-iface.h>
@@ -14,6 +15,7 @@
 #include "mediaconfig.h"
 #include "conference.h"
 #include "qpipeline.h"
+#include "framesize.h"
 
 
 /** @brief Class for converting my format for Jingle signalling to 
@@ -32,8 +34,8 @@ class FstJingle
     bool createAudioSession(JingleSession *session);
     bool updateRemote(const JingleContent &remote, const std::string &target = "");
     bool updateRemote(JingleSession *session);
-    bool replaceRemoteContent(const JingleContent &content);
-    bool replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate);
+    bool replaceRemoteContent(const JingleContent &content, const std::string &target);
+    bool replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate, const std::string &target);
     std::string stateDescribe();
     bool terminate();
 
@@ -70,8 +72,8 @@ class FstJingle
     bool haveNewLocalCandidates();
     void resetNewLocalCandidates();
     
-    bool updateLocalTransport(JingleContent &content);
-    bool tryNextCandidate(JingleContent &content);
+    bool updateLocalTransport(JingleContent &content, const std::string &target);
+    bool tryNextCandidate(JingleContent &content, const std::string &target);
 
     bool updateLocalDescription(JingleContent &content);
     bool updateLocalDescription(JingleSession *session);
@@ -92,6 +94,9 @@ class FstJingle
 
     PipelineStateType state() const;
     void setState(PipelineStateType s);
+
+    static FrameSizeList videoFrameSizes(GstPad *pad);
+    FrameSizeList supportedVideoInputSizes();
 
     QPipeline *pipeline;
     Conference *conference;

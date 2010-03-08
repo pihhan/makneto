@@ -46,7 +46,8 @@ HEADERS += codecs.h \
            stream.h \
            payloadparameter.h \
            mediaconfig.h \
-           testmediaconfig.cpp \
+           testmediaconfig.h \
+           framesize.h \
            ipv6/v6interface.h
 SOURCES += \
            codecs.cpp \
@@ -66,5 +67,6 @@ SOURCES += \
            payloadparameter.cpp \
            mediaconfig.cpp \
            testmediaconfig.cpp \
+           framesize.cpp \
            ../ipv6/v6interface.c \
            ../logger/logger.cpp \

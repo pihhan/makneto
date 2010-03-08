@@ -242,7 +242,8 @@ void IrisJingleManager::setState(JingleSession *session, SessionState state)
     emit sessionStateChanged(session);
     if (state == JSTATE_TERMINATED) {
         QtJingleSession *qjs = getQtSession(session);
-        qjs->reportTerminate(REASON_SUCCESS);
+        if (qjs)
+            qjs->reportTerminate(REASON_SUCCESS);
     }
 }
 

@@ -544,6 +544,11 @@ void Conference::srcPadAdded(Session *session, GstPad *pad, FsCodec *codec)
     } else {
         LOGCF() << "sink is already linked!" << std::endl;
     }
+
+    if (session->type() == FS_MEDIA_TYPE_VIDEO) {
+        FrameSizeList fsl = FstJingle::videoFrameSizes(pad);
+        LOGCF() << "video pad supports resolutions: " << FrameSize::toString(fsl) << std::endl;
+    }
     GstPadTemplate *tmpl = gst_pad_get_pad_template(sinkpad);
     if (tmpl) {
         // pad with template is propably requested dynamic pad

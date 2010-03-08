@@ -6,6 +6,7 @@
 #include <glib.h>
 
 #include "fstjingle.h"
+#include "stream.h"
 #include "logger.h"
 
 /** @brief Create farsight abstraction class.
@@ -476,28 +477,32 @@ bool FstJingle::createAudioSession(JingleSession *session)
 
 
 /** @brief Replace previous content with this content. */
-bool FstJingle::replaceRemoteContent(const JingleContent &content)
+bool FstJingle::replaceRemoteContent(const JingleContent &content, 
+    const std::string &target)
 {
     GList *remoteCandidates = createFsCandidateList(content.transport());
     GList *remoteCodecs = createFsCodecList(content.description());
 
     Session *session = conference->getSession(content.name());
+    Stream *stream = conference->getStream(content.name(), target);
     if (session) {
         bool created = true;
         LOGGER(logit) << "Replacing remote content " << content.name() 
             << std::endl;
-        if (!session->haveStream()) {
-            created = session->createStream();
+        if (!stream) {
+            FsParticipant *p = conference->getParticipant(target);
+            created = session->createStream(p);
+            stream = session->getStream(target);
         }
         if (remoteCandidates) {
-            session->setRemote(remoteCandidates);
+            stream->setRemote(remoteCandidates);
             LOGGER(logit) << "Replacing remote candidates to: " 
                 << candidateListToString(remoteCandidates) << std::endl;
             fs_candidate_list_destroy(remoteCandidates);
         }
         bool cod = true;
         if (remoteCodecs) {
-            cod = session->setRemoteCodec(remoteCodecs);
+            cod = stream->setRemoteCodec(remoteCodecs);
             LOGGER(logit) << "Replacing remote codecs to: " 
                 << codecListToString(remoteCodecs) << std::endl;
             fs_codec_list_destroy(remoteCodecs);
@@ -514,14 +519,21 @@ bool FstJingle::replaceRemoteContent(const JingleContent &content)
 /** @brief Replace remote candidate for specified content.
     @param content Name of content to be replaced.
     @param candidate New candidate that will be used.
+    @param target JID or nickname of participant
 */
-bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleCandidate &candidate)
+bool FstJingle::replaceRemoteCandidate(
+    const std::string &content, 
+    const JingleCandidate &candidate, 
+    const std::string &target)
 {
     Session *session = conference->getSession(content);
+    Stream *stream = conference->getStream(content, target);
     if (session) {
         bool exist = true;
-        if (!session->haveStream()) {
-            exist = session->createStream();
+        if (!stream) {
+            FsParticipant *p = conference->getParticipant(target);
+            exist = session->createStream(p);
+            stream = session->getStream(target);
         }
         GList *candidates = NULL;
         FsCandidate *fscan = createFsCandidate(candidate);
@@ -532,9 +544,7 @@ bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleC
         }
         candidates = g_list_prepend(candidates, fscan);
         if (candidates)
-            session->setRemote(candidates);
-        // TODO: lepsi spravu zdroju, tohle je primo prirazeno do session, nelze uvolnit.
-        // fs_candidate_list_destroy(candidates);
+            stream->setRemote(candidates);
         LOGGER(logit) << "Replacing remote candidate to " 
                 << ((fscan->ip) ? fscan->ip : "(any)") << ":" 
                 << fscan->port << " "
@@ -543,8 +553,8 @@ bool FstJingle::replaceRemoteCandidate(const std::string &content, const JingleC
         return true;
     } else {
         LOGGER(logit)
-        << "Farsight session not found for content: " 
-        << content << std::endl;
+        << "Farsight stream not found for content: " 
+        << content << " target " << target << std::endl;
     }
     return false;
 }
@@ -634,11 +644,14 @@ std::string FstJingle::toString(const FsCandidate *candidate)
 /** @brief Terminate current session. */
 bool FstJingle::terminate()
 {
-    pipeline->setState(GST_STATE_NULL);
-    conference->removeAllSessions();
+    if (pipeline) {
+        pipeline->setState(GST_STATE_NULL);
+    }
 
-    delete conference;
-    delete pipeline;
+    if (conference) {
+        conference->removeAllSessions();
+    }
+    
     return true;
 }
 
@@ -718,13 +731,14 @@ CandidateList   FstJingle::localCandidates()
 /** @brief Update local transport and its candidates from information we know
     about. 
     @param content Content to update.
+    @param target JID or nickname of participant
     @return True if updated, false otherwise. 
 */
-bool FstJingle::updateLocalTransport(JingleContent &content)
+bool FstJingle::updateLocalTransport(JingleContent &content, const std::string &target)
 {
-    Session *fs = conference->getSession(content.name());
-    if (fs) {
-        GList * candidates = fs->getNewLocalCandidates();
+    Stream *stream = conference->getStream(content.name(), target);
+    if (stream) {
+        GList * candidates = stream->getNewLocalCandidates();
         CandidateList cl = createJingleCandidateList(candidates);
         fs_candidate_list_destroy(candidates);
         JingleTransport jt = content.transport();
@@ -763,11 +777,13 @@ CandidateList   FstJingle::createJingleCandidateList(GList *candidates, bool any
 }
 
 /** @brief Try next candidate for this content. 
+    @param content Content to update
+    @param target JID or participant nickname
     @return true if there is next candidate to try, false otherwise.
     It will mark current candidate unreachable, and mark next candidate
     trying. If no more candidates, return false. 
 */
-bool FstJingle::tryNextCandidate(JingleContent &content)
+bool FstJingle::tryNextCandidate(JingleContent &content, const std::string &target)
 {
     bool modified = false;
     std::vector<bool>   component_updated(5, false);
@@ -777,26 +793,26 @@ bool FstJingle::tryNextCandidate(JingleContent &content)
     for (CandidateList::iterator ci = jt.candidates.begin(); 
                 ci!= jt.candidates.end(); ci++) 
     {
-        next = ((component_updated.size()+1) >= ci->component 
+        next = (((int)component_updated.size()) > ci->component 
             && component_updated.at(ci->component));
 
         if (ci->reachable == JingleCandidate::REACHABLE_TRYING) {
             ci->reachable = JingleCandidate::REACHABLE_NO;
-            LOGGER(logit) << "Candidate marked unreachable" 
+            LOGGER(logit) << "Candidate marked unreachable: " 
                 << ci->ip << std::endl;
             modified = true;
 
         } else if (ci->reachable == JingleCandidate::REACHABLE_UNKNOWN 
                 && !next) {
-            if (component_updated.size() >= ci->component)
+            if ((int) component_updated.size() > ci->component)
                 component_updated.resize(ci->component+1, false);
             component_updated.assign(ci->component, true);
 
             ci->reachable = JingleCandidate::REACHABLE_TRYING;
-            LOGGER(logit) << "Candidate marked trying "
+            LOGGER(logit) << "Candidate marked trying: "
                 << ci->ip << std::endl;
             modified = true;
-            replaceRemoteCandidate(content.name(), *ci);
+            replaceRemoteCandidate(content.name(), *ci, target);
             next = true;
         }
     } // for candidates
@@ -962,5 +978,70 @@ void FstJingle::setState(PipelineStateType s)
 PipelineStateType FstJingle::state() const
 {
     return m_state;
+}
+
+/** @brief Get list of supported resolutions of pad. */
+FrameSizeList FstJingle::videoFrameSizes(GstPad *pad)
+{
+    FrameSizeList list;
+    GstCaps *caps = NULL; // gst_pad_get_negotiated_caps(pad);
+    if (!caps) {
+        caps = gst_pad_get_caps(pad);
+        if (!caps)
+            return list;
+    }
+    for (unsigned int i = 0; i < gst_caps_get_size(caps); i++) {
+        GstStructure *s = gst_caps_get_structure(caps, i);
+        const GValue *h = gst_structure_get_value(s, "height");
+        const GValue *w = gst_structure_get_value(s, "width");
+        if (!h || !w) 
+            continue;
+        FrameSize size;
+        if (G_VALUE_TYPE(h) == G_TYPE_INT) {
+           size.height = g_value_get_int(h); 
+           size.width = g_value_get_int(w);
+           FrameSize::appendIfUnique(list, size);
+        } else if (G_VALUE_TYPE(h) == G_TYPE_UINT) {
+           size.height = g_value_get_uint(h); 
+           size.width = g_value_get_uint(w);
+           FrameSize::appendIfUnique(list, size);
+        } else if (G_VALUE_TYPE(h) == GST_TYPE_INT_RANGE) {
+            size.height = gst_value_get_int_range_min(h);
+            size.width = gst_value_get_int_range_min(w);
+            FrameSize::appendIfUnique(list, size);
+
+            size.height = gst_value_get_int_range_max(h);
+            size.width = gst_value_get_int_range_max(w);
+            FrameSize::appendIfUnique(list, size);
+        } else {
+            LOGGER(logit) << "GValue for height has unsupported type " 
+                << G_VALUE_TYPE(h) << std::endl;
+        }
+    } // for
+
+    LOGGER(logit) << "Caps " << gst_caps_to_string(caps) 
+        << " has sizes: " << FrameSize::toString(list) << std::endl;
+    gst_caps_unref(caps);
+    return list;
+}
+
+/** @brief Get list of supported frame sizes of video input. 
+    It will support only fixed sizes. If device reports range of
+    resolutions, i dont know what to do with it. */
+FrameSizeList FstJingle::supportedVideoInputSizes()
+{
+    FrameSizeList list;
+    GstElement *e = pipeline->getVideoSource();
+    if (!e)
+        return list;
+    GstPad *pad = gst_element_get_pad(e, "src");
+    if (!pad) {
+        gst_object_unref(GST_OBJECT(e));
+        return list;
+    }
+    list = videoFrameSizes(pad);
+    gst_object_unref(GST_OBJECT(pad));
+    gst_object_unref(GST_OBJECT(e));
+    return list;
 }
 

@@ -448,7 +448,7 @@ void JingleManager::periodicSessionCheck(JingleSession *session)
             ContentList modified;
 
             for (ContentList::iterator it=cl.begin(); it!=cl.end(); it++) {
-                if (fst->updateLocalTransport(*it)) {
+                if (fst->updateLocalTransport(*it, session->remote().fullStd())) {
                     commentSession(session, "Local Transport updated: " + it->name());
                     modified.push_back(*it);
                 }
@@ -482,6 +482,9 @@ bool JingleManager::periodicPreconfigureCheck(JingleSession *session)
             LOGGER(logit) << "Preconfigure failed for session " 
                 << session->sid() << std::endl;
         } else if (fsj->isPreconfigured()) {
+            FrameSizeList sizes = fsj->supportedVideoInputSizes();
+            LOGGER(logit) << "Supported video sizes: " 
+                << FrameSize::toString(sizes) << std::endl;
             if (session->needLocalPayload()) {
                 bool updated = fsj->updateLocalDescription(session);
                 LOGGER(logit) << "Updated local description " << updated 
@@ -573,7 +576,7 @@ bool JingleManager::sessionTimeout(JingleSession *session)
         << fst->stateDescribe() << std::endl;
 
     for (ContentList::iterator it=cl.begin(); it!= cl.end(); it++) {
-        if (fst->tryNextCandidate(*it)) {
+        if (fst->tryNextCandidate(*it, session->remote().fullStd()) ) {
             untried = true;
         }
     } // for contents
@@ -643,7 +646,7 @@ void JingleManager::modifySession(JingleSession *session, JingleStanza *stanza)
                 for (ContentList::iterator it = contents.begin(); 
                         it != contents.end(); it++) 
                 {
-                    fst->replaceRemoteContent(*it);
+                    fst->replaceRemoteContent(*it, session->remote().fullStd());
                 }
             }
             break;

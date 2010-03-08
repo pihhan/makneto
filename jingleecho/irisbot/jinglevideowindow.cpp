@@ -27,7 +27,7 @@ JingleVideoWindow::JingleVideoWindow()
     m_terminate_btn = new QPushButton(tr("Terminate"));
 
     m_msglabel = new QLabel();
-    m_msglabel->setMaximumHeight(100);
+    m_msglabel->setMaximumHeight(60);
 
     QHBoxLayout *buttonlayout = new QHBoxLayout();
     buttonlayout->addWidget(m_mute_btn);
@@ -78,6 +78,7 @@ void JingleVideoWindow::setSession(QtJingleSession *qjs)
     connect(m_hold_btn, SIGNAL(clicked()), m_session, SLOT(hold()));
     connect(m_mute_btn, SIGNAL(clicked()), m_session, SLOT(mute()));
     connect(m_session, SIGNAL(terminated(SessionReason)), this, SLOT(terminated(SessionReason)));
+    connect(m_session, SIGNAL(failed()), this, SLOT(failed()));
 }
 
 QtJingleSession * JingleVideoWindow::session()
@@ -92,7 +93,7 @@ void JingleVideoWindow::setMessage(const QString &msg)
 
 void JingleVideoWindow::closeEvent(QCloseEvent *event)
 {
-    if (m_session && m_session->session()->state() != JSTATE_TERMINATED) {
+    if (m_session && m_session->session()->state() == JSTATE_TERMINATED) {
         event->accept();
     } else {
         event->ignore();
@@ -102,5 +103,10 @@ void JingleVideoWindow::closeEvent(QCloseEvent *event)
 void JingleVideoWindow::terminated(SessionReason reason)
 {
     setMessage("Terminated: ");
+}
+
+void JingleVideoWindow::failed()
+{
+    setMessage("Failed.");
 }
 
