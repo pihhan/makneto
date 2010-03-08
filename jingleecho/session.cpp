@@ -122,6 +122,18 @@ void Session::setLocal(GList *candidates)
     m_localCandidates = fs_candidate_list_copy(candidates);
 }
 
+/** @brief Configure local port, any address on host will be used. */
+void Session::setLocalPort(unsigned int port)
+{
+    const gchar *foundation = "foundation";
+    if (m_localCandidates)
+        fs_candidate_list_destroy(m_localCandidates);
+    FsCandidate * candidate = fs_candidate_new(foundation, 1, 
+        FS_CANDIDATE_TYPE_HOST, FS_NETWORK_PROTOCOL_UDP,
+        NULL, port);
+    m_localCandidates = g_list_prepend(NULL, candidate);
+}
+
 void Session::sessionError(FsSession *self, FsError errno, gchar *error_msg,
     gchar *debug_msg, gpointer user_data)
 {

@@ -54,6 +54,7 @@ class Conference
     void onSendCodecsChanged(GList *codecs);
     void onLocalCandidatesPrepared(GstMessage *message);
     void onNewLocalCandidate(FsCandidate *candidate);
+    void onNewLocalCandidate(GstMessage *message);
 
     void onComponentStateChanged(GstMessage *message);
     void onNewActiveCandidate(GstMessage *message);

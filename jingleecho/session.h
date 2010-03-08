@@ -37,6 +37,7 @@ class Session
     void setRemote(const std::string &ip, int port);
     void setRemote(GList *list);
     void setLocal(GList *candidates);
+    void setLocalPort(unsigned int port);
     void setLocalCodec(GList *codecs);
     bool setRemoteCodec(GList *codecs);
 

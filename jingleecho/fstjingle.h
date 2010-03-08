@@ -23,6 +23,8 @@
 class FstJingle
 {
     public:
+    typedef std::list<std::string> StringList;
+
     FstJingle(JingleSession *js, FstStatusReader *reader = NULL);
     virtual ~FstJingle();
         
@@ -97,6 +99,9 @@ class FstJingle
 
     static FrameSizeList videoFrameSizes(GstPad *pad);
     FrameSizeList supportedVideoInputSizes();
+
+
+    GList * codecListByPreference(const GList *codecs, const StringList &preferences);
 
     QPipeline *pipeline;
     Conference *conference;

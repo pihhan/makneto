@@ -146,6 +146,31 @@ void Conference::onNewLocalCandidate(FsCandidate *candidate)
     m_localCandidates = g_list_prepend(m_localCandidates, copy);
 }
 
+void Conference::onNewLocalCandidate(GstMessage *message)
+{
+    FsCandidate *candidate = NULL;
+    FsStream *stream = NULL;
+    if (!gst_structure_get(message->structure, 
+        "stream", FS_TYPE_STREAM, &stream, 
+        "candidate", FS_TYPE_CANDIDATE, &candidate,
+        NULL)) {
+        LOGCF() << "failed to get stream and candidate" << std::endl;
+    } else {
+        Stream *s = getStream(stream);
+        gst_object_unref(GST_OBJECT(stream));
+
+        if (s)
+            s->onNewLocalCandidate(candidate);
+        onNewLocalCandidate(candidate);
+    
+        LOGCF() << "New local candidate " << candidate->ip 
+            << ":" << candidate->port 
+            << " on stream " << s->name() << std::endl;
+
+        fs_candidate_destroy(candidate);
+    }
+}
+
 void Conference::onLocalCandidatesPrepared(GstMessage *message)
 {
     FsStream *fsstream = NULL;
@@ -364,24 +389,7 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
             onFarsightError(message);
         } else if (gst_structure_has_name(s, 
                 "farsight-new-local-candidate")) {
-            FsCandidate *candidate = NULL;
-            FsStream *stream = NULL;
-            if (!gst_structure_get(message->structure, 
-                "stream", FS_TYPE_STREAM, &stream, 
-                "candidate", FS_TYPE_CANDIDATE, &candidate,
-                NULL)) {
-                LOGCF() << "failed to get stream and candidate" << std::endl;
-                return true;
-            } else {
-                unsigned int id = Session::idFromStream(stream);
-                gst_object_unref(stream);
-
-                Session *session = conf->getSession(id);
-                if (session)
-                    session->onNewLocalCandidate(candidate);
-                conf->onNewLocalCandidate(candidate);
-            }
-
+            onNewLocalCandidate(message);
         } else if (gst_structure_has_name(s, 
                 "farsight-local-candidates-prepared")) {
             onLocalCandidatesPrepared(message);

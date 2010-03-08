@@ -1045,3 +1045,28 @@ FrameSizeList FstJingle::supportedVideoInputSizes()
     return list;
 }
 
+typedef std::list<std::string> StringList;
+
+/** @brief Filters codec list and return it sorted by preferences, containing
+    only enabled codecs. */
+GList *FstJingle::codecListByPreference(const GList *codecs, const StringList &preferences)
+{
+    GList *newlist = NULL;
+
+    for(StringList::const_iterator i=preferences.begin(); i!=preferences.end(); i++) {
+        const GList *icodec = codecs;
+        bool found = false;
+        while (icodec != NULL) {
+            FsCodec *codec = (FsCodec *) icodec->data;
+            if (codec && (*i) == codec->encoding_name) {
+                FsCodec *copy = fs_codec_copy(codec);
+                newlist = g_list_prepend(newlist, copy);
+                found = true;
+            }
+            icodec = g_list_next(icodec);
+        }
+    }
+    return g_list_reverse(newlist);
+}
+
+

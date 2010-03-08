@@ -75,6 +75,10 @@ FsStream *Stream::createStream(FsParticipant *participant, const GList *lcandida
     if (m_lasterror) {
         LOGGER(logit) << " fs_session_new_stream: " 
                   << m_lasterror->message << std::endl;
+    } else {
+        LOGGER(logit) << "Created stream " << name() 
+            << "with transmitter " << transmitter 
+            << std::endl;
     }
     gst_object_unref(GST_OBJECT(fssession));
     return stream;

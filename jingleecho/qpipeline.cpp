@@ -380,6 +380,47 @@ bool QPipeline::createLocalVideoSink()
     return (m_localvideosink != NULL);
 }
 
+/** @brief Enable local video sink, create it if not created already. */
+bool QPipeline::enableLocalVideoSink()
+{
+    if (!m_localvideosink) {
+        if (!createLocalVideoSink())
+            return false;
+    } else {
+        bool success = true;
+        success = success && add(m_localvideosink);
+        if (m_lvsinkfilter) {
+            success = success && add(m_lvsinkfilter);
+            success = success && link(m_lvsinkfilter, m_localvideosink);
+            success = success && link(m_videoinputtee, m_lvsinkfilter);
+        } else {
+            success = success && link(m_videoinputtee, m_localvideosink);
+        }
+        return success;
+    }
+}
+
+/** @brief Disable local preview of video input. */
+bool QPipeline::disableLocalVideoSink()
+{
+    GstPad *src = NULL;
+    bool success = true;
+    if (m_lvsinkfilter) 
+        src = gst_element_get_src_pad(m_lvsinkfilter, "src");
+    else 
+        src = gst_element_get_src_pad(m_localvideosink, "src");
+
+    if (src) {
+        GstPad *dst = gst_pad_get_peer(src);
+        if (dst) {
+            success = success && gst_pad_unlink(src, dst);
+        }
+    }
+    success = success && remove(m_lvsinkfilter);
+    success = success && remove(m_localvideosink);
+    return success;
+}
+
 /** @brief Create element that will split input to network and local preview. */
 bool QPipeline::createVideoTee()
 {
