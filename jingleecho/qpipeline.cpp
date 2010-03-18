@@ -384,8 +384,10 @@ bool QPipeline::createLocalVideoSink()
 bool QPipeline::enableLocalVideoSink()
 {
     if (!m_localvideosink) {
-        if (!createLocalVideoSink())
+        if (!createLocalVideoSink()) {
+            QPLOG() << "Creation of video local sink failed." << std::endl;
             return false;
+        }
     } else {
         bool success = true;
         success = success && add(m_localvideosink);
@@ -406,9 +408,9 @@ bool QPipeline::disableLocalVideoSink()
     GstPad *src = NULL;
     bool success = true;
     if (m_lvsinkfilter) 
-        src = gst_element_get_src_pad(m_lvsinkfilter, "src");
+        src = gst_element_get_pad(m_lvsinkfilter, "src");
     else 
-        src = gst_element_get_src_pad(m_localvideosink, "src");
+        src = gst_element_get_pad(m_localvideosink, "src");
 
     if (src) {
         GstPad *dst = gst_pad_get_peer(src);
@@ -428,6 +430,49 @@ bool QPipeline::createVideoTee()
     return (m_videoinputtee != NULL);
 }
 
+/** @brief Enable video input elements, add them to pipeline, and link them.
+    @return true if all was successful, false otherwise. */
+bool QPipeline::enableVideoInput()
+{
+    if (m_video_enabled)
+        return false;
+    bool success = true;
+    bool linked = true;
+    bool added = true;
+    bool use_tee = true;
+
+    if (createVideoSource()) {
+        QPLOG() << "video source created." << std::endl;
+        added = added && add(m_videosource);
+        if (use_tee) { 
+            if (createVideoTee()) {
+                added = added && add(m_videoinputtee);
+            } else return false;
+        }
+        if (m_vsourcefilter) {
+            added = added && add(m_vsourcefilter);
+            linked = linked && link(m_videosource, m_vsourcefilter);
+            if (use_tee) {
+                linked = linked && link(m_vsourcefilter, m_videoinputtee);
+            } else {
+            }
+        } else { 
+            if (use_tee) 
+                linked = linked && link(m_videosource, m_videoinputtee);
+        }
+    } else {
+        QPLOG() << "Failed to create video source." << std::endl;
+        return false;
+    }
+   
+    success = added && linked;
+    if (!success) {
+        QPLOG() << "Failed to enable video source, added: " 
+            << added << " linked: " << linked << std::endl;
+    }
+    return success;
+}
+
 /** @brief Create elements for video input and output. */
 bool QPipeline::enableVideo(bool input, bool output)
 {
@@ -437,28 +482,10 @@ bool QPipeline::enableVideo(bool input, bool output)
     bool use_tee = true;
 
     if (input) {
-        if (createVideoSource()) {
-            QPLOG() << "video source created." << std::endl;
-            success = success && add(m_videosource);
-            if (use_tee) { 
-                if (createVideoTee()) {
-                    success = success && add(m_videoinputtee);
-                } else return false;
-            }
-            if (m_vsourcefilter) {
-                success = success && add(m_vsourcefilter);
-                success = success && link(m_videosource, m_vsourcefilter);
-                if (use_tee) {
-                    success = success && link(m_vsourcefilter, m_videoinputtee);
-                } else {
-                }
-            } else { 
-                if (use_tee) 
-                    success = success && link(m_videosource, m_videoinputtee);
-            }
-        } else return false;
+        if (!enableVideoInput()) {
+            return false;
+        }
     }
-    
     if (output) {
         if (createVideoSink()) {
             QPLOG() << "video sink created." << std::endl;

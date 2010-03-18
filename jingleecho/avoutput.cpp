@@ -7,12 +7,14 @@
 #define QPLOG() (LOGGER(logit))
 
 AVOutput::AVOutput(QPipeline *p)
-    : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_pipeline(p)
+    : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_level(0), 
+      m_volume(0), m_pipeline(p)
 {
 }
 
 AVOutput::AVOutput(QPipeline *p, MediaDevice audio, MediaDevice video)
-    : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_pipeline(p)
+    : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_level(0), 
+      m_volume(0),  m_pipeline(p)
 {
     m_audioconfig = audio;
     m_videoconfig = video;

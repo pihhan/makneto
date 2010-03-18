@@ -49,6 +49,7 @@ class QPipeline
 
     bool enableLocalVideoSink();
     bool disableLocalVideoSink();
+    bool enableVideoInput();
 
     bool isVideoEnabled();
     bool isAudioEnabled();

@@ -47,6 +47,8 @@ class AVOutput
     GstElement *m_asink;
     GstElement *m_afilter;
     GstElement *m_vfilter;
+    GstElement *m_level; ///<! level element, to read audio volume levels
+    GstElement *m_volume; ///<! volume element, to modify audio volume
     MediaDevice m_audioconfig;
     MediaDevice m_videoconfig;
     QPipeline   *m_pipeline;
