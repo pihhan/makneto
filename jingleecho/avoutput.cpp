@@ -8,13 +8,13 @@
 
 AVOutput::AVOutput(QPipeline *p)
     : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_level(0), 
-      m_volume(0), m_pipeline(p)
+      m_volume(0), m_pipeline(p), m_audiowatcher(0), m_videowatcher(0)
 {
 }
 
 AVOutput::AVOutput(QPipeline *p, MediaDevice audio, MediaDevice video)
     : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_level(0), 
-      m_volume(0),  m_pipeline(p)
+      m_volume(0),  m_pipeline(p), m_audiowatcher(0), m_videowatcher(0)
 {
     m_audioconfig = audio;
     m_videoconfig = video;
@@ -194,4 +194,37 @@ bool AVOutput::createAudioSink()
     return (m_asink != NULL);
 }
 
+
+GstElement *AVOutput::levelElement()
+{
+    if (m_level)
+        gst_object_ref(GST_OBJECT(m_level));
+    return m_level;
+}
+
+GstElement *AVOutput::volumeElement()
+{
+    if (m_volume)
+        gst_object_ref(GST_OBJECT(m_volume));
+    return m_volume;
+}
+
+void AVOutput::registerAudioWatcher(GstAudioWatcher *watcher)
+{
+    m_audiowatcher = watcher;
+}
+
+void AVOutput::registerVideoWatcher(GstVideoWatcher *watcher)
+{
+    m_videowatcher = watcher;
+}
+
+bool AVOutput::handleLevelMessage(GstMessage *msg)
+{
+    if (m_audiowatcher) {
+        m_audiowatcher->updateMessage(msg);
+        return true;
+    } else
+        return false;
+}
 

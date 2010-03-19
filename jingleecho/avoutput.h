@@ -7,6 +7,8 @@
 #include "mediaconfig.h"
 
 class QPipeline;
+class GstAudioWatcher;
+class GstVideoWatcher;
 
 /** @brief Class for output of one remote person, with audio and video elements.
     This can create audio and video outputs, configure them. */
@@ -37,9 +39,16 @@ class AVOutput
     GstElement *audioElement();
     GstElement *videoFilterElement();
     GstElement *audioFilterElement();
+    GstElement *levelElement();
+    GstElement *volumeElement();
 
     std::string name();
     void setName(const std::string &name);
+
+    bool handleLevelMessage(GstMessage *msg);
+
+    void registerAudioWatcher(GstAudioWatcher *watcher);
+    void registerVideoWatcher(GstVideoWatcher *watcher);
 
     private:
     std::string participant;
@@ -52,6 +61,8 @@ class AVOutput
     MediaDevice m_audioconfig;
     MediaDevice m_videoconfig;
     QPipeline   *m_pipeline;
+    GstAudioWatcher *m_audiowatcher;
+    GstVideoWatcher *m_videowatcher;
 };
 
 #endif
