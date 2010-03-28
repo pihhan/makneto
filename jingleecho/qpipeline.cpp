@@ -400,6 +400,7 @@ bool QPipeline::enableLocalVideoSink()
         }
         return success;
     }
+    return false;
 }
 
 /** @brief Disable local preview of video input. */

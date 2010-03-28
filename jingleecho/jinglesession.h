@@ -94,6 +94,7 @@ typedef enum {
     INFO_LAST = INFO_RINGING
 } SessionInfo;
 
+class JingleSessionGroup;
 
 /** @brief Class carrying all information about one stanza with Jingle namespace
  * */
@@ -245,6 +246,9 @@ class JingleSession
     bool failed() const;
     void setFailed(bool failed);
 
+    JingleSessionGroup *group() const;
+    void setGroup(JingleSessionGroup *group);
+
     JingleStanza *createStanza(SessionAction action);
     JingleStanza *createStanzaInitiate();
     JingleStanza *createStanzaInfo(SessionInfo info);
@@ -304,6 +308,7 @@ class JingleSession
     int                     m_ackedversion; ///!< version number we received acks from remote
     void                    *m_data; ///!< Custom data about this session
     bool                    m_failed;
+    JingleSessionGroup      *m_group;
 	
 };
 

@@ -22,7 +22,7 @@
 //#include <QListWidget>
 
 
-Player::Player(QWidget *parent) 
+GstVideoWidget::GstVideoWidget(QWidget *parent) 
     : QWidget(parent), m_playing(false)
 {
     m_videoSize = QSize(320,240);
@@ -37,44 +37,48 @@ Player::Player(QWidget *parent)
     setAttribute(Qt::WA_PaintOnScreen);
 
 }
+        
+virtual GstVideoWidget::~GstVideoWidget() 
+{
+}
 
-void Player::displayHandle()
+void GstVideoWidget::displayHandle()
 {
     qDebug() << "Player handle is " << x11PictureHandle() << endl;
 }
         
-void Player::setVideoSize(const QSize size)
+void GstVideoWidget::setVideoSize(const QSize size)
 {
     m_videoSize = size;
     updateGeometry();
 }
 
-QSize Player::videoSize() const
+QSize GstVideoWidget::videoSize() const
 {
     return m_videoSize;
 }
 
-QSize Player::sizeHint() const
+QSize GstVideoWidget::sizeHint() const
 {
     return m_videoSize;
 }
 
-QSize Player::minimumSizeHint() const
+QSize GstVideoWidget::minimumSizeHint() const
 {
     return QSize(160,120);
 }
 
-bool Player::playing() const
+bool GstVideoWidget::playing() const
 {
     return m_playing;
 }
 
-void Player::setPlaying(bool playing)
+void GstVideoWidget::setPlaying(bool playing)
 {
     m_playing = playing;
 }
 
-void Player::paintEvent(QPaintEvent *event)
+void GstVideoWidget::paintEvent(QPaintEvent *event)
 {
     if (!m_playing)
 #if 0

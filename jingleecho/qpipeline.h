@@ -78,7 +78,7 @@ class QPipeline
 
     MediaConfig mediaConfig();
     void setMediaConfig(const MediaConfig &c);
-    bool configureElement(GstElement *e, PayloadParameterMap p);
+    static bool configureElement(GstElement *e, PayloadParameterMap p);
 
     private:
 

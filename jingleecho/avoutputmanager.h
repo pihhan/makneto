@@ -29,12 +29,20 @@ class AVOutputManager
     void removeOutput(AVOutput *out);
 
     AVOutput *findOutput(GstElement *element);
+    AVOutput *findOutput(GstObject *object);
     AVOutput *findOutput(const std::string &participant);
 
+
+    bool handleLevelMessage(GstMessage *msg);
+
+    protected:
     void registerElement(GstElement *element, AVOutput *output);
     void unregisterElement(GstElement *element);
 
-    bool handleLevelMessage(GstMessage *msg);
+    void registerAllVideoElements(AVOutput *out);
+    void registerAllAudioElements(AVOutput *out);
+    void unregisterAllVideoElements(AVOutput *out);
+    void unregisterAllAudioElements(AVOutput *out);
 
     OutputStringMap     m_elementsMap;
     OutputList          m_outputs;

@@ -18,6 +18,8 @@ class AVOutput
     AVOutput(QPipeline *p);
     AVOutput(QPipeline *p, MediaDevice audio, MediaDevice video);
 
+    typedef unsigned long   WindowId;
+
     virtual ~AVOutput();
 
     bool enableAudio();
@@ -49,6 +51,12 @@ class AVOutput
 
     void registerAudioWatcher(GstAudioWatcher *watcher);
     void registerVideoWatcher(GstVideoWatcher *watcher);
+
+    bool createAudioSink();
+    bool createVideoSink();
+
+    void expose();
+    void setWindowId(unsigned long id);
 
     private:
     std::string participant;

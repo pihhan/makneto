@@ -4,6 +4,8 @@
 #include "avoutput.h"
 #include "qpipeline.h"
 
+#include "audiowatcher.h"
+
 #define QPLOG() (LOGGER(logit))
 
 AVOutput::AVOutput(QPipeline *p)
@@ -85,7 +87,7 @@ void AVOutput::setAudioConfig(const MediaDevice &d)
     m_audioconfig = d;
 }
 
-GstPad AVOutput::*getVideoSinkPad()
+GstPad * AVOutput::getVideoSinkPad()
 {
     GstPad *pad = NULL;
     if (m_vfilter) {
@@ -96,7 +98,7 @@ GstPad AVOutput::*getVideoSinkPad()
     return pad;
 }
 
-GstPad AVOutput::*getAudioSinkPad()
+GstPad * AVOutput::getAudioSinkPad()
 {
     GstPad *pad = NULL;
     if (m_afilter) {
@@ -141,7 +143,7 @@ bool AVOutput::createVideoSink()
 {
     GError *err = NULL;
     MediaDevice d = m_videoconfig;
-    m_sink = gst_element_factory_make(
+    m_vsink = gst_element_factory_make(
         d.element().c_str(), NULL);
     if (!m_vsink) {
         QPLOG() << "Creating of " << d.element() << " failed." << std::endl;
@@ -226,5 +228,17 @@ bool AVOutput::handleLevelMessage(GstMessage *msg)
         return true;
     } else
         return false;
+}
+
+void AVOutput::expose()
+{
+    if (m_vsink) 
+        gst_x_overlay_expose(GST_X_OVERLAY(m_vsink));
+}
+
+void AVOutput::setWindowId(unsigned long id)
+{
+    if (m_vsink)
+        gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(m_vsink), id);
 }
 

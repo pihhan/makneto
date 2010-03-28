@@ -350,6 +350,7 @@ bool FstJingle::updateRemote(
     const std::string &target)
 {
     Session *session = conference->getSession(remote.name());
+    AVOutput *output = conference->outputs().findOutput(target);
     if (session) {
         bool created;
         bool exist = session->haveStream();

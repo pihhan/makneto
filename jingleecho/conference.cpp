@@ -871,3 +871,9 @@ PipelineStateType Conference::minStreamState(const std::string &participant)
     return min;
 }
 
+
+AVOutputManager & Conference::outputs() 
+{
+    return m_outputs;
+}
+

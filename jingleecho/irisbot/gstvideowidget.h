@@ -9,7 +9,8 @@ class GstVideoWidget : public QWidget
     Q_OBJECT
     Q_PROPERTY(QSize videoSize READ videoSize WRITE setVideoSize)
     public:
-        Player(QWidget *parent = 0) ;
+        GstVideoWidget(QWidget *parent = 0) ;
+        virtual ~GstVideoWidget();
 
         void setVideoSize(const QSize size);
         QSize videoSize() const;
@@ -19,7 +20,6 @@ class GstVideoWidget : public QWidget
         bool playing() const;
         void setPlaying(bool playing);
 
-        virtual ~Player() {}
 
     public slots:
         void displayHandle();

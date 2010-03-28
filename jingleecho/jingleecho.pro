@@ -48,6 +48,9 @@ HEADERS += codecs.h \
            mediaconfig.h \
            testmediaconfig.h \
            framesize.h \
+           avoutput.h \
+           avoutputmanager.h \
+           jinglesessiongroup.h \
            ipv6/v6interface.h
 SOURCES += \
            codecs.cpp \
@@ -68,5 +71,11 @@ SOURCES += \
            mediaconfig.cpp \
            testmediaconfig.cpp \
            framesize.cpp \
+           avoutput.cpp \
+           avoutputmanager.cpp \
+           jinglesessiongroup.cpp \
            ../ipv6/v6interface.c \
            ../logger/logger.cpp \
+
+MOC_DIR = moc
+OBJECTS_DIR = obj

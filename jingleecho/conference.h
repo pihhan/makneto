@@ -14,6 +14,8 @@
 #include "session.h"
 #include "fststatusreader.h"
 #include "jingleerror.h"
+#include "avoutput.h"
+#include "avoutputmanager.h"
 
 
 typedef std::list<Session *>    SessionList;
@@ -107,6 +109,8 @@ class Conference
     PipelineStateType maxStreamState(const std::string &participant=std::string() );
     PipelineStateType minStreamState(const std::string &participant = std::string() );
 
+    AVOutputManager & outputs() ;
+
     private:
     void        increaseNewLocalCandidates();
     static std::string codecListToString(GList *codecs);
@@ -126,6 +130,7 @@ class Conference
     FstStatusReader     *m_reader;
     std::string         m_transmitter;
     ParticipantMap      m_participants;
+    AVOutputManager     m_outputs;
 };
 
 #endif

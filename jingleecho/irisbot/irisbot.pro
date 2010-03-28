@@ -46,4 +46,6 @@ LIBS += -liris -lirisnet
 LIBS += -L..
 LIBS += -ljingleecho
 
+MOC_DIR = moc
+OBJECTS_DIR = obj
 
