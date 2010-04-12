@@ -393,7 +393,7 @@ KIcon MUCView::getIcon(const Status &status, const MUCItem::Role &role)
 bool MUCView::getConferenceSetting(QString &room, QString &server, QString &nick)
 {
   KDialog *dialog = new KDialog(this);
-  dialog->setCaption("Join chat room");
+  dialog->setCaption(tr("Join chat room"));
   dialog->setModal(true);
   dialog->setSizeGripEnabled(true);
   QWidget *w = new QWidget(dialog);
