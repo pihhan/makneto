@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>434</width>
-    <height>227</height>
+    <height>265</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,158 +18,193 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>434</width>
-    <height>227</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>16777215</width>
-    <height>227</height>
+    <width>400</width>
+    <height>250</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QTabWidget" name="tabWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>0</y>
-     <width>341</width>
-     <height>234</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>268</width>
-     <height>234</height>
-    </size>
-   </property>
-   <property name="tabPosition">
-    <enum>QTabWidget::North</enum>
-   </property>
-   <property name="tabShape">
-    <enum>QTabWidget::Rounded</enum>
-   </property>
-   <property name="currentIndex">
-    <number>1</number>
-   </property>
-   <widget class="QWidget" name="tab">
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <attribute name="title">
-     <string>Global</string>
-    </attribute>
-    <widget class="QWidget" name="formLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>311</width>
-       <height>131</height>
-      </rect>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <property name="horizontalSpacing">
-       <number>8</number>
+     <property name="minimumSize">
+      <size>
+       <width>268</width>
+       <height>234</height>
+      </size>
+     </property>
+     <property name="tabPosition">
+      <enum>QTabWidget::North</enum>
+     </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="verticalSpacing">
-       <number>8</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Nickname</string>
-        </property>
-        <property name="buddy">
-         <cstring>editNickname</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="editNickname"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Full name</string>
-        </property>
-        <property name="buddy">
-         <cstring>editFullName</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="editFullName">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Jabber ID</string>
-        </property>
-        <property name="buddy">
-         <cstring>editJid</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="editJid">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Birthdate</string>
-        </property>
-        <property name="buddy">
-         <cstring>editBirthDay</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="editBirthDay">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      <attribute name="title">
+       <string>Global</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="horizontalSpacing">
+          <number>8</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>8</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Nickname</string>
+           </property>
+           <property name="buddy">
+            <cstring>editNickname</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="editNickname"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Full name</string>
+           </property>
+           <property name="buddy">
+            <cstring>editFullName</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="editFullName">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Jabber ID</string>
+           </property>
+           <property name="buddy">
+            <cstring>editJid</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="editJid">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="editBirthDay">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="editEmail">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="lineEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Birthdate</string>
+           </property>
+           <property name="buddy">
+            <cstring>editBirthDay</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Email</string>
+           </property>
+           <property name="buddy">
+            <cstring>editEmail</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Telefon</string>
+           </property>
+           <property name="buddy">
+            <cstring>lineEdit</cstring>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabDetails">
+      <attribute name="title">
+       <string>Details</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPlainTextEdit" name="detailText">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabFeatures">
+      <attribute name="title">
+       <string>Features</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QPlainTextEdit" name="plainTextEdit"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </widget>
-   <widget class="QWidget" name="tabDetails">
-    <attribute name="title">
-     <string>Details</string>
-    </attribute>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QPlainTextEdit" name="detailText">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
+   </item>
+  </layout>
  </widget>
+ <tabstops>
+  <tabstop>editNickname</tabstop>
+  <tabstop>editFullName</tabstop>
+  <tabstop>editJid</tabstop>
+  <tabstop>detailText</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

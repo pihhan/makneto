@@ -4,7 +4,8 @@
  * Copyright (C) 2008 Jaroslav Reznik <rezzabuh@gmail.com>
  */
 
-#include "xmpp_status.h"
+#include <xmpp_jid.h>
+#include <xmpp_status.h>
 
 #include "maknetocontactlist.h"
 #include "maknetocontact.h"
@@ -20,11 +21,6 @@
 #include <QDebug>
 
 #include <iostream>
-
-#include <klocalizedstring.h>
-
-
-#include <klocalizedstring.h>
 
 #include <klocalizedstring.h>
 
@@ -201,6 +197,13 @@ Makneto * MaknetoContactList::makneto()
 MaknetoContact * MaknetoContactList::getContact(const QString &jid)
 {
     ContactListContact *contact = ContactList::getContact(jid);
+    if (!contact) {
+        // if not found, try without resource
+        XMPP::Jid xjid(jid);
+        if (!xjid.resource().isEmpty()) {
+            contact = ContactList::getContact(xjid.bare());
+        }
+    }
     return dynamic_cast<MaknetoContact *>(contact);
 }
 
