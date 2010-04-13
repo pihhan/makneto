@@ -34,6 +34,7 @@ class MaknetoContact;
 
 class MaknetoContactList : public ContactList
 {
+    Q_OBJECT
 public:
 	/**
 	* Default constructor
@@ -49,9 +50,9 @@ public:
 	void addContact(const QString& name, const QString& jid, const QStringList& groups);
 	void setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status);
 	//void setUnavailability(const QString& jid);
-        Makneto *makneto();
+    Makneto *makneto();
 
-        MaknetoContact * getContact(const QString &jid);
+    MaknetoContact * getContact(const QString &jid);
 
 protected:
         QMenu * createContactMenu(const QString &jid);

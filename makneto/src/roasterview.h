@@ -8,6 +8,7 @@
 #define ROASTERVIEW_H
 
 #include <QtGui/QWidget>
+#include <QMenu>
 #include "xmpp.h"
 #include "ui_add_contact.h"
 
@@ -50,7 +51,15 @@ public slots:
 	void addContactClicked(bool toggled);
   void itemDoubleClicked(const QString &);
 
+    void showContextMenu(const QPoint &point);
+    void sendMessage();
+    void contactDetails();
+    void audioCall();
+
+
 private:
+    QMenu *genericMenu(const QString &jid);
+
 	Ui::AddContact ui_add_contact;
 
 	QVBoxLayout *m_mainlayout;

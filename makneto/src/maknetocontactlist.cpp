@@ -66,7 +66,7 @@ QMenu * MaknetoContactList::createContactMenu(const QString &jid)
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QString& group = QString())
 {
 	ContactListGroupItem *groupItem = rootItem();
-        MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
+    MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
 	QMenu *contactMenu = createContactMenu(jid);
 	QString groupCorrected;
 
@@ -110,7 +110,7 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QStringList& groups)
 {
 	ContactListGroupItem *groupItem = rootItem();
-        MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
+    MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
 	QMenu *contactMenu = createContactMenu(jid);
 	QString groupCorrected = groups.at(0);
 

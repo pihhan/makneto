@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QHash>
+#include <QStringList>
 
 class ContactListGroupItem;
 class ContactListRootItem;
@@ -31,11 +32,19 @@ public:
 	const ContactListItemComparator* itemComparator() const;
 	const QString& search() const;
 
-        ContactListContact * getContact(const QString &jid);
-        ContactListGroup * getGroup(const QString &groupname);
+    ContactListContact * getContact(const QString &jid);
+    ContactListGroupItem * getGroup(const QString &groupname);
+    ContactListGroupItem * addGroup(const QString &name);
 
 	void addItem(ContactListItem*);
 	void removeItem(ContactListItem*);
+
+    QStringList allGroupNames() const;
+    GroupsHash  allGroups() const;
+    ContactsHash allContacts() const;
+    unsigned int groupCount() const;
+    unsigned int contactCount() const;
+
 
 signals:
 	void dataChanged();
@@ -66,8 +75,8 @@ private:
 	ContactListRootItem* invisibleGroup_;
 	ContactListRootItem* altInvisibleGroup_;
 
-        GroupsHash          groups_; ///!< List of all groups in roster
-        ContactsHash        contacts_; ///!< List of all contacts in roster
+    GroupsHash          groups_; ///!< List of all groups in roster
+    ContactsHash        contacts_; ///!< List of all contacts in roster
 
 	//ContactListGroupItem* hiddenGroup_;
 	//ContactListGroupItem* agentsGroup_;

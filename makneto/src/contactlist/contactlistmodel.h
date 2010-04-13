@@ -6,6 +6,7 @@
 #include <QVariant>
 
 class ContactList;
+class MaknetoContactList;
 
 class ContactListModel : public QAbstractItemModel
 {
@@ -22,7 +23,7 @@ public:
 		PictureColumn = 2
 	};
 
-	ContactListModel(ContactList* contactList);
+	ContactListModel(MaknetoContactList* contactList);
 
 	// Reimplemented from QAbstratItemModel
 	QVariant data(const QModelIndex &index, int role) const;
@@ -38,7 +39,7 @@ protected slots:
 	void contactList_changed();
 
 private:
-	ContactList* contactList_;
+	MaknetoContactList* contactList_;
 	bool showStatus_;
 };
 
