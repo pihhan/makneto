@@ -103,3 +103,12 @@ void    ContactListContact::removeGroup(ContactListGroup *group)
     groups_.removeAll(group);
 }
 
+
+/*! \brief Check whether contact supports extension with given XML namespace. 
+ *  \param feature Text namespace to check
+ *  \return true if supported, false otherwise. */
+bool ContactListContact::supportsFeature(const QString &feature) const
+{
+    return false;
+}
+

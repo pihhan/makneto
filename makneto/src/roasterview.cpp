@@ -120,9 +120,20 @@ void RoasterView::showContextMenu(const QPoint &point)
                 QMenu *menu = genericMenu(contact->jid());
                 QString jid = contact->jid();
 
-                QAction *acall = menu->addAction(tr("Audio call..."));
-                acall->setData(jid);
-                connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
+
+                if (contact->supportsFeature("urn:xmpp:jingle:apps:rtp:audio")) {
+                    QAction *acall = menu->addAction(tr("&Audio call..."));
+                    acall->setData(jid);
+                    connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
+                }
+                if (contact->supportsFeature("urn:xmpp:jingle:apps:rtp:video")) {
+                    QAction *acall = menu->addAction(tr("&Video call..."));
+                    acall->setData(jid);
+                    connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
+                }
+                if (contact->supportsFeature("urn:xmpp:jingle:1")) {
+                        menu->addAction(tr("Jingle bells!"));
+                }
 
                 QAction *result = menu->exec(m_roster->mapToGlobal(point));
                 if (result) {
