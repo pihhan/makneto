@@ -354,7 +354,7 @@ pøidává kontakty do skupiny, pokud pou¾íváme stále stejnou skupinu. Ve výsledku
 tak mù¾eme mít jednu skupinu v seznamu tøeba osmkrát nebo více. Zkrátka plugin
 tam je, ale pøíli¹ pou¾itelný (alespoò zatím) není.
 
-\section{Standartizované protokoly}
+\section{Standardizované protokoly}
 
 \subsection*{Session Initialization Protocol}
 
@@ -866,6 +866,51 @@ Zahájení spojení mù¾e vypadat napøíklad takto\cite{xmppJingle}:
 </iq>
 \end{verbatim}
 
+\subchapter{Inicializace spojení}
+Pro ustavení multimediálního spojení protokolem XMPP je definována trojice
+nutných roz¹íøení. První je samotné roz¹íøení pro sestavení a správu sezení, 
+Jingle\cite{xmppJingle}, XEP~166. Definuje zahájení sezení, pøidání nového 
+obsahu do sezení, jeho modifikaci. 
+
+Jedno sezení mù¾e mít jeden nebo více 
+popisù pøená¹ených médií. Popisem je my¹lena specifikace podporovaných kodekù, 
+pøiøazená dynamická èísla obsahu pøiøazená jednotlivým kodekùm èi vzorkovací frekvence. Pro nìkteré kodeky mù¾e být potøeba uvést dal¹í parametry. Popis 
+multimediálních formátù pøená¹ených protokolem RTP\cite{rtp} definuje roz¹íøení \em{Jingle RTP Sessions}\cite{xmppJingleRtp}, XEP~167.
+
+Pro uskuteènìní spojení je potøeba vymìnit si informace o sí»ovém pøipojení, 
+adresách a portech pro spojení u¾ivatelù. Jaké parametry je potøeba si vymìnit 
+závisí na volbì protokolu, kterým se budou multimédia pøená¹et. Pro pøenos
+multimediálního obsahu v pøímém pøenosu se nejèastìji pou¾ívají protokoly bez
+korekce ztracených paketù. 
+
+\subsubsection{Pøeklad adres a datagramy}
+Pro ¾ivý pøenos je dùle¾ité minimální zpo¾dìní,
+a opìtovné vy¾ádání zaslání ztraceného paketu mù¾e trvat pøíli¹ dlouho na to, 
+aby ztracená informace po opìtovném doruèení byla je¹tì u¾iteèná. Navíc 
+datagramy UDP nemají explicitnì definované zahájení a ukonèení spojení. 
+Absence pøesného zahájení znemo¾òuje firewallùm stavovou kontrolu paketu, jakou 
+bì¾nì provádí u TCP spojení. Proto¾e TCP definuje jaké pøíznaky musí být 
+nastaveny pro zahájení spojení, s jakými pøíznaky systém zahájení spojení 
+potvrdí, nebo naopak odmítne, stavový firewall mù¾e odfiltrovat potvrzení 
+neexistujícího spojení, pøípadnì opakované zahájení probíhajícího spojení.
+Stejnì tak TCP umo¾òuje jasnì rozli¹it, která ze stran spojení navazuje, a která
+spojení pøijímá. Udr¾ování stavu ka¾dého spojení je velmi dùle¾ité pro smìrovaèe
+provádìjící pøeklad adres -- NAT. Pøeklad adres umo¾òuje smìrovaèi s jedinou
+vìøejnì dostupnou adresou pøipojit vìt¹í mno¾ství poèítaèù na vnitøní síti,
+které nemusí mít adresu pøímo dostupnou z veøejného internetu, tedy s privátními adresami\cite{privateAddress}. Aby poèítaèe ve vnitøní síti mohly posílat
+pakety do veøejného internetu, musí jim být schopny cílové uzly doruèit odpovìï.
+Smìrovaè pøevezme z vnitøní sítì odcházející pakety, poznaèí si ètveøici 
+zdrojovou, cílovou adresu a zdrojový a cílový port. Paket upraví tak, ¾e nahradí zdrojovou adresu (a pøípadnì i port), v paketu svojí vlastní adresou, a paket ode¹le smìrem k cílové adrese. Paket s odpovìdí pøichází na smìrovaè s jeho 
+vlastní adresou a portem. Proto si smìrovaè musí vést tabulku v¹ech svých 
+spojení a spojení v¹ech pøekládaných poèítaèù. Pøíchozí paket porovná s tabulkou spojení a najde, zda paket má zpracovat sám, nebo nahradit tentokráte cílovou 
+adresu a pøedat do vnitøní sítì. Aby smìrovaè pøedcházel pøeplnìní tabulky spojení, udr¾uje si ke ka¾dému spojení i jeho stav a dobu od poslední aktivity. Pokud spojení je pøíli¹ dlouho bez jakékoliv odezvy, spojení z tabulky vyøadí.
+
+Zde je rozdíl mezi TCP a UDP nevíce patrný. Pro TCP mù¾e vyøadit spojení z tabulky ihned poté, co jej komunikující strany ukonèí. Podobnì pokud neobdr¾í smìrovaè oznámení o ukonèení spojení, patrnì bude spojení aktivní, i kdy¾ se právì ¾ádná data nepøená¹í. Stav pro UDP se omezuje pouze na dobu poslední aktivity~a 
+zda alespoò jednou pøi¹la odpovìï. Proto¾e spojení pomocí datagramù nerozli¹uje komunikující strany na initiátora a pøíjemce spojení, lze pomocí vhodných technik navázat pøímou komunikaci i mezi dvìma uzly v rùzných privátních sítích. 
+Pøesto, ¾e poèítaèe nejsou ve stejné síti, mohou pomocí dodateèných znalostí o
+svém pøipojení navázat komunikací pøímo mezi sebou, bez nutnosti retranslace
+tøetí stranou.
+
 \chapter{Implementace}
 
 K implementaci aplikací pracujících s multimédii je tøeba pracovat 
@@ -907,7 +952,7 @@ Phonon je implementován pøímo v Qt a vyu¾ívá systému slotù a signálù a zaèlenit
 jej do aplikace v tomto toolkitu je pomìrnì jednoduché. Jako dekodér multimédií 
 mù¾e vyu¾ít nìkterý z existujících frameworkù k tomu urèených, jako napøíklad
 Gstreamer nebo Helix. Phonon není platformnì závislý a mù¾e fungovat i na jiných
-platoformách ne¾ linux.
+platoformách ne¾ linuxu.
 
 Nevýhodou Phononu je, ¾e je pomìrnì nový a má implementováno pomìrnì málo tøíd.
 Neexistuje napøíklad vùbec návrh pro nahrávací zaøízení nebo objekt pro zdroj
@@ -923,7 +968,7 @@ modulù, které lze øetìzit za sebe podle potøeby. Podobnì jako phonon má objekty
 a jejich propojení, i kdy¾ terminologie pou¾ívané u gstreameru se pomìrnì li¹í.
 
 Gstreamer øadí jednotlivé objekty za sebe jako filtry do øetìzu. Dle tvrzení 
-autorù \cite{gstreamer} si vypùjèuje to nejlep¹í z OGI media pipeline a Microsoft DirectShow.
+autorù \cite{gstreamer} si vypùjèuje to nejlep¹í z Microsoft DirectShow.
 Systém je navr¾en tak, aby minimalizoval poèet kopírování mezi moduly, kde
 to není naprosto nutné. Zøetìzením objektù lze dosáhnout nejen pøehrávaèe
 médií, ale napøíklad i konvertoru do jiného formátu nebo streamování do sítì.
@@ -938,7 +983,7 @@ médií, ale napøíklad i konvertoru do jiného formátu nebo streamování do sítì.
 
 Objekty frameworku lze rozdìlit do nìkolika skupin, seznam skupin je zobrazen
 na obrázku \ref{pic_gstreamer_overview}. Asi nejdùle¾itìj¹í jsou
-zdroje dat a jejich výstupy, zvané sink (doslovnì pøelo¾eno umyvadlo). Ka¾dý 
+zdroje dat a jejich výstupy, zvané sink \footnote{doslovnì pøelo¾eno umyvadlo}. Ka¾dý 
 objekt v øetìzci mù¾e mít jeden nebo více výstupù a jeden nebo více vstupù.
 Jednotlivé vstupy lze propojovat do sinkù jiných objektù, a jejich øetìzením
 tam vznikne posloupnost napøíklad z webkamery pøes sí» a¾ na výstup monitoru.
