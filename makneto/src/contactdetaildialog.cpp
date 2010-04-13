@@ -75,6 +75,12 @@ void contactDetailDialog::updateDetailText()
 
 void contactDetailDialog::describeContact(MaknetoContact *contact)
 {
+    describeFeatures(contact);
+    updateDetailText();
+}
+
+void contactDetailDialog::describeFeatures(MaknetoContact *contact)
+{
     if (!contact)
         return;
     QString desc;
@@ -97,8 +103,7 @@ void contactDetailDialog::describeContact(MaknetoContact *contact)
         }
 
     }
-    featureDescription = desc;
-    updateDetailText();
+    ui.featuresText->setPlainText(desc);
 }
 
 

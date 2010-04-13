@@ -19,7 +19,7 @@ class Settings : public KConfigSkeleton
     static
     void setJabberID( const QString & v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "jabberID" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "jabberID" ) ))
         self()->mJabberID = v;
     }
 
@@ -38,7 +38,7 @@ class Settings : public KConfigSkeleton
     static
     void setJabberPassword( const QString & v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "jabberPassword" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "jabberPassword" ) ))
         self()->mJabberPassword = v;
     }
 
@@ -57,7 +57,7 @@ class Settings : public KConfigSkeleton
     static
     void setStorePassword( bool v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "storePassword" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "storePassword" ) ))
         self()->mStorePassword = v;
     }
 
@@ -76,7 +76,7 @@ class Settings : public KConfigSkeleton
     static
     void setJabberHost( const QString & v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "jabberHost" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "jabberHost" ) ))
         self()->mJabberHost = v;
     }
 
@@ -95,7 +95,7 @@ class Settings : public KConfigSkeleton
     static
     void setJabberPort( int v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "jabberPort" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "jabberPort" ) ))
         self()->mJabberPort = v;
     }
 
@@ -124,7 +124,7 @@ class Settings : public KConfigSkeleton
     static
     void setAllowPlain( bool v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "allowPlain" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "allowPlain" ) ))
         self()->mAllowPlain = v;
     }
 
@@ -143,7 +143,7 @@ class Settings : public KConfigSkeleton
     static
     void setUseSSL( bool v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "useSSL" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "useSSL" ) ))
         self()->mUseSSL = v;
     }
 
@@ -162,7 +162,7 @@ class Settings : public KConfigSkeleton
     static
     void setNoSSLWarn( bool v )
     {
-      if (!self()->isImmutable( QString::fromLatin1 ( "noSSLWarn" ) ))
+      if (!self()->isImmutable( QString::fromLatin1( "noSSLWarn" ) ))
         self()->mNoSSLWarn = v;
     }
 

@@ -68,7 +68,8 @@ void DiscoRequest::updateFeatureManager()
     if (success() && m_flm != NULL && m_features != NULL) {
         m_flm->addFeatures(*m_features);
     }
-    qDebug() << "DiscoRequest::updateFeatureManager trigger" << m_features->capsHashable();
+    
+    qDebug() << "DiscoRequest::updateFeatureManager trigger" << (m_features ? m_features->capsHashable() : "NULL");
 }
 
 void DiscoRequest::setFeatureManager(FeatureListManager *manager)
