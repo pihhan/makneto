@@ -46,6 +46,8 @@ public:
 	virtual void setStatus(const XMPP::Status& status);
         virtual void setPriority(int prio) { m_priority = prio; }
         virtual void setResource(const QString &resource) { m_resource = resource; m_null=true; }
+
+        virtual bool supportsFeature(const QString &feature) const;
         bool isNull() const { return m_null; }
 
         bool operator<(const MaknetoContactResource &other) const
@@ -122,6 +124,8 @@ public:
         /*! \brief Create new resource entry using its name na incoming status. */
         MaknetoContactResource * createResource(const QString &resource, const XMPP::Status &status);
         void removeResource(const QString &resource);
+
+        virtual bool supportsFeature(const QString &feature) const;
 
         ResourcesHash allResources()
         { return m_resources; }

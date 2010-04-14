@@ -5,6 +5,8 @@
 #include "contactlistcontact.h"
 #include "contactlistgroup.h"
 
+#include <QDebug>
+
 
 ContactList::ContactList(QObject* parent)
 	: QObject(parent), showOffline_(false), showGroups_(true)
@@ -142,7 +144,6 @@ void ContactList::updateParents()
 */
 ContactListContact * ContactList::getContact(const QString &jid)
 {
-    ContactListContact *contact;
     ContactsHash::iterator it;
     it = contacts_.find(jid);
     if (it != contacts_.end())
@@ -155,15 +156,27 @@ ContactListContact * ContactList::getContact(const QString &jid)
     \param groupname Name of group.
     \return Pointer to group on success, NULL if no such group exists.
 */
-ContactListGroup * ContactList::getGroup(const QString &groupname)
+ContactListGroupItem * ContactList::getGroup(const QString &groupname)
 {
-    ContactListGroup *group;
     GroupsHash::iterator it;
     it = groups_.find(groupname);
     if (it != groups_.end())
         return *it;
     else 
         return NULL;
+}
+
+ContactListGroupItem * ContactList::addGroup(const QString &name)
+{
+    ContactListGroupItem *g = getGroup(name);
+    if (g) {
+        qWarning() << "request to add group " << name << " to roster, but it already exists.";
+        return NULL;
+    } else {
+        ContactListGroupItem *gi = new ContactListGroupItem(rootItem_);
+        addItem(gi);
+        return gi;
+    }
 }
 
 void ContactList::addItem(ContactListItem *item)
@@ -189,5 +202,34 @@ void ContactList::removeItem(ContactListItem *item)
     } else if (group != NULL) {
         groups_.remove(group->name());
     }
+}
+
+QStringList ContactList::allGroupNames() const
+{
+    QStringList groups;
+
+    for (GroupsHash::const_iterator it=groups_.begin(); it!=groups_.end(); it++) 
+        groups.append((*it)->name());
+    return groups;
+}
+
+ContactList::GroupsHash  ContactList::allGroups() const
+{
+    return groups_;
+}
+
+ContactList::ContactsHash ContactList::allContacts() const
+{
+    return contacts_;
+}
+
+unsigned int ContactList::groupCount() const
+{
+    return  groups_.size();
+}
+
+unsigned int ContactList::contactCount() const
+{
+    return contacts_.size();
 }
 

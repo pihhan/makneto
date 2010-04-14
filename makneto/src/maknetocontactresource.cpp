@@ -158,3 +158,11 @@ QIcon MaknetoContactResource::statusIcon() const
 	return QIcon();
 }
 
+bool MaknetoContactResource::supportsFeature(const QString &feature) const
+{
+    if (m_features) {
+            return m_features->supported(feature);
+    } else 
+        return false;
+}
+

@@ -7,6 +7,7 @@
 #include "roasterview.h"
 #include "makneto.h"
 #include "maknetocontactlist.h"
+#include "maknetocontact.h"
 #include "contactlist/contactlistmodel.h"
 #include "contactlist/contactlistview.h"
 #include "contactlist/contactlist.h"
@@ -21,6 +22,10 @@
 #include <klineedit.h>
 #include <kdialog.h>
 #include <klocalizedstring.h>
+
+#include <QMenu>
+#include <QAction>
+#include <QMessageBox>
 
 
 RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
@@ -59,11 +64,90 @@ RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	m_mainlayout->addWidget(m_roster);
 
 	setLayout(m_mainlayout);
+
+    m_roster->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_roster, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(showContextMenu(const QPoint &)));
 }
 
 RoasterView::~RoasterView()
 {
 
+}
+
+void RoasterView::sendMessage()
+{
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if (action)
+        m_makneto->contactNewSession(action);
+}
+
+void RoasterView::contactDetails()
+{
+    QAction *action = dynamic_cast<QAction *>(sender());
+    if (action)
+        m_makneto->contactDetails(action);
+}
+
+void RoasterView::audioCall()
+{
+     QMessageBox::warning(this, "Not implemented", "Nice try, but not yet implemented.");
+}
+
+/** @brief Create generic menu common for all contacts. */
+QMenu * RoasterView::genericMenu(const QString &jid)
+{
+        QMenu *menu = new QMenu(this);
+        QVariant data(jid);
+        QAction *message = menu->addAction(tr("Send message..."));
+        message->setData(data);
+        connect(message, SIGNAL(triggered()), this, SLOT(sendMessage()) );
+
+        QAction *details = menu->addAction(tr("Details..."));
+        details->setData(data);
+        connect(details, SIGNAL(triggered()), this, SLOT(contactDetails()) );
+        
+        return menu;    
+}
+
+void RoasterView::showContextMenu(const QPoint &point)
+{
+    QModelIndex index = m_roster->indexAt(point);
+    if (index.isValid()) {
+        ContactListItem *item = static_cast<ContactListItem *>(index.internalPointer());
+        if (item) {
+            MaknetoContact *contact = dynamic_cast<MaknetoContact*> (item);
+            if (contact) {
+                QMenu *menu = genericMenu(contact->jid());
+                QString jid = contact->jid();
+
+
+                if (contact->supportsFeature("urn:xmpp:jingle:apps:rtp:audio")) {
+                    QAction *acall = menu->addAction(tr("&Audio call..."));
+                    acall->setData(jid);
+                    connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
+                }
+                if (contact->supportsFeature("urn:xmpp:jingle:apps:rtp:video")) {
+                    QAction *acall = menu->addAction(tr("&Video call..."));
+                    acall->setData(jid);
+                    connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
+                }
+                if (contact->supportsFeature("urn:xmpp:jingle:1")) {
+                        menu->addAction(tr("Jingle bells!"));
+                }
+
+                QAction *result = menu->exec(m_roster->mapToGlobal(point));
+                if (result) {
+                    qDebug() << "roster action succesful with action: " << result->text();
+                }
+            } else {
+                QMenu *menu = new QMenu(this);
+                menu->addAction("Not a contact, sorry");
+                menu->exec(m_roster->mapToGlobal(point));
+            }
+        }   
+    } else {
+        qWarning() << "Context menu on roster failed, because at point " << point << " is not valid index.";
+    }
 }
 
 void RoasterView::search(const QString& search)

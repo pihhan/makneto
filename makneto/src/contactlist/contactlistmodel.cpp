@@ -2,6 +2,7 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QColor>
+#include <QDebug>
 
 #include "contactlist.h"
 #include "contactlistitem.h"
@@ -10,6 +11,8 @@
 #include "contactlistrootitem.h"
 #include "contactlistcontact.h"
 #include "contactlistgroupitem.h"
+
+#include "maknetocontactlist.h"
 
 #define COLUMNS 3
 
@@ -21,7 +24,7 @@
 #define DND_COLOR QColor(0x7e,0x00,0x00)
 #define ONLINE_COLOR QColor(0x00,0x00,0x00)
 
-ContactListModel::ContactListModel(ContactList* contactList) : contactList_(contactList), showStatus_(true)
+ContactListModel::ContactListModel(MaknetoContactList* contactList) : contactList_(contactList), showStatus_(true)
 {
 	connect(contactList_,SIGNAL(dataChanged()),this,SLOT(contactList_changed()));
 }
@@ -40,14 +43,14 @@ QVariant ContactListModel::data(const QModelIndex &index, int role) const
 	if (role == Qt::DisplayRole && index.column() == NameColumn) {
 		if ((contact = dynamic_cast<ContactListContact*>(item))) {
 			QString txt;
+            QString name = contact->name();
+            if (name.isEmpty())
+                name = QString("<%1>").arg(contact->jid());
 			if (showStatus_ && !contact->status().message().isEmpty()) {
-				if (contact->name().isEmpty())
-					txt = QString("<%1>").arg(contact->jid());
-				else
-					txt = QString("%1").arg(contact->name());
+				txt = QString("%1 (%2)").arg(name).arg(contact->status().message());
 			}
 			else
-				txt = contact->name();
+				txt = name;
 			return QVariant(txt);
 		}
 		else if ((group = dynamic_cast<ContactListGroup*>(item))) {
@@ -137,14 +140,35 @@ QVariant ContactListModel::headerData(int section, Qt::Orientation orientation, 
 
 QModelIndex ContactListModel::index(int row, int column, const QModelIndex &parent) const
 {
-	ContactListGroupItem* parentItem;
-	if (parent.isValid())
-		parentItem = static_cast<ContactListGroupItem*>(parent.internalPointer());
-	else
-		parentItem = contactList_->rootItem();
+	ContactListItem* parentItem = 0;
+	if (parent.isValid()) {
+		parentItem = static_cast<ContactListItem*>(parent.internalPointer());
 
+        ContactListGroupItem *groupItem = dynamic_cast<ContactListGroupItem *>(parentItem);
+        if (groupItem) {
+            ContactListItem *item = groupItem->atIndex(row);
+            return createIndex(row, column, item);
+        } else {
+        ContactListContact *contact = dynamic_cast<ContactListContact *>(parentItem);
+            if (contact) {
+                return QModelIndex(); // TODO: add here resource enumeration
+            }
+        }
+    } else {
+        QString groupname = contactList_->allGroupNames().at(row);
+        ContactListGroupItem *group = contactList_->getGroup(groupname);
+        if (group)
+            return createIndex(row, column, group);
+        else {
+            qWarning() << "Group " << groupname << " does not exist, requested at ContactListModel::index()";
+            return QModelIndex();
+        }
+    }
+    return QModelIndex();
+#if 0
 	ContactListItem* item = parentItem->atIndex(row);
 	return (item ? createIndex(row, column, item) : QModelIndex());
+#endif
 }
 
 
@@ -153,21 +177,25 @@ QModelIndex ContactListModel::parent(const QModelIndex &index) const
 	if (!index.isValid())
 		return QModelIndex();
 
-	ContactListItem* item = static_cast<ContactListItem*>(index.internalPointer());
+	ContactListItem * item = static_cast<ContactListItem*>(index.internalPointer());
 	ContactListGroupItem* parent = item->parent();
 
-	return (parent == contactList_->rootItem() ? QModelIndex() : createIndex(parent->index(),0,parent));
+    if (!parent || parent == contactList_->rootItem())
+        return QModelIndex();
+    else
+        return createIndex(parent->index(), 0, parent);
 }
 
 
 int ContactListModel::rowCount(const QModelIndex &parent) const
 {
-	ContactListGroupItem* parentItem;
+	ContactListGroupItem* parentItem = 0;
 	if (parent.isValid()) {
 		ContactListItem* item = static_cast<ContactListItem*>(parent.internalPointer());
 		parentItem = dynamic_cast<ContactListGroupItem*>(item);
 	}
 	else {
+        return contactList_->groupCount();
 		parentItem = contactList_->rootItem();
 	}
 

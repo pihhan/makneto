@@ -636,7 +636,10 @@ void Connection::client_xmlIncoming(const QString &text)
     child = docElem.firstChildElement("x");
     if (!child.isNull() && child.attribute("xmlns").compare("http://jabber.org/protocol/muc#user") == 0)
     {
-      QString actor, reason, nick, affiliation, role, jid;
+      Jid jfrom(from);
+      Jid bare(jfrom.bare());
+      QString nick = jfrom.resource();
+      QString actor, reason, affiliation, role, jid;
       child = docElem.firstChildElement("item");
       if (!child.isNull())
       {
@@ -664,24 +667,16 @@ void Connection::client_xmlIncoming(const QString &text)
         }
         else if (affiliation.compare("member") == 0)
         {
-          Jid jid(Jid(from).bare());
-          Jid userJid(jid);
-          emit groupChatMembershipGranted(jid, userJid, reason);
+          emit groupChatMembershipGranted(bare, bare, reason);
         }
         if (role.compare("participant") == 0)
         {
-          Jid jfrom(from);
-          Jid jid(jfrom.bare());
-          QString nick = jfrom.resource();
-          emit groupChatVoiceGranted(jid, nick, reason);
+          emit groupChatVoiceGranted(bare, nick, reason);
           return;
         }
         else if (role.compare("visitor") == 0)
         {
-          Jid jfrom(from);
-          Jid jid(jfrom.bare());
-          QString nick = jfrom.resource();
-          emit groupChatVoiceRevoked(jid, nick, reason);
+          emit groupChatVoiceRevoked(bare, nick, reason);
           return;
         }
       }
@@ -690,28 +685,20 @@ void Connection::client_xmlIncoming(const QString &text)
       {
         if (type.compare("unavailable") == 0)
         {
+          QString nick = jfrom.resource();
           if (child.attribute("code").compare("307") == 0)
           {
-            Jid jfrom = Jid(from);
-            QString nick = jfrom.resource();
-            Jid jid(jfrom.bare());
-            emit groupChatUserKicked(jid, nick, reason, actor);
+            emit groupChatUserKicked(bare, nick, reason, actor);
             return;
           }
           else if (child.attribute("code").compare("301") == 0)
           {
-            Jid jfrom = Jid(from);
-            QString nick = jfrom.resource();
-            Jid jid(jfrom.bare());
-            emit groupChatUserBanned(jid, nick, reason, actor);
+            emit groupChatUserBanned(bare, nick, reason, actor);
             return;
           }
           else if (child.attribute("code").compare("301") == 0)
           {
-            Jid jfrom = Jid(from);
-            QString nick = jfrom.resource();
-            Jid jid(jfrom.bare());
-            emit groupChatUserRemovedAsNonMember(jid, nick);
+            emit groupChatUserRemovedAsNonMember(bare, nick);
             return;
           }
         }

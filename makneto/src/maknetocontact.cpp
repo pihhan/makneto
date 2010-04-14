@@ -206,3 +206,12 @@ int MaknetoContact::priority() const
     return r;
 }
 
+bool MaknetoContact::supportsFeature(const QString &feature) const
+{
+    bool supported = false;
+    for (ResourcesHash::const_iterator it=m_resources.begin(); it != m_resources.end(); it++) {
+            supported = supported || (*it)->supportsFeature(feature);
+    }
+    return supported;
+}
+
