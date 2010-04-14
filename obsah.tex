@@ -875,7 +875,7 @@ obsahu do sezení, jeho modifikaci.
 Jedno sezení mù¾e mít jeden nebo více 
 popisù pøená¹ených médií. Popisem je my¹lena specifikace podporovaných kodekù, 
 pøiøazená dynamická èísla obsahu pøiøazená jednotlivým kodekùm èi vzorkovací frekvence. Pro nìkteré kodeky mù¾e být potøeba uvést dal¹í parametry. Popis 
-multimediálních formátù pøená¹ených protokolem RTP\cite{rtp} definuje roz¹íøení \em{Jingle RTP Sessions}\cite{xmppJingleRtp}, XEP~167.
+multimediálních formátù pøená¹ených protokolem RTP\cite{rtp} definuje roz¹íøení {\em Jingle RTP Sessions}\cite{xmppJingleRtp}, XEP~167.
 
 Pro uskuteènìní spojení je potøeba vymìnit si informace o sí»ovém pøipojení, 
 adresách a portech pro spojení u¾ivatelù. Jaké parametry je potøeba si vymìnit 
@@ -895,7 +895,9 @@ potvrdí, nebo naopak odmítne, stavový firewall mù¾e odfiltrovat potvrzení
 neexistujícího spojení, pøípadnì opakované zahájení probíhajícího spojení.
 Stejnì tak TCP umo¾òuje jasnì rozli¹it, která ze stran spojení navazuje, a která
 spojení pøijímá. Udr¾ování stavu ka¾dého spojení je velmi dùle¾ité pro smìrovaèe
-provádìjící pøeklad adres -- NAT. Pøeklad adres umo¾òuje smìrovaèi s jedinou
+provádìjící pøeklad adres -- NAT. 
+
+Pøeklad adres umo¾òuje smìrovaèi s jedinou
 vìøejnì dostupnou adresou pøipojit vìt¹í mno¾ství poèítaèù na vnitøní síti,
 které nemusí mít adresu pøímo dostupnou z veøejného internetu, tedy s privátními adresami\cite{privateAddress}. Aby poèítaèe ve vnitøní síti mohly posílat
 pakety do veøejného internetu, musí jim být schopny cílové uzly doruèit odpovìï.
@@ -910,6 +912,51 @@ zda alespoò jednou pøi¹la odpovìï. Proto¾e spojení pomocí datagramù nerozli¹uje 
 Pøesto, ¾e poèítaèe nejsou ve stejné síti, mohou pomocí dodateèných znalostí o
 svém pøipojení navázat komunikací pøímo mezi sebou, bez nutnosti retranslace
 tøetí stranou.
+
+\subsubsection{Interactive Connectivity Establishment}
+
+Pro navázání pøímého spojení mezi úèastníky za pøedkladem adres slou¾í protokol
+Interactive Connectivity Establishment, zkrácenì ICE\cite{ICE}. Jeho cílem 
+je umo¾nit v maximální míøe mo¾nost spojit pøímo koncové body pøi nejrùznìj¹ích
+konfiguracích sítì. Pøeklady adres se mohou provádìt rùznými zpùsoby, podle 
+pou¾itého smìrovaèe, jeho nastavení a po¾adavkù na zabezpeèení. Hlavní rozdíly 
+spoèívají v algoritmu urèení zdrojového portu na pøelo¾ené veøejné adrese a jeho
+vztahu k~pùvodnímu zdrojovému portu na vnitøní adrese. 
+
+Nejèastìj¹í pøípad je 
+pou¾ití stejného portu, neexistuje-li je¹tì takové spojení. V pøípadì ji¾ 
+obsazeného portu se pou¾ije náhodnì vygenenerované èíslo neobsazeného portu.
+Dal¹í mo¾ností je pøiètení jisté absolutní hodnoty k èíslu portu, která je pro
+v¹echny porty smìøované z dané vnitøní adresy stejná. Pro oba zmínìné pøípady 
+protokol ICE umo¾ní navázání pøímého spojení mezi úèastníky. 
+
+Jestli¾e pøi 
+pøekladu adres pro ka¾dé nové spojení vygeneruje smìrovaè odchozí port náhodnì,
+potom jsou ¹ance na sestavení pøímého spojení minimální. V takovém pøípadì 
+nezbude, ne¾ pou¾ít pomoc tøetí strany -- relay, která má veøejnou adresu a oba klienti se s ní spojí pøímo. Ta potom komunikaci mezi klienty pøedává. 
+Její nasazení pøiná¹í i nevýhody. Relay je dal¹ím prvkem v komunikaci, který
+pøídává dal¹í zpo¾dìní, je potøeba ji provozovat na serveru s veøejnou adresou
+a dostateènou rychlostí. Datový tok komunikace prochází pøes relay dvakrát, 
+jednou pøi pøíjmu, podruhé pøi odesílání protìj¹í stranì. Proto¾e relay se 
+navíc nutné spravovat a udr¾ovat, její existence obvykle pøiná¹í finanèní 
+náklady na její provozování a linku. Je tedy v zájmu provozovatele slu¾by 
+umo¾nit pøímé spojení v¹ude tam, kde je to mo¾né, a relay pou¾ít jen jako 
+zálohu. Komunikaci s relay serverem popisuje protokol TURN\cite{TURN}.
+
+Protokol nezapoudøuje komunikaci dovnitø, ale pou¾ívá se soubì¾nì s datovou 
+komunikací na stejném portu. Aplikace musí umìt rozli¹it, zda je o ¾ádost ICE,
+nebo o pøená¹ená data. Pøi pou¾ití lze velmi jednodu¹e rozli¹it mezi obojím 
+pomocí RTP hlavièky, kterou má ka¾dý datový paket.
+
+K navázání spojení dochází v nìkolika krocích.
+\begin{itemize}
+\item{Shromá¾dìní lokálních kandidátù -- vytvoøí se prostý seznam v¹ech adres 
+pøiøazených rozhraním poèítaèe, kromì místní smyèky.}
+\item{Shromá¾dìním vzdálených kandidátù -- dotazem na STUN server se získají veøejné adresy, pod kterou vlastní poèítaè komunikuje do internetu. Pøípadnì lze po¾ádat }
+\item{Seøazení kandidátù podle priority}
+\item{Výmìna kandidátù s protìj¹í stranou pomocí signalizaèního spojení, v mém pøípadì XMPP}
+\item{Pro ka¾dý pár místního a vzdáleného kandidáta se prováde
+\end{itemize}
 
 \chapter{Implementace}
 
