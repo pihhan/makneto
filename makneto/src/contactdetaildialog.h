@@ -22,6 +22,7 @@ public:
   void setDetailText(const QString &text);
   void updateDetailText();
   void describeContact(MaknetoContact *contact);
+  void describeFeatures(MaknetoContact *contact);
 protected Q_SLOTS:
   virtual void slotButtonClicked(int button);
   void detailsArrived();
