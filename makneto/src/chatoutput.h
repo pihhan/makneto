@@ -11,6 +11,7 @@ class ChatOutput : public QTextEdit
     void setNick(const QString &nick);
     void infoMessage(const QString &text);
     void myMessage(const QString &text);
+    void errorMessage(const QString &text);
     void incomingMessage(const QString &text);
 };
 

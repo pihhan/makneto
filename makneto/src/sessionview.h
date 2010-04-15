@@ -32,6 +32,7 @@ class ChatOutput;
 
 #include "settings.h"
 #include "wbwidget.h"
+#include <ktabwidget.h>
 
 namespace XMPP 
 {
@@ -75,6 +76,8 @@ public:
   int id() const { return m_id; }
   
 	void createToolBar();
+    void configureChatInput();
+    void createDrawingTab();
 	void chatMessage(const Message &message);
   void infoMessage(const QString &text);
 	void whiteboardMessage(const Message &message);
@@ -137,6 +140,7 @@ private:
   int m_type;
   QString m_nick;
   KAction *actionSelect;
+  KTabWidget *m_tabs;
 
 
 	// TODO: TEST ONLY!

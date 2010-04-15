@@ -18,6 +18,8 @@
 #include "xmpp_tasks.h"
 #include <xmpp_discoitem.h>
 
+#include "featurelist.h"
+
 
 #include "settings.h"
 
@@ -53,6 +55,11 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	QStringList features;
         // FIXME: this features list is invalid
         features << "http://jabber.org/protocol/commands" << "http://www.w3.org/2000/svg";
+        features << "http://jabber.org/protocol/svgwb";
+        features << "urn:xmpp:jingle:1";
+        features << "http://jabber.org/protocol/disco#info";
+        features << "http://jabber.org/protocol/disco#items";
+        features << "urn:xmpp:jingle:apps:rtp:1";
 	m_client->setFeatures(Features(features));
 
 	m_client->setFileTransferEnabled(true);
@@ -397,6 +404,9 @@ void Connection::setStatus(Status status)
 {
 	if (m_rosterFinished)
 		m_client->setPresence(status);
+
+    QString hashable = FeatureList::computeHashString(m_client->identity(), m_client->features());
+    qDebug() << "Client has capabilities hashable: " << hashable;
 
 	emit connStatusChanged(status);
 }

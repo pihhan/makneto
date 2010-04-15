@@ -63,6 +63,8 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   
   m_leftLayout->setMargin(0);
   m_leftLayout->setSpacing(0);
+
+
   
   // Add Toolbar to the layout
   createToolBar();
@@ -71,6 +73,8 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
 
   // Create WhiteBoard widget
   m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
+  connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
+  connect(m_wbwidget, SIGNAL(modeChanged(WbWidget::Mode)), SLOT(modeChanged(WbWidget::Mode)));
 
   // Create palette widget
   m_paletteWidget = new PaletteWidget(this);
@@ -85,77 +89,24 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
 
   m_leftLayout->addLayout(m_toolLayout);
   
+  m_tabs = new KTabWidget();
+
   m_leftSplitter = new QSplitter(Qt::Vertical, m_leftWidget);
-  m_leftLayout->addWidget(m_leftSplitter);
-  
   m_leftSplitter->addWidget(m_wbwidget);
+
+  m_leftLayout->addWidget(m_leftSplitter);
+
+  m_tabs->addTab(m_leftWidget, tr("Whiteboard"));
   
-  connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
-  connect(m_wbwidget, SIGNAL(modeChanged(WbWidget::Mode)), SLOT(modeChanged(WbWidget::Mode)));
+  
   m_wbwidget->setMode(WbWidget::DrawPath);
   m_wbwidget->setMinimumSize(300, 400);
+  //m_topSplitter->addWidget(m_leftWidget);
 
-  m_chatSplitter = new QSplitter(Qt::Vertical, m_leftSplitter);
-  
-  m_leftSplitter->addWidget(m_chatSplitter);
+  configureChatInput();
 
-  m_chatoutput = new ChatOutput(m_chatSplitter);
-  
-  m_chatinput = new ChatInput(m_chatSplitter);
-  m_sendmsg = new QPushButton("&Send", m_leftWidget);
-  connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
-  connect(m_chatinput, SIGNAL(send()), this, SLOT(sendClicked()));
-
-  // output chat text edit props
-  m_chatoutput->setReadOnly(true);
-  m_chatoutput->setNick(nick);
-  
-  m_chatSplitter->addWidget(m_chatoutput);
-  m_chatSplitter->addWidget(m_chatinput);
-  
-  m_leftLayout->addWidget(m_sendmsg);
-  
-  m_topSplitter->addWidget(m_leftWidget);
-  
-
-#ifdef DELETE_ME
-	m_mainlayout = new QVBoxLayout(this);
-	m_mainlayout->setMargin(0);
-	m_mainlayout->setSpacing(0);
-
-	createToolBar();
-
-	// add whiteboard widget
-	m_wbwidget = new WbWidget("s1", "rezza@jabber.cz", QSize(300, 400), this);
-	//m_mainlayout->addWidget(m_wbwidget, 1000);
-	connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
-	m_wbwidget->setMode(WbWidget::DrawPath);
-	m_wbwidget->setMinimumSize(300, 400);
-
-	m_chatlayout = new QVBoxLayout();
-
-	m_chatoutput = new QTextEdit(this);
-	m_chatinput = new QTextEdit(this);
-	m_sendmsg = new QPushButton("&Send", this);
-	connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
-
-	// output chat text edit props
-	//m_chatoutput->setTextFormat(Qt::RichText); // FIXME: port to correct behaviour on Qt4
-	m_chatoutput->setReadOnly(true);
-
-	m_chatSplitter->addWidget(m_chatoutput);
-	m_chatSplitter->addWidget(m_chatinput);
-	m_chatSplitter->addWidget(m_sendmsg);
-
-
-	m_mainSplitter->addWidget(m_wbwidget);
-	m_mainSplitter->addWidget(m_chatSplitter);
-
-	m_mainlayout->addWidget(m_mainSplitter);
-	m_mainlayout->addWidget(m_chatFrame);
-
-	setLayout(m_mainlayout);
-#endif // DELETE_ME
+  m_topSplitter->addWidget(m_tabs);
+  setLayout(m_topLayout);  
 
 	// TODO: test only!!!
 	ba = new QByteArray;
@@ -168,6 +119,44 @@ SessionView::~SessionView()
 {
   QSettings settings;
   settings.setValue("m_topSplitter", m_topSplitter->saveState());
+}
+
+void SessionView::configureChatInput()
+{
+  QWidget *chattab = new QWidget(this);
+  QVBoxLayout *layout = new QVBoxLayout();
+
+  m_chatSplitter = new QSplitter(Qt::Vertical, m_leftSplitter);
+  
+  layout->addWidget(m_chatSplitter);
+
+  m_chatoutput = new ChatOutput(m_chatSplitter);
+  
+  m_chatinput = new ChatInput(m_chatSplitter);
+  m_sendmsg = new QPushButton(tr("&Send"), m_leftWidget);
+  connect(m_sendmsg, SIGNAL(clicked()), this, SLOT(sendClicked()));
+  connect(m_chatinput, SIGNAL(send()), this, SLOT(sendClicked()));
+
+  // output chat text edit props
+  m_chatoutput->setReadOnly(true);
+  m_chatoutput->setNick(m_nick);
+  
+  m_chatSplitter->addWidget(m_chatoutput);
+  m_chatSplitter->addWidget(m_chatinput);
+  int inputpos = m_chatSplitter->indexOf(m_chatinput);
+  m_chatSplitter->setStretchFactor(inputpos, 30);
+  
+  layout->addWidget(m_sendmsg);
+  chattab->setLayout(layout);
+
+  m_tabs->addTab(chattab, tr("Messages"));
+  //m_leftLayout->addLayout(layout);
+
+}
+
+void SessionView::createDrawingTab()
+{
+    
 }
 
 void SessionView::createToolBar()
@@ -249,8 +238,6 @@ void SessionView::sendClicked()
 
 	// prepare message
 	message.setTo(m_jid);
-        // FIXME: wtf? proc tam cpat hardcoded hodnotu, kdyz to za me doplni server? pihh
-	//message.setFrom(Settings::jabberID()+"/Makneto");
   if (type() == 0)
     message.setType("chat");
   else
@@ -334,7 +321,9 @@ void SessionView::chatMessage(const Message &message)
 			}
 	}
 
-  if (type == 0)
+  if (message.error().type != 0) 
+    m_chatoutput->errorMessage(message.error().text);
+  else if (type == 0)
     m_chatoutput->incomingMessage(text);
   else
     m_chatoutput->infoMessage(text);
