@@ -12,6 +12,7 @@
 #include "makneto.h"
 
 #include <QDebug>
+#include <QCryptographicHash>
 
 
 bool IdentityHelper::operator>(const IdentityHelper &other) const
@@ -233,6 +234,19 @@ QString FeatureList::computeHashString(const QDomElement &query)
     hashable += capsHashableStringList(features);
     hashable += capsHashableForms(forms);
     return hashable; 
+}
+
+/*! \brief Create hash string from XMPP::Client parameters.
+ *  \p identity Identity of client
+ *  \p features List of client features
+ */
+QString FeatureList::computeHashString(const DiscoItem::Identity &identity, const Features &features)
+{
+    IdentitySorter identsort;
+    identsort.add(IdentityHelper(identity.category, identity.type, identity.name, QString()));
+    QString hashable = identsort.capsHashable();
+    hashable += capsHashableStringList(features.list());
+    return hashable;
 }
 
 /*! \brief Create list of extensions from one string delimited by spaces. */
@@ -677,5 +691,13 @@ QString FeatureListManager::getDatabasePath()
 bool FeatureListManager::readDatabase()
 {
     return readFromFile(getDatabasePath());
+}
+
+/** \brief Pass string to SHA1 hash and get base64 encoded result. */
+QString FeatureListManager::getCryptoSHA1(const QString &hashable)
+{
+    QCryptographicHash algo(QCryptographicHash::Sha1);
+    algo.addData(hashable.toUtf8());
+    return QString(algo.result().toBase64());
 }
 

@@ -63,14 +63,14 @@ MaknetoMainWindow::~MaknetoMainWindow()
 void MaknetoMainWindow::setupActions()
 {
   hideAllAction = actionCollection()->addAction("hideAll");
-  hideAllAction->setText("Hide All");
+  hideAllAction->setText(tr("Hide All"));
   hideAllAction->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_F);
   hideAllAction->setMenuRole(QAction::PreferencesRole);
   connect(hideAllAction, SIGNAL(triggered()), this, SLOT(hideAll()));
   m_fullScreenAction = KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
 
   m_saveFeatures = actionCollection()->addAction("writeFeatures");
-  m_saveFeatures->setText("Save features");
+  m_saveFeatures->setText(tr("Save features"));
   m_saveFeatures->setMenuRole(QAction::PreferencesRole);
   connect(m_saveFeatures, SIGNAL(triggered()), m_makneto->getFeatureManager(), SLOT(writeDatabase()));
 

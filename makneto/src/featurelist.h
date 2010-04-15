@@ -17,6 +17,7 @@
 #include <QtAlgorithms>
 #include <QStringList>
 #include <xmpp_stanza.h>
+#include <xmpp_discoitem.h>
 
 #include "featurehelpers.h"
 #include "discorequest.h"
@@ -85,6 +86,7 @@ class FeatureList : public QHash<QString, bool>
         /*! \brief Create XEP-115 hash string from iq:query element.
          * \param query Child of iq stanza query, with xmlns of disco#info */
         static QString computeHashString(const QDomElement &query);
+        static QString computeHashString(const XMPP::DiscoItem::Identity &identity, const XMPP::Features &features);
 
         void setNode(const QString &node)
         { m_node = node; }
@@ -186,6 +188,9 @@ class FeatureListManager : public QObject
             If successful, it will fire featuresUpdated() signal. */
         void requestFeatureUpdate(XMPP::Client *client, const XMPP::Jid &jid, const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
         void requestFeatureUpdate(const XMPP::Jid &jid, const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
+
+        static QString getCryptoSHA1(const QString &hashable);
+
 
     signals:
         void featuresUpdated(XMPP::Jid jid, FeatureList *features);

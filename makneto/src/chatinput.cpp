@@ -13,6 +13,7 @@ ChatInput::ChatInput(QWidget *parent)
 	: QTextEdit(parent)
 {
 	setFocusPolicy(Qt::StrongFocus);
+    setAcceptRichText(false);
 }
 
 void ChatInput::keyPressEvent(QKeyEvent *event)

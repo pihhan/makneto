@@ -68,7 +68,7 @@ QList<QString> WbForeign::parseSvg(QDomElement &_svg, bool emitChanges)
 
 void WbForeign::sendChanges()
 {
-  QDomDocument doc;
+  QDomDocument doc = document();
   QDomElement el = doc.createElement("content");
   el.appendChild(svg());
 
@@ -89,3 +89,4 @@ void WbForeign::remove()
 {
   static_cast<WbScene *> (m_scene)->removeElement(id(), true);
 }
+
