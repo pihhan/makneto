@@ -402,11 +402,16 @@ void Connection::sessionStarted()
 
 void Connection::setStatus(Status status)
 {
-	if (m_rosterFinished)
+    QString hashable = FeatureList::computeHashString(m_client->identity(), m_client->features());
+    QString sha1hash = FeatureListManager::getCryptoSHA1(hashable);
+    qDebug() << "Client has capabilities hashable: " << hashable 
+        << " with hash: " << sha1hash;
+    status.setCapsVersion(sha1hash);
+    status.setCapsNode("Makneto");
+
+	if (m_rosterFinished) 
 		m_client->setPresence(status);
 
-    QString hashable = FeatureList::computeHashString(m_client->identity(), m_client->features());
-    qDebug() << "Client has capabilities hashable: " << hashable;
 
 	emit connStatusChanged(status);
 }

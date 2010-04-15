@@ -189,6 +189,9 @@ class FeatureListManager : public QObject
         void requestFeatureUpdate(XMPP::Client *client, const XMPP::Jid &jid, const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
         void requestFeatureUpdate(const XMPP::Jid &jid, const QString &node, const QString &ver, const QString &hash, const QString & ext = QString());
 
+        static QString getCryptoSHA1(const QString &hashable);
+
+
     signals:
         void featuresUpdated(XMPP::Jid jid, FeatureList *features);
 
