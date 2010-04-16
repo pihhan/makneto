@@ -1500,17 +1500,24 @@ bool JT_ServInfo::take(const QDomElement &e)
 		}
 		else if (node.startsWith(client()->capsNode() + "#")) {
 			QString ext = node.right(node.length()-client()->capsNode().length()-1);
+                        QStringList l;
 			if (client()->extensions().contains(ext)) {
-				const QStringList& l = client()->extension(ext).list();
+				l = client()->extension(ext).list();
+			} else if (ext == client()->capsVersion()) {
+                            l = client()->features().list();
+                        }
+			else {
+				invalid_node = true;
+			}
+
+                        if (!l.isEmpty()) {
 				for ( QStringList::ConstIterator it = l.begin(); it != l.end(); ++it ) {
 					feature = doc()->createElement("feature");
 					feature.setAttribute("var", *it);
 					query.appendChild(feature);
 				}
-			}
-			else {
-				invalid_node = true;
-			}
+
+                        }
 		}
 		else {
 			invalid_node = true;

@@ -286,6 +286,7 @@ namespace XMPP
 		Private *d;
 	};
 
+        /*! \brief Task for requesting remote entity version. */
 	class JT_ClientVersion : public Task
 	{
 		Q_OBJECT
@@ -325,6 +326,7 @@ namespace XMPP
 		QDomElement iq;
 	};
 */
+        /*! \brief Task answering iq:version and disco#info queries to this client from remote parties. */
 	class JT_ServInfo : public Task
 	{
 		Q_OBJECT

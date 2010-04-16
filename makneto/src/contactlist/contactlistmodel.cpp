@@ -222,4 +222,4 @@ void ContactListModel::contactList_changed()
 	reset();
 }
 
-
+// vim: ts=4 sts=4 expandtab

@@ -204,7 +204,10 @@ MaknetoContact * MaknetoContactList::getContact(const QString &jid)
             contact = ContactList::getContact(xjid.bare());
         }
     }
-    return dynamic_cast<MaknetoContact *>(contact);
+    if (!contact)
+        return NULL;
+    else
+        return dynamic_cast<MaknetoContact *>(contact);
 }
 
 

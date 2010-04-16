@@ -34,17 +34,20 @@ MaknetoContact::~MaknetoContact()
 
 }
 
+/*! \brief Find contacty by JID inside group. If not found, try searching
+    only with bare JID. */
 MaknetoContact* MaknetoGroup::findContactByJid(const QString& jid)
 {
 	MaknetoContact *item = 0;
 	bool found = false;
 	int i = 0;
+        XMPP::Jid j(jid);
 
 	while(!found && i<items())
 	{
 		item = static_cast<MaknetoContact*>(atIndex(i));
 		
-		if (item && item->jid() == jid)
+		if (item && j.compare(XMPP::Jid(item->jid()), false))
 			found = true;
 
 		i++;

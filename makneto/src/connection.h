@@ -351,8 +351,11 @@ signals:
    **/
   void groupChatModerationRevoked(const Jid &jid, const QString &nick, const QString &reason = QString());
 
-  
+protected:  
+    void generateCapabilitiesHash();
+
 private:
+
 	Client *m_client;
 	ClientStream *m_stream;
 	AdvancedConnector *m_conn;

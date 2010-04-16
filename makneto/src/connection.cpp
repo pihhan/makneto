@@ -63,6 +63,7 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 	m_client->setFeatures(Features(features));
 
 	m_client->setFileTransferEnabled(true);
+        m_client->setCapsNode("Makneto");
 
 	connect(m_client, SIGNAL(debugText(const QString &)), SLOT(client_debugText(const QString &)));
 	connect(m_client, SIGNAL(messageReceived(const Message &)), this, SLOT(client_messageReceived(const Message &)));
@@ -402,11 +403,7 @@ void Connection::sessionStarted()
 
 void Connection::setStatus(Status status)
 {
-    QString hashable = FeatureList::computeHashString(m_client->identity(), m_client->features());
-    QString sha1hash = FeatureListManager::getCryptoSHA1(hashable);
-    qDebug() << "Client has capabilities hashable: " << hashable 
-        << " with hash: " << sha1hash;
-    status.setCapsVersion(sha1hash);
+    status.setCapsVersion(m_client->capsVersion());
     status.setCapsNode("Makneto");
 
 	if (m_rosterFinished) 
@@ -414,6 +411,16 @@ void Connection::setStatus(Status status)
 
 
 	emit connStatusChanged(status);
+}
+
+/*! \brief Compute capabilities hash and assign it to client structure. */
+void Connection::generateCapabilitiesHash()
+{
+    QString hashable = FeatureList::computeHashString(m_client->identity(), m_client->features());
+    QString sha1hash = FeatureListManager::getCryptoSHA1(hashable);
+    qDebug() << "Client has capabilities hashable: " << hashable 
+        << " with hash: " << sha1hash;
+    m_client->setCapsVersion(sha1hash);
 }
 
 bool Connection::isOnline()

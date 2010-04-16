@@ -321,9 +321,11 @@ void SessionView::chatMessage(const Message &message)
 			}
 	}
 
-  if (message.error().type != 0) 
-    m_chatoutput->errorMessage(message.error().text);
-  else if (type == 0)
+  if (message.type() == "error") {
+    m_chatoutput->errorMessage(QString("%1 #%2")
+        .arg(message.error().text)
+        .arg(message.error().type));
+  } else if (type == 0)
     m_chatoutput->incomingMessage(text);
   else
     m_chatoutput->infoMessage(text);
