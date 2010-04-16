@@ -4,9 +4,13 @@
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
+#include <QList>
+
+#include "contactlistitem.h"
 
 class ContactList;
 class MaknetoContactList;
+
 
 class ContactListModel : public QAbstractItemModel
 {
@@ -23,6 +27,13 @@ public:
 		PictureColumn = 2
 	};
 
+    enum ContactListFilter {
+        FILTER_ONLINE = (1 << 0),
+        FILTER_WHITEBOARD = (1 << 1),
+        FILTER_AUDIO = (1 << 2),
+        FILTER_VIDEO = (1 << 3),
+    };
+
 	ContactListModel(MaknetoContactList* contactList);
 
 	// Reimplemented from QAbstratItemModel
@@ -34,6 +45,12 @@ public:
 	virtual int columnCount(const QModelIndex &parent) const;
 	Qt::ItemFlags flags(const QModelIndex& index) const;
 	virtual bool setData(const QModelIndex&, const QVariant&, int role);
+    
+    bool passFilter(const ContactListItem *item) const;
+    QList<ContactListItem *>    getFilteredItems(const QModelIndex &parent);
+
+    void setFilter(int filterFlags);
+    int filter() const;
 
 protected slots:
 	void contactList_changed();
@@ -41,6 +58,7 @@ protected slots:
 private:
 	MaknetoContactList* contactList_;
 	bool showStatus_;
+    int  filter_;
 };
 
 #endif

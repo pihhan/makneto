@@ -13,6 +13,7 @@
 #include "contactlistgroupitem.h"
 
 #include "maknetocontactlist.h"
+#include "maknetocontact.h"
 
 #define COLUMNS 3
 
@@ -142,8 +143,15 @@ QModelIndex ContactListModel::index(int row, int column, const QModelIndex &pare
 {
 	ContactListItem* parentItem = 0;
 	if (parent.isValid()) {
-		parentItem = static_cast<ContactListItem*>(parent.internalPointer());
 
+#if 1
+        QList<ContactListItem *> items = getFilteredItems(parent);
+        if (items.size() >= row) {
+            createIndex(row, column, items.at(row));
+        } else
+            return QModelIndex();
+#else
+		parentItem = static_cast<ContactListItem*>(parent.internalPointer());
         ContactListGroupItem *groupItem = dynamic_cast<ContactListGroupItem *>(parentItem);
         if (groupItem) {
             ContactListItem *item = groupItem->atIndex(row);
@@ -154,6 +162,7 @@ QModelIndex ContactListModel::index(int row, int column, const QModelIndex &pare
                 return QModelIndex(); // TODO: add here resource enumeration
             }
         }
+#endif
     } else {
         QString groupname = contactList_->allGroupNames().at(row);
         ContactListGroupItem *group = contactList_->getGroup(groupname);
@@ -202,6 +211,54 @@ int ContactListModel::rowCount(const QModelIndex &parent) const
 	return (parentItem ? parentItem->items() : 0);
 }
 
+QList<ContactListItem *>    ContactListModel::getFilteredItems(const QModelIndex &parent)
+{
+    QList<ContactListItem *> itemlist;
+    if (parent.isValid()) {
+        ContactListItem *item = static_cast<ContactListItem *>(parent.internalPointer());
+        ContactListGroupItem *gi = dynamic_cast<ContactListGroupItem*>(item);
+        if (gi) {
+                for (int i = 0; i < gi->items(); i++) {
+                        ContactListItem *item = gi->atIndex(i);
+                        if (passFilter(item))
+                            itemlist.append(item);
+                }
+        }
+    } else {
+        // enumerate root groups
+        QStringList groupnames = contactList_->allGroupNames();
+        for (unsigned int i=0; i < groupnames.size(); i++) {
+            QString name = groupsnames.at(i);
+            ContactListGroupItem *group = contactList_->getGroup(name);
+            if (group && passFilter(group))
+                    itemlist.append(item);
+        }
+    }
+    return itemlist;
+}
+
+bool ContactListModel::passFilter(const ContactListItem *item) const
+{
+    bool pass = true;
+    const MaknetoContact *contact = dynamic_cast<const MaknetoContact*>(item);
+    if (contact) {
+        if (filter_ & FILTER_ONLINE)   
+            pass = pass && contact->isOnline();
+        if (filter_ & FILTER_VIDEO)
+            pass = pass && contact->supportsVideo();
+        if (filter_ & FILTER_AUDIO)
+            pass = pass && contact->supportsAudio();
+        if (filter_ & FILTER_WHITEBOARD)
+            pass = pass && contact->supportsWhiteboard();
+    }
+    const ContactListGroupItem *gi = dynamic_cast<const ContactListGroupItem*>(item);
+    if (gi) {
+        if (filter_ & FILTER_ONLINE)
+            pass = pass && (gi->countOnline() > 0);
+    }
+
+    return pass;
+}
 
 int ContactListModel::columnCount(const QModelIndex&) const
 {
@@ -222,4 +279,14 @@ void ContactListModel::contactList_changed()
 	reset();
 }
 
+/*! \brief Configure filter for displayed contact list items. */
+void ContactListModel::setFilter(int filterFlags)
+{
+    filter_ = filterFlags;
+    reset();
+}
 
+int ContactListModel::filter() const
+{
+    return filter_;
+}

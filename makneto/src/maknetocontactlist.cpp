@@ -11,6 +11,7 @@
 #include "maknetocontact.h"
 #include "contactlist/contactlistgroupitem.h"
 #include "contactlist/contactlistrootitem.h"
+#include "contactlist/contactlistgroupedcontact.h"
 
 
 #include "makneto.h"
@@ -94,10 +95,11 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
                 groupItem = mg;
 	}
 
-  MaknetoContact *contact = new MaknetoContact(name, jid, mg, contactMenu);
+  MaknetoContact *contact = new MaknetoContact(name, jid, contactRoot(), contactMenu);
   contact->addGroup(mg);
-
-  addItem(contact);
+    
+  ContactListGroupedContact *proxy = new ContactListGroupedContact(mg, contact);
+  addItem(proxy);
   qDebug() << "Added " << jid << " as " << name << " to roster.";
 }
 

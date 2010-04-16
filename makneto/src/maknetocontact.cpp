@@ -215,3 +215,22 @@ bool MaknetoContact::supportsFeature(const QString &feature) const
     return supported;
 }
 
+bool MaknetoContact::supportsVideo() const
+{
+    return supportsFeature("urn:xmpp:jingle:video");
+}
+
+bool MaknetoContact::supportsAudio() const
+{
+    return supportsFeature("urn:xmpp:jingle:audio");
+}
+
+bool MaknetoContact::supportsWhiteboard() const
+{
+    return supportsFeature("http://jabber.org/protocol/svgwb");
+}
+
+bool MaknetoContact::isOnline() const
+{
+    return (resourcesNumber() > 0);
+}

@@ -58,6 +58,10 @@ public:
         void setFeatures( FeatureList *fl, bool shared=true);
 
         QIcon statusIcon() const;
+
+        bool supportsVideo() const;
+        bool supportsAudio() const;
+        bool supportsWhiteboard() const; 
 private: 
         MaknetoContact  *m_bare;
 	ContactListStatus m_status;
@@ -126,6 +130,11 @@ public:
         void removeResource(const QString &resource);
 
         virtual bool supportsFeature(const QString &feature) const;
+
+        bool supportsVideo() const;
+        bool supportsAudio() const;
+        bool supportsWhiteboard() const;
+        bool isOnline() const;
 
         ResourcesHash allResources()
         { return m_resources; }
