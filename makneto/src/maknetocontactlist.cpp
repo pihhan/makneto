@@ -99,6 +99,8 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 	}
 
   MaknetoContact *contact = new MaknetoContact(name, jid, contactRoot(), contactMenu);
+  addItem(contact);
+
   if (mg)
       contact->addGroup(mg);
     
@@ -146,6 +148,7 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 #endif
 
   MaknetoContact *contact = new MaknetoContact(name, jid, contactRoot(), contactMenu);
+  addItem(contact);
 
   for (int i=0; i< groups.size(); i++) {
       QString groupname = groups.at(i);
@@ -171,18 +174,20 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
   }
 
   qDebug() << "addContact(multigroup)" << jid << " to roster";
-  //addItem(contact);
 }
 
+/*! \brief Set online status to contact list item. */
 void MaknetoContactList::setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status)
 {
 	std::cout << "setAvailability(" << jid.toUtf8().data() << ")" << std::endl;
 
-	ContactListGroupItem *root = rootItem();
 
+	MaknetoContact *item = 0;
+
+#if 0
+	ContactListGroupItem *root = rootItem();
 	MaknetoGroup *groupItem = 0;
     ContactListGroupedContact *gitem = 0;
-	MaknetoContact *item = 0;
 
 	for (int i=0; i<root->items(); i++)
 	{
@@ -201,6 +206,14 @@ void MaknetoContactList::setAvailability(const QString& jid, const QString &reso
 			}
 		}
 	}
+#else
+    item = getContact(jid);
+    if (item) {
+        item->setStatus(resource, status, m_makneto->getFeatureManager());
+        emitDataChanged(item);
+    } else
+        qWarning() << "incoming presence for contact not in roster: " << jid;
+#endif
 
 }
 

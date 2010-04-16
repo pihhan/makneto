@@ -197,12 +197,12 @@ bool MaknetoContact::supportsFeature(const QString &feature) const
 
 bool MaknetoContact::supportsVideo() const
 {
-    return supportsFeature("urn:xmpp:jingle:video");
+    return supportsFeature("urn:xmpp:jingle:media:video");
 }
 
 bool MaknetoContact::supportsAudio() const
 {
-    return supportsFeature("urn:xmpp:jingle:audio");
+    return supportsFeature("urn:xmpp:jingle:media:audio");
 }
 
 bool MaknetoContact::supportsWhiteboard() const

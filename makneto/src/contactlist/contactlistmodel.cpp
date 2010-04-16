@@ -29,6 +29,8 @@ ContactListModel::ContactListModel(MaknetoContactList* contactList)
     : contactList_(contactList), showStatus_(true), filter_(0)
 {
 	connect(contactList_,SIGNAL(dataChanged()),this,SLOT(contactList_changed()));
+    connect(contactList_, SIGNAL(dataChanged(ContactListItem*)), 
+        this, SLOT(itemChanged(ContactListItem*)) );
 }
 
 /*! \brief Get text description of selected contact list item. */
@@ -318,3 +320,14 @@ int ContactListModel::filter() const
 {
     return filter_;
 }
+
+void ContactListModel::itemChanged(ContactListItem *item)
+{
+    int row = 0;
+    if (item->parent()) {
+        row = item->parent()->indexOf(item);
+    }
+    QModelIndex index = createIndex(row, 0, item);
+    emit dataChanged(index, index);
+}
+

@@ -52,6 +52,8 @@ public:
     void setFilter(int filterFlags);
     int filter() const;
 
+public slots:
+    void itemChanged(ContactListItem *item);
 protected slots:
 	void contactList_changed();
 

@@ -13,6 +13,7 @@
 #include "contactlist/contactlist.h"
 #include "contactlist/contactlistrootitem.h"
 #include "contactlist/contactlistcontact.h"
+#include "contactlist/contactlistgroupedcontact.h"
 #include "addcontactdialog.h"
 
 #include <QtGui/QVBoxLayout>
@@ -115,19 +116,27 @@ void RoasterView::showContextMenu(const QPoint &point)
     if (index.isValid()) {
         ContactListItem *item = static_cast<ContactListItem *>(index.internalPointer());
         if (item) {
-            MaknetoContact *contact = dynamic_cast<MaknetoContact*> (item);
+            ContactListGroupedContact *gc = dynamic_cast<ContactListGroupedContact *>(item);
+            MaknetoContact *contact = 0;
+            if (gc)
+                contact = dynamic_cast<MaknetoContact*> (gc->contact());
             if (contact) {
                 QMenu *menu = genericMenu(contact->jid());
                 QString jid = contact->jid();
 
 
-                if (contact->supportsFeature("urn:xmpp:jingle:apps:rtp:audio")) {
+                if (contact->supportsAudio()) {
                     QAction *acall = menu->addAction(tr("&Audio call..."));
                     acall->setData(jid);
                     connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
                 }
-                if (contact->supportsFeature("urn:xmpp:jingle:apps:rtp:video")) {
+                if (contact->supportsVideo()) {
                     QAction *acall = menu->addAction(tr("&Video call..."));
+                    acall->setData(jid);
+                    connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
+                }
+                if (contact->supportsWhiteboard()) {
+                    QAction *acall = menu->addAction(tr("&Whiteboard..."));
                     acall->setData(jid);
                     connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
                 }

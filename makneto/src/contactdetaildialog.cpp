@@ -2,7 +2,7 @@
  * contactdetaildialog.cpp
  *
  * Copyright (C) 2008 Radek Novacek <rad.n@gmail.com>
- * Copyleft 2009 Petr Mensik <pihhan@cipis.net>
+ * Copyleft 2009-2010 Petr Mensik <pihhan@cipis.net>
  */
 
 #include <xmpp_tasks.h>
