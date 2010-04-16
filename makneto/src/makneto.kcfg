@@ -38,4 +38,33 @@
     </entry>
 
   </group>
+  <group name="Network">
+    <entry name="stunServer" type="String">
+        <label>STUN server</label>
+    </entry>
+
+    <entry name="turnServer" type="String">
+        <label>TURN server</label>
+    </entry>
+  </group>
+
+  <group name="Media">
+    <entry name="audioInputElement" type="Enum">
+        <choices>alsasrc</choices>
+        <choices>pulsesrc</choices>
+    </entry>
+    <entry name="audioOutputElement" type="Enum">
+        <choices>alsasink</choices>
+        <choices>pulsesink</choices>
+    </entry>
+    <entry name="videoInputElement" type="Enum">
+        <choices>v4lsrc</choices>
+        <choices>v4l2src</choices>
+        <choices>ximagesrc</choices>
+    </entry>
+    <entry name="videoOutputElement" type="Enum">
+        <choices>ximagesink</choices>
+        <choices>xvimagesink</choices>
+    </entry>
+  </group>
 </kcfg>
