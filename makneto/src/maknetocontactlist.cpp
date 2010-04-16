@@ -37,6 +37,7 @@ MaknetoContactList::MaknetoContactList(Makneto *makneto) : ContactList(), m_makn
 MaknetoGroup *MaknetoContactList::createGroup(const QString &name)
 {
     MaknetoGroup *group = new MaknetoGroup(name, rootItem());
+    addItem(group);
     qDebug() << "Created roster group " << name;
     return group;
 }
@@ -67,7 +68,7 @@ QMenu * MaknetoContactList::createContactMenu(const QString &jid)
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QString& group = QString())
 {
 	ContactListGroupItem *groupItem = rootItem();
-    MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
+    MaknetoGroup *mg = 0;
 	QMenu *contactMenu = createContactMenu(jid);
 	QString groupCorrected;
 
@@ -81,25 +82,28 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 	{
 		MaknetoGroup g(groupCorrected);
 
-		mg = static_cast<MaknetoGroup*>(rootItem()->findFirstItem(&g));
+		groupItem = static_cast<MaknetoGroup*>(rootItem()->findFirstItem(&g));
 
-		if (!mg) 
-		{
-			mg = static_cast<MaknetoGroup*>(invisibleGroup()->findFirstItem(&g));
+		if (!groupItem) {
+			groupItem = static_cast<MaknetoGroup*>(invisibleGroup()->findFirstItem(&g));
 		}
 	
-		if (!mg) 
-		{
-                    mg = createGroup(groupCorrected);
+		if (!groupItem) {
+                    groupItem = createGroup(groupCorrected);
 		}
-                groupItem = mg;
+        
+        mg = dynamic_cast<MaknetoGroup*>(getGroup(groupCorrected));
+        if (!mg)
+            qWarning() << "Group " << groupCorrected << " should exist, but getGroup returned NULL";
+        //groupItem = mg;
 	}
 
   MaknetoContact *contact = new MaknetoContact(name, jid, contactRoot(), contactMenu);
-  contact->addGroup(mg);
+  if (mg)
+      contact->addGroup(mg);
     
-  ContactListGroupedContact *proxy = new ContactListGroupedContact(mg, contact);
-  addItem(proxy);
+  ContactListGroupedContact *proxy = new ContactListGroupedContact(groupItem, contact);
+  //addItem(proxy);
   qDebug() << "Added " << jid << " as " << name << " to roster.";
 }
 
@@ -111,14 +115,15 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 */
 void MaknetoContactList::addContact(const QString& name, const QString& jid, const QStringList& groups)
 {
-	ContactListGroupItem *groupItem = rootItem();
-    MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
+	//ContactListGroupItem *groupItem = rootItem();
+    //MaknetoGroup *mg = dynamic_cast<MaknetoGroup *>(groupItem);
 	QMenu *contactMenu = createContactMenu(jid);
 	QString groupCorrected = groups.at(0);
 
 	if (groupCorrected.isEmpty())
 		groupCorrected = "Unknown";
 
+#if 0
 	// find/create group
 	if (!groupCorrected.isEmpty()) 
 	{
@@ -138,8 +143,10 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
 		}
                 groupItem = mg;
 	}
+#endif
 
-  MaknetoContact *contact = new MaknetoContact(name, jid, groupItem, contactMenu);
+  MaknetoContact *contact = new MaknetoContact(name, jid, contactRoot(), contactMenu);
+
   for (int i=0; i< groups.size(); i++) {
       QString groupname = groups.at(i);
       if (groupname.isEmpty()) {
@@ -154,12 +161,17 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
       }
       contact->addGroup(group);
       // add to group only if it is not already there
-      MaknetoContact *tmpcontact = group->findContactByJid(jid);
-      if (!tmpcontact) 
-          group->addItem(contact);
+      ContactListGroupedContact *tmpcontact = group->findContactByJid(jid);
+      if (!tmpcontact) {
+          ContactListGroupedContact *proxy = new ContactListGroupedContact(group, contact);
+          //group->addItem(proxy);
+      } else {
+          qWarning() << "contact " << jid << " is already inside group " << groupname;
+      }
   }
 
-  addItem(contact);
+  qDebug() << "addContact(multigroup)" << jid << " to roster";
+  //addItem(contact);
 }
 
 void MaknetoContactList::setAvailability(const QString& jid, const QString &resource, const XMPP::Status& status)
@@ -169,22 +181,23 @@ void MaknetoContactList::setAvailability(const QString& jid, const QString &reso
 	ContactListGroupItem *root = rootItem();
 
 	MaknetoGroup *groupItem = 0;
+    ContactListGroupedContact *gitem = 0;
 	MaknetoContact *item = 0;
 
 	for (int i=0; i<root->items(); i++)
 	{
-		groupItem = static_cast<MaknetoGroup*>(root->atIndex(i));
+		groupItem = dynamic_cast<MaknetoGroup*>(root->atIndex(i));
 		item = 0;
 
 		if (groupItem)
 		{
-			item = groupItem->findContactByJid(jid);
+			gitem = groupItem->findContactByJid(jid);
 
-			if (item)
+			if (gitem && gitem->contact())
 			{
-
-				item->setStatus(resource, status, m_makneto->getFeatureManager());
-	                        emitDataChanged(item);
+                item = dynamic_cast<MaknetoContact *>(gitem->contact());
+                item->setStatus(resource, status, m_makneto->getFeatureManager());
+	            emitDataChanged(item);
 			}
 		}
 	}

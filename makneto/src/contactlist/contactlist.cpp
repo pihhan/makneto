@@ -14,6 +14,7 @@ ContactList::ContactList(QObject* parent)
 	rootItem_ = new ContactListRootItem(this);
 	invisibleGroup_ = new ContactListRootItem(this);
 	altInvisibleGroup_ = new ContactListRootItem(this);
+    contactRootGroup_ = new ContactListRootItem(this);
 	itemComparator_ = new ContactListAlphaComparator();
 }
 
@@ -231,5 +232,10 @@ unsigned int ContactList::groupCount() const
 unsigned int ContactList::contactCount() const
 {
     return contacts_.size();
+}
+
+ContactListRootItem* ContactList::contactRoot()
+{
+    return contactRootGroup_;
 }
 

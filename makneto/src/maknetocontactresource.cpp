@@ -183,3 +183,7 @@ bool MaknetoContactResource::supportsWhiteboard() const
 
 
 
+void MaknetoContactResource::updateParent() 
+{
+}
+

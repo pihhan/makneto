@@ -47,7 +47,7 @@ public:
 	virtual bool setData(const QModelIndex&, const QVariant&, int role);
     
     bool passFilter(const ContactListItem *item) const;
-    QList<ContactListItem *>    getFilteredItems(const QModelIndex &parent);
+    QList<ContactListItem *>    getFilteredItems(const QModelIndex &parent) const;
 
     void setFilter(int filterFlags);
     int filter() const;

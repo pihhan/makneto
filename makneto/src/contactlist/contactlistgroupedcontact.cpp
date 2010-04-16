@@ -1,11 +1,18 @@
 
 #include "contactlistgroupedcontact.h"
+#include "maknetocontact.h"
 
 
-ContactListGroupedContact::ContactListGroupedContact(ContactListItem *parent, ContactListContact *contact)
-    : ContactListItem(parent)
+ContactListGroupedContact::ContactListGroupedContact(ContactListGroupItem *parent, ContactListContact *contact)
+    : ContactListContact(parent)
 {
         m_contact = contact;
+
+        MaknetoContact *mc = dynamic_cast<MaknetoContact *> (contact);
+        if (mc) {
+            connect(mc, SIGNAL(contactChanged()), this, SLOT(emitContactChanged()) );
+        }
+        
 }
 
 
@@ -85,6 +92,6 @@ bool ContactListGroupedContact::supportsFeature(const QString &string) const
     
 void ContactListGroupedContact::emitContactChanged()
 {
-        emit contactChanged();
+        emit contactChanged(this);
 }
 

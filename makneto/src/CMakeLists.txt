@@ -87,6 +87,7 @@ set(makneto_SRCS
 	contactlist/status.h
 
 # Petr Mensik a jeho tvorba
+    contactlist/contactlistgroupedcontact.cpp
         featurelist.h
         featurelist.cpp
         discorequest.h

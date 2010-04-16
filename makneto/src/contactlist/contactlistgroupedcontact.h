@@ -16,7 +16,7 @@ class ContactListGroupedContact : public ContactListContact
         Q_OBJECT
         public:
 
-        ContactListGroupedContact(ContactListItem *parent, ContactListContact *contact);
+        ContactListGroupedContact(ContactListGroupItem *parent, ContactListContact *contact);
 
         ContactListContact *contact() const;
         ContactListGroupItem *group() const;
@@ -43,7 +43,7 @@ class ContactListGroupedContact : public ContactListContact
         void emitContactChanged();
 
         Q_SIGNALS:
-        void contactChanged();
+        void contactChanged(ContactListGroupedContact *);
 
         private:
         ContactListContact *m_contact;

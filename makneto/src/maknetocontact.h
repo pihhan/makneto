@@ -10,6 +10,7 @@
 #include "contactlist/contactlistcontact.h"
 #include "contactlist/contactlistgroup.h"
 #include "contactlist/contactlistgroupitem.h"
+#include "contactlist/contactlistgroupedcontact.h"
 #include "contactlist/status.h"
 #include "featurelist.h"
 
@@ -29,6 +30,7 @@ class MaknetoContact;
  * \author Petr Mensik <pihhan@cipis.net> */
 class MaknetoContactResource : public ContactListContact 
 {
+    Q_OBJECT
 public:
         MaknetoContactResource();
 
@@ -46,6 +48,8 @@ public:
 	virtual void setStatus(const XMPP::Status& status);
         virtual void setPriority(int prio) { m_priority = prio; }
         virtual void setResource(const QString &resource) { m_resource = resource; m_null=true; }
+
+        virtual void updateParent();
 
         virtual bool supportsFeature(const QString &feature) const;
         bool isNull() const { return m_null; }
@@ -86,6 +90,7 @@ private:
 
 class MaknetoContact : public ContactListContact
 {
+    Q_OBJECT
 public:
 
         typedef QHash<QString, MaknetoContactResource *>   ResourcesHash;
@@ -106,6 +111,8 @@ public:
         virtual QString resource() const;
 
         virtual int priority() const;
+    
+        virtual void updateParent();
 
         virtual MaknetoContactResource *resource( const QString &resource) 
         {
@@ -139,6 +146,9 @@ public:
         ResourcesHash allResources()
         { return m_resources; }
 
+signals:
+    void contactChanged();
+
 private:
 	QString m_name;
 	QString m_jid;
@@ -157,7 +167,7 @@ public:
 	/**
 	* Default constructor
 	*/
-	MaknetoGroup(const QString& name, ContactListGroupItem* parent = 0): ContactListGroup(parent), m_name(name) { }
+	MaknetoGroup(const QString& name, ContactListGroupItem* parent = 0);
 
 	/**
 	* Destructor	
@@ -171,7 +181,8 @@ public:
 		return (group && group->name() == m_name);
 	}
 
-	MaknetoContact* findContactByJid(const QString& jid);
+//	MaknetoContact* findContactByJid(const QString& jid);
+	ContactListGroupedContact* findContactByJid(const QString& jid);
 private:
 	QString m_name;
 };

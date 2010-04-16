@@ -25,7 +25,8 @@
 #define DND_COLOR QColor(0x7e,0x00,0x00)
 #define ONLINE_COLOR QColor(0x00,0x00,0x00)
 
-ContactListModel::ContactListModel(MaknetoContactList* contactList) : contactList_(contactList), showStatus_(true)
+ContactListModel::ContactListModel(MaknetoContactList* contactList) 
+    : contactList_(contactList), showStatus_(true), filter_(0)
 {
 	connect(contactList_,SIGNAL(dataChanged()),this,SLOT(contactList_changed()));
 }
@@ -144,9 +145,9 @@ QModelIndex ContactListModel::index(int row, int column, const QModelIndex &pare
 	ContactListItem* parentItem = 0;
 	if (parent.isValid()) {
 
-#if 1
+#if 0
         QList<ContactListItem *> items = getFilteredItems(parent);
-        if (items.size() >= row) {
+        if (row < items.size()) {
             createIndex(row, column, items.at(row));
         } else
             return QModelIndex();
@@ -164,7 +165,15 @@ QModelIndex ContactListModel::index(int row, int column, const QModelIndex &pare
         }
 #endif
     } else {
-        QString groupname = contactList_->allGroupNames().at(row);
+#if 0
+        QStringList l = contactList_->allGroupNames();
+        QString groupname;
+        if (row < l.size())
+                groupname = l.at(row);
+        else {
+                qWarning() << "Requested index row " << row << " outside of allGroupNames size " << l.size();
+                return QModelIndex();
+        }
         ContactListGroupItem *group = contactList_->getGroup(groupname);
         if (group)
             return createIndex(row, column, group);
@@ -174,10 +183,17 @@ QModelIndex ContactListModel::index(int row, int column, const QModelIndex &pare
         }
     }
     return QModelIndex();
+#else
+        ContactListGroupItem *root = contactList_->rootItem();
+	    ContactListItem* item = root->atIndex(row);
+	    return (item ? createIndex(row, column, item) : QModelIndex());
+    }
 #if 0
 	ContactListItem* item = parentItem->atIndex(row);
 	return (item ? createIndex(row, column, item) : QModelIndex());
 #endif
+#endif
+    return QModelIndex();
 }
 
 
@@ -200,18 +216,27 @@ int ContactListModel::rowCount(const QModelIndex &parent) const
 {
 	ContactListGroupItem* parentItem = 0;
 	if (parent.isValid()) {
+#if 0
 		ContactListItem* item = static_cast<ContactListItem*>(parent.internalPointer());
 		parentItem = dynamic_cast<ContactListGroupItem*>(item);
+#else
+        QList<ContactListItem *> items = getFilteredItems(parent);
+        return items.size();
+#endif
 	}
 	else {
+#if 0
         return contactList_->groupCount();
+#else
 		parentItem = contactList_->rootItem();
+#endif
 	}
 
 	return (parentItem ? parentItem->items() : 0);
 }
 
-QList<ContactListItem *>    ContactListModel::getFilteredItems(const QModelIndex &parent)
+/*! \brief Get items filtered by current filter, if any, for parent passed. */
+QList<ContactListItem *>    ContactListModel::getFilteredItems(const QModelIndex &parent) const
 {
     QList<ContactListItem *> itemlist;
     if (parent.isValid()) {
@@ -227,11 +252,11 @@ QList<ContactListItem *>    ContactListModel::getFilteredItems(const QModelIndex
     } else {
         // enumerate root groups
         QStringList groupnames = contactList_->allGroupNames();
-        for (unsigned int i=0; i < groupnames.size(); i++) {
-            QString name = groupsnames.at(i);
+        for (int i=0; i < groupnames.size(); i++) {
+            QString name = groupnames.at(i);
             ContactListGroupItem *group = contactList_->getGroup(name);
             if (group && passFilter(group))
-                    itemlist.append(item);
+                    itemlist.append(group);
         }
     }
     return itemlist;
@@ -240,7 +265,10 @@ QList<ContactListItem *>    ContactListModel::getFilteredItems(const QModelIndex
 bool ContactListModel::passFilter(const ContactListItem *item) const
 {
     bool pass = true;
-    const MaknetoContact *contact = dynamic_cast<const MaknetoContact*>(item);
+    const ContactListGroupedContact *gc = dynamic_cast<const ContactListGroupedContact *>(item);
+    const MaknetoContact *contact = 0;
+    if (gc) 
+            contact = dynamic_cast<const MaknetoContact*>(gc->contact());
     if (contact) {
         if (filter_ & FILTER_ONLINE)   
             pass = pass && contact->isOnline();
