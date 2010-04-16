@@ -6,6 +6,7 @@
 
 #include "maknetocontact.h"
 #include "contactlist/contactlistgroupitem.h"
+#include "contactlist/contactlistgroupedcontact.h"
 #include "contactlist/status.h"
 #include "maknetocontactlist.h"
 
@@ -32,31 +33,6 @@ MaknetoContact::MaknetoContact(const QString& name, const QString& jid,
 MaknetoContact::~MaknetoContact()
 {
 
-}
-
-/*! \brief Find contacty by JID inside group. If not found, try searching
-    only with bare JID. */
-MaknetoContact* MaknetoGroup::findContactByJid(const QString& jid)
-{
-	MaknetoContact *item = 0;
-	bool found = false;
-	int i = 0;
-        XMPP::Jid j(jid);
-
-	while(!found && i<items())
-	{
-		item = static_cast<MaknetoContact*>(atIndex(i));
-		
-		if (item && j.compare(XMPP::Jid(item->jid()), false))
-			found = true;
-
-		i++;
-	}
-
-	if (found)
-		return item;
-	else
-		return 0;
 }
 
 void MaknetoContact::showContextMenu(const QPoint &where)
@@ -92,6 +68,7 @@ void MaknetoContact::setStatus(const XMPP::Status &status)
     resource = bestResource();
     if (resource != NULL) {
         resource->setStatus(status);
+        emit contactChanged();
     }
 }
 
@@ -187,8 +164,8 @@ void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &stat
                 }
                 
             }
-
     }
+    emit contactChanged();
 }
 
 QString MaknetoContact::resource() const
@@ -217,4 +194,64 @@ bool MaknetoContact::supportsFeature(const QString &feature) const
     }
     return supported;
 }
+
+bool MaknetoContact::supportsVideo() const
+{
+    return supportsFeature("urn:xmpp:jingle:media:video");
+}
+
+bool MaknetoContact::supportsAudio() const
+{
+    return supportsFeature("urn:xmpp:jingle:media:audio");
+}
+
+bool MaknetoContact::supportsWhiteboard() const
+{
+    return supportsFeature("http://jabber.org/protocol/svgwb");
+}
+
+bool MaknetoContact::isOnline() const
+{
+    return (resourcesNumber() > 0);
+}
+
+void MaknetoContact::updateParent()
+{
+    // noop
+}
+
+//
+// MaknetoGroup
+//
+//
+
+MaknetoGroup::MaknetoGroup(const QString& name, ContactListGroupItem* parent)
+    : ContactListGroup(parent), m_name(name) 
+{
+}
+
+
+//MaknetoContact* MaknetoGroup::findContactByJid(const QString& jid)
+ContactListGroupedContact * MaknetoGroup::findContactByJid(const QString& jid)
+{
+	ContactListGroupedContact *item = 0;
+	bool found = false;
+	int i = 0;
+
+	while(!found && i<items())
+	{
+		item = static_cast<ContactListGroupedContact *>(atIndex(i));
+		
+		if (item && item->jid() == jid)
+			found = true;
+
+		i++;
+	}
+
+	if (found)
+		return item;
+	else
+		return 0;
+}
+
 

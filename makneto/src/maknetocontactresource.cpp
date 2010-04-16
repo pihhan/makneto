@@ -166,3 +166,24 @@ bool MaknetoContactResource::supportsFeature(const QString &feature) const
         return false;
 }
 
+bool MaknetoContactResource::supportsVideo() const
+{
+    return supportsFeature("urn:xmpp:jingle:video");
+}
+
+bool MaknetoContactResource::supportsAudio() const
+{
+    return supportsFeature("urn:xmpp:jingle:audio");
+}
+
+bool MaknetoContactResource::supportsWhiteboard() const
+{
+    return supportsFeature("http://jabber.org/protocol/svgwb");
+}
+
+
+
+void MaknetoContactResource::updateParent() 
+{
+}
+

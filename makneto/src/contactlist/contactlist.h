@@ -29,6 +29,7 @@ public:
 	bool showGroups() const { return showGroups_; }
 	ContactListRootItem* invisibleGroup();
 	ContactListRootItem* rootItem();
+    ContactListRootItem* contactRoot();
 	const ContactListItemComparator* itemComparator() const;
 	const QString& search() const;
 
@@ -74,6 +75,7 @@ private:
 	ContactListRootItem* rootItem_;
 	ContactListRootItem* invisibleGroup_;
 	ContactListRootItem* altInvisibleGroup_;
+    ContactListRootItem* contactRootGroup_;
 
     GroupsHash          groups_; ///!< List of all groups in roster
     ContactsHash        contacts_; ///!< List of all contacts in roster
