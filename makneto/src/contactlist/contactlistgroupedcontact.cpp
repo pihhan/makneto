@@ -31,7 +31,7 @@ void ContactListGroupedContact::setContact(ContactListContact *contact)
         m_contact = contact;
 }
 
-void ContactListGroupedContact::setGroup(ContactListGroupItem *item)
+void ContactListGroupedContact::setGroup(ContactListGroupItem *)
 {
 }
 
@@ -72,7 +72,7 @@ QIcon ContactListGroupedContact::picture() const
 
 void ContactListGroupedContact::updateParent()
 {
-        return m_contact->updateParent();
+    ContactListContact::updateParent();
 }
 
 QString ContactListGroupedContact::toolTip() const

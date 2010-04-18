@@ -56,54 +56,12 @@ SessionView::SessionView(QWidget *parent, const QString &jid, const int id, int 
   m_topSplitter = new QSplitter(this);
   m_topLayout->addWidget(m_topSplitter);
   m_topSplitter->setOrientation(Qt::Horizontal);
-  m_leftWidget = new QWidget(this);
-  
-  m_leftLayout = new QVBoxLayout(m_leftWidget);
-  m_leftWidget->setLayout(m_leftLayout);
-  
-  m_leftLayout->setMargin(0);
-  m_leftLayout->setSpacing(0);
 
-
-  
-  // Add Toolbar to the layout
-  createToolBar();
-  QHBoxLayout *m_toolLayout = new QHBoxLayout();
-  m_toolLayout->addWidget(m_wbtoolbar);
-
-  // Create WhiteBoard widget
-  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
-  connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
-  connect(m_wbwidget, SIGNAL(modeChanged(WbWidget::Mode)), SLOT(modeChanged(WbWidget::Mode)));
-
-  // Create palette widget
-  m_paletteWidget = new PaletteWidget(this);
-  connect(m_paletteWidget, SIGNAL(fgColorChanged(const QColor &)), SLOT(fgColorChanged(const QColor &)));
-  connect(m_paletteWidget, SIGNAL(bgColorChanged(const QColor &)), SLOT(bgColorChanged(const QColor &)));
-  connect(m_paletteWidget, SIGNAL(penSizeChanged(int)), SLOT(penSizeChanged(int)));
-  m_paletteWidget->setFgColor(QColor(0, 0, 0));
-  m_paletteWidget->setBgColor(Qt::transparent);
-  m_paletteWidget->setPenSize(1);
-
-  m_toolLayout->addWidget(m_paletteWidget);
-
-  m_leftLayout->addLayout(m_toolLayout);
-  
   m_tabs = new KTabWidget();
-
-  m_leftSplitter = new QSplitter(Qt::Vertical, m_leftWidget);
-  m_leftSplitter->addWidget(m_wbwidget);
-
-  m_leftLayout->addWidget(m_leftSplitter);
-
-  m_tabs->addTab(m_leftWidget, tr("Whiteboard"));
   
-  
-  m_wbwidget->setMode(WbWidget::DrawPath);
-  m_wbwidget->setMinimumSize(300, 400);
-  //m_topSplitter->addWidget(m_leftWidget);
-
+  configureWhiteboardTab();
   configureChatInput();
+  configureMediaTab();
 
   m_topSplitter->addWidget(m_tabs);
   setLayout(m_topLayout);  
@@ -121,6 +79,51 @@ SessionView::~SessionView()
   settings.setValue("m_topSplitter", m_topSplitter->saveState());
 }
 
+/*! \brief Create whiteboard tab. */
+void SessionView::configureWhiteboardTab()
+{
+  m_leftWidget = new QWidget(this);
+  
+  m_leftLayout = new QVBoxLayout(m_leftWidget);
+  m_leftWidget->setLayout(m_leftLayout);
+  
+  m_leftLayout->setMargin(0);
+  m_leftLayout->setSpacing(0);
+  
+  // Add Toolbar to the layout
+  createToolBar();
+  QHBoxLayout *m_toolLayout = new QHBoxLayout();
+  m_toolLayout->addWidget(m_wbtoolbar);
+
+  // Create palette widget
+  m_paletteWidget = new PaletteWidget(m_leftWidget);
+  connect(m_paletteWidget, SIGNAL(fgColorChanged(const QColor &)), SLOT(fgColorChanged(const QColor &)));
+  connect(m_paletteWidget, SIGNAL(bgColorChanged(const QColor &)), SLOT(bgColorChanged(const QColor &)));
+  connect(m_paletteWidget, SIGNAL(penSizeChanged(int)), SLOT(penSizeChanged(int)));
+  m_toolLayout->addWidget(m_paletteWidget);
+
+  m_leftLayout->addLayout(m_toolLayout);
+
+  // Create WhiteBoard widget
+  m_wbwidget = new WbWidget("s1", m_makneto->getConnection()->jid().bare(), QSize(300, 400), this);
+  connect(m_wbwidget, SIGNAL(newWb(QDomElement)), SLOT(sendWhiteboard(QDomElement)));
+  connect(m_wbwidget, SIGNAL(modeChanged(WbWidget::Mode)), SLOT(modeChanged(WbWidget::Mode)));
+  m_wbwidget->setMode(WbWidget::DrawPath);
+  m_wbwidget->setMinimumSize(300, 400);
+  //m_topSplitter->addWidget(m_leftWidget);
+ 
+  m_paletteWidget->setFgColor(QColor(0, 0, 0));
+  m_paletteWidget->setBgColor(Qt::transparent);
+  m_paletteWidget->setPenSize(1);
+
+  m_leftSplitter = new QSplitter(Qt::Vertical);
+  m_leftSplitter->addWidget(m_wbwidget);
+  m_leftLayout->addWidget(m_leftSplitter);
+
+  m_tabs->addTab(m_leftWidget, KIcon("draw-freehand"), tr("Whiteboard"));
+}
+
+/*! \brief Create tab with text message input. */
 void SessionView::configureChatInput()
 {
   QWidget *chattab = new QWidget(this);
@@ -143,15 +146,21 @@ void SessionView::configureChatInput()
   
   m_chatSplitter->addWidget(m_chatoutput);
   m_chatSplitter->addWidget(m_chatinput);
-  int inputpos = m_chatSplitter->indexOf(m_chatinput);
+  int inputpos = m_chatSplitter->indexOf(m_chatoutput);
   m_chatSplitter->setStretchFactor(inputpos, 30);
   
   layout->addWidget(m_sendmsg);
   chattab->setLayout(layout);
 
-  m_tabs->addTab(chattab, tr("Messages"));
+  m_tabs->addTab(chattab, KIcon("document-edit"), tr("Messages"));
   //m_leftLayout->addLayout(layout);
 
+}
+
+void SessionView::configureMediaTab()
+{
+    QWidget *m_mediaw = new QWidget();
+    m_tabs->addTab(m_mediaw, KIcon("voicecall"), tr("Media"));
 }
 
 void SessionView::createDrawingTab()
@@ -502,3 +511,28 @@ void SessionView::actionCreatePollTriggered()
   setMode(actionSelect);
   actionSelect->setChecked(true);
 }
+
+QString SessionView::session() 
+{ 
+    return m_session; 
+}
+
+QString SessionView::jid() 
+{ 
+    return m_jid; 
+}
+int SessionView::id() const 
+{ 
+    return m_id; 
+}
+
+int SessionView::type(void) 
+{ 
+    return m_type; 
+}
+
+void SessionView::setType(int type)
+{ 
+    m_type = type; 
+}
+

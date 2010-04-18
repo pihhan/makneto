@@ -613,9 +613,9 @@ void Connection::client_resourceUnavailable(const Jid &jid, const Resource &reso
                 resource.name(), resource.status());
 }
 
-void Connection::client_presenceError(const Jid &, int, const QString &)
+void Connection::client_presenceError(const Jid &jid, int, const QString &)
 {
-	qDebug() << "Connection::client_presenceError()";
+	qDebug() << "Connection::client_presenceError()" << jid.full();
 }
 
 void Connection::client_messageReceived(const Message &message)

@@ -58,6 +58,34 @@ Settings::Settings(  )
   KConfigSkeleton::ItemBool  *itemNoSSLWarn;
   itemNoSSLWarn = new KConfigSkeleton::ItemBool( currentGroup(), QLatin1String( "noSSLWarn" ), mNoSSLWarn, false );
   addItem( itemNoSSLWarn, QLatin1String( "noSSLWarn" ) );
+
+  setCurrentGroup( QLatin1String( "Network" ) );
+
+  KConfigSkeleton::ItemString  *itemStunServer;
+  itemStunServer = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "stunServer" ), mStunServer );
+  addItem( itemStunServer, QLatin1String( "stunServer" ) );
+  KConfigSkeleton::ItemString  *itemTurnServer;
+  itemTurnServer = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "turnServer" ), mTurnServer );
+  addItem( itemTurnServer, QLatin1String( "turnServer" ) );
+
+  setCurrentGroup( QLatin1String( "Media" ) );
+
+  QList<KConfigSkeleton::ItemEnum::Choice2> valuesaudioInputElement;
+  KConfigSkeleton::ItemEnum  *itemAudioInputElement;
+  itemAudioInputElement = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "audioInputElement" ), mAudioInputElement, valuesaudioInputElement );
+  addItem( itemAudioInputElement, QLatin1String( "audioInputElement" ) );
+  QList<KConfigSkeleton::ItemEnum::Choice2> valuesaudioOutputElement;
+  KConfigSkeleton::ItemEnum  *itemAudioOutputElement;
+  itemAudioOutputElement = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "audioOutputElement" ), mAudioOutputElement, valuesaudioOutputElement );
+  addItem( itemAudioOutputElement, QLatin1String( "audioOutputElement" ) );
+  QList<KConfigSkeleton::ItemEnum::Choice2> valuesvideoInputElement;
+  KConfigSkeleton::ItemEnum  *itemVideoInputElement;
+  itemVideoInputElement = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "videoInputElement" ), mVideoInputElement, valuesvideoInputElement );
+  addItem( itemVideoInputElement, QLatin1String( "videoInputElement" ) );
+  QList<KConfigSkeleton::ItemEnum::Choice2> valuesvideoOutputElement;
+  KConfigSkeleton::ItemEnum  *itemVideoOutputElement;
+  itemVideoOutputElement = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "videoOutputElement" ), mVideoOutputElement, valuesvideoOutputElement );
+  addItem( itemVideoOutputElement, QLatin1String( "videoOutputElement" ) );
 }
 
 Settings::~Settings()

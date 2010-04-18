@@ -120,7 +120,7 @@ public:
         }
         /*! \brief Return resource with highest priority. 
          * \return Pointer to best resource class or NULL, if none is present - offline contact. */
-        virtual MaknetoContactResource *bestResource() ;
+        virtual MaknetoContactResource *bestResource() const;
         /*! \brief Return resource with highest priority.
          * \return Copy of MaknetoContactResource. it will return isNull(), if not really online. */
         virtual MaknetoContactResource bestResourceR() const;

@@ -19,6 +19,7 @@ class MUCControl;
 class MUC;
 class User;
 
+/*! \brief Display of list of rooms, and their participants. */
 class MUCView : public QWidget
 {
   Q_OBJECT

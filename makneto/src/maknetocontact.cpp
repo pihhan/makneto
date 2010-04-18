@@ -42,10 +42,10 @@ void MaknetoContact::showContextMenu(const QPoint &where)
 
 QIcon MaknetoContact::statusIcon() const
 {
-    MaknetoContactResource r;
-    r = bestResourceR();
-    if (!r.isNull())
-        return r.statusIcon();
+    MaknetoContactResource *r;
+    r = bestResource();
+    if (r)
+        return r->statusIcon();
     else
         return QIcon();
 }
@@ -53,10 +53,10 @@ QIcon MaknetoContact::statusIcon() const
 
 ContactListStatus MaknetoContact::status() const 
 { 
-    MaknetoContactResource resource;
-    resource = bestResourceR();
-    if (!resource.isNull()) {
-        return resource.status();
+    MaknetoContactResource *resource = NULL;
+    resource = bestResource();
+    if (resource) {
+        return resource->status();
     } else {
         return ContactListStatus(ContactListStatus::Offline); 
     }
@@ -171,9 +171,9 @@ void MaknetoContact::setStatus(const QString &resource, const XMPP::Status &stat
 QString MaknetoContact::resource() const
 {
     QString r;
-//            MaknetoContactResource *br = bestResource();
-//            if (br)
-//                r = br->resource();
+    MaknetoContactResource *br = bestResource();
+    if (br)
+        r = br->resource();
     return r;
 }
 
@@ -197,12 +197,12 @@ bool MaknetoContact::supportsFeature(const QString &feature) const
 
 bool MaknetoContact::supportsVideo() const
 {
-    return supportsFeature("urn:xmpp:jingle:media:video");
+    return supportsFeature("urn:xmpp:jingle:apps:rtp:video");
 }
 
 bool MaknetoContact::supportsAudio() const
 {
-    return supportsFeature("urn:xmpp:jingle:media:audio");
+    return supportsFeature("urn:xmpp:jingle:apps:rtp:audio");
 }
 
 bool MaknetoContact::supportsWhiteboard() const
@@ -218,6 +218,32 @@ bool MaknetoContact::isOnline() const
 void MaknetoContact::updateParent()
 {
     // noop
+}
+
+MaknetoContactResource MaknetoContact::bestResourceR() const
+{
+    MaknetoContactResource p;
+    ResourcesHash::const_iterator it;
+    bool notused = true;
+    for (it= m_resources.begin(); it != m_resources.end(); it++) {
+        if (notused || p < *(*it)) {
+            p = *(*it);
+            notused=false;
+        }
+    }
+    return p;
+}
+
+MaknetoContactResource * MaknetoContact::bestResource() const
+{
+    MaknetoContactResource *p = NULL;
+    ResourcesHash::const_iterator it;
+    for (it= m_resources.begin(); it != m_resources.end(); it++) {
+        if (!p || *p < *(*it)) {
+            p = (*it);
+        }
+    }
+    return p;
 }
 
 //

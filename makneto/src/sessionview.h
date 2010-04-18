@@ -71,20 +71,23 @@ public:
 	*/
 	virtual ~SessionView();
 
-	QString session() { return m_session; }
-	QString jid() { return m_jid; }
-  int id() const { return m_id; }
+	QString session();
+	QString jid();
+  int id() const;
   
 	void createToolBar();
+    void configureWhiteboardTab();
     void configureChatInput();
+    void configureMediaTab();
+
     void createDrawingTab();
 	void chatMessage(const Message &message);
   void infoMessage(const QString &text);
 	void whiteboardMessage(const Message &message);
 	void fileTransfer(FileTransfer *ft);
 
-  int type(void) { return m_type; }
-  void setType(int type) { m_type = type; }
+  int type(void);
+  void setType(int type);
   
   //MUCControl *getMUCControl(void) { return m_muccontrol; }
   void showHideChat();

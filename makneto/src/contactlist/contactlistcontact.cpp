@@ -62,11 +62,15 @@ void ContactListContact::updateParent()
 		}
 	}
 	else if (status().type() == ContactListStatus::Offline && !contactList()->showOffline()) {
-		//qDebug() << "contactlistcontact.cpp: Contact is invisible";
+#ifdef CONTACTLIST_DEBUG
+		qDebug() << "contactlistcontact.cpp: Contact is offline and not shoved: " << jid();
+#endif
 		newParent = contactList()->invisibleGroup();
 	}
 	else {
-		//qDebug() << "contactlistcontact.cpp: Falling back on default parent";
+#ifdef CONTACTLIST_DEBUG
+		qDebug() << "contactlistcontact.cpp: Falling back on default parent: " << jid();
+#endif
 		newParent = defaultParent();
 	}
 
@@ -107,7 +111,7 @@ void    ContactListContact::removeGroup(ContactListGroup *group)
 /*! \brief Check whether contact supports extension with given XML namespace. 
  *  \param feature Text namespace to check
  *  \return true if supported, false otherwise. */
-bool ContactListContact::supportsFeature(const QString &feature) const
+bool ContactListContact::supportsFeature(const QString &) const
 {
     return false;
 }

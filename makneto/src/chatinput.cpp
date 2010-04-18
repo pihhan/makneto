@@ -14,6 +14,7 @@ ChatInput::ChatInput(QWidget *parent)
 {
 	setFocusPolicy(Qt::StrongFocus);
     setAcceptRichText(false);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
 void ChatInput::keyPressEvent(QKeyEvent *event)

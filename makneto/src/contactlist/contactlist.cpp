@@ -136,6 +136,12 @@ void ContactList::updateParents()
 	rootItem()->updateParents();
 	altInvisibleGroup_->updateParents();
 
+#ifdef CONTACTLIST_DEBUG
+        qDebug() << "root items: " << rootItem()->items()
+            << " invisible items: " << invisibleGroup_->items()
+            << " alt invisible items: " << altInvisibleGroup_->items();
+#endif
+
 	emit dataChanged();
 }
 
@@ -167,12 +173,15 @@ ContactListGroupItem * ContactList::getGroup(const QString &groupname)
         return NULL;
 }
 
+/*! \brief Create new group of specified name, or get pointer to existing 
+    group item if exist.
+*/
 ContactListGroupItem * ContactList::addGroup(const QString &name)
 {
     ContactListGroupItem *g = getGroup(name);
     if (g) {
         qWarning() << "request to add group " << name << " to roster, but it already exists.";
-        return NULL;
+        return g;
     } else {
         ContactListGroupItem *gi = new ContactListGroupItem(rootItem_);
         addItem(gi);
@@ -180,6 +189,10 @@ ContactListGroupItem * ContactList::addGroup(const QString &name)
     }
 }
 
+/*! \brief Add item to contact list. 
+    It will add group or contact to hash, depending on its type,
+    so it can be get faster for 
+    modification later by jid. */
 void ContactList::addItem(ContactListItem *item)
 {
     ContactListContact *contact = dynamic_cast<ContactListContact *>(item);

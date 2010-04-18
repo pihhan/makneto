@@ -99,7 +99,7 @@ SessionView* SessionTabManager::findSession(const QString &jid)
 	{
 		session = dynamic_cast<SessionView*>(m_widgets->widget(i));
 
-		if (session->jid() == jid)
+		if (session && session->jid() == jid)
 			return session;
 	}
 

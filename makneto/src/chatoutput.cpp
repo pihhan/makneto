@@ -5,7 +5,7 @@
 
 ChatOutput::ChatOutput(QWidget *parent) : QTextEdit(parent)
 {
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setFocusPolicy(Qt::ClickFocus);
 }
 

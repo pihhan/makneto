@@ -6,7 +6,7 @@
 class ContactListStatus
 {
 public:
-    enum Type { Online, Away, FFC, XA, DND, Offline, Invisible };
+    enum Type { Online, Away, FFC, XA, DND, Offline, Invisible, Error };
 
     ContactListStatus(Type type, const QString& message = QString(), int priority = 0) 
         : type_(type), message_(message), priority_(priority) {}

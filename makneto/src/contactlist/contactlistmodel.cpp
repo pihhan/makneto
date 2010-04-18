@@ -158,7 +158,10 @@ QModelIndex ContactListModel::index(int row, int column, const QModelIndex &pare
         ContactListGroupItem *groupItem = dynamic_cast<ContactListGroupItem *>(parentItem);
         if (groupItem) {
             ContactListItem *item = groupItem->atIndex(row);
-            return createIndex(row, column, item);
+            if (item)
+                return createIndex(row, column, item);
+            else
+                return QModelIndex();
         } else {
         ContactListContact *contact = dynamic_cast<ContactListContact *>(parentItem);
             if (contact) {
@@ -218,7 +221,7 @@ int ContactListModel::rowCount(const QModelIndex &parent) const
 {
 	ContactListGroupItem* parentItem = 0;
 	if (parent.isValid()) {
-#if 0
+#if 1
 		ContactListItem* item = static_cast<ContactListItem*>(parent.internalPointer());
 		parentItem = dynamic_cast<ContactListGroupItem*>(item);
 #else

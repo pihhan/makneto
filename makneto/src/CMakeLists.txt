@@ -38,6 +38,7 @@ link_libraries(
     ${IRIS_LIBS}
 )
 
+add_definitions(-DCONTACTLIST_DEBUG)
 
 message("BINARY DIR: "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/iris)
 
