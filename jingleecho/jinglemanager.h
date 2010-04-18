@@ -27,6 +27,7 @@
 class JingleActionHandler
 {
     public:
+    virtual ~JingleActionHandler() {}
 		
     virtual SessionReason handleNewSession(JingleSession *session) = 0;
     virtual SessionReason handleSessionAccept(JingleSession *session, JingleSession *update) = 0;
@@ -55,6 +56,7 @@ class JingleManager
         typedef std::map<std::string, unsigned int>     UIntMap;
 		
 	JingleManager();
+        virtual ~JingleManager();
 	
 	
         /** @brief Initiate new audio session. */

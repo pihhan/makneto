@@ -1,12 +1,12 @@
 
 /*
- * Minimalistic tool to enumerate IPv6 addresses assigned to local systems
+ * Minimalistic tool to enumerate IPv6 addresses assigned to local system
  */
 
 #include <stdio.h>
-#include <netinet/ip6.h>
-#include <netinet/in.h>
 #include <stdlib.h>
+#include <netinet/in.h>
+#include <netinet/ip6.h>
 #include <string.h>
 #include <netdb.h>
 #include <stdbool.h>
@@ -94,15 +94,15 @@ int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
 
     }
 
-    if (fscanf(proc, " %02x", &iface) <= 0) // what is it?
+    if (fscanf(proc, " %02x", &iface) <= 0) /* what is it? */
         return 0;
     if (fscanf(proc, " %02x", &i) <= 0) 
         return 0;
     if (fscanf(proc, " %02x", &scope) <= 0)
         return 0;
-    if (fscanf(proc, " %02x", &dynamic) <= 0) // is dynamic, or manual address?
+    if (fscanf(proc, " %02x", &dynamic) <= 0) /* is dynamic, or manual address? */
         return 0;
-    // FIXME: jak specifikovat delku if_name, kterou je mozne cist?
+    /* FIXME: jak specifikovat delku if_name, kterou je mozne cist? */
     if_name[0] = '\0';
     if (fscanf(proc, " %s", if_name) <=0) {
         return 0;
@@ -115,7 +115,7 @@ int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array)
     c = getc(proc);
     if (c == EOF) 
         break;
-    if (c != '\n') // error in format, newline expected!
+    if (c != '\n') /* error in format, newline expected! */
         break;
 
     } while (!feof(proc));
@@ -230,7 +230,7 @@ Ipv6Scope v6AddressScope(struct sockaddr *addr)
         if (a->sin_addr.s_addr == htonl(INADDR_LOOPBACK)) {
             return SCOPE_HOST;
         } else if ((a->sin_addr.s_addr & 0xFFFF0000) == (0xA9FE0000)) {
-            // host lies in 169.254.x.y network
+            /* host lies in 169.254.x.y network */
             return SCOPE_LINK;
         } else
             return SCOPE_GLOBAL;
@@ -298,7 +298,7 @@ char ** getAddressList(const char *interface, AddressFamilyBits families, Ipv6Sc
             if ((v6AFtoBits(it->ifa_addr->sa_family) & families)
                 && (v6AddressScope(it->ifa_addr) & scopes)
                 && (!interface || !strcmp(interface,it->ifa_name)) ) {
-                // FIXME: jak zjistovat velikost adresy pro neznamy AF?
+                /* FIXME: jak zjistovat velikost adresy pro neznamy AF? */
                 if (getnameinfo(it->ifa_addr, 
                         sizeof(struct sockaddr_in6),
                         name, MAX_HOST_LEN, NULL, 0, NI_NUMERICHOST)==0) 

@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #define PROC_IP6_PATH   "/proc/net/if_inet6"
-// TODO: zjistit nekde skutecnou hodnotu
+/* TODO: zjistit nekde skutecnou hodnotu */
 #define MAX_IFACE_NAME_LEN  256
 #define MAX_HOST_LEN        256
 
@@ -31,7 +31,7 @@ typedef struct {
 } Ipv6AddressArray;
 
 
-// funkce
+/* funkce */
 void initAddressArray(Ipv6AddressArray *array);
 size_t addAddressToList(Ipv6AddressArray *list, struct sockaddr_in6 addr);
 int getIpv6AddressArray(const char *interface, Ipv6AddressArray *array);

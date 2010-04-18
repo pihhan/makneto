@@ -25,6 +25,10 @@ JingleRtpContentDescription::JingleRtpContentDescription()
 {
 }
 
+JingleRtpContentDescription::~JingleRtpContentDescription()
+{
+}
+
 #ifdef GLOOX
 /** @brief Fill class from given XML subtree, tag must be named <description> */
 void JingleRtpContentDescription::parse(const Tag *tag)
@@ -158,6 +162,11 @@ JingleRtpPayload::JingleRtpPayload(unsigned char id, const std::string &name, un
 	: id(id), name(name), clockrate(clockrate), channels(channels), maxptime(0), ptime(0)
 {
 }
+
+JingleRtpPayload::~JingleRtpPayload()
+{
+}
+
 
 #ifdef GLOOX
 JingleRtpPayload::JingleRtpPayload(const Tag *tag)

@@ -12,7 +12,7 @@
 #include <gloox/jid.h>
 #endif
 #ifdef IRIS
-#include <iris/xmpp_jid.h>
+#include <xmpp_jid.h>
 #endif
 
 #ifdef GLOOX

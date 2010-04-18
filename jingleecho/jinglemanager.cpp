@@ -54,6 +54,9 @@ JingleManager::JingleManager()
         m_seed = (unsigned int) time(NULL);
 }
 
+JingleManager::~JingleManager() 
+{
+}
 
 void JingleManager::addSession(JingleSession *session)
 {
