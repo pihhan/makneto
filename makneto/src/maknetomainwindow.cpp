@@ -103,6 +103,10 @@ void MaknetoMainWindow::optionsPreferences()
 	ui_prefs_account.setupUi(accountSettingsDlg);
 	dialog->addPage(accountSettingsDlg, i18n("Account"), "preferences-system-network");
 
+        QTabWidget *mediaSettingsDlg = new QTabWidget();
+        ui_prefs_media.setupUi(mediaSettingsDlg);
+        dialog->addPage(mediaSettingsDlg, i18n("Media"), "audiocall");
+
 // 	QWidget *fileTransferSettingsDlg = new QWidget;
 // 	ui_prefs_file_transfer.setupUi(fileTransferSettingsDlg);
 // 	dialog->addPage(fileTransferSettingsDlg, i18n("File transfer"), "preferences-other");

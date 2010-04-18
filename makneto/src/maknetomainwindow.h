@@ -9,6 +9,7 @@
 #include <kxmlguiwindow.h>
 #include <kapplication.h>
 #include "ui_prefs_base.h"
+#include "ui_prefs_media.h"
 #include "makneto.h"
 
 class MaknetoView;
@@ -51,6 +52,7 @@ private:
 	void setupActions();
 	
 	Ui::Account ui_prefs_account ;
+        Ui::MediaConfig   ui_prefs_media;
 	MaknetoView *m_view;
 	Makneto *m_makneto;
 	
