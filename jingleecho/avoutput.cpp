@@ -5,6 +5,7 @@
 #include "qpipeline.h"
 
 #include "audiowatcher.h"
+#include <gst/interfaces/xoverlay.h>
 
 #define QPLOG() (LOGGER(logit))
 
