@@ -7,6 +7,10 @@ GstVideoWatcher::GstVideoWatcher()
 {
 }
 
+GstVideoWatcher::~GstVideoWatcher()
+{
+}
+
 void GstVideoWatcher::setOutput(AVOutput *output)
 {
     m_output = output;

@@ -21,6 +21,7 @@ class AVParticipantWidget : public QWidget,
     Q_OBJECT
     public:
     AVParticipantWidget(QWidget *parent = 0);
+    virtual ~AVParticipantWidget();
 
     QString name() const;
     void setName(const QString &name);

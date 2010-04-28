@@ -36,10 +36,10 @@ CMAKE_COMMAND = /usr/bin/cmake
 RM = /usr/bin/cmake -E remove -f
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/jingleecho
+CMAKE_SOURCE_DIR = /home/pihhan/Projekty/makneto-git/makneto/makneto
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/jingleecho
+CMAKE_BINARY_DIR = /home/pihhan/Projekty/makneto-git/makneto/makneto
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -54,6 +54,47 @@ edit_cache:
 edit_cache/fast: edit_cache
 .PHONY : edit_cache/fast
 
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: install/local
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: install/strip
+.PHONY : install/strip/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -66,14 +107,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/jingleecho/CMakeFiles /home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/jingleecho/CMakeFiles/progress.make
-	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/jingleecho/CMakeFiles 0
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(CMAKE_COMMAND) -E cmake_progress_start /home/pihhan/Projekty/makneto-git/makneto/makneto/CMakeFiles /home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/jingleecho/CMakeFiles/progress.make
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f CMakeFiles/Makefile2 src/gst/jingleecho/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pihhan/Projekty/makneto-git/makneto/makneto/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f CMakeFiles/Makefile2 src/gst/jingleecho/clean
 .PHONY : clean
 
 # The main clean target
@@ -82,388 +123,406 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f CMakeFiles/Makefile2 src/gst/jingleecho/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f CMakeFiles/Makefile2 src/gst/jingleecho/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named jingleecho
+# Convenience name for target.
+src/gst/jingleecho/CMakeFiles/jingleecho.dir/rule:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f CMakeFiles/Makefile2 src/gst/jingleecho/CMakeFiles/jingleecho.dir/rule
+.PHONY : src/gst/jingleecho/CMakeFiles/jingleecho.dir/rule
 
-# Build rule for target.
-jingleecho: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 jingleecho
+# Convenience name for target.
+jingleecho: src/gst/jingleecho/CMakeFiles/jingleecho.dir/rule
 .PHONY : jingleecho
 
 # fast build rule for target.
 jingleecho/fast:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/build
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/build
 .PHONY : jingleecho/fast
 
-#=============================================================================
-# Target rules for targets named uninstall
+# target to build an object file
+__/ipv6/v6interface.o:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/__/ipv6/v6interface.o
+.PHONY : __/ipv6/v6interface.o
 
-# Build rule for target.
-uninstall: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 uninstall
-.PHONY : uninstall
+# target to preprocess a source file
+__/ipv6/v6interface.i:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/__/ipv6/v6interface.i
+.PHONY : __/ipv6/v6interface.i
 
-# fast build rule for target.
-uninstall/fast:
-	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
-.PHONY : uninstall/fast
+# target to generate assembly for a file
+__/ipv6/v6interface.s:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/__/ipv6/v6interface.s
+.PHONY : __/ipv6/v6interface.s
+
+# target to build an object file
+__/logger/logger.o:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/__/logger/logger.o
+.PHONY : __/logger/logger.o
+
+# target to preprocess a source file
+__/logger/logger.i:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/__/logger/logger.i
+.PHONY : __/logger/logger.i
+
+# target to generate assembly for a file
+__/logger/logger.s:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/__/logger/logger.s
+.PHONY : __/logger/logger.s
+
+# target to build an object file
+audiowatcher.o:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiowatcher.o
+.PHONY : audiowatcher.o
+
+# target to preprocess a source file
+audiowatcher.i:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiowatcher.i
+.PHONY : audiowatcher.i
+
+# target to generate assembly for a file
+audiowatcher.s:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiowatcher.s
+.PHONY : audiowatcher.s
 
 # target to build an object file
 avoutput.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/avoutput.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/avoutput.o
 .PHONY : avoutput.o
 
 # target to preprocess a source file
 avoutput.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/avoutput.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/avoutput.i
 .PHONY : avoutput.i
 
 # target to generate assembly for a file
 avoutput.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/avoutput.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/avoutput.s
 .PHONY : avoutput.s
 
 # target to build an object file
 avoutputmanager.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/avoutputmanager.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/avoutputmanager.o
 .PHONY : avoutputmanager.o
 
 # target to preprocess a source file
 avoutputmanager.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/avoutputmanager.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/avoutputmanager.i
 .PHONY : avoutputmanager.i
 
 # target to generate assembly for a file
 avoutputmanager.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/avoutputmanager.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/avoutputmanager.s
 .PHONY : avoutputmanager.s
 
 # target to build an object file
 codecs.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/codecs.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/codecs.o
 .PHONY : codecs.o
 
 # target to preprocess a source file
 codecs.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/codecs.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/codecs.i
 .PHONY : codecs.i
 
 # target to generate assembly for a file
 codecs.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/codecs.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/codecs.s
 .PHONY : codecs.s
 
 # target to build an object file
 conference.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/conference.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/conference.o
 .PHONY : conference.o
 
 # target to preprocess a source file
 conference.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/conference.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/conference.i
 .PHONY : conference.i
 
 # target to generate assembly for a file
 conference.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/conference.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/conference.s
 .PHONY : conference.s
 
 # target to build an object file
 framesize.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/framesize.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/framesize.o
 .PHONY : framesize.o
 
 # target to preprocess a source file
 framesize.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/framesize.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/framesize.i
 .PHONY : framesize.i
 
 # target to generate assembly for a file
 framesize.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/framesize.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/framesize.s
 .PHONY : framesize.s
 
 # target to build an object file
 fstjingle.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/fstjingle.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/fstjingle.o
 .PHONY : fstjingle.o
 
 # target to preprocess a source file
 fstjingle.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/fstjingle.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/fstjingle.i
 .PHONY : fstjingle.i
 
 # target to generate assembly for a file
 fstjingle.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/fstjingle.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/fstjingle.s
 .PHONY : fstjingle.s
 
 # target to build an object file
-home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.o
-.PHONY : home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.o
+gstvideowatcher.o:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/gstvideowatcher.o
+.PHONY : gstvideowatcher.o
 
 # target to preprocess a source file
-home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.i
-.PHONY : home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.i
+gstvideowatcher.i:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/gstvideowatcher.i
+.PHONY : gstvideowatcher.i
 
 # target to generate assembly for a file
-home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.s
-.PHONY : home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.s
-
-# target to build an object file
-home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.o
-.PHONY : home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.o
-
-# target to preprocess a source file
-home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.i
-.PHONY : home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.i
-
-# target to generate assembly for a file
-home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.s
-.PHONY : home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.s
+gstvideowatcher.s:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/gstvideowatcher.s
+.PHONY : gstvideowatcher.s
 
 # target to build an object file
 jingle-candidate.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-candidate.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-candidate.o
 .PHONY : jingle-candidate.o
 
 # target to preprocess a source file
 jingle-candidate.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-candidate.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-candidate.i
 .PHONY : jingle-candidate.i
 
 # target to generate assembly for a file
 jingle-candidate.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-candidate.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-candidate.s
 .PHONY : jingle-candidate.s
 
 # target to build an object file
 jingle-content.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-content.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-content.o
 .PHONY : jingle-content.o
 
 # target to preprocess a source file
 jingle-content.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-content.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-content.i
 .PHONY : jingle-content.i
 
 # target to generate assembly for a file
 jingle-content.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-content.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-content.s
 .PHONY : jingle-content.s
 
 # target to build an object file
 jingle-description.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-description.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-description.o
 .PHONY : jingle-description.o
 
 # target to preprocess a source file
 jingle-description.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-description.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-description.i
 .PHONY : jingle-description.i
 
 # target to generate assembly for a file
 jingle-description.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-description.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-description.s
 .PHONY : jingle-description.s
 
 # target to build an object file
 jingle-transport.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-transport.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-transport.o
 .PHONY : jingle-transport.o
 
 # target to preprocess a source file
 jingle-transport.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-transport.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-transport.i
 .PHONY : jingle-transport.i
 
 # target to generate assembly for a file
 jingle-transport.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jingle-transport.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jingle-transport.s
 .PHONY : jingle-transport.s
 
 # target to build an object file
 jinglemanager.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglemanager.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglemanager.o
 .PHONY : jinglemanager.o
 
 # target to preprocess a source file
 jinglemanager.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglemanager.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglemanager.i
 .PHONY : jinglemanager.i
 
 # target to generate assembly for a file
 jinglemanager.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglemanager.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglemanager.s
 .PHONY : jinglemanager.s
 
 # target to build an object file
 jinglesession.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglesession.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglesession.o
 .PHONY : jinglesession.o
 
 # target to preprocess a source file
 jinglesession.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglesession.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglesession.i
 .PHONY : jinglesession.i
 
 # target to generate assembly for a file
 jinglesession.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglesession.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglesession.s
 .PHONY : jinglesession.s
 
 # target to build an object file
 jinglesessiongroup.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglesessiongroup.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglesessiongroup.o
 .PHONY : jinglesessiongroup.o
 
 # target to preprocess a source file
 jinglesessiongroup.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglesessiongroup.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglesessiongroup.i
 .PHONY : jinglesessiongroup.i
 
 # target to generate assembly for a file
 jinglesessiongroup.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/jinglesessiongroup.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/jinglesessiongroup.s
 .PHONY : jinglesessiongroup.s
 
 # target to build an object file
 mediaconfig.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/mediaconfig.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/mediaconfig.o
 .PHONY : mediaconfig.o
 
 # target to preprocess a source file
 mediaconfig.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/mediaconfig.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/mediaconfig.i
 .PHONY : mediaconfig.i
 
 # target to generate assembly for a file
 mediaconfig.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/mediaconfig.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/mediaconfig.s
 .PHONY : mediaconfig.s
 
 # target to build an object file
 parser.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/parser.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/parser.o
 .PHONY : parser.o
 
 # target to preprocess a source file
 parser.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/parser.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/parser.i
 .PHONY : parser.i
 
 # target to generate assembly for a file
 parser.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/parser.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/parser.s
 .PHONY : parser.s
 
 # target to build an object file
 payloadparameter.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/payloadparameter.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/payloadparameter.o
 .PHONY : payloadparameter.o
 
 # target to preprocess a source file
 payloadparameter.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/payloadparameter.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/payloadparameter.i
 .PHONY : payloadparameter.i
 
 # target to generate assembly for a file
 payloadparameter.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/payloadparameter.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/payloadparameter.s
 .PHONY : payloadparameter.s
 
 # target to build an object file
 pjid.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/pjid.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/pjid.o
 .PHONY : pjid.o
 
 # target to preprocess a source file
 pjid.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/pjid.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/pjid.i
 .PHONY : pjid.i
 
 # target to generate assembly for a file
 pjid.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/pjid.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/pjid.s
 .PHONY : pjid.s
 
 # target to build an object file
 qpipeline.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/qpipeline.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/qpipeline.o
 .PHONY : qpipeline.o
 
 # target to preprocess a source file
 qpipeline.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/qpipeline.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/qpipeline.i
 .PHONY : qpipeline.i
 
 # target to generate assembly for a file
 qpipeline.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/qpipeline.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/qpipeline.s
 .PHONY : qpipeline.s
 
 # target to build an object file
 session.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/session.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/session.o
 .PHONY : session.o
 
 # target to preprocess a source file
 session.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/session.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/session.i
 .PHONY : session.i
 
 # target to generate assembly for a file
 session.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/session.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/session.s
 .PHONY : session.s
 
 # target to build an object file
 stream.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/stream.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/stream.o
 .PHONY : stream.o
 
 # target to preprocess a source file
 stream.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/stream.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/stream.i
 .PHONY : stream.i
 
 # target to generate assembly for a file
 stream.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/stream.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/stream.s
 .PHONY : stream.s
 
 # target to build an object file
 testmediaconfig.o:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/testmediaconfig.o
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/testmediaconfig.o
 .PHONY : testmediaconfig.o
 
 # target to preprocess a source file
 testmediaconfig.i:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/testmediaconfig.i
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/testmediaconfig.i
 .PHONY : testmediaconfig.i
 
 # target to generate assembly for a file
 testmediaconfig.s:
-	$(MAKE) -f CMakeFiles/jingleecho.dir/build.make CMakeFiles/jingleecho.dir/testmediaconfig.s
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/testmediaconfig.s
 .PHONY : testmediaconfig.s
 
 # Help Target
@@ -473,9 +532,21 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
 	@echo "... jingleecho"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... uninstall"
+	@echo "... __/ipv6/v6interface.o"
+	@echo "... __/ipv6/v6interface.i"
+	@echo "... __/ipv6/v6interface.s"
+	@echo "... __/logger/logger.o"
+	@echo "... __/logger/logger.i"
+	@echo "... __/logger/logger.s"
+	@echo "... audiowatcher.o"
+	@echo "... audiowatcher.i"
+	@echo "... audiowatcher.s"
 	@echo "... avoutput.o"
 	@echo "... avoutput.i"
 	@echo "... avoutput.s"
@@ -494,12 +565,9 @@ help:
 	@echo "... fstjingle.o"
 	@echo "... fstjingle.i"
 	@echo "... fstjingle.s"
-	@echo "... home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.o"
-	@echo "... home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.i"
-	@echo "... home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/ipv6/v6interface.s"
-	@echo "... home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.o"
-	@echo "... home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.i"
-	@echo "... home/pihhan/Projekty/makneto-git/makneto/makneto/src/gst/logger/logger.s"
+	@echo "... gstvideowatcher.o"
+	@echo "... gstvideowatcher.i"
+	@echo "... gstvideowatcher.s"
 	@echo "... jingle-candidate.o"
 	@echo "... jingle-candidate.i"
 	@echo "... jingle-candidate.s"
@@ -556,6 +624,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

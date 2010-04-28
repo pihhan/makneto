@@ -5,6 +5,7 @@ project(jingleecho)
 set(QT_USE_QTXML)
 
 list(APPEND CMAKE_MODULE_PATH ../../../CMakeMod)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeMod)
 
 find_package(Qt4 REQUIRED)
 # to locate QCA2, locate KDE4 cmake modules using package
@@ -49,6 +50,9 @@ set(JINGLEECHO_HEADERS codecs.h
            avoutputmanager.h 
            jinglesessiongroup.h 
            ipv6/v6interface.h
+           testmediaconfig.h
+           gstvideowatcher.h
+           audiowatcher.h
         )
 set(JINGLEECHO_SOURCES 
            codecs.cpp 
@@ -74,10 +78,15 @@ set(JINGLEECHO_SOURCES
            jinglesessiongroup.cpp 
            ../ipv6/v6interface.c 
            ../logger/logger.cpp 
+           testmediaconfig.cpp
+           gstvideowatcher.cpp
+           audiowatcher.cpp
     )
 
+#QT4_WRAP_CPP(MOC_FILES audiowatcher.h gstvideowatcher.h)
 
+add_subdirectory(irisbot)
 
-add_library(jingleecho ${JINGLEECHO_SOURCES})
+add_library(jingleecho ${JINGLEECHO_SOURCES} ${MOC_FILES})
 
 

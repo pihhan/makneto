@@ -15,9 +15,10 @@
 #include <X11/Xlib.h>
 
 
-#include "player.h"
-#include "playerwidgetitem.h"
+//#include "player.h"
+//#include "playerwidgetitem.h"
 #include "volumebar.h"
+#include "gstvideowidget.h"
 
 //#include <QListWidget>
 
@@ -38,13 +39,13 @@ GstVideoWidget::GstVideoWidget(QWidget *parent)
 
 }
         
-virtual GstVideoWidget::~GstVideoWidget() 
+GstVideoWidget::~GstVideoWidget() 
 {
 }
 
 void GstVideoWidget::displayHandle()
 {
-    qDebug() << "Player handle is " << x11PictureHandle() << endl;
+    qDebug() << "Player handle is " << winId() << endl;
 }
         
 void GstVideoWidget::setVideoSize(const QSize size)

@@ -180,7 +180,7 @@ void AspectedLayout::setRatio(int width, int height)
     m_ratio = ((double) width) / height;
 }
 
-int AspectedLayout::indexOf(QWidget *widget)
+int AspectedLayout::indexOf(QWidget *widget) const
 {
     if (m_central->widget() == widget)
         return 1;

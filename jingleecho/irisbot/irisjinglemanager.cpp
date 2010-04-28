@@ -1,5 +1,5 @@
 #include <string>
-#include <iris/xmpp_message.h>
+#include <xmpp_message.h>
 #include <xmpp_client.h>
 
 #include "irisjinglemanager.h"

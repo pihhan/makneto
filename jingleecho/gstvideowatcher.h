@@ -11,6 +11,7 @@ class GstVideoWatcher
 {
     public:
     GstVideoWatcher();
+    virtual ~GstVideoWatcher();
 
     // request from gstreamer to gui
     virtual void prepareWindowId() = 0;

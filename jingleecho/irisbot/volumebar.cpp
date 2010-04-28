@@ -295,7 +295,7 @@ void VolumeBar::Private::registerPipelineHandler(GstElement *pipeline, GstElemen
     }
 }
 
-void VolumeBar::Private::registerBusHandler(GstBus *bus, GstElement *source)
+void VolumeBar::Private::registerBusHandler(GstBus *, GstElement *source)
 {
     if (source)
         this->source = GST_OBJECT(source);
@@ -399,7 +399,7 @@ void VolumeBar::updateVolumes(int channels,
     double *peaks, 
     double *decays)
 {
-    for (int channel = 0; channel < channels, channel++) {
+    for (int channel = 0; channel < channels; channel++) {
         if (rms)
             m_values[channel] = rms[channel];
         if (peaks)

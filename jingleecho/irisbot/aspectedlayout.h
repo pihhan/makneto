@@ -24,7 +24,7 @@ class AspectedLayout : public QLayout
     virtual int heightForWidth(int w) const;
     virtual bool hasHeightForWidth() const;
     virtual void setGeometry(const QRect &rect);
-    int indexOf(QWidget *widget);
+    virtual int indexOf(QWidget *widget) const;
     virtual QSize maximumSize() const;
     virtual QSize minimumSize() const;
 

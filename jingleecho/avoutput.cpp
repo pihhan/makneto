@@ -237,9 +237,32 @@ void AVOutput::expose()
         gst_x_overlay_expose(GST_X_OVERLAY(m_vsink));
 }
 
+/** @brief Set X11 window id to video output element. */
 void AVOutput::setWindowId(unsigned long id)
 {
     if (m_vsink)
         gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(m_vsink), id);
 }
+
+Stream *AVOutput::audioStream() const
+{
+    return m_audioStream;
+}
+
+Stream *AVOutput::videoStream() const
+{
+    return m_videoStream;
+}
+
+
+void AVOutput::setAudioStream(Stream *s)
+{
+    m_audioStream = s;
+}
+
+void AVOutput::setVideoStream(Stream *s)
+{
+    m_videoStream = s;
+}
+
 
