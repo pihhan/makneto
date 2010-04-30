@@ -107,6 +107,10 @@ void MaknetoMainWindow::optionsPreferences()
         ui_prefs_media.setupUi(mediaSettingsDlg);
         dialog->addPage(mediaSettingsDlg, i18n("Media"), "audiocall");
 
+        QFrame *mediaNetSettingsDlg = new QFrame();
+        ui_prefs_medianet.setupUi(mediaNetSettingsDlg);
+        dialog->addPage(mediaNetSettingsDlg, i18n("Network"), "webcamsend");
+
 // 	QWidget *fileTransferSettingsDlg = new QWidget;
 // 	ui_prefs_file_transfer.setupUi(fileTransferSettingsDlg);
 // 	dialog->addPage(fileTransferSettingsDlg, i18n("File transfer"), "preferences-other");

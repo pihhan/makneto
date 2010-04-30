@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Account</class>
- <widget class="QWidget" name="Account" >
-  <property name="geometry" >
+ <widget class="QWidget" name="Account">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,35 +10,27 @@
     <height>411</height>
    </rect>
   </property>
-  <property name="minimumSize" >
+  <property name="minimumSize">
    <size>
     <width>506</width>
     <height>411</height>
    </size>
   </property>
-  <layout class="QGridLayout" name="verticalLayout" >
-   <item row="0" column="0" >
-    <widget class="QTabWidget" name="tabWidget" >
-     <property name="enabled" >
+  <layout class="QGridLayout" name="verticalLayout">
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="enabled">
       <bool>true</bool>
      </property>
-     <property name="currentIndex" >
+     <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab" >
-      <property name="geometry" >
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>486</width>
-        <height>363</height>
-       </rect>
-      </property>
-      <attribute name="title" >
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
        <string>Network</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox" >
-       <property name="geometry" >
+      <widget class="QGroupBox" name="groupBox">
+       <property name="geometry">
         <rect>
          <x>10</x>
          <y>10</y>
@@ -45,11 +38,11 @@
          <height>159</height>
         </rect>
        </property>
-       <property name="title" >
+       <property name="title">
         <string>Account</string>
        </property>
-       <widget class="QWidget" name="layoutWidget" >
-        <property name="geometry" >
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
          <rect>
           <x>20</x>
           <y>30</y>
@@ -57,33 +50,33 @@
           <height>101</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" >
+        <layout class="QVBoxLayout">
          <item>
-          <layout class="QHBoxLayout" >
+          <layout class="QHBoxLayout">
            <item>
-            <widget class="QLabel" name="label" >
-             <property name="text" >
+            <widget class="QLabel" name="label">
+             <property name="text">
               <string>Jabber ID:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="kcfg_jabberID" />
+            <widget class="QLineEdit" name="kcfg_jabberID"/>
            </item>
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" >
+          <layout class="QHBoxLayout">
            <item>
-            <widget class="QLabel" name="label_2" >
-             <property name="text" >
+            <widget class="QLabel" name="label_2">
+             <property name="text">
               <string>Password:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="kcfg_jabberPassword" >
-             <property name="echoMode" >
+            <widget class="QLineEdit" name="kcfg_jabberPassword">
+             <property name="echoMode">
               <enum>QLineEdit::Password</enum>
              </property>
             </widget>
@@ -91,11 +84,11 @@
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="kcfg_storePassword" >
-           <property name="enabled" >
+          <widget class="QCheckBox" name="kcfg_storePassword">
+           <property name="enabled">
             <bool>false</bool>
            </property>
-           <property name="text" >
+           <property name="text">
             <string>Store password</string>
            </property>
           </widget>
@@ -103,11 +96,11 @@
         </layout>
        </widget>
       </widget>
-      <widget class="QGroupBox" name="groupBox_2" >
-       <property name="enabled" >
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="geometry" >
+       <property name="geometry">
         <rect>
          <x>10</x>
          <y>180</y>
@@ -115,11 +108,11 @@
          <height>81</height>
         </rect>
        </property>
-       <property name="title" >
+       <property name="title">
         <string>Network registration</string>
        </property>
-       <widget class="QPushButton" name="pushButton" >
-        <property name="geometry" >
+       <widget class="QPushButton" name="pushButton">
+        <property name="geometry">
          <rect>
           <x>10</x>
           <y>40</y>
@@ -127,32 +120,24 @@
           <height>30</height>
          </rect>
         </property>
-        <property name="text" >
+        <property name="text">
          <string>Create account</string>
         </property>
        </widget>
       </widget>
      </widget>
-     <widget class="QWidget" name="tab_2" >
-      <property name="enabled" >
+     <widget class="QWidget" name="tab_2">
+      <property name="enabled">
        <bool>true</bool>
       </property>
-      <property name="geometry" >
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>486</width>
-        <height>363</height>
-       </rect>
-      </property>
-      <attribute name="title" >
+      <attribute name="title">
        <string>Connection</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox_3" >
-       <property name="enabled" >
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="enabled">
         <bool>true</bool>
        </property>
-       <property name="geometry" >
+       <property name="geometry">
         <rect>
          <x>10</x>
          <y>10</y>
@@ -160,11 +145,11 @@
          <height>181</height>
         </rect>
        </property>
-       <property name="title" >
+       <property name="title">
         <string>Connection Settings</string>
        </property>
-       <widget class="QWidget" name="layoutWidget" >
-        <property name="geometry" >
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
          <rect>
           <x>20</x>
           <y>30</y>
@@ -172,36 +157,36 @@
           <height>120</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" >
+        <layout class="QVBoxLayout">
          <item>
-          <widget class="QLabel" name="label_3" >
-           <property name="text" >
+          <widget class="QLabel" name="label_3">
+           <property name="text">
             <string>Manual host settings</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" >
+          <layout class="QHBoxLayout">
            <item>
-            <widget class="QLabel" name="label_4" >
-             <property name="text" >
+            <widget class="QLabel" name="label_4">
+             <property name="text">
               <string>Host:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="kcfg_jabberHost" />
+            <widget class="QLineEdit" name="kcfg_jabberHost"/>
            </item>
            <item>
-            <widget class="QLabel" name="label_5" >
-             <property name="text" >
+            <widget class="QLabel" name="label_5">
+             <property name="text">
               <string>Port:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="kcfg_jabberPort" >
-             <property name="maximumSize" >
+            <widget class="QLineEdit" name="kcfg_jabberPort">
+             <property name="maximumSize">
               <size>
                <width>100</width>
                <height>16777215</height>
@@ -212,34 +197,34 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="label_6" >
-           <property name="text" >
+          <widget class="QLabel" name="label_6">
+           <property name="text">
             <string>File transfer proxy</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" >
+          <layout class="QHBoxLayout">
            <item>
-            <widget class="QLabel" name="label_7" >
-             <property name="text" >
+            <widget class="QLabel" name="label_7">
+             <property name="text">
               <string>JID:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="kcfg_jabberFileTransferJID" />
+            <widget class="QLineEdit" name="kcfg_jabberFileTransferJID"/>
            </item>
           </layout>
          </item>
         </layout>
        </widget>
       </widget>
-      <widget class="QGroupBox" name="groupBox_4" >
-       <property name="enabled" >
+      <widget class="QGroupBox" name="groupBox_4">
+       <property name="enabled">
         <bool>true</bool>
        </property>
-       <property name="geometry" >
+       <property name="geometry">
         <rect>
          <x>10</x>
          <y>210</y>
@@ -247,11 +232,11 @@
          <height>131</height>
         </rect>
        </property>
-       <property name="title" >
+       <property name="title">
         <string>Security</string>
        </property>
-       <widget class="QWidget" name="layoutWidget" >
-        <property name="geometry" >
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
          <rect>
           <x>10</x>
           <y>30</y>
@@ -259,27 +244,27 @@
           <height>79</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" >
+        <layout class="QVBoxLayout">
          <item>
-          <widget class="QCheckBox" name="kcfg_allowPlain" >
-           <property name="text" >
+          <widget class="QCheckBox" name="kcfg_allowPlain">
+           <property name="text">
             <string>Allow plaintext login</string>
            </property>
-           <property name="checked" >
+           <property name="checked">
             <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="kcfg_useSSL" >
-           <property name="text" >
+          <widget class="QCheckBox" name="kcfg_useSSL">
+           <property name="text">
             <string>Use SSL encryption</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="kcfg_noSSLWarn" >
-           <property name="text" >
+          <widget class="QCheckBox" name="kcfg_noSSLWarn">
+           <property name="text">
             <string>No SSL warnings</string>
            </property>
           </widget>
@@ -292,10 +277,10 @@
    </item>
   </layout>
  </widget>
- <layoutdefault spacing="6" margin="11" />
+ <layoutdefault spacing="6" margin="11"/>
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <includes>
-  <include location="local" >kcolorbutton.h</include>
+  <include location="local">kcolorbutton.h</include>
  </includes>
  <resources/>
  <connections/>

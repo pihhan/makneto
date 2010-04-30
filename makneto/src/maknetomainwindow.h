@@ -10,6 +10,7 @@
 #include <kapplication.h>
 #include "ui_prefs_base.h"
 #include "ui_prefs_media.h"
+#include "ui_prefs_medianet.h"
 #include "makneto.h"
 
 class MaknetoView;
@@ -53,6 +54,7 @@ private:
 	
 	Ui::Account ui_prefs_account ;
         Ui::MediaConfig   ui_prefs_media;
+        Ui::MediaNet    ui_prefs_medianet;
 	MaknetoView *m_view;
 	Makneto *m_makneto;
 	

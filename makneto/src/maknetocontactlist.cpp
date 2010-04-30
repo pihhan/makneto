@@ -104,8 +104,7 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
   if (mg)
       contact->addGroup(mg);
     
-  ContactListGroupedContact *proxy = new ContactListGroupedContact(groupItem, contact);
-  //addItem(proxy);
+  new ContactListGroupedContact(groupItem, contact);
   qDebug() << "Added " << jid << " as " << name << " to roster.";
 }
 
@@ -166,8 +165,7 @@ void MaknetoContactList::addContact(const QString& name, const QString& jid, con
       // add to group only if it is not already there
       ContactListGroupedContact *tmpcontact = group->findContactByJid(jid);
       if (!tmpcontact) {
-          ContactListGroupedContact *proxy = new ContactListGroupedContact(group, contact);
-          //group->addItem(proxy);
+          new ContactListGroupedContact(group, contact);
       } else {
           qWarning() << "contact " << jid << " is already inside group " << groupname;
       }

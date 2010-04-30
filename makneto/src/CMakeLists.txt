@@ -8,10 +8,18 @@ find_package(Qt4 REQUIRED)
 
 set(KDE4_FIND_QUIETLY false)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/CMakeMod")
-list(APPEND CMAKE_MODULE_PATH "../CMakeMod")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeMod")
 
 find_package(KDE4 REQUIRED)
 find_package(QCA2 REQUIRED)
+
+find_package(PkgConfig)
+
+add_definitions(-DIRIS -D_POSIX_SOURCE)
+
+pkg_check_modules(FARSIGHT farsight2-0.10)
+pkg_check_modules(FARSIGHT_IFACES gstreamer-interfaces-0.10 )
+
 
 #set(QT_USE_QT3SUPPORT TRUE)
 include(${QT_USE_FILE})
@@ -23,20 +31,19 @@ find_package(Iris REQUIRED)
 
 
 include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
-#cutestuff/util cutestuff/network cutestuff/legacy 
+${FARSIGHT_IFACES_INCLUDE_DIRS} ${FARSIGHT_INCLUDE_DIRS}
+gst/jingleecho
+gst/jingleecho/irisbot
 )
 
 
 link_directories( 
-#    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/network  
-#    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/util
-#    ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/makneto.dir/cutestuff/legacy
     ${IRIS_LIB_PATH}
 )
 
-link_libraries( 
-    ${IRIS_LIBS}
-)
+#link_libraries( 
+#    ${IRIS_LIBS}
+#)
 
 add_definitions(-DCONTACTLIST_DEBUG)
 
@@ -94,6 +101,10 @@ set(makneto_SRCS
         discorequest.h
         discorequest.cpp
         maknetocontactresource.cpp
+        mediavideoselector.h
+        mediavideoselector.cpp
+        mediaviewwidget.h
+        mediaviewwidget.cpp
 
  )
 
@@ -101,14 +112,22 @@ kde4_moc_headers(makneto
 
 )
 
-kde4_add_ui_files(makneto_SRCS maknetoview_base.ui prefs_base.ui add_contact.ui contact_detail.ui prefs_media.ui)
+kde4_add_ui_files(makneto_SRCS 
+    maknetoview_base.ui prefs_base.ui add_contact.ui contact_detail.ui 
+    prefs_media.ui prefs_medianet.ui)
 kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})
 
+set (JINGLE_LIBS    jingleecho jinglegui)
+message(STATUS ${QT_LIBRARIES})
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g")
 
-target_link_libraries(makneto ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS} ${IRIS_LIBRARIES})
+target_link_libraries(makneto 
+    ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} 
+    ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS} ${IRIS_LIBRARIES}
+    ${JINGLE_LIBS}
+    )
 
 install(TARGETS makneto DESTINATION ${BIN_INSTALL_DIR} )
 
@@ -120,3 +139,6 @@ install( FILES makneto.kcfg  DESTINATION  ${KCFG_INSTALL_DIR} )
 install( FILES maknetoui.rc  DESTINATION  ${DATA_INSTALL_DIR}/makneto )
 
 add_subdirectory( icons )
+
+add_subdirectory( gst/jingleecho )
+

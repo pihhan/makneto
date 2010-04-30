@@ -15,6 +15,8 @@
 #include "maknetoview.h"
 #include "mucview.h"
 
+#include "mediaviewwidget.h"
+
 #include <iostream>
 
 #include <QtGui/QVBoxLayout>
@@ -159,7 +161,7 @@ void SessionView::configureChatInput()
 
 void SessionView::configureMediaTab()
 {
-    QWidget *m_mediaw = new QWidget();
+    QWidget *m_mediaw = new MediaViewWidget();
     m_tabs->addTab(m_mediaw, KIcon("voicecall"), tr("Media"));
 }
 
@@ -534,5 +536,11 @@ int SessionView::type(void)
 void SessionView::setType(int type)
 { 
     m_type = type; 
+}
+  
+  
+Makneto *SessionView::makneto() const
+{
+    return m_makneto;
 }
 

@@ -197,42 +197,122 @@ class Settings : public KConfigSkeleton
 
 
     /**
-      Get audioInputElement
+      Get Username to use for TURN reservations
     */
     static
-    int audioInputElement()
+    QString turnUsername()
     {
-      return self()->mAudioInputElement;
+      return self()->mTurnUsername;
     }
 
 
     /**
-      Get audioOutputElement
+      Get Password to use for TURN reservations
     */
     static
-    int audioOutputElement()
+    QString turnPassword()
     {
-      return self()->mAudioOutputElement;
+      return self()->mTurnPassword;
     }
 
 
     /**
-      Get videoInputElement
+      Get Name of GStreamer element to use as audio input
     */
     static
-    int videoInputElement()
+    int audioInputModule()
     {
-      return self()->mVideoInputElement;
+      return self()->mAudioInputModule;
     }
 
 
     /**
-      Get videoOutputElement
+      Get Parameter device of GStreamer audio input element.
     */
     static
-    int videoOutputElement()
+    QString audioInputDevice()
     {
-      return self()->mVideoOutputElement;
+      return self()->mAudioInputDevice;
+    }
+
+
+    /**
+      Get Space delimited additional options for audio input element.
+    */
+    static
+    QString audioInputParams()
+    {
+      return self()->mAudioInputParams;
+    }
+
+
+    /**
+      Get Gstreamer module to use
+    */
+    static
+    int audioOutputModule()
+    {
+      return self()->mAudioOutputModule;
+    }
+
+
+    /**
+      Get Parameter device for GStreamer module.
+    */
+    static
+    QString audioOutputDevice()
+    {
+      return self()->mAudioOutputDevice;
+    }
+
+
+    /**
+      Get Space delimited additional options for audio output element.
+    */
+    static
+    QString audioOutputParams()
+    {
+      return self()->mAudioOutputParams;
+    }
+
+
+    /**
+      Get VideoInputModule
+    */
+    static
+    int videoInputModule()
+    {
+      return self()->mVideoInputModule;
+    }
+
+
+    /**
+      Get Parameter device for GStreamer module.
+    */
+    static
+    QString videoInputDevice()
+    {
+      return self()->mVideoInputDevice;
+    }
+
+
+    /**
+      Get Space delimited additional options for video input element.
+    */
+    static
+    QString videoInputParams()
+    {
+      return self()->mVideoInputParams;
+    }
+
+
+    /**
+      Get Name of Gstreamer element to use as video output.
+    */
+    static
+    int videoOutputModule()
+    {
+      return self()->mVideoOutputModule;
     }
 
   protected:
@@ -254,12 +334,20 @@ class Settings : public KConfigSkeleton
     // Network
     QString mStunServer;
     QString mTurnServer;
+    QString mTurnUsername;
+    QString mTurnPassword;
 
     // Media
-    int mAudioInputElement;
-    int mAudioOutputElement;
-    int mVideoInputElement;
-    int mVideoOutputElement;
+    int mAudioInputModule;
+    QString mAudioInputDevice;
+    QString mAudioInputParams;
+    int mAudioOutputModule;
+    QString mAudioOutputDevice;
+    QString mAudioOutputParams;
+    int mVideoInputModule;
+    QString mVideoInputDevice;
+    QString mVideoInputParams;
+    int mVideoOutputModule;
 
   private:
 };

@@ -53,7 +53,7 @@ using namespace XMPP;
  *
  * @short Session view widget
  * @author Jaroslav Reznik <rezzabuh@gmail.com>
- * @version 0.1
+ * @version 0.2
  */
 
 class SessionView : public QWidget
@@ -104,6 +104,8 @@ public slots:
   void bgColorChanged(const QColor &c);
   void penSizeChanged(int size);
   void modeChanged(WbWidget::Mode);
+
+  Makneto *makneto() const;
 
 signals:
 	void sendMessage(const Message &);
