@@ -119,7 +119,7 @@ kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})
 
-set (JINGLE_LIBS    jingleecho jinglegui)
+set (JINGLE_LIBS     jinglegui jingleecho)
 message(STATUS ${QT_LIBRARIES})
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g")
 
@@ -127,6 +127,7 @@ target_link_libraries(makneto
     ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} 
     ${KDE4_KHTML_LIBS} ${KDE4_PHONON_LIBS} ${IRIS_LIBRARIES}
     ${JINGLE_LIBS}
+    ${FARSIGHT_LIBRARIES} ${FARSIGHT_IFACES_LIBRARIES}
     )
 
 install(TARGETS makneto DESTINATION ${BIN_INSTALL_DIR} )
