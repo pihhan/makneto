@@ -11,7 +11,7 @@
 
 /** @brief Create farsight abstraction class.
     @param reader FstStatusReader pointer to class wanting messages about farsight pipeline, or NULL if not needed. */
-FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
+FstJingle::FstJingle(FstStatusReader *reader)
     : m_lastErrorCode(NoError), m_reader(reader), m_unconfiguredCodecs(false),
       m_state(S_PREPARING)
 {
@@ -35,7 +35,6 @@ FstJingle::FstJingle(JingleSession *js, FstStatusReader *reader)
         }
     }
 
-    setNicknames(js->from().fullStd(), js->to().fullStd());
 }
 
 FstJingle::~FstJingle()
@@ -214,6 +213,58 @@ GList * FstJingle::createSingleFsCandidateList(const JingleTransport &transport)
     }
 }
 
+
+/** @brief Create session for specified type. 
+    @param type Type of session that will be created. 
+    @param name Name of session, not necessary in future. */
+bool FstJingle::createSession(MediaType type, const std::string &name)
+{
+    MediaType mtype = type;
+    FsMediaType fstype = FS_MEDIA_TYPE_AUDIO;
+    switch (mtype) {
+        case MEDIA_AUDIO:
+            fstype = FS_MEDIA_TYPE_AUDIO; 
+            if (!pipeline->isAudioEnabled()) {
+                if (!pipeline->enableAudio()) {
+                    LOGGER(logit) << "enableAudio failed." << std::endl;
+                    setError(PipelineError, "pipeline enableAudio failed.");
+                    return false;
+                }
+            } else {
+                LOGGER(logit) << "enableAudio succeed" << std::endl;
+            }
+            break;
+        case MEDIA_VIDEO:
+            fstype = FS_MEDIA_TYPE_VIDEO; 
+            if (!pipeline->isVideoEnabled()) {
+                if (!pipeline->enableVideo()) {
+                    LOGGER(logit) << "enableVideo failed." << std::endl;
+                    setError(PipelineError, "pipeline enableVideo failed.");
+                    return false;
+                }
+            } else {
+                LOGGER(logit) << "enableVideo succeed" << std::endl;
+            }
+            break;
+        case MEDIA_NONE:
+        case MEDIA_AUDIOVIDEO:
+            LOGGER(logit) << "requested creation of content with local type NONE" << std::endl;
+            break;
+    }
+
+    Session *session = new Session(conference, fstype);
+    if (!session)
+        return false;
+    session->setName(name);
+
+    conference->addSession(session);
+
+    bool linked = linkSink(session, fstype);
+    if (!linked)
+        setError(PipelineError, "Link of sink failed.");
+    return (session != NULL && linked);
+}
+
 /** @brief Link network sink of session to source of choosen type.
     @param session FsSession wrap which sink it to be connected to source.
     @param type Type of source to connect to sink. 
@@ -267,40 +318,33 @@ bool FstJingle::prepareSession(const JingleContent &local)
     switch (mtype) {
         case MEDIA_AUDIO:
             fstype = FS_MEDIA_TYPE_AUDIO; 
-            if (!pipeline->isAudioEnabled()) {
-                if (!pipeline->enableAudio()) {
-                    LOGGER(logit) << "enableAudio failed." << std::endl;
-                    setError(PipelineError, "pipeline enableAudio failed.");
-                    return false;
-                }
-            } else {
-                LOGGER(logit) << "enableAudio succeed" << std::endl;
-            }
             break;
         case MEDIA_VIDEO:
             fstype = FS_MEDIA_TYPE_VIDEO; 
-            if (!pipeline->isVideoEnabled()) {
-                if (!pipeline->enableVideo()) {
-                    LOGGER(logit) << "enableVideo failed." << std::endl;
-                    setError(PipelineError, "pipeline enableVideo failed.");
-                    return false;
-                }
-            } else {
-                LOGGER(logit) << "enableVideo succeed" << std::endl;
-            }
             break;
         case MEDIA_NONE:
         case MEDIA_AUDIOVIDEO:
             LOGGER(logit) << "requested creation of content with local type NONE" << std::endl;
             break;
     }
-    LOGGER(logit) << "Prepared content " << local.name() 
-        << " media type " << mtype 
-        << " fstype " << fstype << std::endl;
 
-    Session *session = new Session(conference, fstype);
-    g_assert(session);
-    session->setName(local.name());
+    Session *session = conference->getSession(fstype);
+    if (!session) {
+        if (!createSession(mtype, local.name() )) {
+            LOGGER(logit) << "Creation of Session with type " << fstype 
+                << "failed!" << std::endl;
+            session->setName(local.name());
+            setError(PipelineError, "Session creation failed.");
+            return false;
+        } else {
+            session = conference->getSession(fstype);
+            if (session) 
+                LOGGER(logit) << "Session creation successful." << std::endl;
+        }
+    } else {
+        LOGGER(logit) << "Session with type " << fstype     
+            << " already exists." << std::endl;
+    }
 
     GList *localCandidates = NULL;
     // rawudp transmitter cannot work with more than one concurrent 
@@ -312,12 +356,7 @@ bool FstJingle::prepareSession(const JingleContent &local)
     if (localCandidates)
         session->setLocal(localCandidates);
 
-    conference->addSession(session);
-
-    bool linked = linkSink(session, fstype);
-    if (!linked)
-        setError(PipelineError, "Link of sink failed.");
-    return (session != NULL && linked);
+    return (session != NULL);
 }
 
 /** @brief Prepare all local contents for this session. 
@@ -344,17 +383,22 @@ bool FstJingle::prepareSession(JingleSession *session)
     return (success && !empty && goPlaying());
 }
 
-/** @brief Update remote settings for content, like new candidates or codecs. */
+
+
+/** @brief Update remote settings for content, like new candidates or codecs. 
+    @param remote Description and maybe candidates of remote session. 
+    @param target Full JID of remote participant. */
 bool FstJingle::updateRemote(
     const JingleContent &remote, 
     const std::string &target)
 {
-    Session *session = conference->getSession(remote.name());
+    FsMediaType ses_type = fsMediaType(remote.description().type());
+    Session *session = conference->getSessionType(ses_type);
     AVOutput *output = conference->outputs().findOutput(target);
     if (session) {
         bool created;
-        bool exist = session->haveStream();
         Stream *stream = session->getStream(target);
+        bool exist = (stream != NULL);
         if (!stream) {
             FsParticipant *p = conference->getParticipant(target);
             created = session->createStream(p);
@@ -746,6 +790,8 @@ bool FstJingle::updateLocalTransport(JingleContent &content, const std::string &
         jt.candidates = cl;
         content.setTransport(jt);
         return true;
+    } else {
+        LOGGER_WARN(logit) << "matching stream not found." << std::endl; 
     }
     return false;
 }
@@ -881,7 +927,8 @@ void FstJingle::setTransportXmlns(const std::string &xmlns)
     @return true if content was updated from farsight, false if not. */
 bool FstJingle::updateLocalDescription(JingleContent &content)
 {
-    Session *session = conference->getSession(content.name());
+    FsMediaType ses_type = fsMediaType(content.description().type());
+    Session *session = conference->getSession(ses_type);
     if (session) {
         if (!session->codecsReady()) {
             LOGGER(logit) << "Updating local contents " << content.name() 
@@ -898,6 +945,9 @@ bool FstJingle::updateLocalDescription(JingleContent &content)
         content.setDescription(d);
         fs_codec_list_destroy(codecs);
         return true;
+    } else {
+        LOGGER(logit) << "Session of type " << ses_type 
+                << " not found." << std::endl;
     }
     return false;
 }
@@ -1070,4 +1120,17 @@ GList *FstJingle::codecListByPreference(const GList *codecs, const StringList &p
     return g_list_reverse(newlist);
 }
 
+FsMediaType FstJingle::fsMediaType(MediaType type)
+{
+    switch (type) {
+        case MEDIA_AUDIO:
+            return FS_MEDIA_TYPE_AUDIO; 
+        case MEDIA_VIDEO:
+            return FS_MEDIA_TYPE_VIDEO; 
+        case MEDIA_NONE:
+        case MEDIA_AUDIOVIDEO:
+            return FS_MEDIA_TYPE_AUDIO;
+    }
+    return FS_MEDIA_TYPE_AUDIO;
+}
 

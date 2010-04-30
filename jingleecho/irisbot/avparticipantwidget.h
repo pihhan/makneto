@@ -43,6 +43,7 @@ class AVParticipantWidget : public QWidget,
     VolumeBar   *m_volumebar;
     GstVideoWidget  *m_video;
     QtJingleSession *m_jsession;
+    QString     m_nickname;
 };
 
 #endif

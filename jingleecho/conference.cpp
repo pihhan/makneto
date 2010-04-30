@@ -445,7 +445,7 @@ gboolean Conference::elementMessageCallback(GstMessage *message)
     @param message Message itself.
     @param user_data Pointer to this class.
 */
-gboolean Conference::messageCallback(GstBus *bus, GstMessage *message, gpointer user_data)
+gboolean Conference::messageCallback(GstBus *, GstMessage *message, gpointer user_data)
 {
     Conference *conf = (Conference *) user_data;
 
@@ -631,6 +631,20 @@ Session * Conference::getSession(FsStream *stream)
         Session *s = getSession(fs);
         gst_object_unref(GST_OBJECT(fs));
         return s;
+    }
+    return NULL;
+}
+    
+/** @brief Get first existing session with given media type. */
+Session * Conference::getSessionType(FsMediaType type) const
+{
+    for (SessionList::const_iterator it=m_sessions.begin(); 
+            it!=m_sessions.end(); it++) {
+        if (*it) {
+            if ((*it)->type() == type) {
+                return *it;
+            }
+        }
     }
     return NULL;
 }

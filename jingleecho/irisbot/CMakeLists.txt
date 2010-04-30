@@ -16,7 +16,7 @@ add_definitions(-DIRIS -D_POSIX_SOURCE)
 
 include(${QT_USE_FILE})
 
-list(APPEND LOCAL_INCLUDES ipv6 irisbot ../ipv6 ../logger ..)
+set(LOCAL_INCLUDES ../ipv6 ../logger ..)
 
 pkg_check_modules(FARSIGHT farsight2-0.10)
 pkg_check_modules(FARSIGHT_IFACES gstreamer-interfaces-0.10 )
@@ -56,6 +56,8 @@ QT4_WRAP_CPP(MOC_FILES qtjinglesession.h jinglevideowindow.h avparticipantwidget
 #link_libraries(${IRIS_LIBS} ${FARSIGHT_LIBRARIES})
 
 add_executable(irisbot ${IRISBOT_SOURCES} ${MOC_FILES})
+
+add_library(jinglegui ${IRISBOT_SOURCES} ${MOC_FILES})
 
 target_link_libraries(irisbot ${QT_LIBRARIES} ${QCA2_LIBRARIES} 
     ${IRIS_LIBRARIES} ${FARSIGHT_LIBRARIES} ${FARSIGHT_IFACES_LIBRARIES} 

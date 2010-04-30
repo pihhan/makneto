@@ -74,6 +74,7 @@ class Conference
     Session *   getSession(unsigned int id);
     Session *   getSession(FsSession *fs);
     Session *   getSession(FsStream *stream);
+    Session *   getSessionType(FsMediaType type) const;
     Stream      *getStream(FsStream *stream);
     Stream      *getStream(const std::string &component, const std::string &participant);
     bool        removeSession(const std::string &name);

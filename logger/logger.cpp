@@ -15,7 +15,7 @@ using namespace std;
 Logger logit;
 
 Logger::Logger()
-    : m_line(-1)
+    : m_line(-1), m_level(UNKNOWN)
 {
 }
 
@@ -91,6 +91,9 @@ std::string Logger::prefix()
         outputPlace(os);
         resetPlace();
     }
+
+    outputLevel(os);
+
     return os.str();
 }
 
@@ -148,4 +151,32 @@ Logger & Logger::at(const char *file, const char *function, int line)
     return *this;
 }
 
+void Logger::outputLevel(std::ostream &out)
+{
+    switch (m_level) {
+        case UNKNOWN: 
+            break;
+        case DEBUG:
+            out << "[DEBUG]";
+            break;
+        case INFO:
+            out << "[INFO]";
+            break;
+        case WARNING:
+            out << "[WARNING]";
+            break;
+        case ERROR:
+            out << "[ERROR]";
+            break;
+    }
+
+    // reset level for next line
+    m_level = UNKNOWN;
+}
+
+Logger & Logger::setLevel(LogLevel level)
+{
+    m_level = level;
+    return *this;
+}
 

@@ -142,6 +142,9 @@ class JingleManager
     std::string stunIp() const;
     int         stunPort() const;
 
+    void setMediaManager(void *manager);
+    void *mediaManager() const;
+
     protected:
     static gboolean sessionTimeout_gcb(gpointer user_data);
     bool acceptedAudioSession(JingleSession *session);
@@ -153,6 +156,7 @@ class JingleManager
     unsigned int        m_timerid;
     std::string         m_stunIp;
     int                 m_stunPort;
+    void                *m_mediaManager;
 };
 
 

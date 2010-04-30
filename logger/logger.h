@@ -29,6 +29,14 @@ class Logger
     std::ostream & operator<<(double d);
     std::ostream & operator<<(const std::string &str);
 
+    enum LogLevel {
+        UNKNOWN = 0,
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR
+    };
+
 
     std::ostream & stream();
     /** @brief Method to open logfile and output there.
@@ -46,21 +54,32 @@ class Logger
  *      */
     void printf(const char *fmt, ...);
 
+    /** @brief Set log level for next line. */
+    Logger & setLevel(LogLevel level);
+
     /** @brief Returns prefix that would be added to next line. */
     std::string prefix();
 
     private:
     void outputPlace(std::ostream &out);
     void resetPlace();
+    void outputLevel(std::ostream &out);
 
     std::string    m_file;
     std::string    m_func;
     int             m_line;
     std::string    m_path;
     std::ofstream logfile;
+    LogLevel        m_level;
 };
 
 extern Logger logit;
+
+#define LOGGER_LVL(obj,level) (LOGGER(obj).setLevel(level))
+#define LOGGER_DBG(l) (LOGGER_LVL(l,Logger::DEBUG))
+#define LOGGER_INFO(l) (LOGGER_LVL(l,Logger::INFO))
+#define LOGGER_WARN(l) (LOGGER_LVL(l,Logger::WARNING))
+#define LOGGER_ERR(l) (LOGGER_LVL(l,Logger::ERROR))
 
 #endif
 

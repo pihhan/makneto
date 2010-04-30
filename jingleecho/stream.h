@@ -10,11 +10,13 @@
 #include <gst/farsight/fs-conference-iface.h>
 
 #include "fststatusreader.h"
+#include "avoutput.h"
 
 class Conference;
 class Session;
+class JingleSession;
 
-/** @brief Represents one media session and tools for working with that. */
+/** @brief Represents one media session with one participant and basic interface for working with that. */
 class Stream
 {
     public:
@@ -58,8 +60,21 @@ class Stream
 
     std::string name() const;
 
+    std::string componentName() const;
+    void setComponentName(const std::string &name);
+
     PipelineStateType   state() const;
     void        setState(PipelineStateType state);
+
+    JingleSession *jingleSession() const;
+    void setJingleSession(JingleSession *js);
+
+    AVOutput *output() const;
+    void setOutput(AVOutput *out);
+
+    std::string sid() const;
+    void setSid(const std::string &s);
+
 
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
@@ -76,6 +91,10 @@ class Stream
     GList       *m_localCandidates;
     GList       *m_newLocalCandidates;
     PipelineStateType   m_state;
+    std::string m_name;
+    JingleSession *m_js;
+    AVOutput    *m_output;
+    std::string m_sid;
 };
 
 
