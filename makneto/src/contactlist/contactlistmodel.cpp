@@ -29,7 +29,7 @@ ContactListModel::ContactListModel(MaknetoContactList* contactList)
     : contactList_(contactList), showStatus_(true), filter_(0)
 {
 	connect(contactList_,SIGNAL(dataChanged()),this,SLOT(contactList_changed()));
-    connect(contactList_, SIGNAL(dataChanged(ContactListItem*)), 
+    connect(contactList_, SIGNAL(dataChangedItem(ContactListItem*)), 
         this, SLOT(itemChanged(ContactListItem*)) );
 }
 

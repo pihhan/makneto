@@ -20,16 +20,20 @@ MediaViewWidget::MediaViewWidget(SessionView *parent)
     QVBoxLayout *l = new QVBoxLayout();
     setLayout(l);
 
+    createToolbarActions();
+    createToolbar();
+
+    l->addLayout(toolbarLayout);
     m_msglabel = new QLabel("init label");
     l->addWidget(m_msglabel);
     
     m_selector = new MediaVideoSelector();
     l->addWidget(m_selector);
 
-    createToolbarActions();
-    createToolbar();
 
-    l->addLayout(toolbarLayout);
+    if (m_view->type() == Chat) {
+        configureToolbarForUser();
+    }
 }
 
 
@@ -90,7 +94,7 @@ void MediaViewWidget::createToolbar()
     toolbarLayout->addWidget(fullscreenBtn);
 
     m_volumeSlider = new QSlider();
-    connect(m_volumeSlider, SIGNAL(valueChanged(int)), SLOT(volumeChanged(int)) );
+    connect(m_volumeSlider, SIGNAL(valueChanged(int)), SLOT(modifyVolume(int)) );
 
     this->toolbarLayout = toolbarLayout;
 }
@@ -148,8 +152,19 @@ void MediaViewWidget::configureToolbarForUser()
     MaknetoContact *contact = cl->getContact(jid);
 
     if (contact) {
+        m_selector->createUser(contact);
         setVideoSupported(contact->supportsVideo());
-        setAudioSupported(contact->supportsAudio()); 
+        setAudioSupported(contact->supportsAudio());
+        if (contact->supportsVideo() && contact->supportsAudio()) {
+            printText(i18n("This contact supports both audio and video."));
+        } else if (contact->supportsAudio()) {
+            printText(i18n("This contact supports audio."));
+        } else if (contact->supportsVideo()) {
+            printText(i18n("This contact supports video."));
+        } else {
+            printText(i18n("This contact does not support media."));
+        }
+
     } else {
         printText(i18n("This contact was not found inside roster."));
     }

@@ -161,7 +161,7 @@ void SessionView::configureChatInput()
 
 void SessionView::configureMediaTab()
 {
-    QWidget *m_mediaw = new MediaViewWidget();
+    QWidget *m_mediaw = new MediaViewWidget(this);
     m_tabs->addTab(m_mediaw, KIcon("voicecall"), tr("Media"));
 }
 
