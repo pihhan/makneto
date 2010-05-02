@@ -5,7 +5,7 @@
 #include <QString>
 #include <string>
 
-#include <iris/xmpp_task.h>
+#include <xmpp_task.h>
 #include "jinglemanager.h"
 
 class QtJingleSession;

@@ -48,6 +48,8 @@ class JingleCandidate
 #endif
 
     JingleCandidate();
+    virtual ~JingleCandidate();
+
     virtual std::string xmlns() const;
     void increaseGeneration();
 
@@ -94,6 +96,7 @@ class JingleIceCandidate : public JingleCandidate
 
     JingleIceCandidate();
     JingleIceCandidate(const JingleCandidate &candidate);
+    virtual ~JingleIceCandidate();
 
     JingleCandidate operator=(const JingleCandidate &c);
 

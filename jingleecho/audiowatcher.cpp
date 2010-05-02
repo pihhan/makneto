@@ -13,6 +13,11 @@ GstAudioWatcher::GstAudioWatcher()
 {
 }
 
+
+GstAudioWatcher::~GstAudioWatcher()
+{
+}
+
 void GstAudioWatcher::assignSource(GstElement *level)
 {
     if (m_level)
@@ -26,6 +31,9 @@ bool GstAudioWatcher::acceptsForElement(GstElement *level)
     return (!m_level || m_level == level);
 }
 
+/***
+ * GstWatcherRegistry ***i
+ **/
 
 GstAudioWatcherRegistry::GstAudioWatcherRegistry()
 {

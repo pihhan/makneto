@@ -17,7 +17,8 @@
 */
 Stream::Stream(Session *session, FsParticipant *participant, const GList *lcandidates)
     : m_confsession(session),m_lasterror(0),m_stream(0),
-      m_localCandidates(0), m_newLocalCandidates(0), m_state(S_NONE)
+      m_localCandidates(0), m_newLocalCandidates(0), m_state(S_NONE), m_js(0),
+      m_output(0)
 {
     m_stream = createStream(participant, lcandidates);
     g_signal_connect(m_stream, "src-pad-added", G_CALLBACK(Stream::srcPadAdded), this);
@@ -287,10 +288,48 @@ FsStreamDirection Stream::direction() const
     name of participant. */
 std::string Stream::name() const
 {
-    std::string name;
-    if (m_confsession)
-        name = m_confsession->name() + ",";
-    name += participantName();
-    return name;
+    return componentName() + "," + participantName();
 }
+
+std::string Stream::componentName() const
+{
+    return m_name;
+}
+
+void Stream::setComponentName(const std::string &name)
+{
+    m_name = name;
+}
+
+
+JingleSession * Stream::jingleSession() const
+{
+    return m_js;
+}
+
+void Stream::setJingleSession(JingleSession *js)
+{
+    m_js = js;
+}
+
+AVOutput * Stream::output() const
+{
+    return m_output;
+}
+
+void Stream::setOutput(AVOutput *out)
+{
+    m_output = out;
+}
+
+std::string Stream::sid() const
+{
+    return m_sid;
+}
+
+void Stream::setSid(const std::string &s)
+{
+    m_sid = s;
+}
+
 

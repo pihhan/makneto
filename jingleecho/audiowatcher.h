@@ -10,10 +10,12 @@ class GstAudioWatcher
     public:
 
     GstAudioWatcher();
+    virtual ~GstAudioWatcher();
+
     void assignSource(GstElement *level);
     bool acceptsForElement(GstElement *level);
     virtual void updateMessage(GstMessage *msg) = 0;
-    virtual void updateVolumes(int channels, double *rms, double *peak, double *decay);
+    virtual void updateVolumes(int channels, double *rms, double *peak, double *decay) = 0;
 
     private:
     GstElement *m_level;

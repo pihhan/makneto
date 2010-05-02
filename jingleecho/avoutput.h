@@ -9,6 +9,7 @@
 class QPipeline;
 class GstAudioWatcher;
 class GstVideoWatcher;
+class Stream;
 
 /** @brief Class for output of one remote person, with audio and video elements.
     This can create audio and video outputs, configure them. */
@@ -58,6 +59,11 @@ class AVOutput
     void expose();
     void setWindowId(unsigned long id);
 
+    Stream *audioStream() const;
+    Stream *videoStream() const;
+    void setAudioStream(Stream *s);
+    void setVideoStream(Stream *s);
+
     private:
     std::string participant;
     GstElement *m_vsink;
@@ -71,6 +77,8 @@ class AVOutput
     QPipeline   *m_pipeline;
     GstAudioWatcher *m_audiowatcher;
     GstVideoWatcher *m_videowatcher;
+    Stream      *m_videoStream;
+    Stream      *m_audioStream;
 };
 
 #endif

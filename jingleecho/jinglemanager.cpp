@@ -49,11 +49,14 @@ static gboolean periodic_timer(gpointer user_data)
 }
 
 JingleManager::JingleManager()
-	: m_handler(0), m_seed(0), m_timerid(0),m_stunPort(0)
+	: m_handler(0), m_seed(0), m_timerid(0),m_stunPort(0), m_mediaManager(0)
 {
         m_seed = (unsigned int) time(NULL);
 }
 
+JingleManager::~JingleManager() 
+{
+}
 
 void JingleManager::addSession(JingleSession *session)
 {
@@ -78,9 +81,10 @@ bool JingleManager::prepareFstSession(
     JingleSession *session, 
     const MediaConfig &config)
 {
-    FstJingle *fst = static_cast<FstJingle *>(session->data());
+    FstJingle *fst = static_cast<FstJingle *>(mediaManager());
     if (!fst) {
-        fst = new FstJingle(session);
+        fst = new FstJingle();
+        setMediaManager(fst);
     }
     if (!fst || fst->lastError() != NoError) {
         reportError(session, fst->lastError(), fst->lastErrorMessage());
@@ -245,9 +249,10 @@ bool JingleManager::acceptedAudioSession(JingleSession *session)
 {
     bool good = true;
     
-    FstJingle *fsj = static_cast<FstJingle*>(session->data());
+    FstJingle *fsj = static_cast<FstJingle*>(mediaManager());
     if (!fsj) {
-        fsj = new FstJingle(session);
+        fsj = new FstJingle();
+        setMediaManager(fsj);
         good = fsj->createAudioSession(session);
         session->setData(fsj);
     } else {
@@ -710,6 +715,17 @@ void JingleManager::reportInfo(JingleSession *session, SessionInfo info)
 {
     LOGGER(logit) << "SESSION INFO: " << session->sid() << " : " 
         << JingleSession::stringFromInfo(info) << std::endl;
+}
+
+/** @brief Set media manager to use. */
+void JingleManager::setMediaManager(void *manager)
+{
+    m_mediaManager = manager;
+}
+
+void * JingleManager::mediaManager() const
+{
+    return m_mediaManager;
 }
 
 

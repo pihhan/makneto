@@ -12,6 +12,8 @@
 class JingleTransport
 {
     public:
+
+    virtual ~JingleTransport() {}
     
 #ifdef GLOOX
     virtual void parse(const gloox::Tag *tag);

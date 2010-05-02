@@ -5,9 +5,9 @@
 #include <QString>
 #include <QObject>
 #include <QHostInfo>
-#include <iris/xmpp_client.h>
-#include <iris/xmpp.h>
-#include <iris/xmpp_message.h>
+#include <xmpp_client.h>
+#include <xmpp.h>
+#include <xmpp_message.h>
 
 #include "irisjinglemanager.h"
 #include "jinglevideowindow.h"

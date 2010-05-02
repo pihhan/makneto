@@ -25,7 +25,7 @@ class FstJingle
     public:
     typedef std::list<std::string> StringList;
 
-    FstJingle(JingleSession *js, FstStatusReader *reader = NULL);
+    FstJingle(FstStatusReader *reader = NULL);
     virtual ~FstJingle();
         
     void setNicknames(const std::string &local, const std::string &remote);
@@ -41,6 +41,9 @@ class FstJingle
     std::string stateDescribe();
     bool terminate();
 
+
+    /* Section of helpers to transform from jingle internal format to Farsight
+        structures. */
     static FsCandidate * createFsCandidate(const JingleCandidate & candidate);
     static FsCodec * createFsCodec(const JingleRtpPayload & payload, FsMediaType type=FS_MEDIA_TYPE_AUDIO);
     static GList * createFsCodecList(const JingleRtpContentDescription &description);
@@ -100,8 +103,10 @@ class FstJingle
     static FrameSizeList videoFrameSizes(GstPad *pad);
     FrameSizeList supportedVideoInputSizes();
 
+    bool createSession(MediaType type, const std::string &name);
 
     GList * codecListByPreference(const GList *codecs, const StringList &preferences);
+    FsMediaType fsMediaType(MediaType type);
 
     QPipeline *pipeline;
     Conference *conference;

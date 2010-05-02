@@ -36,6 +36,7 @@ class JingleRtpPayload
     typedef std::list<PayloadParameter> ParameterList;
 
         JingleRtpPayload(unsigned char id, const std::string &name, unsigned int clockrate=8000, int channels=1);
+        virtual ~JingleRtpPayload();
 		
     unsigned char   id; ///<! required
     std::string     name; ///!< recommended for static, required for dynamic
@@ -70,6 +71,7 @@ class JingleRtpContentDescription : public JingleContentDescription
 
 
         JingleRtpContentDescription();
+        virtual ~JingleRtpContentDescription();
         	
 	void addPayload(const JingleRtpPayload &payload);
         void clearPayload();

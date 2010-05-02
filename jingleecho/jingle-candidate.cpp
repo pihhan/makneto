@@ -18,6 +18,10 @@ JingleCandidate::JingleCandidate()
 {
 }
 
+JingleCandidate::~JingleCandidate()
+{
+}
+
 std::string JingleCandidate::xmlns() const
 {
     return XMLNS_JINGLE_RAWUDP;
@@ -165,6 +169,11 @@ JingleIceCandidate::JingleIceCandidate(const JingleCandidate &candidate)
     : JingleCandidate(candidate), foundation(0), protocol(PR_UDP), priority(0)
 {
 }
+
+JingleIceCandidate::~JingleIceCandidate()
+{
+}
+
 
 JingleCandidate JingleIceCandidate::operator=(const JingleCandidate &c)
 {

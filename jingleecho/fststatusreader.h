@@ -33,6 +33,7 @@ class FstStatusReader
         MSG_FATAL_ERROR
     } MessageType;
 
+    virtual ~FstStatusReader();
 
     /** @brief Method to pass messages from farsight to GUI/log. 
         @param type Type of message, its importance.
