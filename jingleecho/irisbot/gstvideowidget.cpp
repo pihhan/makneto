@@ -90,15 +90,12 @@ void GstVideoWidget::paintEvent(QPaintEvent *event)
 #endif
         event->accept();
 
-        QPainter *painter = new QPainter(this);
-        //engine->begin(this);
-        painter->eraseRect(event->rect());
-        //engine->end();
-
-        delete painter;
-
-        return;
+        QPainter painter(this);
+        //engine.begin(this);
+        painter.eraseRect(event->rect());
+        //engine.end();
+    } else {
+        event->ignore();
     }
-    event->ignore();
 }
 

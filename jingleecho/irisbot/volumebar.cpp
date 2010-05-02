@@ -219,9 +219,9 @@ void VolumeBar::paintEvent(QPaintEvent *event)
 QSize VolumeBar::sizeHint() const
 {
     if (m_orientation == Qt::Vertical)
-        return QSize(10, 60);
+        return QSize(10, 20);
     else
-        return QSize(60, 10);
+        return QSize(20, 10);
 }
 
 void VolumeBar::setBlockDelimColor(const QColor &color)

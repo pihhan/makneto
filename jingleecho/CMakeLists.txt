@@ -50,7 +50,6 @@ set(JINGLEECHO_HEADERS codecs.h
            avoutputmanager.h 
            jinglesessiongroup.h 
            ipv6/v6interface.h
-           testmediaconfig.h
            gstvideowatcher.h
            audiowatcher.h
         )
@@ -78,8 +77,9 @@ set(JINGLEECHO_SOURCES
            jinglesessiongroup.cpp 
            ../ipv6/v6interface.c 
            ../logger/logger.cpp 
-           testmediaconfig.cpp
+           gstvideowatcher.h
            gstvideowatcher.cpp
+           audiowatcher.h
            audiowatcher.cpp
     )
 

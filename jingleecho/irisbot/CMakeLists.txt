@@ -25,10 +25,7 @@ include_directories(${QT_INCLUDES} ${QCA2_INCLUDES} ${IRIS_INCLUDES} ${FARSIGHT_
 
 link_directories(${IRIS_LIB_PATH} ${FARSIGHT_LIBRARY_DIRS})
 
-
-# Input
-set(IRISBOT_HEADERS codecs.h 
-    irisbot.h
+set(GUI_HEADERS
     irisjinglemanager.h 
     jinglevideowindow.h
     qtjinglesession.h
@@ -38,8 +35,7 @@ set(IRISBOT_HEADERS codecs.h
     volumebar.h
 )
 
-set(IRISBOT_SOURCES 
-    irisbot.cpp
+set(GUI_SOURCES
     irisjinglemanager.cpp 
     jinglevideowindow.cpp 
     qtjinglesession.cpp
@@ -49,18 +45,31 @@ set(IRISBOT_SOURCES
     volumebar.cpp
 )
 
+# Input
+set(IRISBOT_HEADERS codecs.h 
+    irisbot.h
+    ${GUI_HEADERS}
+)
 
-QT4_WRAP_CPP(MOC_FILES qtjinglesession.h jinglevideowindow.h avparticipantwidget.h gstvideowidget.h volumebar.h irisbot.h irisjinglemanager.h)
+set(IRISBOT_SOURCES 
+    irisbot.cpp
+    ${GUI_SOURCES}
+)
+
+
+QT4_WRAP_CPP(MOC_FILES qtjinglesession.h jinglevideowindow.h 
+    avparticipantwidget.h gstvideowidget.h volumebar.h 
+    irisbot.h irisjinglemanager.h)
 
 
 #link_libraries(${IRIS_LIBS} ${FARSIGHT_LIBRARIES})
 
-add_executable(irisbot ${IRISBOT_SOURCES} ${MOC_FILES})
+add_library(jinglegui ${GUI_SOURCES} ${MOC_FILES})
 
-add_library(jinglegui ${IRISBOT_SOURCES} ${MOC_FILES})
+#add_executable(irisbot ${IRISBOT_SOURCES} ${MOC_FILES})
 
-target_link_libraries(irisbot ${QT_LIBRARIES} ${QCA2_LIBRARIES} 
-    ${IRIS_LIBRARIES} ${FARSIGHT_LIBRARIES} ${FARSIGHT_IFACES_LIBRARIES} 
-    jingleecho)
+#target_link_libraries(irisbot ${QT_LIBRARIES} ${QCA2_LIBRARIES} 
+#    ${IRIS_LIBRARIES} ${FARSIGHT_LIBRARIES} ${FARSIGHT_IFACES_LIBRARIES} 
+#    jingleecho)
 
 

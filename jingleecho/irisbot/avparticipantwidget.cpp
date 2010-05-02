@@ -1,6 +1,7 @@
 
 #include <QBoxLayout>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 
 #include "avparticipantwidget.h"
 #include "aspectedlayout.h"
@@ -8,7 +9,7 @@
 
 
 AVParticipantWidget::AVParticipantWidget(QWidget *parent)
-    : QWidget(parent)
+    : QFrame(parent), m_selected(false)
 {
     QVBoxLayout *layout = new QVBoxLayout();
 
@@ -23,7 +24,9 @@ AVParticipantWidget::AVParticipantWidget(QWidget *parent)
     layout->addWidget(m_name);
     layout->addLayout(videolayout);
     layout->addWidget(m_volumebar);
-    
+
+    setFrameStyle(QFrame::Box | QFrame::Plain);
+    setLayout(layout); 
 }
 
 AVParticipantWidget::~AVParticipantWidget()
@@ -79,5 +82,21 @@ void AVParticipantWidget::updateVolumes(
 void AVParticipantWidget::updateVolumes(int channels, double *rms, double *peak, double *decay)
 {
     m_volumebar->updateVolumes(channels, rms, peak, decay);
+}
+
+void AVParticipantWidget::updateMessage(GstMessage *msg)
+{
+    
+}
+
+void AVParticipantWidget::setSelected(bool s)
+{
+    m_selected = s;
+}
+
+
+bool AVParticipantWidget::selected() const
+{
+    return m_selected;
 }
 
