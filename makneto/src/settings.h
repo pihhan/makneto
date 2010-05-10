@@ -9,6 +9,11 @@
 class Settings : public KConfigSkeleton
 {
   public:
+    class EnumAudioInputModule
+    {
+      public:
+      enum type { Alsa, Pulse, Oss, COUNT };
+    };
 
     static Settings *self();
     ~Settings();
@@ -217,10 +222,10 @@ class Settings : public KConfigSkeleton
 
 
     /**
-      Get Name of GStreamer element to use as audio input
+      Get Name of GStreamer element to use as audio input.
     */
     static
-    int audioInputModule()
+    QString audioInputModule()
     {
       return self()->mAudioInputModule;
     }
@@ -338,7 +343,7 @@ class Settings : public KConfigSkeleton
     QString mTurnPassword;
 
     // Media
-    int mAudioInputModule;
+    QString mAudioInputModule;
     QString mAudioInputDevice;
     QString mAudioInputParams;
     int mAudioOutputModule;

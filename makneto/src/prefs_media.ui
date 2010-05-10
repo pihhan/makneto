@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>320</height>
+    <height>327</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,6 +59,9 @@
           <width>120</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="editable">
+         <bool>true</bool>
         </property>
         <item>
          <property name="text">
@@ -198,6 +201,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="editable">
+         <bool>true</bool>
+        </property>
         <item>
          <property name="text">
           <string>pulsesink</string>
@@ -294,6 +300,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="kcfg_AudioRingModule">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
         <item>
          <property name="text">
           <string>pulsesink</string>
@@ -399,6 +408,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="kcfg_VideoInputModule">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
         <item>
          <property name="text">
           <string>v4l2src</string>
@@ -477,6 +489,9 @@
       </item>
       <item row="4" column="1">
        <widget class="QComboBox" name="kcfg_VideoOutputModule">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
         <item>
          <property name="text">
           <string>xvimagesink</string>

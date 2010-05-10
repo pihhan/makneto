@@ -76,9 +76,8 @@ Settings::Settings(  )
 
   setCurrentGroup( QLatin1String( "Media" ) );
 
-  QList<KConfigSkeleton::ItemEnum::Choice2> valuesAudioInputModule;
-  KConfigSkeleton::ItemEnum  *itemAudioInputModule;
-  itemAudioInputModule = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "AudioInputModule" ), mAudioInputModule, valuesAudioInputModule );
+  KConfigSkeleton::ItemString  *itemAudioInputModule;
+  itemAudioInputModule = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioInputModule" ), mAudioInputModule );
   addItem( itemAudioInputModule, QLatin1String( "AudioInputModule" ) );
   KConfigSkeleton::ItemString  *itemAudioInputDevice;
   itemAudioInputDevice = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioInputDevice" ), mAudioInputDevice );

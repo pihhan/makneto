@@ -10,8 +10,8 @@
 
 class QtJingleSession;
 
-/** @brief Wrap around for Gloox library. 
-    This class is implementation of JingleManager using gloox. 
+/** @brief Wrap around for Iris library. 
+    This class is implementation of JingleManager using iris library. 
 */
 class IrisJingleManager :
     public XMPP::Task,

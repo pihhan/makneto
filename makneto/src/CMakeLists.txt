@@ -30,6 +30,13 @@ message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
 find_package(Iris REQUIRED)
 
 
+add_custom_target(irislib
+    COMMAND ./configure
+    COMMAND make
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/iris
+)
+
+
 include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
 ${FARSIGHT_IFACES_INCLUDE_DIRS} ${FARSIGHT_INCLUDE_DIRS}
 gst/jingleecho
@@ -122,6 +129,8 @@ kde4_add_executable(makneto ${makneto_SRCS})
 set (JINGLE_LIBS     jinglegui jingleecho)
 message(STATUS ${QT_LIBRARIES})
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g")
+
+add_dependencies(makneto irislib)
 
 target_link_libraries(makneto 
     ${KDE4_KDEUI_LIBS} ${QT_LIBRARIES} ${QCA2_LIBRARIES} 

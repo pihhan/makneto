@@ -51,16 +51,23 @@
         <label>Username to use for TURN reservations</label>
     </entry>
 
-    <entry name="turnPassword" type="String">
+    <entry name="turnPassword" type="Password">
         <label>Password to use for TURN reservations</label>
     </entry>
   </group>
 
   <group name="Media">
-    <entry name="AudioInputModule" type="Enum">
+    <entry name="AudioInputModule" type="String">
         <label>Name of GStreamer element to use as audio input</label>
+        <choices>
+        <choice name="Alsa">alsasrc</choice>
+        <choice name="Pulse">pulsesrc</choice>
+        <choice name="Oss">osssrc</choice>
+        </choices>
+        <!-- 
         <choices>alsasrc</choices>
         <choices>pulsesrc</choices>
+        -->
     </entry>
     <entry name="AudioInputDevice" type="String">
         <label>Parameter device of GStreamer audio input element.</label>
@@ -68,10 +75,13 @@
     <entry name="AudioInputParams" type="String">
         <label>Space delimited additional options for audio input element.</label>
     </entry>
-    <entry name="AudioOutputModule" type="Enum">
+    <entry name="AudioOutputModule" type="String">
         <label>Gstreamer module to use</label>
-        <choices>alsasink</choices>
-        <choices>pulsesink</choices>
+        <choices>
+            <choice name="Pulse">Pulse</choice>
+            <choice name="Alsa">alsasink</choice>
+            <choice name="Oss">OSS</choice>
+        </choices>
     </entry>
     <entry name="AudioOutputDevice" type="String">
         <label>Parameter device for GStreamer module.</label>
@@ -80,10 +90,13 @@
         <label>Space delimited additional options for audio output element.</label>
     </entry>
 
-    <entry name="VideoInputModule" type="Enum">
-        <choices>v4lsrc</choices>
-        <choices>v4l2src</choices>
-        <choices>ximagesrc</choices>
+    <entry name="VideoInputModule" type="String">
+        <label>Name of Gstreamer element to use as video source.</label>
+        <choices>
+            <choice name="V4L">v4lsrc</choice>
+            <choice name="V4L2">v4l2src</choice>
+            <choice name="XimageSrc">ximagesrc</choice>
+        </choices>
     </entry>
     <entry name="VideoInputDevice" type="String" >
         <label>Parameter device for GStreamer module.</label>
@@ -91,10 +104,36 @@
     <entry name="VideoInputParams" type="String">
         <label>Space delimited additional options for video input element.</label>
     </entry>
-    <entry name="VideoOutputModule" type="Enum">
+    <entry name="VideoOutputModule" type="String">
         <label>Name of Gstreamer element to use as video output.</label>
-        <choices>ximagesink</choices>
-        <choices>xvimagesink</choices>
+        <choices>
+            <choice>ximagesink</choice>
+            <choice>xvimagesink</choice>
+        </choice>
     </entry>
+
+    <entry name="AudioRingModule" type="String">
+        <label>Name of GStreamer element to use as audio output for ring tones.
+        </label>
+        <choices>
+            <choice>pulsesink</choice>
+            <choice>alsasink</choice>
+            <choice>ossink</choice>
+        <choices>
+    </entry>
+
+    <entry name="AudioRingDevice" type="String">
+        <label>Device name to ring on.</label>
+    </entry>
+
+    <entry name="AudioRingLoud" type="Bool">
+        <label>Enable sound playing?</label>
+    </entry>
+
+    <entry name="AudioRingPopup" type="Bool">
+        <label>Use popup window to indicate incoming session?</label>
+    </entry>
+
   </group>
 </kcfg>
+
