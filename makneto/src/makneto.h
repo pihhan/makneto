@@ -31,6 +31,7 @@ using namespace XMPP;
 
 class MaknetoContactList;
 class MaknetoMainWindow;
+class MUCControl;
 
 enum ChatType { Chat = 0, GroupChat = 1 };
 
@@ -53,6 +54,9 @@ public:
   MaknetoMainWindow *getMaknetoMainWindow() { return m_mainwindow; }
         FeatureListManager *getFeatureManager() { return m_flm; }
 
+        MUCControl  *getMUCControl() const;
+        void        setMUCControl(MUCControl *muc);
+
 public slots:
 	void conn_messageReceived(const Message &);
 // 	void conn_statusChanged(const XMPP::Status &);
@@ -74,6 +78,7 @@ private:
 	MaknetoContactList *m_cl;
   MaknetoMainWindow *m_mainwindow;
   FeatureListManager *m_flm;
+        MUCControl  *m_muccontrol;
 };
 
 #endif // MAKNETO_H

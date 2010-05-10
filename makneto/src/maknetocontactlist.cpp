@@ -15,6 +15,7 @@
 
 
 #include "makneto.h"
+#include "muccontrol.h"
 
 #include <QtGui/QMenu>
 #include <QtGui/QActionGroup>
@@ -234,6 +235,21 @@ MaknetoContact * MaknetoContactList::getContact(const QString &jid)
         return NULL;
     else
         return dynamic_cast<MaknetoContact *>(contact);
+}
+
+/** @brief Get type of contact, ie. if contact is single contact, or name of known multiuser group.
+    @return GroupChat for MUC added to bookmarks, Chat otherwise. */
+ChatType MaknetoContactList::getContactType(const QString &jid)
+{
+    MaknetoContact *contact = getContact(jid);
+    if (contact) {
+        return Chat;
+    } else {
+        MUCControl *muccontrol = m_makneto->getMUCControl();
+        if (muccontrol && muccontrol->getMUC(jid)) 
+            return GroupChat;
+    }
+    return Chat;
 }
 
 

@@ -2,6 +2,7 @@
 #include "mediamanager.h"
 #include "irisjinglemanager.h"
 #include "settings.h"
+#include "sessiontabmanager.h"
 
 MediaManager::MediaManager(Makneto *makneto)
     : m_makneto(makneto)
@@ -90,8 +91,6 @@ QString MediaManager::ringFile()
 
 }
 
-FstJingle *jingle;
-QtJingleManager *jingleManager;
 
 void MediaManager::startRingIncomingCall()
 {
@@ -113,9 +112,23 @@ void MediaManager::startRingTerminated()
 {
 }
 
+/** @brief Handle incoming session, notify user about waiting call. */
 void MediaManager::incomingSession(QtJingleSession *session)
 {
+    PJid remote = session->session->remote();
+    SessionTabManager *sessionmanager = m_makneto->getMainWindow()
+        ->getMaknetoView()->getSessionTabManager();
+    SessionView *sv = sessionmanager->findSession(remote.toString());
+    if (sw) {
+        // tab already exists.
+        sessionmanager->bringToFront(sv);
+    } else {
+        // tab does not exist
+        // FIXNE: this is not correct
+        int type = Chat;
 
+        sv = sessionmanager->newSessionTab(remote.toString(), 0, remote.bare());
+    }
 }
 
 /*

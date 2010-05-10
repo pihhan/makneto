@@ -74,7 +74,10 @@ SessionView* SessionTabManager::newSessionTab(const QString &text, ChatType type
     return session;
 
 	// add new tab
-	m_tab->addTab(text);
+        KIcon icon("user-properties");
+        if (type == GroupChat)
+            icon = KIcon("user-group-properties");
+	m_tab->addTab(icon, text);
 	
 	// create new session view and add to widgets
 	session = new SessionView(this, text, m_tab->count()-1, type, nick);

@@ -14,13 +14,13 @@
 #include "contactlist/status.h"
 
 #include "featurelist.h"
+#include "makneto.h"
 
 namespace XMPP 
 {
 	class Status;
 }
 
-class Makneto;
 class MaknetoGroup;
 class MaknetoContact;
 
@@ -53,6 +53,8 @@ public:
     Makneto *makneto();
 
     MaknetoContact * getContact(const QString &jid);
+
+    ChatType getContactType(const QString &jid);
 
 protected:
         QMenu * createContactMenu(const QString &jid);

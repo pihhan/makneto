@@ -5,6 +5,7 @@
 
 MUCControl::MUCControl(Makneto *makneto) : m_makneto(makneto)
 {
+  makneto->setMUCControl(this);
   connect(makneto->getConnection(), SIGNAL(groupChatJoined(const Jid &)), SLOT(groupChatJoined(const Jid &)));
   connect(makneto->getConnection(), SIGNAL(groupChatLeft(const Jid &)), SLOT(groupChatLeft(const Jid &)));
   connect(makneto->getConnection(), SIGNAL(groupChatPresence(const Jid &, const Status &)), SLOT(groupChatPresence(const Jid &, const Status &)));

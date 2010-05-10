@@ -57,10 +57,10 @@ void MediaViewWidget::createToolbarActions()
     holdAct = new KAction(KIcon("hold"), "hold", this);
     connect(holdAct, SIGNAL(triggered()), SLOT(hold()) );
 
-    terminateAct = new KAction(KIcon("terminate"), "terminate", this);
+    terminateAct = new KAction(KIcon("dialog-close"), "terminate", this);
     connect(terminateAct, SIGNAL(triggered()), SLOT(terminate()) );
     
-    fullscreenAct = new KAction(KIcon("fullscreen"), "fullscreen", this);
+    fullscreenAct = new KAction(KIcon("view-fullscreen"), "fullscreen", this);
     connect(fullscreenAct, SIGNAL(triggered()), SLOT(fullscreen()) );
 }
 

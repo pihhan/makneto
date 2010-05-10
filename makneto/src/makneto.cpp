@@ -99,5 +99,15 @@ void Makneto::addUser(const XMPP::Jid &jid, const QString &group, bool requestAu
 	
 }
 
+MUCControl * Makneto::getMUCControl() const
+{
+    return m_muccontrol;
+}
+
+void Makneto::setMUCControl(MUCControl *muc)
+{
+    m_muccontrol = muc;
+}
+
 #include "makneto.moc"
 

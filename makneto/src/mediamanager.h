@@ -51,6 +51,8 @@ class MediaManager : public QObject,
     /** @brief Slot to start ring and ask user to accept or deny session. */
     void incomingSession(QtJingleSession *session);
 
+    void raiseIncomingCallPopup(const QString &caller, bool audio, bool video);
+
     /*
      * FstStatusReader functions. 
      */
