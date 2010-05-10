@@ -107,19 +107,19 @@
     <entry name="VideoOutputModule" type="String">
         <label>Name of Gstreamer element to use as video output.</label>
         <choices>
-            <choice>ximagesink</choice>
-            <choice>xvimagesink</choice>
-        </choice>
+            <choice name="XImage">ximagesink</choice>
+            <choice name="XVImage">xvimagesink</choice>
+        </choices>
     </entry>
 
     <entry name="AudioRingModule" type="String">
         <label>Name of GStreamer element to use as audio output for ring tones.
         </label>
         <choices>
-            <choice>pulsesink</choice>
-            <choice>alsasink</choice>
-            <choice>ossink</choice>
-        <choices>
+            <choice name="Pulse">pulsesink</choice>
+            <choice name="Alsa">alsasink</choice>
+            <choice name="OSS">ossink</choice>
+        </choices>
     </entry>
 
     <entry name="AudioRingDevice" type="String">

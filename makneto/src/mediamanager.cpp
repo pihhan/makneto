@@ -22,16 +22,30 @@ MediaConfig MediaManager::mediaSettings()
     MediaDevice vin, vout;
     MediaDevice ring;
     success = success && configureDevice(ain, 
-        audioInputModule(), audioInputDevice(), audioInputParams());
+        Settings::audioInputModule(), Settings::audioInputDevice(), 
+        Settings::audioInputParams());
     success = success && configureDevice(aout, 
-        audioOutputModule(), audioOutputDevice(), audioOutputParams());
+        Settings::audioOutputModule(), Settings::audioOutputDevice(), 
+        Settings::audioOutputParams());
     success = success && configureDevice(vin,
-        videoInputModule(), videoInputDevice(), videoInputParams());
+        Settings::videoInputModule(), Settings::videoInputDevice(), 
+        Settings::videoInputParams());
     success = success && configureDevice(vout,
-        videoOutputModule(), videoOutputDevice(), videoOutputParams());
+        Settings::videoOutputModule(), Settings::videoOutputDevice(), 
+        Settings::videoOutputParams());
 
+    success = success && configureDevice(ring, 
+        Settings::audioRingModule(), Settings::audioRingDevice(), QString());
 
-
+    if (success) {
+        config.setAudioInput(ain);
+        config.setAudioOutput(aout);
+        config.setVideoInput(vin);
+        config.setVideoOutput(vout);
+        config.setLocalVideoOutput(vout);
+        config.setRingOutput(ring);
+    }
+    return config;
 }
 
 /** @brief Parse configuration of one device from configuration settings. 
@@ -102,5 +116,25 @@ void MediaManager::startRingTerminated()
 void MediaManager::incomingSession(QtJingleSession *session)
 {
 
+}
+
+/*
+ * FstStatusReader part.
+ */
+
+void MediaManager::reportMsg(MessageType type, const std::string &comment)
+{
+}
+
+void MediaManager::reportState(PipelineStateType state)
+{
+}
+
+void MediaManager::contentStatusChanged(PipelineStateType state, const std::string &content, const std::string &participant = std::string())
+{
+}
+
+void MediaManager::contentCandidatesActive(JingleCandidatePair &pair, const std::string &content)
+{
 }
 

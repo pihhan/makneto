@@ -55,6 +55,7 @@ void contactDetailDialog::detailsArrived()
 
         contactDescription = req->vcard().desc();
         updateDetailText();
+        updatePhoto(req->vcard().photo());
 
         req->safeDelete();
     }
@@ -72,6 +73,18 @@ void contactDetailDialog::updateDetailText()
     ui.detailText->setPlainText(full);
 }
 
+/** @brief update photo label from image data. */
+void contactDetailDialog::updatePhoto(const QByteArray &img)
+{
+    if (img.size() > 0) {
+        QImage image = QImage::fromData(img);
+        ui.labelPhoto->setPixmap(QPixmap::fromImage(image));
+        ui.labelPhoto->setText(QString());
+    } else {
+        ui.labelPhoto->setText(i18n("Contact does not have photo."));
+        ui.labelPhoto->setPixmap(QPixmap());
+    }
+}
 
 void contactDetailDialog::describeContact(MaknetoContact *contact)
 {

@@ -8,6 +8,7 @@
 #define CONTACTDETAILDIALOG_H
 
 #include <KDialog>
+#include <QByteArray>
 #include "ui_contact_detail.h"
 #include "maknetocontact.h"
 
@@ -23,6 +24,7 @@ public:
   void updateDetailText();
   void describeContact(MaknetoContact *contact);
   void describeFeatures(MaknetoContact *contact);
+  void updatePhoto(const QByteArray &img);
 protected Q_SLOTS:
   virtual void slotButtonClicked(int button);
   void detailsArrived();

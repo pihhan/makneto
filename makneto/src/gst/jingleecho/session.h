@@ -14,7 +14,9 @@ class Stream;
 
 typedef std::list<Stream *> StreamList;
 
-/** @brief Represents one media session and tools for working with that. */
+/** @brief Represents one media session and basic api for woking with that.
+    Session has its type, source pad for connection of media input to session,
+    and list of created streams to each participant. */
 class Session
 {
     public:

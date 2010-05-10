@@ -14,6 +14,26 @@ class Settings : public KConfigSkeleton
       public:
       enum type { Alsa, Pulse, Oss, COUNT };
     };
+    class EnumAudioOutputModule
+    {
+      public:
+      enum type { Pulse, Alsa, Oss, COUNT };
+    };
+    class EnumVideoInputModule
+    {
+      public:
+      enum type { V4L, V4L2, XimageSrc, COUNT };
+    };
+    class EnumVideoOutputModule
+    {
+      public:
+      enum type { XImage, XVImage, COUNT };
+    };
+    class EnumAudioRingModule
+    {
+      public:
+      enum type { Pulse, Alsa, OSS, COUNT };
+    };
 
     static Settings *self();
     ~Settings();
@@ -222,7 +242,7 @@ class Settings : public KConfigSkeleton
 
 
     /**
-      Get Name of GStreamer element to use as audio input.
+      Get Name of GStreamer element to use as audio input
     */
     static
     QString audioInputModule()
@@ -255,7 +275,7 @@ class Settings : public KConfigSkeleton
       Get Gstreamer module to use
     */
     static
-    int audioOutputModule()
+    QString audioOutputModule()
     {
       return self()->mAudioOutputModule;
     }
@@ -282,10 +302,10 @@ class Settings : public KConfigSkeleton
 
 
     /**
-      Get VideoInputModule
+      Get Name of Gstreamer element to use as video source.
     */
     static
-    int videoInputModule()
+    QString videoInputModule()
     {
       return self()->mVideoInputModule;
     }
@@ -315,9 +335,50 @@ class Settings : public KConfigSkeleton
       Get Name of Gstreamer element to use as video output.
     */
     static
-    int videoOutputModule()
+    QString videoOutputModule()
     {
       return self()->mVideoOutputModule;
+    }
+
+
+    /**
+      Get Name of GStreamer element to use as audio output for ring tones.
+        
+    */
+    static
+    QString audioRingModule()
+    {
+      return self()->mAudioRingModule;
+    }
+
+
+    /**
+      Get Device name to ring on.
+    */
+    static
+    QString audioRingDevice()
+    {
+      return self()->mAudioRingDevice;
+    }
+
+
+    /**
+      Get Enable sound playing?
+    */
+    static
+    bool audioRingLoud()
+    {
+      return self()->mAudioRingLoud;
+    }
+
+
+    /**
+      Get Use popup window to indicate incoming session?
+    */
+    static
+    bool audioRingPopup()
+    {
+      return self()->mAudioRingPopup;
     }
 
   protected:
@@ -346,13 +407,17 @@ class Settings : public KConfigSkeleton
     QString mAudioInputModule;
     QString mAudioInputDevice;
     QString mAudioInputParams;
-    int mAudioOutputModule;
+    QString mAudioOutputModule;
     QString mAudioOutputDevice;
     QString mAudioOutputParams;
-    int mVideoInputModule;
+    QString mVideoInputModule;
     QString mVideoInputDevice;
     QString mVideoInputParams;
-    int mVideoOutputModule;
+    QString mVideoOutputModule;
+    QString mAudioRingModule;
+    QString mAudioRingDevice;
+    bool mAudioRingLoud;
+    bool mAudioRingPopup;
 
   private:
 };

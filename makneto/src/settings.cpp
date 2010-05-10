@@ -70,8 +70,8 @@ Settings::Settings(  )
   KConfigSkeleton::ItemString  *itemTurnUsername;
   itemTurnUsername = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "turnUsername" ), mTurnUsername );
   addItem( itemTurnUsername, QLatin1String( "turnUsername" ) );
-  KConfigSkeleton::ItemString  *itemTurnPassword;
-  itemTurnPassword = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "turnPassword" ), mTurnPassword );
+  KConfigSkeleton::ItemPassword  *itemTurnPassword;
+  itemTurnPassword = new KConfigSkeleton::ItemPassword( currentGroup(), QLatin1String( "turnPassword" ), mTurnPassword );
   addItem( itemTurnPassword, QLatin1String( "turnPassword" ) );
 
   setCurrentGroup( QLatin1String( "Media" ) );
@@ -85,9 +85,8 @@ Settings::Settings(  )
   KConfigSkeleton::ItemString  *itemAudioInputParams;
   itemAudioInputParams = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioInputParams" ), mAudioInputParams );
   addItem( itemAudioInputParams, QLatin1String( "AudioInputParams" ) );
-  QList<KConfigSkeleton::ItemEnum::Choice2> valuesAudioOutputModule;
-  KConfigSkeleton::ItemEnum  *itemAudioOutputModule;
-  itemAudioOutputModule = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "AudioOutputModule" ), mAudioOutputModule, valuesAudioOutputModule );
+  KConfigSkeleton::ItemString  *itemAudioOutputModule;
+  itemAudioOutputModule = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioOutputModule" ), mAudioOutputModule );
   addItem( itemAudioOutputModule, QLatin1String( "AudioOutputModule" ) );
   KConfigSkeleton::ItemString  *itemAudioOutputDevice;
   itemAudioOutputDevice = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioOutputDevice" ), mAudioOutputDevice );
@@ -95,9 +94,8 @@ Settings::Settings(  )
   KConfigSkeleton::ItemString  *itemAudioOutputParams;
   itemAudioOutputParams = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioOutputParams" ), mAudioOutputParams );
   addItem( itemAudioOutputParams, QLatin1String( "AudioOutputParams" ) );
-  QList<KConfigSkeleton::ItemEnum::Choice2> valuesVideoInputModule;
-  KConfigSkeleton::ItemEnum  *itemVideoInputModule;
-  itemVideoInputModule = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "VideoInputModule" ), mVideoInputModule, valuesVideoInputModule );
+  KConfigSkeleton::ItemString  *itemVideoInputModule;
+  itemVideoInputModule = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "VideoInputModule" ), mVideoInputModule );
   addItem( itemVideoInputModule, QLatin1String( "VideoInputModule" ) );
   KConfigSkeleton::ItemString  *itemVideoInputDevice;
   itemVideoInputDevice = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "VideoInputDevice" ), mVideoInputDevice );
@@ -105,10 +103,21 @@ Settings::Settings(  )
   KConfigSkeleton::ItemString  *itemVideoInputParams;
   itemVideoInputParams = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "VideoInputParams" ), mVideoInputParams );
   addItem( itemVideoInputParams, QLatin1String( "VideoInputParams" ) );
-  QList<KConfigSkeleton::ItemEnum::Choice2> valuesVideoOutputModule;
-  KConfigSkeleton::ItemEnum  *itemVideoOutputModule;
-  itemVideoOutputModule = new KConfigSkeleton::ItemEnum( currentGroup(), QLatin1String( "VideoOutputModule" ), mVideoOutputModule, valuesVideoOutputModule );
+  KConfigSkeleton::ItemString  *itemVideoOutputModule;
+  itemVideoOutputModule = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "VideoOutputModule" ), mVideoOutputModule );
   addItem( itemVideoOutputModule, QLatin1String( "VideoOutputModule" ) );
+  KConfigSkeleton::ItemString  *itemAudioRingModule;
+  itemAudioRingModule = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioRingModule" ), mAudioRingModule );
+  addItem( itemAudioRingModule, QLatin1String( "AudioRingModule" ) );
+  KConfigSkeleton::ItemString  *itemAudioRingDevice;
+  itemAudioRingDevice = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "AudioRingDevice" ), mAudioRingDevice );
+  addItem( itemAudioRingDevice, QLatin1String( "AudioRingDevice" ) );
+  KConfigSkeleton::ItemBool  *itemAudioRingLoud;
+  itemAudioRingLoud = new KConfigSkeleton::ItemBool( currentGroup(), QLatin1String( "AudioRingLoud" ), mAudioRingLoud );
+  addItem( itemAudioRingLoud, QLatin1String( "AudioRingLoud" ) );
+  KConfigSkeleton::ItemBool  *itemAudioRingPopup;
+  itemAudioRingPopup = new KConfigSkeleton::ItemBool( currentGroup(), QLatin1String( "AudioRingPopup" ), mAudioRingPopup );
+  addItem( itemAudioRingPopup, QLatin1String( "AudioRingPopup" ) );
 }
 
 Settings::~Settings()

@@ -21,7 +21,10 @@
 typedef std::list<Session *>    SessionList;
 typedef std::map<std::string, FsParticipant *>  ParticipantMap;
 
-/** Representation for one multimedia session between two people.
+/** @brief Representation for one multimedia conference,
+    with one or several sessions and each session having one or more stream.
+    It is wrap around farsight FsConference, with some tools, and
+    most important callback watcher for messages.
 */
 class Conference
 {
