@@ -522,13 +522,11 @@ bool QPipeline::enableVideo(bool input, bool output)
     return success;
 }
 
-/** @brief Create audio source and sink, create filters if needed. */
-bool QPipeline::enableAudio()
+/** @brief Enable audio input modules and link filters needed. 
+    @return True if creating and linking was successful, false otherwise. */
+bool QPipeline::enableAudioInput()
 {
-    bool sink = true;
     bool source =true;
-    if (m_audio_enabled)
-        return false;
     if ((source = createAudioSource())) {
         add(m_asource);
         if (m_asourcefilter) {
@@ -536,6 +534,20 @@ bool QPipeline::enableAudio()
             source = source && link(m_asource, m_asourcefilter);
         }
     } 
+    if (!source) {
+        QPLOG() << "creating audio source failed: " 
+            << m_config.describe() << std::endl;
+        m_valid = false;
+        return false;
+    }
+    return source;
+}
+
+/** @brief Enable audio output modules and link filters to them. 
+    @return True if created and linked succesfully, false otherwise. */
+bool QPipeline::enableAudioOutput()
+{
+    bool sink = true;
     if ((sink = createAudioSink())) {
         add(m_asink);
         if (m_asinkfilter) {
@@ -543,6 +555,25 @@ bool QPipeline::enableAudio()
             sink = sink && link(m_asinkfilter, m_asink);
         }
     } 
+    if (!sink) {
+        QPLOG() << "creating sink or source failed" 
+            << m_config.describe() << std::endl;
+        m_valid = false;
+        return false;
+    }
+    return sink;
+}
+
+/** @brief Create audio source and sink, create filters if needed. */
+bool QPipeline::enableAudio()
+{
+    bool sink = true;
+    bool source =true;
+    if (m_audio_enabled)
+        return false;
+    source = enableAudioInput();
+    sink = enableAudioOutput();
+
     if (!source || !sink) {
         QPLOG() << "creating sink or source failed" 
             << m_config.describe() << std::endl;
@@ -668,7 +699,7 @@ GstPad * QPipeline::getVideoSourcePad()
     return pad;
 }
 
-
+/** @brief Debug watcher for new elements inside pipeline. */
 void QPipeline::elementAdded(GstBin *bin, GstElement *element, gpointer pipeline)
 {
     gchar *n1, *n2;
@@ -680,6 +711,7 @@ void QPipeline::elementAdded(GstBin *bin, GstElement *element, gpointer pipeline
     g_free(n2);
 }
 
+/** @brief Debug watcher for removed elements from pipeline. */
 void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline)
 {
     gchar *n1, *n2;
@@ -725,6 +757,8 @@ std::string QPipeline::binToString(GstElement *bin)
     return o.str();
 }
 
+/** @brief Create description string of current pipeline, with state, elements.
+    Designed for debugging, not for saving or restoring. */
 std::string QPipeline::describe()
 {
     std::ostringstream o;
@@ -783,8 +817,8 @@ void QPipeline::setMediaConfig(const MediaConfig &c)
     m_config = c;
 }
 
-/** @brief configure parameters from map of payloadparameters.
-    It will check type of parameter
+/** @brief Configure parameters from map of payloadparameters.
+    It will check type of each parameter
 */
 bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
 {

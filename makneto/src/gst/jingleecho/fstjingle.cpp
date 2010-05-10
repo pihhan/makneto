@@ -1134,3 +1134,14 @@ FsMediaType FstJingle::fsMediaType(MediaType type)
     return FS_MEDIA_TYPE_AUDIO;
 }
 
+bool FstJingle::enableAudioSession()
+{
+    Session *audioSession = new Session(conference, FS_MEDIA_TYPE_AUDIO);
+    
+}
+
+bool FstJingle::enableVideoSession()
+{
+    Session *videoSession = new Session(conference, FS_MEDIA_TYPE_VIDEO);
+}
+

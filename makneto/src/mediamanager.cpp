@@ -1,4 +1,6 @@
 
+#include <QDebug>
+
 #include "mediamanager.h"
 #include "irisjinglemanager.h"
 #include "settings.h"
@@ -8,8 +10,17 @@ MediaManager::MediaManager(Makneto *makneto)
     : m_makneto(makneto)
 {
     jingle = new FstJingle();
+    jingle->setStatusReader(this);
+
 }
 
+
+void MediaManager::testMediaSettings()
+{
+    MediaConfig config = mediaSettings();
+    jingle->setMediaConfig(config);
+
+}
 
 /** @brief Parse media settings from KDE settings classes. */
 MediaConfig MediaManager::mediaSettings()
@@ -137,10 +148,15 @@ void MediaManager::incomingSession(QtJingleSession *session)
 
 void MediaManager::reportMsg(MessageType type, const std::string &comment)
 {
+    QString msg = QString::fromStdString(comment);
+    emit pipelineMessage(msg);
+    qDebug() << "pipeline message type " << type << ": " << msg;
 }
 
 void MediaManager::reportState(PipelineStateType state)
 {
+    emit pipelineStateChange(state);
+    qDebug() << "pipeline state change: " << state;
 }
 
 void MediaManager::contentStatusChanged(PipelineStateType state, const std::string &content, const std::string &participant = std::string())

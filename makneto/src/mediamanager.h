@@ -61,6 +61,10 @@ class MediaManager : public QObject,
     virtual void contentStatusChanged(PipelineStateType state, const std::string &content, const std::string &participant = std::string());
     virtual void contentCandidatesActive(JingleCandidatePair &pair, const std::string &content);
 
+    /* statusreader Qt signal shadow. */
+    signals:
+    void pipelineMessage(const QString &comment);
+    void pipelineStateChange(PipelineStateType state);
 
     private:
     Makneto *m_makneto;

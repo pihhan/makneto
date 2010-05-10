@@ -19,7 +19,8 @@
 
 
 /** @brief Class for converting my format for Jingle signalling to 
-    farsight structures. Direct farsight session. */
+    farsight structures. Direct farsight session. 
+    @author Petr Mensik <pihhan@cipis.net> */
 class FstJingle
 {
     public:
@@ -107,6 +108,9 @@ class FstJingle
 
     GList * codecListByPreference(const GList *codecs, const StringList &preferences);
     FsMediaType fsMediaType(MediaType type);
+
+    bool enableAudioSession();
+    bool enableVideoSession();
 
     QPipeline *pipeline;
     Conference *conference;
