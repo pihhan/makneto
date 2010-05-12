@@ -335,6 +335,42 @@ nicménì ani ta tefunguje a s podporou libjingle je hodnì nestabilní. Navíc tato
 knihovna pochází z doby pøed vydáním XEP-166 (Jingle)\cite{xmppJingle} a není
 asi se specifikací plnì kompatibilní.
 
+\subsection*{Ekiga}
+Ekiga\ref{ekiga} je softwarový telefon s podporou videokonference. Pùvodní 
+program se jmenoval GnomeMeeting, aby se pøede¹lo právním problémùm 
+s registrovanou znaèkou NetMeeting, byl pøejmenován na jméno ekiga. Projekt
+vznikl v roce 2000 jako diplomová práce Damiena Sandrase na Louvain School of Engineering v Belgii\ref{ekiga_begin}. Myslím, ¾e tento program je v souèasnosti
+nejlep¹ím programem pro hlasovou komunikaci na platformì GNU/Linux, existuje
+v¹ak i verze pro Microsoft Windows. Ekiga podporuje volání pomocí rodin protokolù SIP a H.323, vèetnì øady pokroèilej¹ích funkcí, jako napøíklad instant messanging a presence nad protokolem SIP. 
+
+Grafické u¾ivatelské rozhraní programu je napsáno pomocí knihovny GTK. 
+Projekt vyu¾ívá ke správì vstupních, výstupních zaøízení knihovnu PTLib.
+Pùvodnì byla knihovna vytváøena pro pou¾ití v projektu OpenH323, je¹tì pod 
+jménem PWLib. Pozdìji pøibyla Open Phone Abstraction Library -- OPAL\ref{opal},
+která umo¾òuje jednotným zpùsobem volání jak protokolem H.323, tak SIP.
+Obì knihovny jsou zveøejnìny pod licencí Mozilla Public License. 
+
+Ekigu lze pou¾ívat jako softwarový telefon pro pøipojení k VoIP ústøednì
+operátorù protokoly SIP nebo H.323 a volat tak do pevné telefonní sítì.
+Proto¾e se bì¾nì pou¾ívá pro VoIP, umí pracovat i s událostmi stisku kláves
+vytáèení, lze ji tak pou¾ít pro práci s telefoním automatem.
+Ekiga obsahuje podporu také pro videokonferenèní hovor, i kdy¾ nabídnuta je 
+pouze mo¾nost hovoru s jedním volajícím. Pomocí protokolu H.323 je mo¾né 
+s pou¾itím Multipoint Conference Unit (MCU) uskuteènit i hovor s více úèastníky,
+i kdy¾ z pohledu programu probíhá komunikace stále s jedním úèastníkem a 
+spojení více úèastníkù provádí MCU. Program je èásteènì integrován do prostøedí
+Gnome, i kdy¾ v nových vydáních jej nahrazuje projekt Empathy.
+
+V souèasné dobì Ekiga neumo¾nuje volání pomocí protokolu XMPP, ani roz¹íøením
+Jingle, ani proprietárním roz¹íøením spoleènosti Google. Ani v ¾ádné vývojové verzi.
+
+\subsection*{Empathy}
+
+
+\subsection*{Gajim}
+
+\subsection*{Psi}
+
 \subsection*{Inkscape}
 
 Inkscape neumí ¾ádné pøenosy videa ani hlasu. Uvádím jej zde proto, mù¾e plnit
@@ -353,6 +389,7 @@ kterých nále¾í. Plugin Inkscapu ani neseskupuje kontakty do skupin, pouze
 pøidává kontakty do skupiny, pokud pou¾íváme stále stejnou skupinu. Ve výsledku
 tak mù¾eme mít jednu skupinu v seznamu tøeba osmkrát nebo více. Zkrátka plugin
 tam je, ale pøíli¹ pou¾itelný (alespoò zatím) není.
+
 
 \section{Standardizované protokoly}
 
@@ -423,7 +460,7 @@ data i celé konference a¾ o stovkách úèastníkù.
 \end{center}
 \end{figure}
 
-Hlavièka RTP protokolu \ref{pic_rtp_head} obsahuje dvoubitové oznaèení èísla 
+Hlavièka RTP protokolu (viz. obrázek \ref{pic_rtp_head}) obsahuje dvoubitové oznaèení èísla 
 verze, aktuální je 2. Následuje pøíznak vyplnìní P, který znaèí, ¾e paket 
 obsahuje výplò, je¾ není souèástí pøená¹ených dat. Pøíznak roz¹íøení informuje
 o pøítomnosti právì jedné hlavièky roz¹íøení za fixní hlavièkou. Následuje 
@@ -1049,6 +1086,14 @@ RTP protokolu pro gstreamer. Jedna star¹í implementace vyu¾ívající knihovnu
 jRTP, druhá novìj¹í, implementovaná s vyu¾itím knihovny Farsight2. K první verzi
 dokonce existuje funkèní rtpjitterbuffer, který øe¹í i poøadí pøíchozích paketù
 v nesprávném poøadí. 
+
+GStreamer vyu¾ívá implementaci objektového pøístupu a dìdiènosti z knihovny 
+GLib, respektive GObject. GLib jsou obecné funkce chybìjící ve standardní 
+knihovnì jazyka C, jako napøíklad práce se seznamy, práce se stromem.
+
+\chapter{Farsight}
+
+
 
 Pøesto pøedpokládám, ¾e RTP budu implementovat vlastní, takté¾ za pomoci
 knihovny farshight2 v kombinaci s knihovnou nice, která implementuje ICE 
