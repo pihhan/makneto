@@ -64,8 +64,9 @@ jejich mo¾nosti, klady a zápory.
 \chapter{Makneto}
 
 Aplikace Makneto vznikla v~akademickém roce 2007/2008 jako diplomová práce 
-Jaroslava Øezníka s~titulem Sdílená tabule. Program má zprostøedkovat mo¾nost 
-nejen psaní, ale i jednoduchého grafického vyjádøení v~reálném èase mezi 
+Jaroslava Øezníka s~titulem Sdílená tabule\cite{Makneto}. 
+Program má zprostøedkovat mo¾nost 
+nejen psaní zpráv, ale i jednoduchého grafického vyjádøení v~reálném èase mezi 
 lidmi na dálku, elektronickou formou. Ke komunikaci po internetu je vyu¾it 
 XMPP protokol a jeho roz¹íøení pro pokroèilej¹í vìci. 
 
@@ -876,7 +877,7 @@ Jedním z~dùle¾itých roz¹íøení je {\em XEP-0030}, Service Discovery. Toto roz¹íøe
 dostupných slu¾eb a jejich podporovaných vlastností. Tuto úlohu mìlo dnes ji¾ historické roz¹íøení 
 Jabber Browsing (XEP--0011) a Agent Information (XEP-0094). Obì tyto roz¹íøení nahrazuje plnì a mnohem lépe.
 Proto¾e jabber má velké mno¾ství roz¹íøení, je èasto potøeba zjistit, která roz¹íøení slu¾ba podporuje. 
-Toto roz¹íøení nejenom ¾e umí zobrazit dostupné slu¾by pomocí dotazu na polo¾ky -- namespace 'http://jabber.org/protocol/disco\#items', ale také jejich vlastnosti pomocí namespace 'http://jabber.org/protocol/disco\#info'.
+Toto roz¹íøení nejenom, ¾e umí zobrazit dostupné slu¾by pomocí dotazu na polo¾ky -- namespace 'http://jabber.org/protocol/disco\#items', ale také jejich vlastnosti pomocí namespace 'http://jabber.org/protocol/disco\#info'.
 
 % FIXME: Pøedìlat, pøí¹ernì nepochopitelné
 \subsubsection*{Discovery Info}
@@ -896,8 +897,10 @@ nemá smysl u¾ivateli nabízet tucet vlastností, pøi jejich¾ vykonání na nìj stejn
 neimplementováno.
 
 \subsubsection*{Discovery Items}
-Ka¾dé entita mù¾e mít nìkolik dal¹ích entit. Jejich zji¹tìní provádí klient dotazem s~namespace 'http://jabber.org/protocol/disco\#info'. Entita mù¾e vrátit nìkolik dal¹ích entit, které mohou být znovu prohlí¾eny.
-Lze tak vytvoøit stromovou strukturu s~rùznými polo¾kami.
+Ka¾dá entita mù¾e mít nìkolik vnoøených entit. Jejich zji¹tìní provádí klient dotazem s~namespace 'http://jabber.org/protocol/disco\#info'. Entita mù¾e vrátit nìkolik dal¹ích entit, které mohou být znovu prohlí¾eny.
+Lze tak vytvoøit stromovou strukturu s~rùznými polo¾kami, kde ka¾dá polo¾ka
+mù¾e mít specifikován typ, podporované vlastnosti, pøípadnì jiné údaje, 
+napøíklad statistické údaje vyu¾ití slu¾by.
 
 Aby nebylo nutné pøi ka¾dém pøipojení posílat ka¾dému kontaktu dotaz na 
 podporované protokoly, existuje roz¹íøení Entity Capabilities \cite{xmppCapabilities}. Ka¾dý klient podporující toto roz¹íøení posílá pøi prvotním nastavením
@@ -948,7 +951,7 @@ napøíklad klient Jabbim pro dohodnutí fungujícího zpùsobu pro pøenos souboru.
 \end{center}
 \end{figure}
 
-Sezení jingle mù¾e mít 3 stavy, mezi kterýmy mù¾e pøecházet, jak je zobrazeno
+Sezení jingle mù¾e mít 3 stavy, mezi kterými mù¾e pøecházet, jak je zobrazeno
 na obrázku \ref{pic_jingle_states}. Na hranách je zapsaná akce (atribut action 
 tagu jingle), kterou se mìní stav na jiný. Zahájení sestavování sezení se 
 zahajuje zasláním session-initiate. Po jeho zaslání mù¾e protistrana odmítnout,
@@ -995,7 +998,8 @@ pøiøazená dynamická èísla obsahu pøiøazená jednotlivým kodekùm èi vzorkovací fre
 multimediálních formátù pøená¹ených protokolem RTP\cite{rtp} definuje roz¹íøení {\em Jingle RTP Sessions}\cite{xmppJingleRtp}, XEP~167.
 
 Pro uskuteènìní spojení je potøeba vymìnit si informace o~sí»ovém pøipojení, 
-adresách a portech pro spojení u¾ivatelù. Jaké parametry je potøeba si vymìnit 
+adresách a portech pro spojení koncových u¾ivatelù. 
+Jaké parametry je potøeba si vymìnit 
 závisí na volbì protokolu, kterým se budou multimédia pøená¹et. Pro pøenos
 multimediálního obsahu v~pøímém pøenosu se nejèastìji pou¾ívají protokoly bez
 korekce ztracených paketù. 
@@ -1167,21 +1171,134 @@ jRTP, druhá novìj¹í, implementovaná s~vyu¾itím knihovny Farsight2. K~první verzi
 dokonce existuje funkèní rtpjitterbuffer, který øe¹í i poøadí pøíchozích paketù
 v~nesprávném poøadí. 
 
+\subsection{Architektura GStreameru}
 GStreamer vyu¾ívá implementaci objektového pøístupu a dìdiènosti z~knihovny 
 GLib, respektive GObject. GLib jsou obecné funkce chybìjící ve standardní 
-knihovnì jazyka C, jako napøíklad práce se seznamy, práce se stromem.
+knihovnì jazyka C, jako napøíklad práce se seznamy, práce se stromem. 
+V knihovnì GObject jsou implementovány rutiny pro práci se strukturami,
+typovými hodnotami i s mo¾ností definice u¾ivatelského typu, makra pro odvození
+nové struktury z rodièovské a systém vlastností objektu. Metody objektu, jak 
+je chápeme v objektových jazycích pøímo pro objekty, jsou obvykle øe¹eny
+pouze vhodným pojmenováním funkce podle stanovené konvence. 
+Objekt mù¾e mít také signály, kterými mù¾e pøi zmìnì stavu pøedávat informace
+pøipojeným objektùm. Na rozdíl od knihovny Qt signály GObject nevy¾adují 
+roz¹íøení jazyka ani preprocesor.
+
+Hlavním typem v prostøedí GStreameru je typ \verb|GstElement|, který slou¾í 
+jako vlastní stavební kámen multimediálního øetìzce. Element mù¾e mít 
+jeden èi více datových vstupù, stejnì tak mù¾e mít jeden èi více datových 
+výstupù. Podle úèelu elementu mù¾e mít pouze vstupy pro zdroje dat, 
+pouze výstupy pro výstupní zaøízení, a obojí v pøípadì filtrù konvertujících
+data na jiný formát. Vstup èi výstup se pøipojuje pomocí 
+struktury \verb|GstPad|,
+která popisuje vlastnosti dat plynoucí vysílaných nebo pøijímaných daným 
+elementem. Formát vlastních dat popisuje struktura \verb|GstCaps|, která
+u¾ivá pro popis MIME typ média spoleènì s dal¹ími parametry. Jeden vstup mù¾e
+podporovat celou øadu rùzných formátù, k výbìru pou¾itého formátu dojde a¾
+pøi naètení prvotních dat ze zdroje. Tuto èinnost nazýváme \verb|preroll|,
+neboli pøedtoèení.
+
+Dal¹í dùle¾itou strukturou jsou speciální typy elementù, které umo¾òují do
+sebe vkládat dal¹í elementy a organizovat tak skupinu do pøehlednìj¹ích celkù.
+Takovým elementem je \verb|GstBin|, který je implementací bì¾ného elementu.
+Speciálním pøípadem binu je GstPipeline, která implementuje navíc jenom 
+nastavení zdroje èasu a prodlevu. 
+
+Ka¾dý element má svùj stav, jeho¾ zmìnami se aktivují multimediální zdroje
+a pøi zmìnách také probíhá dohodnutí formátu vymìòovaných médií. Obvykle se
+nastavuje stav pouze na objekt pipeline, která postupnì mìní stavy obsa¾ených
+elementù. Po pøejití v¹ech elementù na po¾adovaný stav teprve nastaví nový
+stav na vlastní objekt. Stavy se mìní postupnì po jednom asynchronnì, pouze
+zastavení pipeline se provádí synchronnì.
+
+Stavy elementù jsou následující:
+\begin{description}
+    \item[NULL]{výchozí stav zastaveného øetìzce, pøi nìm ¾ádné zaøízení není otevøeno}
+    \item[READY]{stav, kdy se otevírají vstupní a výstupní zaøízení,
+     teprve pøi tomto stavu lze zjistit, ¾e po¾adované zaøízení není dostupné.
+     Pøípadnì jaké formáty dat vlastní zaøízení podporuje.}
+    \item[PAUSED]{pozastavení, pøi kterém u¾ se pøednaèítají úvodní data
+        ze zdrojù a celý øetìzec se pøipraví podle naètených dat.}
+    \item[PLAYING]{aktivní stav øetìzce, pøi kterém probíhá vlastní pøehrávání
+        ze zdroje}
+\end{description}
+
+Pøi pøehrávání ze ¾ivého vstupu se chování mírnì upravuje a elementy pøechází
+do stavu PAUSED bez úvodního pøednaètení, aby pøi pøijetí dat ji¾ byly schopny
+ihned data zpracovávat bez zbyteèného prodlení.
+
+Gstreamer je vícevláknový systém a zpracování multimédií se 
+provádí v oddìlených vláknech. Komunikace s hlavním vláknem probíhá primárnì
+pomocí \verb|GstMessage|, které komunikují s hlavním vláknem pomocí callbacku
+sledujícího sbìrnici zpráv. Zprávy chodí asynchronnì, ka¾dá zpráva má svùj typ
+a pøípadnou datovou strukturu. Zprávy jsou zasílány napøíklad pøi zmìnì stavu
+elementu, nebo mohou zasílat zprávy typu element, jejich¾ formát je závislý
+na konkrétním elementu. Vlastní zprávy elementù mají navíc typ oznaèený 
+øetìzcem. Zprávy pro pøedávání hodnot vyu¾ívají napøíklad elementy \verb|level|,
+nebo \verb|fsconference|. 
+
+Nìkteré elementy mohou pou¾ívat i signálù, jejich 
+zpracování je ale problematiètìj¹í, proto¾e obsluha signálu se vykonává 
+ve vláknì zpracovávající multimediální øetìzec a pøi del¹ím výpoètu mù¾e mít 
+negativní vliv na kvalitu pøehrávání.
 
 \section{Farsight}
 
+Farsight 2\cite{farsight} je knihovna pro snadnìj¹í budování komunikaèního 
+systému s podporou prùchodu pøes pøeklad adres. Farsight je projekt psaný 
+v jazyce C, pro systém GStreamer a GLib. Vychází z pøedchozí verze knihovny,
+která implementovala jak pøenos médií protokolem SIP/RTP, tak komunikaci
+s Live Messengerem. Nejdùle¾itìj¹ím projektem vyu¾ívajícím farsight je
+framework Telepathy\cite{Telepathy}, se kterým je pomìrnì úzce propojená 
+a vyvíjí se vedle sebe.
+
+Knihovna farsight je modulární a implementuje jedno spoleèné rozhraní 
+v modulech pro komunikaci RTP protokolem a protokolem pro komunikaci s 
+Live Messengerem. RTP protokol je implementován z èásti pomocí modulù
+obsa¾ených v Gstreameru, z èásti vlastní implementací. Komunikace probíhá
+celá v re¾ii øetìzce gstreameru, vlastní jádro farsight je implementováno
+jako \verb|GstBin| pøidaný do øetìzce a komunikace knihovny k programu
+probíhá výhradnì pomocí zpráv, od programu se instrukce pøedávají 
+odpovídajícími funkcemi. Sí»ová èást knihovny vyu¾ívá elementy Gstreameru
+k posílání dat. Knihovna implementuje dva podsystémy pro pøenos RTP dat.
+Prvním je nativní pøenos v UDP datagramech bez dal¹ího roz¹íøení, 
+v terminologii Jingle to transport raw-udp. Tento re¾im nepodporuje signalizaci
+uskuteènìného spojení jinak, ne¾ pøijetím dat po úspì¹ném spojení.
+Druhým je transport zalo¾ený na knihovnì nice, který pomocí protokolu
+výraznì vylep¹uje mo¾nosti prùchodu pøímého spojení nejbì¾nìj¹ími typy NATu.
+Transport nice implementuje protokol Interactive Connection Estabilishment (ICE).
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{farsight}
+  \caption{Schematické propojení tøíd pro audio/video spojení se dvìma úèasníky
+    s pomocí knihovny Farsight}
+  \label{pic_farsight}
+\end{center}
+\end{figure}
+
+Obrázek \ref{pic_farsight} ukazuje základní hierarchii propojení tøíd 
+v knihovnì farsight. Základní je tøída Conference, která urèuje systém pou¾itý
+k pøenosu, a zároveò slou¾í jako element pøidaný do øetìzce GStreameru. Pro 
+ka¾dý pøená¹ený zdroj se vytvoøí session, která podle typu pøená¹eného
+média inicializuje seznam kodekù dostupných v systému. Pro ka¾dého pøíjemce
+vytvoøíme z ka¾dé session jeden stream, který reprezentuje jedno spojení 
+s jedním úèastníkem. Stream obsahuje seznam místních adres pou¾itých 
+k odchozímu spojení a cílové adresy, kterým posíláme vlastní zakódovaná 
+multimédia. Dále obsahuje seznam kodekù, které protistrana podporuje. Jejich
+výmìna není souèástí knihovny farsight.
 
 
-Pøesto pøedpokládám, ¾e RTP budu implementovat vlastní, takté¾ za pomoci
-knihovny farshight2 v~kombinaci s~knihovnou nice, která implementuje ICE 
-protokol, který by mìl pomoci pøekonat v¹echny bì¾né druhy firewallu a NATu.
-Mým cílem je, aby aplikace mohla fungovat v~ka¾dé bì¾nì nastavené síti, tedy
-musí zvládnout fungování i v~pøípadì, ¾e jsou oba u¾ivatelé schovaní za 
-pøekladem adres a ani jeden z~nich nemá veøejnou IP adresu, se kterou by ¹lo
-navázat pøímo spojení.
+
+
+%
+%Pøesto pøedpokládám, ¾e RTP budu implementovat vlastní, takté¾ za pomoci
+%knihovny farshight2 v~kombinaci s~knihovnou nice, která implementuje ICE 
+%protokol, který by mìl pomoci pøekonat v¹echny bì¾né druhy firewallu a NATu.
+%Mým cílem je, aby aplikace mohla fungovat v~ka¾dé bì¾nì nastavené síti, tedy
+%musí zvládnout fungování i v~pøípadì, ¾e jsou oba u¾ivatelé schovaní za 
+%pøekladem adres a ani jeden z~nich nemá veøejnou IP adresu, se kterou by ¹lo
+%navázat pøímo spojení.
 
 \chapter{Závìr}
 
