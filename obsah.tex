@@ -572,6 +572,7 @@ posílání kontrolního paketu pøeddefinován staticky. Pøi vìt¹ím poètu pøíjemcù
 je nutné prodlu¾ovat interval podle zji¹tìného poètu posluchaèù, aby kontrolní 
 tok nebyl ve výsledku vy¹¹í, ne¾ tok vlastních dat.
 
+
 \chapter{XMPP}
 
 Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. Je to elektronická obdoba
@@ -882,7 +883,7 @@ Toto roz¹íøení nejenom, ¾e umí zobrazit dostupné slu¾by pomocí dotazu na polo¾ky
 % FIXME: Pøedìlat, pøí¹ernì nepochopitelné
 \subsubsection*{Discovery Info}
 Ka¾dá entita má svoje vlastnosti a schopnosti. Entitou rozumíme buï slu¾bu, kontakt nebo vnoøený objekt 
-nìjaké slu¾by, napøíklad místnost v~diskuzní skupinì. Entita je jedineènì urèená svým \verb|JID|, tedy u¾ivatelskou èástí, jménem serveru a zdrojem (resource), pøípadnì mù¾e být urèena i pomocí \verb|node|. 
+nìjaké slu¾by, napøíklad místnost v~diskuzní skupinì. Entita je jedineènì urèená svým \verb|JabberID|, tedy u¾ivatelskou èástí, jménem serveru a zdrojem (resource), pøípadnì mù¾e být urèena i pomocí \verb|node|. 
 U¾ivatelská èást i zdroj mù¾e chybìt. Ka¾dá entita podporující
 Service Discovery musí umìt vrátit seznam podporovaných vlastností a identit. Identity rozli¹ují typ a 
 zamìøení entity. Výèet mo¾ných typù na rozdíl od pøedchozích specifikací není daný pøímo v~roz¹íøení, ale 
@@ -900,10 +901,12 @@ neimplementováno.
 Ka¾dá entita mù¾e mít nìkolik vnoøených entit. Jejich zji¹tìní provádí klient dotazem s~namespace 'http://jabber.org/protocol/disco\#info'. Entita mù¾e vrátit nìkolik dal¹ích entit, které mohou být znovu prohlí¾eny.
 Lze tak vytvoøit stromovou strukturu s~rùznými polo¾kami, kde ka¾dá polo¾ka
 mù¾e mít specifikován typ, podporované vlastnosti, pøípadnì jiné údaje, 
-napøíklad statistické údaje vyu¾ití slu¾by.
+napøíklad statistické údaje vyu¾ití slu¾by. Pokud entita nemá ¾ádné vnoøené 
+prvky, vrací v odpovìdi prázný XML element.
 
+\subsubsection*{Entity Capabilities}
 Aby nebylo nutné pøi ka¾dém pøipojení posílat ka¾dému kontaktu dotaz na 
-podporované protokoly, existuje roz¹íøení Entity Capabilities \cite{xmppCapabilities}. Ka¾dý klient podporující toto roz¹íøení posílá pøi prvotním nastavením
+podporované protokoly, existuje roz¹íøení Entity Capabilities\cite{xmppCapabilities}. Ka¾dý klient podporující toto roz¹íøení posílá pøi prvotním nastavením
 stavu ve stanze \verb|presence| také tag \verb|c| se jmenným prostorem
 http://jabber.org/protocol/caps a kryptografickým hashem ze seznamu v¹ech
 roz¹íøení podporovaných klientem. Tento hash je témìø jistì unikátní a 
@@ -917,10 +920,52 @@ kteøí takové akce umí vykonat. Tedy nemusím kliknout napøed na ikonu volání,
 aby mi program odepsal, ¾e kontaktu vlastnì ani volat nejde, proto¾e to neumí
 jeho program.
 
+Roz¹íøení je v souèasnosti implementováno v klientech ve dvou rùzných verzích,
+které se mírnì li¹í. Star¹í zpùsob pøedpokládal nemìnné schopnosti klienta
+v jeho konkrétní verzi. Jedno vydání tedy bude mít jisté implementované 
+vlastnosti v¾dy stejné. Pokud bude program roz¹íøen moduly naèítanými a¾
+po startu, které mohou pocházet od jiných výrobcù, tzv. pluginy, bude pro
+roz¹íøení pøidaná zásuvným modulem uvedeno jako extension. Program v presence
+posílá kromì svojí verze i seznam aktivních roz¹íøení. Pøíjemce, pokud
+chce znát ve¹keré schopnosti klienta, musí se dotázat jednak na schopnosti
+verze samotné, dále pro ka¾dé uvedené roz¹íøení samostatnì. Souhrn schopností
+získá souhrnem schopností v¹ech roz¹íøení a základní verze.
+
+Pøi dal¹ím vývoji se zaèaly pou¾ívat schopnosti i k signalizaci vlastností,
+které si u¾ivatel nastaví v nastavení programu. Nejvíce zmìny souvisejí 
+s roz¹íøením Publish--Subscribe, resp. jeho zjednodu¹enou formou 
+Personal Eventing Protocol. Publish--Subscribe je zpùsob zveøejnování informací
+v¹em zájemcùm, kteøí mají povolení od rozesílatele informace a zároveò si pøejí
+informaci obdr¾et. Publish--Subscribe umo¾òuje pomìrnì komplexní øízení pøístupových práv k uzlùv se zveøejòovanými informacemi, ale jejich správa je relativnì
+komplikovaná. Cílem Personal Eventing Protocol bylo zjednodu¹it registraci 
+pøíjemcù události dostateènì intuitivním zpùsobem, aby nebylo potøeba ani
+pøíli¹ slo¾itého kódu na stranì klienta, ani v u¾ivatelském rozhraní. PEP,
+jak roz¹íøení bì¾nì nazývají vývojáøi, má za cíl zveøejòovat krátké informace
+typu GPS souøadnice klienta, název pøehrávané skladby, nálada u¾ivatele 
+a podobnì. Informace jsou rozesílány pouze klientùm, kteøí informace umí 
+zpracovat. Na rozdíl od Publish--Subscribe se nemusí klient registrovat
+k uzlu zveøejòujícímu informaci. Tento uzel je spravován XMPP serverem a 
+je shodný s JID u¾ivatele bez èásti resource, tedy holé JabberId. 
+Server pozná, ¾e u¾ivatel má zájem pøijímat vybrané události tak, 
+¾e se nachází v 
+seznamu kontaktù u¾ivatele zveøejòujícího informaci a dostal od nìj
+povolení vidìt jeho online stav. Druhá podmínka je, ¾e pou¾ije právì roz¹íøení 
+Entity Capabilities a server umí s tímto roz¹íøením pracovat. Klient ¾ádá
+server o zasílání událostí prostým pøidáním \verb|+notify| za jmenný prostor
+roz¹íøení v seznamu podporovaných vlastností. 
+
+Proto¾e je takových roz¹íøení
+øada a velice pravdìpodobnì dal¹í pøibudou, bylo by znaènì nepraktické
+mít dlouhý seznam roz¹íøení pro ka¾dou vlastnost, kterou u¾ivatel chce nebo
+nechce zveøejòovat. Je ¾ádoucí, aby seznam roz¹íøení nebyl pøíli¹ dlouhý, 
+proto¾e se zasílá pøi ka¾dé zmìnì stavu klienta. Proto se v novìj¹ích
+verzích neoznaèuje momentálních schopností verzí klienta a seznamem roz¹íøení,
+ale kryptografickým hashem vyrobeným ze seøazených schopností. 
+
 \section{Jingle}
 
 XMPP má velmi mnoho mo¾ností pøi zpracování a výmìnì zpráv, ale podpora 
-multimédií stále není naimplementována. První pokusy o~pøenos multimédií
+multimédií stále není implementována. První pokusy o~pøenos multimédií
 se zkou¹ely pomocí roz¹íøení bistreamù, pou¾ívaných pøi pøenosu souboru. 
 Velice brzy bylo jasné, ¾e takový zpùsob je nedostateèný a není schopen 
 obsáhnout v¹echny pøípady pou¾ití.
@@ -1281,15 +1326,15 @@ Obrázek \ref{pic_farsight} ukazuje základní hierarchii propojení tøíd
 v knihovnì farsight. Základní je tøída Conference, která urèuje systém pou¾itý
 k pøenosu, a zároveò slou¾í jako element pøidaný do øetìzce GStreameru. Pro 
 ka¾dý pøená¹ený zdroj se vytvoøí session, která podle typu pøená¹eného
-média inicializuje seznam kodekù dostupných v systému. Pro ka¾dého pøíjemce
+média inicializuje seznam kodekù dostupných v systému. K jedné session lze
+pøipojit nejvíce jeden zdroj, audio nebo video, podle jejího typu.
+Pro ka¾dého pøíjemce
 vytvoøíme z ka¾dé session jeden stream, který reprezentuje jedno spojení 
 s jedním úèastníkem. Stream obsahuje seznam místních adres pou¾itých 
 k odchozímu spojení a cílové adresy, kterým posíláme vlastní zakódovaná 
 multimédia. Dále obsahuje seznam kodekù, které protistrana podporuje. Jejich
-výmìna není souèástí knihovny farsight.
-
-
-
+výmìna není souèástí knihovny farsight. Pokud dojde k úspì¹nému spojení,
+obdr¾íme od streamu signál s pøipojením dekódovaných dat k výstupnímu zaøízení.
 
 %
 %Pøesto pøedpokládám, ¾e RTP budu implementovat vlastní, takté¾ za pomoci
