@@ -1,0 +1,10 @@
+
+\section{Přenos multimediálního obsahu}
+
+co je potřeba - 
+* minimální odezva.
+* dostaečný datový tok
+* nízký jitter - kolísání odezvy
+
+Přenos hlasu.
+Ke hlasové komunikaci používáme.

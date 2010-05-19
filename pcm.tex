@@ -1,0 +1,50 @@
+\chapter{Přenos a formát multimédií}
+
+\subsection{Přenos hlasu}
+
+Před přenosem signálu po internetu nejdříve potřebujeme data zaznamenat a
+digitalizovat. V případě audio signálu jako záznamové zařízení obvykle
+slouží snímací zařízení, například mikrofon, připojené k převodníku
+analogové úrovně napětí na diskrétní čísla. Pomocí analogově--digitálního
+převodníku získáváme sekvenci čísel o předem nastavené vzorkovací frekvenci.
+Takové kódování analogového signálu nazýváme pulzně kódová modulace, 
+anglicky pulse--code modulation (PCM). Digitální kódování umožňuje ideální
+rekonstrukci zaznamenaného signálu po celé přenosové cestě, takže nedochází
+k poškození signálu při přenosu. Jistou nevýhodou je omezení zaznamenané 
+frekvence na nejvýše polovinu frekvence vzorkovací, pokud nemá být výsledný
+signál poškozen.
+
+Nevýhodou PCM je vysoký nutný tok vzhledem k množství přenesené informace\cite{digital_speech}, oproti původnímu analogovému signálu potřebujeme vyšší přenosovou kapacitu. Proto volíme jiné způsoby kódování k ukládání a přenosu řeči.
+Kódování dělíme na ztrátové, při jehož použití ztrácíme část přenášené 
+informace, a bezeztrátové, kde použijeme výhodnější způsob uložení a odstraníme
+nadbytečnou redundanci přenášené informace. Při záznamu hlasu obvykle 
+nevyžadujeme bezchybný přenos beze ztráty informace, ale raději omezíme 
+množství přenášené informace, abychom mohli komunikovat i po pomalejší lince,
+nebo abychom po ní mohli přenést více toků v přijatelné kvalitě.
+Protože ztrátová komprese je zaměřená na vynechání nebo redukci informace, 
+kterou lidské
+ucho nevnímá, nebo pro pochopení řeči není zásadní, dosahuje ztrátová komprese
+výrazně lepší účinnosti, než bezeztrátová. 
+
+Ztrátová komprese hlasu má dva základní přístupy, jakými lze přenášet hlas.
+\begin{itemize}
+\item{Kódování signálu tak, aby zakódovaný signál měl co nejmenší
+odchylku od původního signálu byla co nejmenší. Zakódovaný signál popisuje
+tvar vlnění signálu. Jeho výhodou je schopnost popsat kvalitně i obecné zvuky,
+například hudbu. Nevýhodou je vyšší bitový tok, tedy nižší účinnost komprese.}
+\item{Parametrické kódování signálu, popisující parametry a tvar řečového 
+ústrojí člověka, pokud takový zvuk chce vydat. Nazýváme též vokodéry. 
+Výhodou je nižší objem 
+přenášených informací, nevýhodou obvykle vyšší výpočetní náročnost a nižší 
+kvalita. }
+\end{itemize}
+
+Protože oba přístupy mají své přednosti, pro vyšší kvalitu přenosu hlasu 
+zpravidla oba přístupy kompinujeme v hybridních kodecích. Hybridní kodek
+popisuje některé části řeči parametricky, část obtížně popsatelnou několika
+parametry zakóduje popisem vlnění. V současnosti používané kodeky jsou 
+zpravidla hybridní, pokud není potřeba přenášet i neřečové signály,
+nebo zachovat kompatibilitu se sítí nepodporující jiné kódování. Například 
+pro přenos komunikace faxu je nutné použít kodek určený nejen pro přenos 
+lidského hlasu.
+
