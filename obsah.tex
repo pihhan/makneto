@@ -496,7 +496,7 @@ Standartním portem pøiøazeným skupinou IANA je port 5060, zpravidla se pou¾ívá
 pouze UDP protokol. Protokol pøená¹í data textovì a má podobnou syntaxi, jako
 má HTTP. Následuje pøíklad paketu:
 
-\begin{verbatim}
+\begin{lstlisting}[language=]
 INVITE sip:bob@biloxi.com SIP/2.0
 Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK776asdhds
 Max-Forwards: 70
@@ -507,7 +507,7 @@ CSeq: 314159 INVITE
 Contact: <sip:alice@pc33.atlanta.com>
 Content-Type: application/sdp
 Content-Length: 142
-\end{verbatim}
+\end{lstlisting}
 
 Vlastní audio nebo video data se vymìòují na spojení, s~ustavenými parametry
 a cílovým IP adresami a porty, pomocí RTP. SIP se pou¾ívá velmi èasto ve firmách
@@ -621,7 +621,7 @@ u¾ivatelé pøibývali, poøád protokol pøipomínal jenom jednu sí» z~mnoha. Aby se p
 protokol není jenom dal¹ím z~øady ji¾ existujících IM síti, jako jsou ICQ nebo MSN Messenger, byl navr¾en 
 nový, neutrální, název pro protokol {\em Extensible Messaging and Presence Protocol} -- \verb|XMPP|. A¾ pod 
 názvem \verb|XMPP| byl protokol uznán jako doporuèení {\tt IETF} pod oznaèením 
-\verb|RFC 3920| \cite{xmppCoreWeb} a \verb|RFC 3921| \cite{xmppImWeb}.
+\verb|RFC 3920|\cite{xmppCoreWeb} a \verb|RFC 3921|\cite{xmppImWeb}.
 
 XMPP je kompatibilní protokol s~pùvodními specifikacemi Jabber protokolu, ale zavádí nové povinnosti. V~podstatì
 tak starý protokol nahrazuje a pokud se bavíme dnes o~protokolu Jabber, máme na mysli spí¹e jeho
@@ -665,7 +665,7 @@ kódování base64.
 
 \subsubsection*{Ukázka pøipojení k~serveru}
 Pøipojující se posílá hlavièku bez \verb|id|.
-\begin{verbatim}
+\begin{lstlisting}[language=XML]
 <?xml version='1.0'?>
 <stream:stream 
    xmlns:stream='http://etherx.jabber.org/streams' 
@@ -679,7 +679,7 @@ Server na ni odpoví tagem stream ji¾ s~identifkátorem.
    xmlns='jabber:client' 
    from='im.pihhan.info' 
    id='r9o2mxpyygr5h7t3nzuwl873vrvytfgko5ma3c91'>
-\end{verbatim}
+\end{lstlisting}
 
 \subsubsection*{Zpìtné volání}
 Zpìtným voláním, neboli {\em dialbackem}, se ovìøuje toto¾nost vzdáleného serveru. 
@@ -753,12 +753,12 @@ automaticky doplní.
 První stanzou je textová zpráva.
 Textové zprávy pro bì¾ného u¾ivatele cestují v~síti XMPP v~tagu \texttt{<message>}
 
-\begin{verbatim}
+\begin{lstlisting}[language=XML]
 <message to='nekdo@example.org'>
 	<subject>Ukázková zpráva</subject>
 	<body>Zpráva pro ètenáøe textu</body>
 </message>
-\end{verbatim}
+\end{lstlisting}
 
 Zprávy mohou být 4. typù
 \begin{itemize}
@@ -818,7 +818,7 @@ Posledním povinným parametrem je \verb|type|, který urèuje, o~jaký úkon se tento
 \end{description}
 
 Následuje pøíklad iq packetu.
-\begin{verbatim}
+\begin{lstlisting}[language=XML]
 <iq type='get' id='aab1a' >
 <query xmlns='jabber:iq:roster'/>
 </iq>
@@ -829,7 +829,7 @@ Následuje pøíklad iq packetu.
 <item subscription='both' name='Jan Novák' jid='649465485@icq.gajim.org' />
 </query>
 </iq>
-\end{verbatim}
+\end{lstlisting}
 
 
 \subsection*{XMPP IM}
@@ -1007,7 +1007,7 @@ spojení u¾ivatelem.
 
 \newpage
 Zahájení spojení mù¾e vypadat napøíklad takto\cite{xmppJingle}:
-\begin{verbatim}
+\begin{lstlisting}[language=XML]
 <iq from='romeo@montague.lit/orchard'
     id='jingle1'
     to='juliet@capulet.lit/balcony'
@@ -1029,7 +1029,7 @@ Zahájení spojení mù¾e vypadat napøíklad takto\cite{xmppJingle}:
     </content>
   </jingle>
 </iq>
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{Inicializace spojení}
 Pro ustavení multimediálního spojení protokolem XMPP je definována trojice
