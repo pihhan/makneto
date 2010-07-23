@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QDebug>
 
+/** @brief Small class to easy displaying of Gstreamer video inside Qt. 
+    @author Petr Mensik <pihhan@cipis.net> */
 class GstVideoWidget : public QWidget
 {
     Q_OBJECT
@@ -20,18 +22,29 @@ class GstVideoWidget : public QWidget
         bool playing() const;
         void setPlaying(bool playing);
 
+        bool keepAspectRatio() const;
+        void setKeepAspectRatio(bool keep);
+
+        double zoom() const;
+        void setZoom(double zoom);
+
+        bool resizable() const;
+        void setResizable(bool is_resizable);
 
     public slots:
         void displayHandle();
 
     protected:
         virtual void paintEvent(QPaintEvent *event);
-
-
+        virtual void resizeEvent(QResizeEvent *event);
+        virtual int  heightForWidth(int w) const;
 
     private:
     QSize m_videoSize;
     bool  m_playing;
+    bool  m_keepAspectRatio;
+    double m_zoom;
+    bool  m_resizable;
 
 };
 

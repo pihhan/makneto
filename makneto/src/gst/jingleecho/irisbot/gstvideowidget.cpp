@@ -1,3 +1,6 @@
+
+#include <cmath>
+
 #include <Qt>
 #include <QWidget>
 #include <QLabel>
@@ -24,7 +27,8 @@
 
 
 GstVideoWidget::GstVideoWidget(QWidget *parent) 
-    : QWidget(parent), m_playing(false)
+    : QWidget(parent), m_playing(false), m_keepAspectRatio(true),
+      m_zoom(1.0), m_resizable(true)
 {
     m_videoSize = QSize(320,240);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -36,7 +40,6 @@ GstVideoWidget::GstVideoWidget(QWidget *parent)
     setPalette(bgpal);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_PaintOnScreen);
-
 }
         
 GstVideoWidget::~GstVideoWidget() 
@@ -61,7 +64,8 @@ QSize GstVideoWidget::videoSize() const
 
 QSize GstVideoWidget::sizeHint() const
 {
-    return m_videoSize;
+    QSize size(m_zoom * m_videoSize.width(), m_zoom * m_videoSize.height());
+    return size;
 }
 
 QSize GstVideoWidget::minimumSizeHint() const
@@ -97,5 +101,63 @@ void GstVideoWidget::paintEvent(QPaintEvent *event)
     } else {
         event->ignore();
     }
+}
+
+/** \brief Enforce aspect ratio for video widget, if keeping aspect ratio 
+    is true. Width is used to get new size, height is computed to match. */
+void GstVideoWidget::resizeEvent(QResizeEvent *event)
+{
+    double rate = (double) event->size().width() / event->oldSize().width();
+    int newheight = ceil(event->oldSize().height() * rate);
+
+    if (m_keepAspectRatio && newheight != event->size().height()) {
+        // FIXME: use heightForWidth and hope it works
+        //setHeight(newheight);
+        event->accept();
+    } else
+        event->ignore();
+}
+
+/** \brief Compute preferred height for passed width, when keeping aspect ratio.
+*/
+int GstVideoWidget::heightForWidth(int w) const
+{
+    if (m_keepAspectRatio) {
+        double ratio = m_videoSize.height() / m_videoSize.width();
+        return ceil(w * ratio);
+    } else {
+        return -1;
+    }
+}
+
+bool GstVideoWidget::keepAspectRatio() const
+{
+    return m_keepAspectRatio;
+}
+
+void GstVideoWidget::setKeepAspectRatio(bool keep)
+{
+    m_keepAspectRatio = keep;
+}
+
+double GstVideoWidget::zoom() const
+{
+    return m_zoom;
+}
+
+void GstVideoWidget::setZoom(double zoom)
+{
+    m_zoom = zoom;
+    updateGeometry();
+}
+
+bool GstVideoWidget::resizable() const
+{
+    return m_resizable;
+}
+
+void GstVideoWidget::setResizable(bool is_resizable)
+{
+    m_resizable = is_resizable;
 }
 

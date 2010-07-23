@@ -31,6 +31,7 @@
 #include <Phonon/MediaSource>
 #include "ftstream.h"
 #include "featurelist.h"
+#include "soundfiletester.h"
 
 MaknetoMainWindow::MaknetoMainWindow(Makneto *makneto) : KXmlGuiWindow()
 {
@@ -70,15 +71,20 @@ void MaknetoMainWindow::setupActions()
   m_fullScreenAction = KStandardAction::fullScreen(this, SLOT(fullScreen()), this, actionCollection());
 
   m_saveFeatures = actionCollection()->addAction("writeFeatures");
-  m_saveFeatures->setText(tr("Save features"));
+  m_saveFeatures->setText(tr("Save &features"));
   m_saveFeatures->setMenuRole(QAction::PreferencesRole);
   connect(m_saveFeatures, SIGNAL(triggered()), m_makneto->getFeatureManager(), SLOT(writeDatabase()));
 
+  m_soundFilePlayer = actionCollection()->addAction(
+        "soundFilePlayer", this, SLOT(showSoundPlayer()) );
+  m_soundFilePlayer->setText(tr("&Play sound file"));
+//  m_soundFilePlayer->setMenuRole(QAction::ApplicationSpecificRole);
+  m_soundFilePlayer->setMenuRole(QAction::PreferencesRole);
 
-	KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
-	KStandardAction::quit(this, SLOT(quit()), actionCollection());
-	
-	KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
+    KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
+    KStandardAction::quit(this, SLOT(quit()), actionCollection());
+    
+    KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 }
 
 void MaknetoMainWindow::quit()
@@ -150,4 +156,12 @@ bool MaknetoMainWindow::queryClose()
   return true;
 }
 
+void MaknetoMainWindow::showSoundPlayer()
+{
+    SoundFileTester * sfp = new SoundFileTester(
+        m_makneto->getMediaManager(), this);
+    sfp->setVisible(true);
+}
+
 #include "maknetomainwindow.moc"
+

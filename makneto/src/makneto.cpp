@@ -12,6 +12,7 @@
 
 #include "contactdetaildialog.h"
 #include "discorequest.h"
+#include "mediamanager.h"
 
 #include <iostream>
 
@@ -32,6 +33,8 @@ Makneto::Makneto(QObject *parent) : QObject(parent)
         if (!m_flm->readDatabase()) {
             qWarning("Capabilities cache reading was unsuccessful");
         }
+
+        m_mediamgr = new MediaManager(this);
 }
 
 Makneto::~Makneto()
@@ -107,6 +110,11 @@ MUCControl * Makneto::getMUCControl() const
 void Makneto::setMUCControl(MUCControl *muc)
 {
     m_muccontrol = muc;
+}
+
+MediaManager * Makneto::getMediaManager() const
+{
+    return m_mediamgr;
 }
 
 #include "makneto.moc"

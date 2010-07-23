@@ -41,7 +41,7 @@ VolumeBar::VolumeBar(QWidget *parent)
     prv = new Private(this);
     setChannels(m_channels);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-    setMinimumSize(100, 40);
+    setMinimumSize(100, 20);
 
 
     m_blockDelimColor = QColor( Qt::darkGray );

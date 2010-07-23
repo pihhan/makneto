@@ -61,12 +61,12 @@ class MediaConfig
     public:
 
     MediaConfig();
-    MediaDevice videoInput();
-    MediaDevice videoOutput();
-    MediaDevice localVideoOutput();
-    MediaDevice audioInput();
-    MediaDevice audioOutput();
-    MediaDevice ringOutput();
+    MediaDevice videoInput() const;
+    MediaDevice videoOutput() const;
+    MediaDevice localVideoOutput() const;
+    MediaDevice audioInput() const;
+    MediaDevice audioOutput() const;
+    MediaDevice ringOutput() const;
 
     void setVideoInput(const MediaDevice &c);
     void setVideoOutput(const MediaDevice &c);

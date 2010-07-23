@@ -76,7 +76,8 @@ void JingleManager::removeSession(const std::string &sid)
 	m_sessions.erase(sid);
 }
 
-/** @brief Create farsight session from jingle data, prepare. */
+/** @brief Create farsight session from jingle data, prepare
+    input elements inside pipeline. */
 bool JingleManager::prepareFstSession(
     JingleSession *session, 
     const MediaConfig &config)

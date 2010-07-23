@@ -9,6 +9,8 @@
 
 #include "logger/logger.h"
 
+using namespace farsight;
+
 #define LOGCF() (LOGGER(logit) << " conference " )
 #define DEFAULT_TRANSMITTER     "rawudp"
 
@@ -187,6 +189,9 @@ void Conference::onLocalCandidatesPrepared(GstMessage *message)
             LOGCF() << "Setting stream " << my_stream->participantName() 
                 << " to gathered state." << std::endl;
         }
+        if (m_reader)
+            m_reader->localCandidatesPrepared(
+                my_stream->componentName(), my_stream->participantName());
     }
 
     m_newLocalCandidates++;
@@ -336,6 +341,7 @@ void Conference::onNewActiveCandidate(GstMessage *message)
     }
 }
 
+/** @brief Handle session codecs change message. */
 void Conference::onCodecsChanged(GstMessage *message)
 {
     FsSession *fs = NULL;
@@ -359,6 +365,7 @@ void Conference::onCodecsChanged(GstMessage *message)
     }
 }
 
+/** @brief Handle farsight error message from pipeline. */
 void Conference::onFarsightError(GstMessage *message)
 {
     gint error;
@@ -491,6 +498,10 @@ gboolean Conference::messageCallback(GstBus *, GstMessage *message, gpointer use
                         << " -> " << news 
                         << " (" << pending << ")" << std::endl;
                 g_free(name);
+                if (message->src == GST_OBJECT(conf->m_pipeline) 
+                        && conf->m_reader) {
+                    conf->m_reader->pipelineStateChanged(news);
+                }
             }
             break;
         case GST_MESSAGE_STREAM_STATUS:
@@ -684,6 +695,7 @@ bool Conference::removeSession(const std::string &name)
     return true;
 }
 
+/** @brief Delete all created sessions. */
 void Conference::removeAllSessions()
 {
     for (SessionList::iterator it=m_sessions.begin(); 
@@ -889,5 +901,23 @@ PipelineStateType Conference::minStreamState(const std::string &participant)
 AVOutputManager & Conference::outputs() 
 {
     return m_outputs;
+}
+
+/** @brief Callback to be called when one stream has terminated.
+    Because it is deleted already, no reference to it is given.
+    This callback is meant to clean up session if last stream has terminated.
+*/
+void Conference::streamDeleted(Session *session)
+{
+    if (session->streamCount() <= 0) {
+        LOGCF() << "Session " << session->name() << " removed last stream."
+            << std::endl;
+    }
+}
+
+/** @brief Notification that new stream was created. */
+void Conference::streamCreated(Session *session, Stream *stream)
+{
+    LOGCF() << "Created new stream " << stream->name() << std::endl;
 }
 

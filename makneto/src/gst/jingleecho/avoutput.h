@@ -9,7 +9,10 @@
 class QPipeline;
 class GstAudioWatcher;
 class GstVideoWatcher;
-class Stream;
+
+namespace farsight {
+    class Stream;
+}
 
 /** @brief Class for output of one remote person, with audio and video elements.
     This can create audio and video outputs, configure them. */
@@ -59,10 +62,10 @@ class AVOutput
     void expose();
     void setWindowId(unsigned long id);
 
-    Stream *audioStream() const;
-    Stream *videoStream() const;
-    void setAudioStream(Stream *s);
-    void setVideoStream(Stream *s);
+    farsight::Stream *audioStream() const;
+    farsight::Stream *videoStream() const;
+    void setAudioStream(farsight::Stream *s);
+    void setVideoStream(farsight::Stream *s);
 
     private:
     std::string participant;
@@ -77,8 +80,8 @@ class AVOutput
     QPipeline   *m_pipeline;
     GstAudioWatcher *m_audiowatcher;
     GstVideoWatcher *m_videowatcher;
-    Stream      *m_videoStream;
-    Stream      *m_audioStream;
+    farsight::Stream      *m_videoStream;
+    farsight::Stream      *m_audioStream;
 };
 
 #endif

@@ -3,6 +3,7 @@
  */
 
 #include <string>
+#include <iostream>
 #include "audiofileplayer.h"
 
 AudioFilePlayer::AudioFilePlayer()
@@ -46,13 +47,14 @@ void AudioFilePlayer::streamError(const std::string &message)
 
 void AudioFilePlayer::streamWarning(const std::string &message)
 {
-    std::cerr << "AudioFilePlayer" << message << std::endl;
+    std::cerr << "AudioFilePlayer" << message << std::endl;
 }
 
 void AudioFilePlayer::replay()
 {   
     GstElement *source = pipeline->getAudioSource();
-    if (gst_element_seek_simple(source, GST_FORMAT_PERCENT, 0, 0)) {
+    if (gst_element_seek_simple(
+            source, GST_FORMAT_PERCENT, GST_SEEK_FLAG_NONE, 0)) {
         pipeline->setState(GST_STATE_PLAYING);
     }
 }
@@ -62,6 +64,7 @@ MediaDevice AudioFilePlayer::fileInput()
 {
     MediaDevice device("filesrc");
     device.setFilter("decodebin");
+    return device;
 }
 
 /** @brief Begin playing of file specified by path.
@@ -70,9 +73,9 @@ bool AudioFilePlayer::playFile(const char *path)
 {
     GstElement *filesrc = pipeline->getAudioSource();
     if (filesrc) {
-        bool success = g_object_set(G_OBJECT(filesrc), "location", path, NULL);
+        g_object_set(G_OBJECT(filesrc), "location", path, NULL);
         pipeline->setState(GST_STATE_PLAYING);
-        return success;
+        return true;
     } else
         return false;
 }
@@ -82,8 +85,8 @@ bool AudioFilePlayer::setFile(const char *path)
 {
     GstElement *filesrc = pipeline->getAudioSource();
     if (filesrc) {
-        bool success = g_object_set(G_OBJECT(filesrc), "location", path, NULL);
-        return success;
+        g_object_set(G_OBJECT(filesrc), "location", path, NULL);
+        return true;
     } else
         return false;
 }
@@ -102,19 +105,20 @@ void AudioFilePlayer::pause()
 int64_t AudioFilePlayer::currentFileDuration()
 {
     int64_t time = -1;
+    GstFormat format = GST_FORMAT_TIME;
     GstElement *source = pipeline->getAudioSource();
-    gst_element_query_duration(source, GST_FORMAT_TIME, &time);
+    gst_element_query_duration(source, &format, &time);
     return time;
 }
 
 /** @brief Handle messages from pipeline elements. */
-void AudioFilePlayer::messageCallback(GstBus *bus, GstMessage *message, gpointer data)
+gboolean AudioFilePlayer::messageCallback(GstBus * , GstMessage *message, gpointer data)
 {
     AudioFilePlayer *player = static_cast<AudioFilePlayer *> (data);
     switch (message->type) {
         case GST_MESSAGE_EOS:
         case GST_MESSAGE_SEGMENT_DONE:
-            streamEnded();
+            player->streamEnded();
             break;
 
         case GST_MESSAGE_ERROR:
@@ -122,7 +126,7 @@ void AudioFilePlayer::messageCallback(GstBus *bus, GstMessage *message, gpointer
                 GError *err = NULL;
                 gchar *debug = NULL;
                 gst_message_parse_error(message, &err, &debug);
-                
+                player->streamError(err->message); 
                 g_error_free(err);
                 g_free(debug);
             }
@@ -132,11 +136,14 @@ void AudioFilePlayer::messageCallback(GstBus *bus, GstMessage *message, gpointer
                 GError *err = NULL;
                 gchar *debug = NULL;
                 gst_message_parse_warning(message, &err, &debug);
-                
+                player->streamError(err->message);
                 g_error_free(err);
                 g_free(debug);
             }
             break;
+        default:
+            break;
     }
+    return TRUE;
 }
 

@@ -11,6 +11,8 @@
 
 #include "stream.h"
 
+using namespace farsight;
+
 /** @brief Create one media stream session.
     @param conf Conference class, to which it will belong.
     @param type Type of media transmitted with this session.
@@ -36,6 +38,9 @@ Session *Stream::session()
     return m_confsession;
 }
 
+/** @brief Create farsight stream with passed parameters. 
+    @param participant Farsight structure with filled-in JID.
+    @param lcandidates Preferred candidates for local addresses. */
 FsStream *Stream::createStream(FsParticipant *participant, const GList *lcandidates)
 {
     GParameter param[4];
@@ -85,7 +90,9 @@ FsStream *Stream::createStream(FsParticipant *participant, const GList *lcandida
     return stream;
 }
 
-/** @brief Configure remote candidate. */
+/** @brief Configure remote candidate. 
+    @param ip Address of remote participant.
+    @param port Destination UDP port. */
 void Stream::setRemote(const std::string &ip, int port)
 {
     const gchar *foundation = "foundation-test";
@@ -153,7 +160,7 @@ void Stream::setLocalPort(unsigned int port)
 /** @brief React on incoming source data pad.
     Connect new pad to sink at conference. 
     This is called from gstreamer thread! */
-void Stream::srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data)
+void Stream::srcPadAdded(FsStream *, GstPad *pad, FsCodec *codec, gpointer user_data)
 {
     Stream *s = (Stream *) user_data;
     g_assert(s);
@@ -212,6 +219,7 @@ GList * Stream::getLocalCandidates()
     return fs_candidate_list_copy(m_localCandidates);
 }
 
+/** @brief Get copy of local candidates gathered since last reading. */
 GList * Stream::getNewLocalCandidates()
 {
     return fs_candidate_list_copy(m_newLocalCandidates);
@@ -224,18 +232,21 @@ void Stream::clearLocalCandidates()
     m_localCandidates = NULL;
 }
 
+/** @brief Handle new candidate message and add candidate to list. */
 void Stream::onNewLocalCandidate(FsCandidate *candidate)
 {
     FsCandidate *copy = fs_candidate_copy(candidate);
     m_newLocalCandidates = g_list_prepend(m_newLocalCandidates, copy);
 }
 
+/** @brief Returns farsight FsSession element. */
 FsSession   *Stream::sessionElement()
 {
     FsSession *m_session = m_confsession->sessionElement();
     return m_session;
 }
 
+/** @brief Returns farsight FsStream element this class wraps. */
 FsStream    *Stream::streamElement()
 {
     gst_object_ref(m_stream);
@@ -272,11 +283,14 @@ void Stream::setState(PipelineStateType state)
     m_state = state;
 }
 
+/** @brief Configure whether this stream send or receive or both. */
 void Stream::setDirection(FsStreamDirection d)
 {
     g_object_set(G_OBJECT(m_stream), "direction", d, NULL);
 }
 
+/** @brief Get direction of stream, that means, who is sending and who is not.
+*/
 FsStreamDirection Stream::direction() const
 {
     FsStreamDirection d = FS_DIRECTION_NONE;
@@ -291,6 +305,8 @@ std::string Stream::name() const
     return componentName() + "," + participantName();
 }
 
+/** @brief Return component name, to match against Jingle component name 
+    attribute. */
 std::string Stream::componentName() const
 {
     return m_name;
@@ -302,6 +318,7 @@ void Stream::setComponentName(const std::string &name)
 }
 
 
+/** @brief Returns related jingle session that controls this stream. */
 JingleSession * Stream::jingleSession() const
 {
     return m_js;
@@ -312,6 +329,7 @@ void Stream::setJingleSession(JingleSession *js)
     m_js = js;
 }
 
+/** @brief Returns media output for selector. */
 AVOutput * Stream::output() const
 {
     return m_output;
@@ -322,6 +340,7 @@ void Stream::setOutput(AVOutput *out)
     m_output = out;
 }
 
+/** @brief Returns session identifier of jingle session this stream is controlled by. */
 std::string Stream::sid() const
 {
     return m_sid;

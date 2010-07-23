@@ -102,7 +102,10 @@ void JingleVideoWindow::closeEvent(QCloseEvent *event)
 
 void JingleVideoWindow::terminated(SessionReason reason)
 {
-    setMessage("Terminated: ");
+    QString msg("Terminated: %1");
+    msg = msg.arg(
+        QString::fromStdString(JingleSession::stringFromReason(reason)));
+    setMessage(msg);
 }
 
 void JingleVideoWindow::failed()

@@ -4,11 +4,12 @@
 #include "qtaudioplayer.h"
 
 QtAudioPlayer::QtAudioPlayer()
-    m_repeats(1), m_delay(1000)
+    : m_repeats(1), m_delay(1000)
 {
 }
 
-virtual void    QtAudioPlayer::streamEnded()
+/** @brief Handle end of stream by starting timer to run new repeat. */
+void QtAudioPlayer::streamEnded()
 {
     if (m_repeats > 0) {
         m_repeats--;
@@ -16,30 +17,37 @@ virtual void    QtAudioPlayer::streamEnded()
     } else if (m_repeats < 0) {
         // unlimited repeats
         QTimer::singleShot(m_delay, this, SLOT(repeatTimeout()) );
+    } else {
+        emit finished();
     }
-    emit finished();
 }
 
-virtual void    QtAudioPlayer::streamError(const std::string &message)
+void QtAudioPlayer::streamError(const std::string &message)
 {
     QString msg = QString::fromStdString(message);
     emit error(msg);
 }
 
-virtual void    QtAudioPlayer::streamWarning(const std::string &message)
+void QtAudioPlayer::streamWarning(const std::string &message)
 {
     QString msg = QString::fromStdString(message);
     emit warning(msg);
 }
 
+/** @brief Emit signal started after message from pipeline. */
+void QtAudioPlayer::streamStarted()
+{
+    emit started();
+}
+
 bool QtAudioPlayer::playFile(const QString &path)
 {
-    AudioFilePlayer::playFile(path.toLocal8bit().data());
+    return AudioFilePlayer::playFile(path.toLocal8Bit().data());
 }
 
 bool QtAudioPlayer::setFile(const QString &path)
 {
-    AudioFilePlayer::setFile(path.toLocal8bit().data());
+    return AudioFilePlayer::setFile(path.toLocal8Bit().data());
 }
 
 /** @brief Set repeat count for current file. */

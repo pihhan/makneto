@@ -9,6 +9,8 @@
 #include "stream.h"
 #include "logger.h"
 
+using namespace farsight;
+
 /** @brief Create farsight abstraction class.
     @param reader FstStatusReader pointer to class wanting messages about farsight pipeline, or NULL if not needed. */
 FstJingle::FstJingle(FstStatusReader *reader)
@@ -1120,6 +1122,7 @@ GList *FstJingle::codecListByPreference(const GList *codecs, const StringList &p
     return g_list_reverse(newlist);
 }
 
+/** @brief Convert jingle media type to farsight type. */
 FsMediaType FstJingle::fsMediaType(MediaType type)
 {
     switch (type) {
@@ -1134,14 +1137,41 @@ FsMediaType FstJingle::fsMediaType(MediaType type)
     return FS_MEDIA_TYPE_AUDIO;
 }
 
+/** @brief Enable audio session and connect audio source to it.
+    @return True if session was created already, or if were succesfully 
+    created.
+*/
 bool FstJingle::enableAudioSession()
 {
-    Session *audioSession = new Session(conference, FS_MEDIA_TYPE_AUDIO);
-    
+    bool enabled = pipeline->isAudioInputEnabled();
+    if (!enabled) 
+        enabled = pipeline->enableAudioInput();
+    if (!enabled)
+        return false;
+    Session *session = conference->getSession(FS_MEDIA_TYPE_AUDIO);
+    if (!session) {
+        bool success = createSession(MEDIA_AUDIO, "audio");
+        return success;
+    } else {
+        return true;
+    }
 }
 
+/** @brief Enable video session and connect video source to it. 
+    @return True if session was created already, or if it was succesfully 
+    created. */
 bool FstJingle::enableVideoSession()
 {
-    Session *videoSession = new Session(conference, FS_MEDIA_TYPE_VIDEO);
+    bool enabled = pipeline->isVideoInputEnabled();
+    if (!enabled)
+        enabled = pipeline->enableVideoInput();
+    if (!enabled)
+        return false;
+    Session *session = conference->getSession(FS_MEDIA_TYPE_VIDEO);
+    if (!session) {
+        bool success = createSession(MEDIA_VIDEO, "video");
+        return success;
+    } else 
+        return true;
 }
 

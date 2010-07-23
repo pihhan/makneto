@@ -52,6 +52,7 @@ class JingleCandidate
 
     virtual std::string xmlns() const;
     void increaseGeneration();
+    virtual std::string toString() const;
 
     int             component;
     std::string     ip;
@@ -119,6 +120,8 @@ class JingleCandidatePair
 {
     public:
     JingleCandidatePair();
+
+    std::string toString() const;
 
     JingleCandidate local;
     JingleCandidate remote;

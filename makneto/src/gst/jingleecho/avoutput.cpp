@@ -7,6 +7,8 @@
 #include "audiowatcher.h"
 #include <gst/interfaces/xoverlay.h>
 
+using namespace farsight;
+
 #define QPLOG() (LOGGER(logit))
 
 AVOutput::AVOutput(QPipeline *p)

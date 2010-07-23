@@ -4,6 +4,7 @@
 
 #include "sessionview.h"
 #include "muccontrol.h"
+#include "jinglesessiongroup.h"
 
 class MediaManager;
 

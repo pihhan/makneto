@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="tabAudio">
    <attribute name="title">
-    <string>Audio</string>
+    <string>&amp;Audio</string>
    </attribute>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -131,7 +131,7 @@
     <item>
      <widget class="QPushButton" name="testAudioOutputBtn">
       <property name="text">
-       <string>Test audio output</string>
+       <string>Test audio &amp;output</string>
       </property>
      </widget>
     </item>
@@ -265,7 +265,7 @@
     <item>
      <widget class="QPushButton" name="testAudioInputBtn">
       <property name="text">
-       <string>Test audio input</string>
+       <string>Test audio &amp;input</string>
       </property>
      </widget>
     </item>
@@ -273,7 +273,7 @@
   </widget>
   <widget class="QWidget" name="tabRing">
    <attribute name="title">
-    <string>Ring</string>
+    <string>&amp;Ring</string>
    </attribute>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
@@ -354,14 +354,14 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="kcfg_AudioRingLoud">
         <property name="text">
-         <string>Use audio output</string>
+         <string>&amp;Use audio output</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
        <widget class="QCheckBox" name="kcfg_AudioRingPopup">
         <property name="text">
-         <string>Raise popup window</string>
+         <string>Raise &amp;popup window</string>
         </property>
        </widget>
       </item>
@@ -370,7 +370,7 @@
     <item>
      <widget class="QPushButton" name="testRingBtn">
       <property name="text">
-       <string>Test ring</string>
+       <string>Test &amp;ring</string>
       </property>
      </widget>
     </item>
@@ -391,7 +391,7 @@
   </widget>
   <widget class="QWidget" name="tabVideo">
    <attribute name="title">
-    <string>Video</string>
+    <string>&amp;Video</string>
    </attribute>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
@@ -556,6 +556,66 @@
        </item>
       </layout>
      </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="tabSoundFiles">
+   <attribute name="title">
+    <string>&amp;Files</string>
+   </attribute>
+   <layout class="QFormLayout" name="formLayout_5">
+    <property name="fieldGrowthPolicy">
+     <enum>QFormLayout::ExpandingFieldsGrow</enum>
+    </property>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_20">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QLineEdit" name="lineEdit_4"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_17">
+      <property name="text">
+       <string>Incoming</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="lineIncoming"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="lineBusy"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_18">
+      <property name="text">
+       <string>Busy</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_19">
+      <property name="text">
+       <string>Terminated</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="lineTerminated"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_16">
+      <property name="text">
+       <string>Ringing</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="lineRinging"/>
     </item>
    </layout>
   </widget>

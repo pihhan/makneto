@@ -64,6 +64,11 @@ void AVParticipantControl::setSession(QtJingleSession *session)
 
 void AVParticipantControl::updateMessage(GstMessage *msg)
 {
+    const char *srcname = GST_MESSAGE_SRC_NAME(msg);
+    const char *type_name = GST_MESSAGE_TYPE_NAME(msg);
+
+    qDebug() << "GstMessage from obj " << srcname << " of type " << type_name;
+
 }
 
 void AVParticipantControl::updateVolumes(int channels, double *rms, double *peak, double *decay)

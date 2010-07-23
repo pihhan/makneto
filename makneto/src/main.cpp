@@ -7,6 +7,8 @@
 #include <QtCrypto>
 #include <QDebug>
 
+#include <gst/gst.h>
+
 static const char description[] = I18N_NOOP("A KDE 4 collaborative software");
 
 static const char version[] = "0.1";
@@ -24,6 +26,12 @@ int main(int argc, char **argv)
 
 	KApplication app;
   app.setWindowIcon(KIcon("makneto"));
+
+        GError *err =NULL;
+        if (!gst_init_check(&argc, &argv, &err)) {
+            qWarning() << "GStreamer initialization failed: " << err->message;
+            g_error_free(err);
+        }
 
 	// Makneto main
 	Makneto *makneto = new Makneto;

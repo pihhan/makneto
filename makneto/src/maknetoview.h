@@ -27,6 +27,7 @@ class SessionTabManager;
 class Makneto;
 class SidebarWidget;
 class MUCView;
+class LocalPreview;
 
 class MaknetoView : public QWidget
 {
@@ -63,8 +64,9 @@ private slots:
 
 private:
   SidebarWidget *m_sidebar;
-	SessionView *m_sessionview;
-	SessionTabManager *m_sessiontabmanager;
+  SessionView *m_sessionview;
+  SessionTabManager *m_sessiontabmanager;
+  LocalPreview *m_preview;
   MUCView *m_muc;
 };
 

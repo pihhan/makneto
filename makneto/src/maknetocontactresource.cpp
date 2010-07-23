@@ -100,33 +100,22 @@ QIcon MaknetoContactResource::statusIcon() const
 {
 	switch (status().type())
 	{
-    case ContactListStatus::Offline:
-			return KIcon("maknetooffline");
-			break;
-
-    case ContactListStatus::Online:
-			return KIcon("maknetoonline");
-			break;
-
-    case ContactListStatus::Away:
-			return KIcon("maknetoaway");
-			break;
-
-    case ContactListStatus::XA:
-			return KIcon("maknetoxa");
-			break;
-
-    case ContactListStatus::DND:
-			return KIcon("maknetodnd");
-			break;
-
-    case ContactListStatus::Invisible:
-			return KIcon("maknetoinvisible");
-			break;
-
-    case ContactListStatus::FFC:
-			return KIcon("maknetoffc");
-			break;
+            case ContactListStatus::Offline:
+                        return KIcon("maknetooffline");
+            case ContactListStatus::Online:
+                        return KIcon("maknetoonline");
+            case ContactListStatus::Away:
+                        return KIcon("maknetoaway");
+            case ContactListStatus::XA:
+                        return KIcon("maknetoxa");
+            case ContactListStatus::DND:
+                        return KIcon("maknetodnd");
+            case ContactListStatus::Invisible:
+                        return KIcon("maknetoinvisible");
+            case ContactListStatus::FFC:
+                        return KIcon("maknetoffc");
+            case ContactListStatus::Error:
+                        return KIcon("maknetoerror");
 	}
 
 	return QIcon();

@@ -2,6 +2,7 @@
 #ifndef AUDIO_FILE_PLAYER_H
 #define AUDIO_FILE_PLAYER_H
 
+#include <stdint.h>
 #include "qpipeline.h"
 #include "mediaconfig.h"
 
@@ -11,6 +12,7 @@ class AudioFilePlayer
     public:
 
     AudioFilePlayer();
+    virtual ~AudioFilePlayer();
 
     /** @brief Called at end of stream. */
     virtual void    streamEnded();
@@ -21,6 +23,8 @@ class AudioFilePlayer
     bool playFile(const char *path);
     bool setFile(const char *path);
 
+    int64_t currentFileDuration();
+
     void replay();
     void stop();
     void pause();
@@ -28,7 +32,7 @@ class AudioFilePlayer
 
     MediaDevice fileInput();
 
-    static void messageCallback(GstBus *bus, GstMessage *message, gpointer data);
+    static gboolean messageCallback(GstBus *bus, GstMessage *message, gpointer data);
     
     QPipeline   *pipeline;
 };

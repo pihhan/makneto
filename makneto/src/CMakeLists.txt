@@ -30,11 +30,11 @@ message(STATUS "Module path: ${CMAKE_MODULE_PATH}")
 find_package(Iris REQUIRED)
 
 
-add_custom_target(irislib
-    COMMAND ./configure
-    COMMAND make
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/iris
-)
+# add_custom_target(irislib
+#     COMMAND ./configure
+#     COMMAND make
+#     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/iris
+# )
 
 
 include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
@@ -112,7 +112,19 @@ set(makneto_SRCS
         mediavideoselector.cpp
         mediaviewwidget.h
         mediaviewwidget.cpp
+        vcardmanager.h 
+        vcardmanager.cpp
+        avparticipantcontrol.h
+        avparticipantcontrol.cpp
+        mediamanager.h
+        mediamanager.cpp
+        mediasessiongroup.h
+        mediasessiongroup.cpp
+        localpreview.h
+        localpreview.cpp
 
+        soundfiletester.h
+        soundfiletester.cpp
  )
 
 kde4_moc_headers(makneto

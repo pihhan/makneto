@@ -1,5 +1,6 @@
 
 #include <cstdlib>
+#include <sstream>
 #include "jingle-candidate.h"
 
 #ifdef GLOOX
@@ -30,6 +31,14 @@ std::string JingleCandidate::xmlns() const
 void JingleCandidate::increaseGeneration() 
 {
     ++generation;
+}
+
+/** \brief Create string representation of candidate to human eyes. */
+std::string JingleCandidate::toString() const
+{
+    std::ostringstream out;
+    out << ip << ":" << port << "c(" << component << ")";
+    return out.str();
 }
 
 #ifdef GLOOX
@@ -194,5 +203,14 @@ std::string JingleIceCandidate::xmlns() const
  */
 JingleCandidatePair::JingleCandidatePair()
 {
+}
+
+/** \brief Create text description of this candidate pair.
+    For human eyes, not for config storage. */
+std::string JingleCandidatePair::toString() const
+{
+    std::ostringstream out;
+    out << local.toString() << "<->" << remote.toString();
+    return out.str();
 }
 

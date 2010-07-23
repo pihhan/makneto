@@ -30,7 +30,7 @@ class FstJingle
     virtual ~FstJingle();
         
     void setNicknames(const std::string &local, const std::string &remote);
-    bool linkSink(Session *session, FsMediaType type = FS_MEDIA_TYPE_AUDIO);
+    bool linkSink(farsight::Session *session, FsMediaType type = FS_MEDIA_TYPE_AUDIO);
     bool prepareSession(const JingleContent &local);
     bool prepareSession(JingleSession *session);
     bool createAudioSession(const JingleContent &local, const JingleContent &remote);
@@ -113,7 +113,7 @@ class FstJingle
     bool enableVideoSession();
 
     QPipeline *pipeline;
-    Conference *conference;
+    farsight::Conference *conference;
 
     private:
     JingleErrors m_lastErrorCode;

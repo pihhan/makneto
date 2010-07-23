@@ -17,6 +17,7 @@
 #include "avoutput.h"
 #include "avoutputmanager.h"
 
+namespace farsight {
 
 typedef std::list<Session *>    SessionList;
 typedef std::map<std::string, FsParticipant *>  ParticipantMap;
@@ -94,6 +95,9 @@ class Conference
     void        resetNewLocalCandidates();
     bool        haveNewLocalCandidates();
 
+    void        streamDeleted(Session *session);
+    void        streamCreated(Session *session, Stream *stream);
+
     void        setStun(const std::string &ip, int port=0);
     std::string stunIp();
     int         stunPort();
@@ -140,6 +144,8 @@ class Conference
     ParticipantMap      m_participants;
     AVOutputManager     m_outputs;
 };
+
+} // namespace
 
 #endif
 

@@ -48,6 +48,7 @@ private slots:
 	void showMenubar();
 	void quit();
 	void optionsPreferences();
+        void showSoundPlayer();
 
 private:
 	void setupActions();
@@ -63,6 +64,7 @@ private:
   
   KAction *m_fullScreenAction, *hideAllAction;
   KAction *m_saveFeatures;
+  KAction *m_soundFilePlayer;
   
 };
 

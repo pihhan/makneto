@@ -9,7 +9,10 @@
 #include <list>
 #include <string>
 
+namespace farsight {
+
 class Conference;
+
 class Stream;
 
 typedef std::list<Stream *> StreamList;
@@ -79,6 +82,9 @@ class Session
     static      unsigned int idFromStream(const GValue *val);
 
     StreamList      streams();
+    int         streamCount();
+
+    void streamDeleted();
 
     /* glib callbacks */
     static void srcPadAdded(FsStream *stream, GstPad *pad, FsCodec *codec, gpointer user_data);
@@ -101,6 +107,7 @@ class Session
     StreamList   m_streams;
 };
 
+}
 
 #endif
 

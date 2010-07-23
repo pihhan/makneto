@@ -25,7 +25,9 @@ QPipeline::QPipeline()
     : m_asource(0), m_asourcefilter(0), m_asink(0), m_asinkfilter(0), 
       m_videosource(0), m_vsourcefilter(0), m_videosink(0), m_vsinkfilter(0),
       m_localvideosink(0), m_lvsinkfilter(0), m_videoinputtee(0),
-      m_valid(false), m_video_enabled(false), m_audio_enabled(false)
+      m_valid(false), m_video_enabled(false), m_audio_enabled(false),
+      m_audioInputEnabled(false), m_videoInputEnabled(false), 
+      m_audioOutputEnabled(false), m_videoOutputEnabled(false)
 {
     m_pipe = gst_pipeline_new("qpipeline");
     if (!m_pipe) {
@@ -471,6 +473,27 @@ bool QPipeline::enableVideoInput()
         QPLOG() << "Failed to enable video source, added: " 
             << added << " linked: " << linked << std::endl;
     }
+    m_videoInputEnabled = success;
+    return success;
+}
+
+/** @brief Disable video input and delete input elements. */
+bool QPipeline::disableVideoInput()
+{
+    bool success = true;
+    if (m_videosource) {
+        success = success && remove(m_videosource);
+        m_videosource = NULL;
+    }
+    if (m_vsourcefilter) {
+        success = success && remove(m_vsourcefilter);
+        m_vsourcefilter = NULL;
+    }
+    if (m_videoinputtee) {
+        success = success && remove(m_videoinputtee);
+        m_videoinputtee = NULL;
+    }
+    m_videoInputEnabled = false;
     return success;
 }
 
@@ -540,8 +563,25 @@ bool QPipeline::enableAudioInput()
         m_valid = false;
         return false;
     }
+    m_audioInputEnabled = source;
     return source;
 }
+
+bool QPipeline::disableAudioInput()
+{
+    bool removed = true;
+    if (m_asource) {
+        removed = removed && remove(m_asource);
+        m_asource = NULL;
+    }
+    if (m_asourcefilter) {
+        removed = removed && remove(m_asourcefilter);
+        m_asourcefilter = NULL;
+    }
+    m_audioInputEnabled = false;
+    return removed;
+}
+
 
 /** @brief Enable audio output modules and link filters to them. 
     @return True if created and linked succesfully, false otherwise. */
@@ -561,7 +601,24 @@ bool QPipeline::enableAudioOutput()
         m_valid = false;
         return false;
     }
+    m_audioOutputEnabled = sink;
     return sink;
+}
+
+/** @brief Remove audio output elements from pipeline. */
+bool QPipeline::disableAudioOutput()
+{
+    bool removed = true;
+    if (m_asink) {
+        removed = removed && remove(m_asink);
+        m_asink = NULL;
+    }
+    if (m_asinkfilter) {
+        removed = removed && remove(m_asinkfilter);
+        m_asinkfilter = NULL;
+    }
+    m_audioOutputEnabled = false;
+    return removed;
 }
 
 /** @brief Create audio source and sink, create filters if needed. */
@@ -651,6 +708,7 @@ GstPad * QPipeline::getVideoSinkPad()
     return pad;
 }
 
+/** @brief Get referenced source pad from video input filter or element. */
 GstPad * QPipeline::getVideoSourcePad()
 {
     GstPad *pad = NULL;
@@ -712,7 +770,7 @@ void QPipeline::elementAdded(GstBin *bin, GstElement *element, gpointer pipeline
 }
 
 /** @brief Debug watcher for removed elements from pipeline. */
-void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline)
+void QPipeline::elementRemoved(GstBin *bin, GstElement *element, gpointer)
 {
     gchar *n1, *n2;
     n1 = gst_element_get_name(element);
@@ -812,6 +870,7 @@ MediaConfig QPipeline::mediaConfig()
     return m_config;
 }
 
+/** @brief Set Gstreamer elements names and other parameters for pipeline. */
 void QPipeline::setMediaConfig(const MediaConfig &c)
 {
     m_config = c;
@@ -876,5 +935,30 @@ bool QPipeline::configureElement(GstElement *e, PayloadParameterMap p)
     }
     g_free(objname);
     return true;
+}
+
+GstElement * QPipeline::getElement(const char *name)
+{
+    return gst_bin_get_by_name(GST_BIN(m_pipe), name);
+}
+
+bool QPipeline::isAudioInputEnabled()
+{
+    return m_audioInputEnabled;
+}
+
+bool QPipeline::isAudioOutputEnabled()
+{
+    return m_audioOutputEnabled;
+}
+
+bool QPipeline::isVideoInputEnabled()
+{
+    return m_videoInputEnabled;
+}
+
+bool QPipeline::isVideoOutputEnabled()
+{
+    return m_videoOutputEnabled;
 }
 

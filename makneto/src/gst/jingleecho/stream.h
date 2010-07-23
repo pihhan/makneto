@@ -12,11 +12,21 @@
 #include "fststatusreader.h"
 #include "avoutput.h"
 
-class Conference;
-class Session;
 class JingleSession;
 
-/** @brief Represents one media session with one participant and basic interface for working with that. */
+namespace farsight {
+
+class Conference;
+class Session;
+
+/** @brief Represents one media session with and codec list for sending to 
+    participant(s). 
+    It will have one or more Stream to manage remote candidates, and their
+    codecs. Incoming media are handled by pad from Stream, this Session
+    only encodes local source media of given type for use by Streams. 
+    That allows
+    one coding of media for more than one participant.
+*/
 class Stream
 {
     public:
@@ -97,5 +107,5 @@ class Stream
     std::string m_sid;
 };
 
-
+} // namespace
 #endif

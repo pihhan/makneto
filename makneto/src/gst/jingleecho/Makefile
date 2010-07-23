@@ -181,6 +181,21 @@ __/logger/logger.s:
 .PHONY : __/logger/logger.s
 
 # target to build an object file
+audiofileplayer.o:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiofileplayer.o
+.PHONY : audiofileplayer.o
+
+# target to preprocess a source file
+audiofileplayer.i:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiofileplayer.i
+.PHONY : audiofileplayer.i
+
+# target to generate assembly for a file
+audiofileplayer.s:
+	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiofileplayer.s
+.PHONY : audiofileplayer.s
+
+# target to build an object file
 audiowatcher.o:
 	cd /home/pihhan/Projekty/makneto-git/makneto/makneto && $(MAKE) -f src/gst/jingleecho/CMakeFiles/jingleecho.dir/build.make src/gst/jingleecho/CMakeFiles/jingleecho.dir/audiowatcher.o
 .PHONY : audiowatcher.o
@@ -544,6 +559,9 @@ help:
 	@echo "... __/logger/logger.o"
 	@echo "... __/logger/logger.i"
 	@echo "... __/logger/logger.s"
+	@echo "... audiofileplayer.o"
+	@echo "... audiofileplayer.i"
+	@echo "... audiofileplayer.s"
 	@echo "... audiowatcher.o"
 	@echo "... audiowatcher.i"
 	@echo "... audiowatcher.s"

@@ -33,6 +33,7 @@ set(GUI_HEADERS
     aspectedlayout.h
     avparticipantwidget.h
     volumebar.h
+    qtaudioplayer.h
 )
 
 set(GUI_SOURCES
@@ -43,6 +44,7 @@ set(GUI_SOURCES
     aspectedlayout.cpp
     avparticipantwidget.cpp
     volumebar.cpp
+    qtaudioplayer.cpp
 )
 
 # Input
@@ -59,7 +61,7 @@ set(IRISBOT_SOURCES
 
 QT4_WRAP_CPP(MOC_FILES qtjinglesession.h jinglevideowindow.h 
     avparticipantwidget.h gstvideowidget.h volumebar.h 
-    irisbot.h irisjinglemanager.h)
+    irisbot.h irisjinglemanager.h qtaudioplayer.h)
 
 
 #link_libraries(${IRIS_LIBS} ${FARSIGHT_LIBRARIES})

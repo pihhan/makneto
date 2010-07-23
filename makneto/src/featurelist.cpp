@@ -572,7 +572,9 @@ void FeatureListManager::addFeatures(const FeatureList &fl)
     QString hash;
     hash = flp->sha1Hash();
     m_database["sha-1"].insert(hash, flp);
+#ifdef FEATURES_DEBUG
     qDebug() << "Adding feature list " << fl.node() << fl.ver() << " to manager.";
+#endif
     m_modified = true;
 }
 
@@ -585,7 +587,9 @@ void FeatureListManager::addFeatures(FeatureList *fl)
     QString algo = fl->hash();
     QString index = singleCaps(fl->node(), fl->ver(), fl->hash(), fl->ext());
     m_database[algo].insert(index, fl);
+#ifdef FEATURES_DEBUG
     qDebug() << "Adding feature list " << fl->node() << fl->ver() << " with index " << index << " to manager.";
+#endif
     m_modified = true;
 }
 

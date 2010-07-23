@@ -18,6 +18,10 @@ class MaknetoContact;
 
 /** @brief Non-graphic class to control sessions for
     one participant.
+
+    This intends to be main class for managing one multimedia session
+    with one participant, connecting media objects to roster item and
+    GUI work.
 */
 class AVParticipantControl : public QObject,
     public GstVideoWatcher,

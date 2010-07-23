@@ -52,6 +52,7 @@ set(JINGLEECHO_HEADERS codecs.h
            ipv6/v6interface.h
            gstvideowatcher.h
            audiowatcher.h
+           audiofileplayer.h
         )
 set(JINGLEECHO_SOURCES 
            codecs.cpp 
@@ -81,6 +82,7 @@ set(JINGLEECHO_SOURCES
            gstvideowatcher.cpp
            audiowatcher.h
            audiowatcher.cpp
+           audiofileplayer.cpp
     )
 
 #QT4_WRAP_CPP(MOC_FILES audiowatcher.h gstvideowatcher.h)

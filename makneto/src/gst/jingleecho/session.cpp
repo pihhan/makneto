@@ -10,6 +10,8 @@
 #include "logger/logger.h"
 #include "fstjingle.h"
 
+using namespace farsight;
+
 /** @brief Create one media stream session.
     @param conf Conference class, to which it will belong.
     @param type Type of media transmitted with this session.
@@ -44,6 +46,7 @@ Conference * Session::conference()
 Stream *Session::createStream(FsParticipant *participant, const GList *lcandidates)
 {
     Stream *s = new Stream(this, participant, lcandidates);
+    m_conf->streamCreated(this, s);
     return s;
 }
 
@@ -369,4 +372,9 @@ StreamList Session::streams()
     return m_streams;
 }
 
+/** @brief Return number of streams this session have active. */
+int Session::streamCount()
+{
+    return m_streams.size();
+}
 

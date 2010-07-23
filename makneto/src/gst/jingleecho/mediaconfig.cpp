@@ -40,32 +40,32 @@ MediaDevice MediaConfig::deviceFromEnvironment(
     return d;
 }
 
-MediaDevice MediaConfig::videoInput()
+MediaDevice MediaConfig::videoInput() const
 {
     return m_videoInput;
 }
 
-MediaDevice MediaConfig::videoOutput()
+MediaDevice MediaConfig::videoOutput() const
 {
     return m_videoOutput;
 }
 
-MediaDevice MediaConfig::localVideoOutput()
+MediaDevice MediaConfig::localVideoOutput() const
 {
     return m_localVideoOutput;
 }
 
-MediaDevice MediaConfig::audioInput()
+MediaDevice MediaConfig::audioInput() const
 {
     return m_audioInput;
 }
 
-MediaDevice MediaConfig::audioOutput()
+MediaDevice MediaConfig::audioOutput() const
 {
     return m_audioOutput;
 }
 
-MediaDevice MediaConfig::ringOutput()
+MediaDevice MediaConfig::ringOutput() const
 {
     return m_ringOutput;
 }

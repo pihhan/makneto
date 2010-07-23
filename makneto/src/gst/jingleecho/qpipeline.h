@@ -46,13 +46,16 @@ class QPipeline
 
     bool enableVideo(bool input = true, bool output = true);
     bool enableAudio();
+    bool enableAudioInput();
+    bool disableAudioInput();
+    bool enableAudioOutput();
+    bool disableAudioOutput();
 
     bool enableLocalVideoSink();
     bool disableLocalVideoSink();
     bool enableVideoInput();
+    bool disableVideoInput();
 
-    bool isVideoEnabled();
-    bool isAudioEnabled();
 
     GstPad * getAudioSourcePad();
     GstPad * getAudioSinkPad();
@@ -64,6 +67,9 @@ class QPipeline
     GstElement * getVideoSink();
     GstElement * getLocalVideoSink();
 
+    /** @brief Get element from pipeline by its name. */
+    GstElement * getElement(const char *name);
+
     bool createFilters();
 
     std::string describe();
@@ -72,6 +78,14 @@ class QPipeline
     /* glib callbacks */
     static void elementAdded(GstBin *bin, GstElement *element, gpointer pipeline);
     static void elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline);
+
+    bool isVideoEnabled();
+    bool isAudioEnabled();
+
+    bool isAudioInputEnabled();
+    bool isAudioOutputEnabled();
+    bool isVideoInputEnabled();
+    bool isVideoOutputEnabled();
 
     /** @brief Check whether pipeline was created and no fatal error occured. */
     bool    isValid();
@@ -88,6 +102,7 @@ class QPipeline
     GstElement *m_asource;
     GstElement *m_asourcefilter;
     GstElement *m_asink;
+    GstElement *m_asinkmixer;
     GstElement *m_asinkfilter;
     GstElement *m_videosource;
     GstElement *m_vsourcefilter;
@@ -100,6 +115,10 @@ class QPipeline
     bool m_valid;
     bool m_video_enabled;
     bool m_audio_enabled;
+    bool m_audioInputEnabled;
+    bool m_videoInputEnabled;
+    bool m_audioOutputEnabled;
+    bool m_videoOutputEnabled;
     MediaConfig m_config;
 };
 

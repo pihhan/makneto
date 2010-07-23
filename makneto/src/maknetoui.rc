@@ -1,6 +1,30 @@
-<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
-<kpartgui name="Makneto" version="1">
+<?xml version="1.0" encoding="UTF-8" ?>
+<gui name="makneto" version="1"
+    xmlns="http://www.kde.org/standards/kxmlgui/1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0 http://www.kde.org/standards/kxmlgui/1.0/kxmlgui.xsd">
 <MenuBar>
 
+  <Menu name="file">
+    <text>&amp;File</text>
+    <Action name="quit" />
+    <Merge />
+  </Menu>
+
+  <Menu name="debug">
+    <text>&amp;Debug</text>
+    <Action name="soundFilePlayer" />
+    <Action name="writeFeatures" />
+  </Menu>
+
+  <Merge />
+
 </MenuBar>
-</kpartgui>
+
+<ToolBar name="mainToolBar" >
+    <text>Main Toolbar</text>
+    <Action name="fullscreen" />
+    <Action name="audiocall" />
+    <Action name="quit" />
+</ToolBar>
+</gui>
