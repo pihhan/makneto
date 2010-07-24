@@ -147,3 +147,9 @@ gboolean AudioFilePlayer::messageCallback(GstBus * , GstMessage *message, gpoint
     return TRUE;
 }
 
+/** @brief Prepare pipeline to be ready for audio files. */
+bool AudioFilePlayer::prepare()
+{
+    return pipeline->enableAudio();
+}
+

@@ -388,3 +388,10 @@ void MediaManager::mediaTestComplete()
         << " video: " << videoInputReady();
 }
 
+
+QtAudioPlayer * MediaManager::player() const
+{
+    return m_audioplayer;
+}
+
+

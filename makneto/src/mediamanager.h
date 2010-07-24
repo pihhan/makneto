@@ -88,6 +88,8 @@ class MediaManager : public QObject,
     void handleCallAccept();
     void handleCallDeny();
 
+    QtAudioPlayer *player() const;
+
     /*
      * FstStatusReader functions. 
      */

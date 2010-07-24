@@ -16,10 +16,16 @@ class SoundFileTester : public QWidget
     public:
     SoundFileTester(MediaManager *mgr, QWidget *parent = 0);
 
+
     public slots:
     void find();
     void play();
     void stop();
+
+    void reportMsg(const QString &msg);
+
+    void playerStarted();
+    void playerStopped();
 
     private:
 

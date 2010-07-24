@@ -159,7 +159,7 @@ bool MaknetoMainWindow::queryClose()
 void MaknetoMainWindow::showSoundPlayer()
 {
     SoundFileTester * sfp = new SoundFileTester(
-        m_makneto->getMediaManager(), this);
+        m_makneto->getMediaManager(), NULL);
     sfp->setVisible(true);
 }
 

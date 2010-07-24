@@ -22,16 +22,50 @@ int main(int argc, char **argv)
 	about.addAuthor( ki18n("Jaroslav Reznik"), KLocalizedString(), "rezzabuh@gmail.com" );
   about.addAuthor( ki18n("Radek Novacek"), KLocalizedString(), "rad.n@centrum.cz" );
   about.addAuthor( ki18n("Petr Menšík"), KLocalizedString(), "pihhan@cipis.net" );
-	KCmdLineArgs::init(argc, argv, &about);
 
-	KApplication app;
-  app.setWindowIcon(KIcon("makneto"));
-
+	g_thread_init(NULL);
+        
         GError *err =NULL;
+
+        /* Parse glib/gst options, ignore unknown parameters.
+        This will remove parameters supported by gstreamer 
+        from parameters. */
+        GOptionContext *ctx = g_option_context_new("");
+        g_option_context_set_help_enabled(ctx, FALSE);
+        g_option_context_set_ignore_unknown_options(ctx, TRUE);
+        GOptionGroup *gst_group = gst_init_get_option_group();
+        g_option_context_add_group(ctx, gst_group);
+
+        gchar *gsthelptext = g_option_context_get_help(ctx, FALSE, gst_group);
+        KCmdLineOptions gstopts;
+        gstopts.add(QByteArray("gst"), ki18n(gsthelptext));
+        g_free(gsthelptext);
+
+        if (g_option_context_parse(ctx, &argc, &argv, &err)) {
+            qDebug("GStreamer parameters parsed succesfully.");
+        } else {
+            qWarning() << "GStreamer parameters failed to parse: "
+                    << err->message;
+        }
+        if (err)
+            g_error_free(err);
+
+        /** Let KDE parser parse all internal options not removed by
+        gstreamer parsing. */
+        KCmdLineArgs::init(argc, argv, &about);
+        KCmdLineArgs::addCmdLineOptions(gstopts, ki18n("gst"));
+
+#if 0
         if (!gst_init_check(&argc, &argv, &err)) {
             qWarning() << "GStreamer initialization failed: " << err->message;
             g_error_free(err);
         }
+#endif
+
+
+	KApplication app;
+  app.setWindowIcon(KIcon("makneto"));
+
 
 	// Makneto main
 	Makneto *makneto = new Makneto;

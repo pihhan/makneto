@@ -23,6 +23,8 @@ class AudioFilePlayer
     bool playFile(const char *path);
     bool setFile(const char *path);
 
+    bool prepare();
+
     int64_t currentFileDuration();
 
     void replay();
