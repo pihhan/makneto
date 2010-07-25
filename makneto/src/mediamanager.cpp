@@ -136,6 +136,29 @@ bool MediaManager::configureDevice(
     return parsed;
 }
 
+/** @brief Try to find sound file of specified name and return full path.
+	@param filename Absolute or relative filename of sound.
+	@return Full path to file if found, empty string otherwise.
+*/
+QString MediaManager::locateSoundFile(const QString &filename) const
+{
+    if (QDir::isAbsolutePath(filename)) {
+        // play absolute path
+        if (QFile(filename).exists()) {
+            return (filename);
+        } else 
+            return QString();
+    } else {
+        KStandardDirs dirs;
+        QString fullpath = KStandardDirs::locate("sound", filename);
+        if (!fullpath.isEmpty()) {
+            return fullpath;
+        } else {
+            return QString();
+        }
+    }
+}
+
 /** @brief Begin playing specified file. 
     @param filename Absolute or relative path to sound file.
     
@@ -189,34 +212,47 @@ void MediaManager::stopRing()
 
 QString MediaManager::ringFile()
 {
-    // TODO
-    return "ring.wav";
+    return locateSoundFile(Settings::soundIncoming());
 }
-
 
 void MediaManager::startRingIncomingCall()
 {
-    playRingFile("ring.wav");
+	QString path = (locateSoundFile(Settings::soundIncoming()));
+	m_audioplayer->setRepeats(-1);
+	if (!path.isEmpty())
+		playRingFile(path);
 }
 
 void MediaManager::startRingIncomingVideoCall()
 {
-    playRingFile("ring.wav");
+	QString path = locateSoundFile(Settings::soundIncoming());
+	m_audioplayer->setRepeats(-1);
+	if (!path.isEmpty())
+		playRingFile(path);
 }
 
 void MediaManager::startRingIsRinging()
 {
-    playRingFile("dialtone.wav");
+	QString path = locateSoundFile(Settings::soundRinging());
+	m_audioplayer->setRepeats(-1);
+	if (!path.isEmpty())
+		playRingFile(path);
 }
 
 void MediaManager::startRingBusy()
 {
-    playRingFile("busytone.wav");
+	QString path = locateSoundFile(Settings::soundBusy());
+	m_audioplayer->setRepeats(1);
+	if (!path.isEmpty())
+		playRingFile(path);
 }
 
 void MediaManager::startRingTerminated()
 {
-    playRingFile("dialtone.wav");
+	QString path = locateSoundFile(Settings::soundTerminated());
+	m_audioplayer->setRepeats(1);
+	if (!path.isEmpty())
+		playRingFile(path);
 }
 
 

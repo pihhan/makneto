@@ -1,5 +1,6 @@
 
 #include <QTimer>
+#include <QDebug>
 
 #include "qtaudioplayer.h"
 
@@ -11,8 +12,9 @@ QtAudioPlayer::QtAudioPlayer()
 /** @brief Handle end of stream by starting timer to run new repeat. */
 void QtAudioPlayer::streamEnded()
 {
-    if (m_repeats > 0) {
+    if (m_repeats > 1) {
         m_repeats--;
+        qDebug() << "Sheduling " << m_repeats << " more repeats.";
         QTimer::singleShot(m_delay, this, SLOT(repeatTimeout()) );
     } else if (m_repeats < 0) {
         // unlimited repeats
@@ -54,6 +56,7 @@ bool QtAudioPlayer::setFile(const QString &path)
 void QtAudioPlayer::setRepeats(int repeats)
 {
     m_repeats = repeats;
+    qDebug() << "Repeats changed to " << repeats;
 }
 
 /** @brief Set delay between repeats,
@@ -66,6 +69,7 @@ void QtAudioPlayer::setDelay(int delay)
 void QtAudioPlayer::repeatTimeout()
 {
     replay();
+    qDebug("Repeat timeout");
 }
 
 #if 0

@@ -90,8 +90,13 @@ void AudioFilePlayer::streamWarning(const std::string &message)
 void AudioFilePlayer::replay()
 {   
     GstElement *source = pipeline->getAudioSource();
+    pipeline->setState(GST_STATE_PAUSED);
     if (gst_element_seek_simple(
-            source, GST_FORMAT_PERCENT, GST_SEEK_FLAG_NONE, 0)) {
+            source, GST_FORMAT_DEFAULT, GST_SEEK_FLAG_FLUSH, 0)) {
+        pipeline->setState(GST_STATE_PLAYING);
+    } else {
+        std::cerr << "AudioFilePlayer: replay seek failed." << std::endl;
+        pipeline->setState(GST_STATE_NULL);
         pipeline->setState(GST_STATE_PLAYING);
     }
 }
@@ -119,6 +124,7 @@ bool AudioFilePlayer::playFile(const char *path)
         gchar *current = NULL;
         g_object_get(G_OBJECT(filesrc), "location", &current, NULL);
         if (!current || strcmp(path, current)) {
+            pipeline->setState(GST_STATE_NULL);
             g_object_set(G_OBJECT(filesrc), "location", path, NULL);
         }
 

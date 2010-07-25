@@ -381,6 +381,46 @@ class Settings : public KConfigSkeleton
       return self()->mAudioRingPopup;
     }
 
+
+    /**
+      Get Sound played on incoming call
+    */
+    static
+    QString soundIncoming()
+    {
+      return self()->mSoundIncoming;
+    }
+
+
+    /**
+      Get Sound played, when called party is busy
+    */
+    static
+    QString soundBusy()
+    {
+      return self()->mSoundBusy;
+    }
+
+
+    /**
+      Get Sound played after termination of call
+    */
+    static
+    QString soundTerminated()
+    {
+      return self()->mSoundTerminated;
+    }
+
+
+    /**
+      Get Sound played when waiting for remote party to accept call
+    */
+    static
+    QString soundRinging()
+    {
+      return self()->mSoundRinging;
+    }
+
   protected:
     Settings();
     friend class SettingsHelper;
@@ -418,6 +458,10 @@ class Settings : public KConfigSkeleton
     QString mAudioRingDevice;
     bool mAudioRingLoud;
     bool mAudioRingPopup;
+    QString mSoundIncoming;
+    QString mSoundBusy;
+    QString mSoundTerminated;
+    QString mSoundRinging;
 
   private:
 };

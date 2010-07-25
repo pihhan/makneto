@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSpinBox>
 
 #include "mediamanager.h"
 
@@ -32,12 +33,18 @@ class SoundFileTester : public QWidget
     private:
     MediaManager *m_manager;
     QLineEdit   *edt_filename;
+	QSpinBox    *spin_repeats;
+	QSpinBox	*spin_delay;
     QPushButton *btn_play;
     QPushButton *btn_stop;
 	QPushButton *btn_pause;
     QPushButton *btn_find;
 	QPushButton *btn_display;
     QLabel      *lbl_status;
+	QPushButton *btn_ringing;
+	QPushButton *btn_incoming;
+	QPushButton *btn_terminated;
+	QPushButton *btn_busy;
 };
 
 #endif

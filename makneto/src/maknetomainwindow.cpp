@@ -80,7 +80,7 @@ void MaknetoMainWindow::setupActions()
   m_soundFilePlayer->setText(tr("&Play sound file"));
 //  m_soundFilePlayer->setMenuRole(QAction::ApplicationSpecificRole);
   m_soundFilePlayer->setMenuRole(QAction::PreferencesRole);
-  m_soundFilePlayer->setIcon(KIcon("player_play"));
+  m_soundFilePlayer->setIcon(KIcon("media-playback-start"));
 
     KStandardAction::showMenubar(this, SLOT(showMenubar()), actionCollection());
     KStandardAction::quit(this, SLOT(quit()), actionCollection());

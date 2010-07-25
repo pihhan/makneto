@@ -6,6 +6,7 @@
 #include "audiofileplayer.h"
 
 /** @brief GStreamer based audio file player.
+    @author Petr Mensik <pihhan@cipis.net>
     It needs configuration of output elements from MediaConfig first.
     It can be configured to repeat playing after some interval, with unlimited
     or limited repeats. */
@@ -24,13 +25,13 @@ class QtAudioPlayer : public QObject, public AudioFilePlayer
     bool playFile(const QString &path);
     bool setFile(const QString &path);
 
-    void setRepeats(int repeats);
-    void setDelay(int delay);
 
     //void setMediaConfig(const MediaConfig &config);
 
     public slots:
     void repeatTimeout();
+    void setRepeats(int repeats);
+    void setDelay(int delay);
 
     signals:
     /** @brief Emitted when playing of sound ended after last repeat. */

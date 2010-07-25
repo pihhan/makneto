@@ -134,6 +134,25 @@
         <label>Use popup window to indicate incoming session?</label>
     </entry>
 
+    <entry name="soundIncoming" type="String">
+        <default>ekiga/ring.wav</default>
+        <label>Sound played on incoming call</label>
+    </entry>
+
+    <entry name="soundBusy" type="String">
+        <label>Sound played, when called party is busy</label>
+        <default>ekiga/busytone.wav</default>
+    </entry>
+
+    <entry name="soundTerminated" type="String">
+        <label>Sound played after termination of call</label>
+    </entry>
+
+    <entry name="soundRinging" type="String">
+        <label>Sound played when waiting for remote party to accept call</label>
+        <default>ekiga/dialtone.wav</default>
+    </entry>
+
   </group>
 </kcfg>
 

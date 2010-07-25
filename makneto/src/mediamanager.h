@@ -69,6 +69,8 @@ class MediaManager : public QObject,
         const QString &devname,
         const QString &parameters);
 
+		
+	QString locateSoundFile(const QString &filename) const;
 
     public slots:
     void startRingIncomingCall();

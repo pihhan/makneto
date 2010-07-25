@@ -118,6 +118,18 @@ Settings::Settings(  )
   KConfigSkeleton::ItemBool  *itemAudioRingPopup;
   itemAudioRingPopup = new KConfigSkeleton::ItemBool( currentGroup(), QLatin1String( "AudioRingPopup" ), mAudioRingPopup );
   addItem( itemAudioRingPopup, QLatin1String( "AudioRingPopup" ) );
+  KConfigSkeleton::ItemString  *itemSoundIncoming;
+  itemSoundIncoming = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "soundIncoming" ), mSoundIncoming, QLatin1String( "ekiga/ring.wav" ) );
+  addItem( itemSoundIncoming, QLatin1String( "soundIncoming" ) );
+  KConfigSkeleton::ItemString  *itemSoundBusy;
+  itemSoundBusy = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "soundBusy" ), mSoundBusy, QLatin1String( "ekiga/busytone.wav" ) );
+  addItem( itemSoundBusy, QLatin1String( "soundBusy" ) );
+  KConfigSkeleton::ItemString  *itemSoundTerminated;
+  itemSoundTerminated = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "soundTerminated" ), mSoundTerminated );
+  addItem( itemSoundTerminated, QLatin1String( "soundTerminated" ) );
+  KConfigSkeleton::ItemString  *itemSoundRinging;
+  itemSoundRinging = new KConfigSkeleton::ItemString( currentGroup(), QLatin1String( "soundRinging" ), mSoundRinging, QLatin1String( "ekiga/dialtone.wav" ) );
+  addItem( itemSoundRinging, QLatin1String( "soundRinging" ) );
 }
 
 Settings::~Settings()

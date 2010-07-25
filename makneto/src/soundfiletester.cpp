@@ -22,21 +22,34 @@ SoundFileTester::SoundFileTester(MediaManager *manager, QWidget *parent)
 	setWindowTitle(i18n("Sound Player"));
 
     edt_filename = new QLineEdit("/usr/share/sounds/k3b_success1.wav");
+	
+	spin_repeats = new QSpinBox();
+	spin_repeats->setValue(1);
+	connect(spin_repeats, SIGNAL(valueChanged(int)), manager->player(), SLOT(setRepeats(int)) );
+	
+	spin_delay = new QSpinBox();
+	spin_delay->setValue(1000);
+	spin_delay->setMaximum(10000);
+	spin_delay->setSingleStep(50);
+	spin_delay->setSuffix(" ms");
+	connect(spin_delay, SIGNAL(valueChanged(int)), manager->player(), SLOT(setDelay(int)) );
 
-    l->addRow(new QLabel(i18n("Filename:")), edt_filename);
+    l->addRow(new QLabel(i18n("&Filename:")), edt_filename);
 
-    btn_play = new QPushButton(KIcon("player_play"), tr("&Play"));
+    btn_play = new QPushButton(KIcon("media-playback-start"), tr("&Play"));
     connect(btn_play, SIGNAL(clicked()), this, SLOT(play()) );
-	btn_pause = new QPushButton(KIcon("player_pause"), tr("Pa&use"));
+	btn_pause = new QPushButton(KIcon("media-playback-pause"), tr("Pa&use"));
 	connect(btn_pause, SIGNAL(clicked()), this, SLOT(pause()) );
-    btn_stop = new QPushButton(KIcon("player_stop"), tr("&Stop"));
+    btn_stop = new QPushButton(KIcon("media-playback-stop"), tr("&Stop"));
     connect(btn_stop, SIGNAL(clicked()), this, SLOT(stop()) );
-    btn_find = new QPushButton(KIcon("fileopen"), tr("&Locate"));
+    btn_find = new QPushButton(KIcon("document-open"), tr("&Locate"));
     connect(btn_find, SIGNAL(clicked()), this, SLOT(find()) );
 	btn_display = new QPushButton(tr("&Display"));
 	connect(btn_display, SIGNAL(clicked()), this, SLOT(displayPipeline()) );
 
-
+	l->addRow(new QLabel(i18n("Repeats")), spin_repeats);
+	l->addRow(new QLabel(i18n("Delay")), spin_delay);
+	
     QHBoxLayout *btnlayout = new QHBoxLayout();
     btnlayout->addWidget( btn_play );
 	btnlayout->addWidget( btn_pause);
@@ -44,7 +57,22 @@ SoundFileTester::SoundFileTester(MediaManager *manager, QWidget *parent)
     btnlayout->addWidget( btn_find );
 	btnlayout->addWidget( btn_display );
 
+	QHBoxLayout *btn2layout = new QHBoxLayout();
+	btn_ringing = new QPushButton(tr("Ringing"));
+	connect(btn_ringing, SIGNAL(clicked()), m_manager, SLOT(startRingIsRinging()) );
+	btn_incoming = new QPushButton(tr("Incoming"));
+	connect(btn_incoming, SIGNAL(clicked()), m_manager, SLOT(startRingIncomingCall()) );
+	btn_terminated = new QPushButton(tr("Terminated"));
+	connect(btn_terminated, SIGNAL(clicked()), m_manager, SLOT(startRingTerminated()) );
+	btn_busy = new QPushButton(tr("Busy"));
+	connect(btn_busy, SIGNAL(clicked()), m_manager, SLOT(startRingBusy()) );
+	btn2layout->addWidget(btn_ringing);
+	btn2layout->addWidget(btn_incoming);
+	btn2layout->addWidget(btn_terminated);
+	btn2layout->addWidget(btn_busy);
+	
     l->addRow(new QWidget(), btnlayout);
+	l->addRow(new QWidget(), btn2layout);
 
     lbl_status = new QLabel();
     l->addRow(new QWidget(), lbl_status);
@@ -163,7 +191,9 @@ void SoundFileTester::displayPipeline()
 	}
 	gst_object_unref(pipe);
 	
+#if 0
 	showPlugins();
+#endif
 }
 
 void SoundFileTester::reportMsg(const QString &msg)
