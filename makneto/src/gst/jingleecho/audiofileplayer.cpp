@@ -31,6 +31,7 @@ bool AudioFilePlayer::setMediaConfig(const MediaConfig &config)
 
     pipeline->setMediaConfig(newconfig);
 
+#if 0
     bool input =  pipeline->enableAudioInput();
     bool output = pipeline->enableAudioOutput();
 
@@ -39,18 +40,33 @@ bool AudioFilePlayer::setMediaConfig(const MediaConfig &config)
     }
 
     return input && output;
+#else
+    return true;
+#endif
 }
 
 /** @brief Try to link audio input to audio output.
-    @return True if link is successfull, false in the other case. */
+    @return True if link is successfull, false in the other case. 
+    If source pad is null, try to find decodebin and connect signal
+    to pipeline. */
 bool AudioFilePlayer::link()
 {
     GstPad * inpad = pipeline->getAudioSourcePad();
     GstPad * outpad = pipeline->getAudioSinkPad();
+    bool linked = false;
 
-    bool linked = pipeline->link(inpad, outpad);
+    if (!inpad && outpad) {
+        GstElement *decodebin = pipeline->getElement("audio-source-filter");
+        if (!decodebin)
+            return false;
+        g_signal_connect(decodebin, "new-decoded-pad", 
+            G_CALLBACK(QPipeline::onNewDecodedAudioPad), pipeline);
+        return true;
+    } else {
+        linked = pipeline->link(inpad, outpad);
+        gst_object_unref(inpad);
+    }
 
-    gst_object_unref(inpad);
     gst_object_unref(outpad);
     return linked;
 }

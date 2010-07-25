@@ -157,7 +157,7 @@ std::string MediaDevice::filter() const
     return m_filter;
 }
 
-FilterTypes MediaDevice::filterType() const
+MediaDevice::FilterTypes MediaDevice::filterType() const
 {
     return m_type;
 }

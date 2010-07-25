@@ -102,10 +102,10 @@ MediaConfig MediaManager::mediaSettings()
         config.setVideoInput(vin);
         config.setVideoOutput(vout);
         config.setLocalVideoOutput(vout);
-		ring.setFilter("decodebin");
+		//ring.setFilter("decodebin");
         config.setRingOutput(ring);
 		filein = MediaDevice("filesrc");
-		filein.setFilter("");
+		filein.setFilter("decodebin", MediaDevice::ELEMENT);
 		config.setFileInput(filein);
     }
     return config;

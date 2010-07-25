@@ -255,7 +255,7 @@ bool QPipeline::createElementsFromDevice(
             QPLOG() << "configureElement failed for " << elname << std::endl;
         }
 
-        if (*filterelem && !d.filter().empty()) {
+        if (filterelem && !d.filter().empty()) {
             const char *filter = d.filter().c_str();
             std::string filtername = name + "-filter";
             if (d.filterType() == MediaDevice::BIN) {
@@ -267,122 +267,43 @@ bool QPipeline::createElementsFromDevice(
                     g_error_free(err);
                     return false;
                 } else 
-                    gst_object_set_name(GST_OBJECT(m_asourcefilter), filtername.c_str());
+                    gst_object_set_name(GST_OBJECT(*filterelem), filtername.c_str());
             } else if (d.filterType() == MediaDevice::ELEMENT) {
-                *filterelem = gst_element_factory_make(filter);
-                if (*filterelem) 
-                    gst_object_set_name(GST_OBJECT(m_asourcefilter), filtername.c_str());
+                *filterelem = gst_element_factory_make(
+                        filter, filtername.c_str() );
             }
-        }
-        return (*source && *filterelem);
+            return (*source && *filterelem);
+        } else
+            return (*source != NULL);
     }
+    return false;
 }
 
 /** @brief Create audio source element and its filter. 
     @return true if it was successful, false otherwise. */
 bool QPipeline::createAudioSource()
 {
-    GError *err = NULL;
-    MediaDevice d = m_config.audioInput();
-
-    m_asource = gst_element_factory_make(d.element().c_str(), "audio-source");
-    if (!m_asource) {
-        QPLOG() << "Cannot make element \"" << d.element() << "\"" << std::endl;
-        return false;
-    }
-    if (!configureElement(m_asource, d.parameters)) {
-        QPLOG() << " configureElement failed for audio source" << std::endl;
-    }
-#if 0
-    if (d.element() == "audiotestsrc")
-        g_object_set(G_OBJECT(m_asource), "is-live", (gboolean) TRUE, NULL);
-#endif
-
-    if (!d.filter().empty()) {
-        const char *filter = d.filter().c_str();
-        if (d.filterType() == MediaDevice::BIN) {
-            m_asourcefilter = gst_parse_bin_from_description(filter, TRUE, &err);
-            if (err) {
-                QPLOG() << " gst_parse_bin_from_description: " <<
-                    err->message << std::endl;
-                    return false;
-            } else {
-                gst_object_set_name(GST_OBJECT(m_asourcefilter), "audio-source-filter");
-            }
-        } else if (d.filterType() == MediaDevice::ELEMENT) {
-            m_asourcefilter = gst_element_factory_make(filter);
-            if (m_asourcefilter) 
-                gst_object_set_name(GST_OBJECT(m_asourcefilter), "audio-source-filter");
-        }
-    }
-    return (m_asource != NULL);
+    return createElementsFromDevice(
+        m_config.audioInput(),
+        &m_asource, &m_asourcefilter,
+        "audio-source");
 }
 
 /** @brief Create audio output element.
     @return True if output was successfully created, false on the other case. */
 bool QPipeline::createAudioSink()
 {
-    GError *err = NULL;
     MediaDevice d = m_config.audioOutput();
-
-    m_asink = gst_element_factory_make(d.element().c_str(), "audio-sink");
-    if (!m_asink) {
-        QPLOG() << "Cannot make element \"" << d.element() << "\"" << std::endl;
-        return false;
-    }
-    if (!configureElement(m_asink, d.parameters)) {
-        QPLOG() << " configureElement failed for audio sink" << std::endl;
-    }
-
-    if (!d.filter().empty()) {
-        const char *filter = d.filter().c_str();
-        m_asinkfilter = gst_parse_bin_from_description(filter, TRUE, &err);
-        if (err) {
-            QPLOG() << " gst_parse_bin_from_description: " <<
-                err->message << std::endl;
-                return false;
-        } else {
-            gst_object_set_name(GST_OBJECT(m_asinkfilter), "audio-sink-filter");
-        }
-    }
-    return (m_asink != NULL);
+    return createElementsFromDevice(d,
+        &m_asink, &m_asinkfilter, "audio-sink");
 }
 
 bool QPipeline::createVideoSource()
 {
-    GError *err = NULL;
     MediaDevice d = m_config.videoInput();
 
-    m_videosource = gst_element_factory_make(
-        d.element().c_str(), "video-source");
-    if (!m_videosource) {
-        QPLOG() << "Video source element \"" << d.element()
-            << "\" creation failed." << std::endl;
-        return false;
-    }
-    if (!configureElement(m_videosource, d.parameters)) {
-        QPLOG() << " configureElement failed for video source" << std::endl;
-    }
-#if 0
-    if (d.element() == "videotestsrc") {
-        g_object_set(G_OBJECT(m_videosource),
-            "is-live", (gboolean) TRUE, 
-            NULL);
-    }
-#endif
-
-    if (!d.filter().empty()) {
-        const char *filter = d.filter().c_str();
-        m_vsourcefilter = gst_parse_bin_from_description(filter, TRUE, &err);
-        if (err) {
-            QPLOG() << "Parsing video filter bin failed: " << err->message << std::endl;
-            return false;
-        } else {
-            gst_object_set_name(GST_OBJECT(m_vsourcefilter), "vsource-filter-bin");
-        }
-    }
-
-    return (m_videosource != NULL);
+    return createElementsFromDevice(d,
+        &m_videosource, &m_vsourcefilter, "video-source");
 }
 
 /** @brief Create output window for displaying of remote content, 
@@ -390,60 +311,18 @@ bool QPipeline::createVideoSource()
 */
 bool QPipeline::createVideoSink()
 {
-    GError *err = NULL;
     MediaDevice d = m_config.videoOutput();
-    m_videosink = gst_element_factory_make(
-        d.element().c_str(), "remote-video-sink");
-    if (!m_videosink) {
-        QPLOG() << "Creating of " << d.element() << " failed." << std::endl;
-        return false;
-    }
-    if (!configureElement(m_videosink, d.parameters)) {
-        QPLOG() << " configureElement failed for video sink" << std::endl;
-    }
-
-    if (!d.filter().empty()) {
-        m_vsinkfilter = gst_parse_bin_from_description(
-            d.filter().c_str(), TRUE, &err);
-        if (err) {
-            QPLOG() << "Creating of video sink filter failed: " << err->message << std::endl;
-            return false;
-        } else {
-            gst_object_set_name(GST_OBJECT(m_vsinkfilter), "vsink-filter-bin");
-        }
-    }
-    return (m_videosink != NULL);
+    return createElementsFromDevice(d,
+        &m_videosink, &m_vsinkfilter, "remote-video-sink");
 }
 
 /** @brief Create element for local video input loopback, as preview.
 */
 bool QPipeline::createLocalVideoSink()
 {
-    GError *err = NULL;
     MediaDevice d = m_config.localVideoOutput();
-
-    m_localvideosink = gst_element_factory_make(
-        d.element().c_str(), "local-video-sink");
-    if (!m_localvideosink) {
-        QPLOG() << "Creating of local video sink element " 
-            << d.element() << " failed." << std::endl;
-        return false;
-    }
-    if (!configureElement(m_localvideosink, d.parameters)) {
-        QPLOG() << " configureElement failed for local video sink" << std::endl;
-    }
-
-    if (!d.filter().empty()) {
-        m_lvsinkfilter = gst_parse_bin_from_description(
-            d.filter().c_str(), TRUE, &err);
-        if (err) {
-            QPLOG() << "Creating of local video sink filter failed: " << err->message << std::endl;
-            return false;
-        } else {
-            gst_object_set_name(GST_OBJECT(m_lvsinkfilter), "local-vsink-filter-bin");
-        }
-    }
-    return (m_localvideosink != NULL);
+    return createElementsFromDevice(d,
+        &m_localvideosink, &m_lvsinkfilter, "local-video-sink");
 }
 
 /** @brief Enable local video sink, create it if not created already. */
@@ -882,6 +761,25 @@ std::string QPipeline::binToString(GstElement *bin)
     }
     gst_iterator_free(it);
     return o.str();
+}
+
+/** @brief Called from decodebin signal for audio files.
+    Connect incoming pad to audiosink pad from pipeline. 
+*/
+void QPipeline::onNewDecodedAudioPad(GstElement *object,
+    GstPad *src,
+    gboolean arg1,
+    gpointer pipe_data)
+{
+    QPipeline *pipeline = (QPipeline *) pipe_data;
+    if (!pipeline)
+        return;
+
+    GstPad *sinkpad = pipeline->getAudioSinkPad();
+    if (!pipeline->link(src, sinkpad)) {
+        QPLOG() << "link of decoded pad failed!" << std::endl;
+    } else 
+        QPLOG() << "link of decoded pad succeeded." << std::endl;
 }
 
 /** @brief Create description string of current pipeline, with state, elements.

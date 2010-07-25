@@ -78,6 +78,9 @@ class QPipeline
     /* glib callbacks */
     static void elementAdded(GstBin *bin, GstElement *element, gpointer pipeline);
     static void elementRemoved(GstBin *bin, GstElement *element, gpointer pipeline);
+    static void onNewDecodedAudioPad(GstElement *object,
+        GstPad *src, gboolean arg1, gpointer pipe_data);
+
 
     bool isVideoEnabled();
     bool isAudioEnabled();
