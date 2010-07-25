@@ -94,6 +94,15 @@ class QPipeline
     void setMediaConfig(const MediaConfig &c);
     static bool configureElement(GstElement *e, PayloadParameterMap p);
 
+    static std::string describePad(GstPad *pad, bool display_peer=true);
+
+    protected:
+    static bool createElementsFromDevice(
+        const MediaDevice &d,
+        GstElement **source,
+        GstElement **filterelem,
+        const std::string &name);
+
     private:
 
     GstBus *m_bus;

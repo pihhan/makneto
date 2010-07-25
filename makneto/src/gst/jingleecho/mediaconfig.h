@@ -17,10 +17,18 @@
 #define DEFAULT_VIDEOSINK   "xvimagesink"
 #define DEFAULT_VIDEOSINK_FILTER "ffmpegcolorspace ! videoscale"
 
+#define DEFAULT_FILESOURCE "filesrc"
+#define DEFAULT_FILESOURCE_FILTER "decodebin2 ! identity"
+
 /** @brief Class for description of one device in gstreamer. */
 class MediaDevice 
 {
     public:
+
+    enum FilterTypes {
+        BIN,
+        ELEMENT
+    };
 
     MediaDevice();
     MediaDevice(const std::string &element);
@@ -31,11 +39,13 @@ class MediaDevice
     source or sink element itself. 
     It might be path to /dev tree, but format depends on module itself. */
     std::string filter() const;
+
+    FilterTypes filterType() const;
     /** @brief Path to device, used as device parameter for element. */
     std::string path() const;
 
     void setElement(const std::string &element);
-    void setFilter(const std::string &filter);
+    void setFilter(const std::string &filter, FilterTypes type = BIN);
 
     void addParameter(const PayloadParameter &p);
 
@@ -49,6 +59,7 @@ class MediaDevice
 
     std::string m_element;
     std::string m_filter;
+    FilterTypes m_type;
 };
 
 /** @brief Class to carry configuration of input and output devices.
@@ -66,6 +77,7 @@ class MediaConfig
     MediaDevice localVideoOutput() const;
     MediaDevice audioInput() const;
     MediaDevice audioOutput() const;
+    MediaDevice fileInput() const;
     MediaDevice ringOutput() const;
 
     void setVideoInput(const MediaDevice &c);
@@ -73,12 +85,13 @@ class MediaConfig
     void setLocalVideoOutput(const MediaDevice &c);
     void setAudioInput(const MediaDevice &c);
     void setAudioOutput(const MediaDevice &c);
+    void setFileInput(const MediaDevice &c);
     void setRingOutput(const MediaDevice &c);
 
     static MediaDevice deviceFromEnvironment(
-    const std::string &environ,
-    const std::string &default_element,
-    const std::string &default_filter);
+        const std::string &environ,
+        const std::string &default_element,
+        const std::string &default_filter = std::string() );
 
     std::string describe() const;
 
@@ -88,6 +101,7 @@ class MediaConfig
     MediaDevice m_localVideoOutput;
     MediaDevice m_audioInput;
     MediaDevice m_audioOutput;
+    MediaDevice m_fileInput;
     MediaDevice m_ringOutput;
 };
 

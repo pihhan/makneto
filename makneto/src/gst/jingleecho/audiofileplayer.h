@@ -31,6 +31,9 @@ class AudioFilePlayer
     void stop();
     void pause();
 
+    bool link();
+    bool isReady();
+
 
     MediaDevice fileInput();
 

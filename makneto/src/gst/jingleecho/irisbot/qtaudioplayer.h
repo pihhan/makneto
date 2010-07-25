@@ -27,6 +27,8 @@ class QtAudioPlayer : public QObject, public AudioFilePlayer
     void setRepeats(int repeats);
     void setDelay(int delay);
 
+    //void setMediaConfig(const MediaConfig &config);
+
     public slots:
     void repeatTimeout();
 

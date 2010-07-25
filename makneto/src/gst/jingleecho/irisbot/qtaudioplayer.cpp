@@ -68,3 +68,15 @@ void QtAudioPlayer::repeatTimeout()
     replay();
 }
 
+#if 0
+/** @brief Configure devices of pipeline.
+    Use fileInput as audioInput and ringOutput device as AudioSink. */
+void QtAudioPlayer::setMediaConfig(const MediaConfig &config)
+{
+    MediaConfig mycfg(config);
+    mycfg.setAudioInput(config.fileInput());
+    mycfg.setAudioOutput(config.ringOutput());
+    pipeline->setMediaConfig(mycfg);
+}
+#endif
+

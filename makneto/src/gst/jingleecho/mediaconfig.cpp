@@ -15,6 +15,8 @@ MediaConfig::MediaConfig()
         DEFAULT_AUDIOSINK_FILTER);
     m_ringOutput = deviceFromEnvironment("RINGSINK", DEFAULT_AUDIOSINK,
         DEFAULT_AUDIOSINK_FILTER);
+    m_fileInput = deviceFromEnvironment("FILESRC", DEFAULT_FILESOURCE, 
+        DEFAULT_FILESOURCE_FILTER);
 }
 
 MediaDevice MediaConfig::deviceFromEnvironment(
@@ -33,9 +35,9 @@ MediaDevice MediaConfig::deviceFromEnvironment(
         d.setElement(default_element);
     }
     if (env_filter) {
-        d.setElement(env_filter);
-    } else {
-        d.setElement(default_filter);
+        d.setFilter(env_filter);
+    } else if (!default_filter.empty()) {
+        d.setFilter(default_filter);
     }
     return d;
 }
@@ -63,6 +65,11 @@ MediaDevice MediaConfig::audioInput() const
 MediaDevice MediaConfig::audioOutput() const
 {
     return m_audioOutput;
+}
+
+MediaDevice MediaConfig::fileInput() const
+{
+    return m_fileInput;
 }
 
 MediaDevice MediaConfig::ringOutput() const
@@ -96,6 +103,11 @@ void MediaConfig::setAudioOutput(const MediaDevice &c)
     m_audioOutput = c;
 }
 
+void MediaConfig::setFileInput(const MediaDevice &c)
+{
+    m_fileInput = c;
+}
+
 void MediaConfig::setRingOutput(const MediaDevice &c)
 {
     m_ringOutput = c;
@@ -111,6 +123,7 @@ std::string MediaConfig::describe() const
     o << "AudioOutput: " << m_audioOutput.describe() << std::endl;
     o << "RingOutput: " << m_ringOutput.describe() << std::endl;
     o << "LocalVideoOutput: " << m_localVideoOutput.describe() << std::endl;
+    o << "FileInput: " << m_fileInput.describe() << std::endl;
     return o.str();
 }
 
@@ -121,11 +134,12 @@ std::string MediaConfig::describe() const
  *
  */
 MediaDevice::MediaDevice()
+    : m_type(BIN)
 {
 }
 
 MediaDevice::MediaDevice(const std::string &element)
-    : m_element(element)
+    : m_element(element), m_type(BIN)
 {
 }
 
@@ -141,6 +155,11 @@ It might be path to /dev tree, but format depends on module itself. */
 std::string MediaDevice::filter() const
 {
     return m_filter;
+}
+
+FilterTypes MediaDevice::filterType() const
+{
+    return m_type;
 }
 
 /** @brief Path to device, used as device parameter for element. */
@@ -159,9 +178,10 @@ void MediaDevice::setElement(const std::string &element)
     m_element = element;
 }
 
-void MediaDevice::setFilter(const std::string &filter)
+void MediaDevice::setFilter(const std::string &filter, FilterTypes type)
 {
     m_filter = filter;
+    m_type = type;
 }
 
 void MediaDevice::addParameter(const PayloadParameter &p)

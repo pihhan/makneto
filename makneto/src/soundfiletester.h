@@ -21,6 +21,8 @@ class SoundFileTester : public QWidget
     void find();
     void play();
     void stop();
+	void pause();
+	void displayPipeline();
 
     void reportMsg(const QString &msg);
 
@@ -28,12 +30,13 @@ class SoundFileTester : public QWidget
     void playerStopped();
 
     private:
-
     MediaManager *m_manager;
     QLineEdit   *edt_filename;
     QPushButton *btn_play;
     QPushButton *btn_stop;
+	QPushButton *btn_pause;
     QPushButton *btn_find;
+	QPushButton *btn_display;
     QLabel      *lbl_status;
 };
 

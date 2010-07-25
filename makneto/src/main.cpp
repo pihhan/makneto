@@ -6,6 +6,7 @@
 #include <KDE/KLocale>
 #include <QtCrypto>
 #include <QDebug>
+#include <QTextCodec>
 
 #include <gst/gst.h>
 
@@ -42,26 +43,23 @@ int main(int argc, char **argv)
         g_free(gsthelptext);
 
         if (g_option_context_parse(ctx, &argc, &argv, &err)) {
-            qDebug("GStreamer parameters parsed succesfully.");
+            qDebug("GStreamer cmdline parameters parsed succesfully.");
         } else {
-            qWarning() << "GStreamer parameters failed to parse: "
+            qWarning() << "GStreamer cmdline parameters failed to parse: "
                     << err->message;
-        }
-        if (err)
             g_error_free(err);
+        }
+		
+		gst_init(NULL, NULL);
 
         /** Let KDE parser parse all internal options not removed by
         gstreamer parsing. */
         KCmdLineArgs::init(argc, argv, &about);
         KCmdLineArgs::addCmdLineOptions(gstopts, ki18n("gst"));
 
-#if 0
-        if (!gst_init_check(&argc, &argv, &err)) {
-            qWarning() << "GStreamer initialization failed: " << err->message;
-            g_error_free(err);
-        }
-#endif
-
+		/* Expect strings from C are in UTF-8 format, as is common for 
+		   GStreamer and GLib applications. */
+		QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 
 	KApplication app;
   app.setWindowIcon(KIcon("makneto"));

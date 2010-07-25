@@ -29,6 +29,8 @@ MediaManager::MediaManager(Makneto *makneto)
     m_mediaTestTimer.setSingleShot(true);
     connect(&m_mediaTestTimer, SIGNAL(timeout()), 
         this, SLOT(mediaTestTimeout()));
+
+    m_audioplayer->setMediaConfig(mediaSettings());
 }
 
 /** @brief Begin test of audio and video subsystem settings.
@@ -71,9 +73,13 @@ MediaConfig MediaManager::mediaSettings()
 
     bool success = true;
 
-    MediaDevice ain, aout;
-    MediaDevice vin, vout;
-    MediaDevice ring;
+    MediaDevice ain = config.audioInput();
+	MediaDevice aout = config.audioOutput();
+    MediaDevice vin = config.videoInput();
+	MediaDevice vout = config.videoOutput();
+    MediaDevice ring = config.ringOutput();
+	MediaDevice filein = config.fileInput();
+	
     success = success && configureDevice(ain, 
         Settings::audioInputModule(), Settings::audioInputDevice(), 
         Settings::audioInputParams());
@@ -96,7 +102,11 @@ MediaConfig MediaManager::mediaSettings()
         config.setVideoInput(vin);
         config.setVideoOutput(vout);
         config.setLocalVideoOutput(vout);
+		ring.setFilter("decodebin");
         config.setRingOutput(ring);
+		filein = MediaDevice("filesrc");
+		filein.setFilter("");
+		config.setFileInput(filein);
     }
     return config;
 }

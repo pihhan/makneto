@@ -4,6 +4,7 @@
 
 #include <string>
 #include <iostream>
+#include <cstring>
 #include "audiofileplayer.h"
 
 AudioFilePlayer::AudioFilePlayer()
@@ -26,12 +27,32 @@ bool AudioFilePlayer::setMediaConfig(const MediaConfig &config)
 {
     MediaConfig newconfig(config);
     newconfig.setAudioOutput(config.ringOutput());
-    newconfig.setAudioInput(fileInput());
+    newconfig.setAudioInput(config.fileInput());
 
     pipeline->setMediaConfig(newconfig);
 
-    return  pipeline->enableAudioInput() &&
-            pipeline->enableAudioOutput();
+    bool input =  pipeline->enableAudioInput();
+    bool output = pipeline->enableAudioOutput();
+
+    if (input && output) {
+        return link();
+    }
+
+    return input && output;
+}
+
+/** @brief Try to link audio input to audio output.
+    @return True if link is successfull, false in the other case. */
+bool AudioFilePlayer::link()
+{
+    GstPad * inpad = pipeline->getAudioSourcePad();
+    GstPad * outpad = pipeline->getAudioSinkPad();
+
+    bool linked = pipeline->link(inpad, outpad);
+
+    gst_object_unref(inpad);
+    gst_object_unref(outpad);
+    return linked;
 }
 
 /** @brief Called at end of stream. */
@@ -71,9 +92,22 @@ MediaDevice AudioFilePlayer::fileInput()
     @return True if playing seems to started succesfully. */
 bool AudioFilePlayer::playFile(const char *path)
 {
+    if (!pipeline->isAudioEnabled()) {
+        bool prepared = prepare();
+        if (!prepared || !pipeline->isAudioEnabled())
+            return false;
+    }
+
     GstElement *filesrc = pipeline->getAudioSource();
     if (filesrc) {
-        g_object_set(G_OBJECT(filesrc), "location", path, NULL);
+        gchar *current = NULL;
+        g_object_get(G_OBJECT(filesrc), "location", &current, NULL);
+        if (!current || strcmp(path, current)) {
+            g_object_set(G_OBJECT(filesrc), "location", path, NULL);
+        }
+
+        if (current) 
+            g_free(current);
         pipeline->setState(GST_STATE_PLAYING);
         return true;
     } else
@@ -85,7 +119,12 @@ bool AudioFilePlayer::setFile(const char *path)
 {
     GstElement *filesrc = pipeline->getAudioSource();
     if (filesrc) {
-        g_object_set(G_OBJECT(filesrc), "location", path, NULL);
+        gchar *current = NULL;
+        g_object_get(G_OBJECT(filesrc), "location", &current, NULL);
+        if (!current || strcmp(current, path))
+            g_object_set(G_OBJECT(filesrc), "location", path, NULL);
+        if (current)
+            g_free(current);
         return true;
     } else
         return false;
@@ -126,7 +165,10 @@ gboolean AudioFilePlayer::messageCallback(GstBus * , GstMessage *message, gpoint
                 GError *err = NULL;
                 gchar *debug = NULL;
                 gst_message_parse_error(message, &err, &debug);
-                player->streamError(err->message); 
+                std::string errmsg(err->message);
+                if (debug)
+                    errmsg = errmsg + " (" + debug + ")";
+                player->streamError(errmsg); 
                 g_error_free(err);
                 g_free(debug);
             }
@@ -136,7 +178,10 @@ gboolean AudioFilePlayer::messageCallback(GstBus * , GstMessage *message, gpoint
                 GError *err = NULL;
                 gchar *debug = NULL;
                 gst_message_parse_warning(message, &err, &debug);
-                player->streamError(err->message);
+                std::string errmsg(err->message);
+                if (debug)
+                    errmsg = errmsg + " (" + debug + ")";
+                player->streamError(errmsg);
                 g_error_free(err);
                 g_free(debug);
             }
@@ -150,6 +195,27 @@ gboolean AudioFilePlayer::messageCallback(GstBus * , GstMessage *message, gpoint
 /** @brief Prepare pipeline to be ready for audio files. */
 bool AudioFilePlayer::prepare()
 {
-    return pipeline->enableAudio();
+    bool prepi = true;
+    bool prepo = true;
+    if (!pipeline->isAudioInputEnabled()) 
+        prepi = pipeline->enableAudioInput();
+    if (!pipeline->isAudioOutputEnabled())
+        prepo = pipeline->enableAudioOutput();
+    bool linked = link();
+    return prepi && prepo && linked;
+}
+
+bool AudioFilePlayer::isReady() 
+{
+    if (!pipeline->isValid() || !pipeline->isAudioInputEnabled())
+        return false;
+    GstPad *pad = pipeline->getAudioSourcePad();
+    bool linked = gst_pad_is_linked(pad);
+    gst_object_unref(pad);
+
+    return (
+           pipeline->isAudioInputEnabled() 
+        && pipeline->isAudioInputEnabled()
+        && linked);
 }
 

@@ -220,6 +220,64 @@ GstBus * QPipeline::bus()
     return m_bus;
 }
 
+/** \brief Helper class to simplify creating several input or output devices
+    from configuration.
+    \param d Device configuration.
+    \param source Pointer to element pointer, that will be filled with created element.
+    \param filterelem Pointer to element pointer, that will be filled with created filter, if configuration has one.
+    \param name Name of element, that will be created.
+*/
+bool QPipeline::createElementsFromDevice(
+    const MediaDevice &d,
+    GstElement **source,
+    GstElement **filterelem,
+    const std::string &name)
+{
+    GError *err = NULL;
+
+    std::string elname(name);
+    if (elname.empty())
+        elname = d.element();
+
+    if (source) {
+        const gchar *elemname = d.element().c_str();
+        const gchar *uniquename = NULL;
+        if (!name.empty())
+            uniquename = name.c_str();
+        *source = gst_element_factory_make(elemname, uniquename);
+        if (! *source) {
+            QPLOG() << "Could not make element \"" << d.element() << "\"" 
+            << std::endl;
+            return false;
+        }
+
+        if (!configureElement(*source, d.parameters)) {
+            QPLOG() << "configureElement failed for " << elname << std::endl;
+        }
+
+        if (*filterelem && !d.filter().empty()) {
+            const char *filter = d.filter().c_str();
+            std::string filtername = name + "-filter";
+            if (d.filterType() == MediaDevice::BIN) {
+                *filterelem = gst_parse_bin_from_description(filter, TRUE, &err);
+                if (err) {
+                    QPLOG() << " gst_parse_bin_from_description: " << 
+                        elname << 
+                        err->message << std::endl;
+                    g_error_free(err);
+                    return false;
+                } else 
+                    gst_object_set_name(GST_OBJECT(m_asourcefilter), filtername.c_str());
+            } else if (d.filterType() == MediaDevice::ELEMENT) {
+                *filterelem = gst_element_factory_make(filter);
+                if (*filterelem) 
+                    gst_object_set_name(GST_OBJECT(m_asourcefilter), filtername.c_str());
+            }
+        }
+        return (*source && *filterelem);
+    }
+}
+
 /** @brief Create audio source element and its filter. 
     @return true if it was successful, false otherwise. */
 bool QPipeline::createAudioSource()
@@ -242,13 +300,19 @@ bool QPipeline::createAudioSource()
 
     if (!d.filter().empty()) {
         const char *filter = d.filter().c_str();
-        m_asourcefilter = gst_parse_bin_from_description(filter, TRUE, &err);
-        if (err) {
-            QPLOG() << " gst_parse_bin_from_description: " <<
-                err->message << std::endl;
-                return false;
-        } else {
-            gst_object_set_name(GST_OBJECT(m_asourcefilter), "audio-source-filter");
+        if (d.filterType() == MediaDevice::BIN) {
+            m_asourcefilter = gst_parse_bin_from_description(filter, TRUE, &err);
+            if (err) {
+                QPLOG() << " gst_parse_bin_from_description: " <<
+                    err->message << std::endl;
+                    return false;
+            } else {
+                gst_object_set_name(GST_OBJECT(m_asourcefilter), "audio-source-filter");
+            }
+        } else if (d.filterType() == MediaDevice::ELEMENT) {
+            m_asourcefilter = gst_element_factory_make(filter);
+            if (m_asourcefilter) 
+                gst_object_set_name(GST_OBJECT(m_asourcefilter), "audio-source-filter");
         }
     }
     return (m_asource != NULL);
@@ -645,31 +709,36 @@ bool QPipeline::enableAudio()
 
 GstElement *QPipeline::getAudioSource()
 {
-    gst_object_ref(GST_OBJECT(m_asource));
+    if (m_asource)
+        gst_object_ref(GST_OBJECT(m_asource));
     return m_asource;
 }
 
 GstElement *QPipeline::getAudioSink()
 {
-    gst_object_ref(GST_OBJECT(m_asink));
+    if (m_asink)
+        gst_object_ref(GST_OBJECT(m_asink));
     return m_asink;
 }
 
 GstElement *QPipeline::getVideoSource()
 {
-    gst_object_ref(GST_OBJECT(m_videosource));
+    if (m_videosource)
+        gst_object_ref(GST_OBJECT(m_videosource));
     return m_videosource;
 }
 
 GstElement * QPipeline::getVideoSink()
 {
-    gst_object_ref(GST_OBJECT(m_videosink));
+    if (m_videosink)
+        gst_object_ref(GST_OBJECT(m_videosink));
     return m_videosink;
 }
 
 GstElement * QPipeline::getLocalVideoSink()
 {
-    gst_object_ref(GST_OBJECT(m_localvideosink));
+    if (m_localvideosink)
+        gst_object_ref(GST_OBJECT(m_localvideosink));
     return m_localvideosink;
 }
 
@@ -857,12 +926,12 @@ bool QPipeline::isValid()
 
 bool QPipeline::isVideoEnabled()
 {
-    return m_video_enabled;
+    return isVideoInputEnabled() && isVideoOutputEnabled();
 }
 
 bool QPipeline::isAudioEnabled()
 {
-    return m_audio_enabled;
+    return isAudioInputEnabled() && isAudioOutputEnabled();
 }
 
 MediaConfig QPipeline::mediaConfig()
@@ -960,5 +1029,78 @@ bool QPipeline::isVideoInputEnabled()
 bool QPipeline::isVideoOutputEnabled()
 {
     return m_videoOutputEnabled;
+}
+
+/** \brief Create string description of given pad.
+    \param pad Pad to describe
+    \param display_peer Whether to try display name and caps of connected pad
+    Useful for debugging. 
+*/
+std::string QPipeline::describePad(GstPad *pad, bool display_peer)
+{
+    std::ostringstream o;
+    gchar * name = gst_pad_get_name(pad);
+
+    char direction = '?';
+    switch (gst_pad_get_direction(pad)) {
+        case GST_PAD_UNKNOWN:  direction = '?'; break;
+        case GST_PAD_SINK:      direction = '<'; break;
+        case GST_PAD_SRC:       direction = '>'; break;
+    }
+    o << "pad " << name << direction << " ";
+    GstElement *parent = gst_pad_get_parent_element(pad);
+    if (parent) {
+        gchar * parentname = gst_element_get_name(parent);
+        o << " of " << parentname << " ";
+        g_free(parentname);
+        gst_object_unref(parent);
+    }
+
+    bool linked = gst_pad_is_linked(pad);
+    if (linked)
+        o << " linked ";
+    if (gst_pad_is_active(pad))
+        o << " active ";
+    if (gst_pad_is_blocking(pad)) 
+        o << " blocking ";
+    if (gst_pad_is_blocked(pad))
+        o << " blocked ";
+
+    GstCaps *caps = gst_pad_get_caps(pad);
+    char * capsstr = gst_caps_to_string(caps);
+    o << " caps=[" << capsstr << "] ";
+    g_free(capsstr);
+    gst_caps_unref(caps);
+
+    GstCaps *caps_nego = gst_pad_get_negotiated_caps(pad);
+    if (caps_nego) {
+        char *caps_nego_str = gst_caps_to_string(caps_nego);
+        o << " negotiated=[" << caps_nego_str << "] ";
+        gst_caps_unref(caps_nego);
+    }
+
+    if (display_peer) {
+        GstPad *peer = gst_pad_get_peer(pad);
+        if (peer) {
+            gchar * peername = gst_pad_get_name(peer);
+            o << " peer=" << peername; 
+            GstCaps *peercaps = gst_pad_get_caps(peer);
+            if (peercaps) {
+                gchar *peer_caps_str = gst_caps_to_string(peercaps);
+                o << " with caps=[" << peer_caps_str << "] ";
+                g_free(peer_caps_str);
+                gst_caps_unref(peercaps);
+            }
+            g_free(peername);
+
+            gst_object_unref(peer);
+        } else {
+            o << " (no peer)";
+        }
+    }
+
+
+    g_free(name);
+    return o.str();
 }
 
