@@ -347,7 +347,7 @@ v¹ak i verze pro Microsoft Windows. Ekiga podporuje volání pomocí rodin protokol
 Grafické u¾ivatelské rozhraní programu je napsáno pomocí knihovny GTK. 
 Projekt vyu¾ívá ke správì vstupních, výstupních zaøízení knihovnu PTLib.
 Pùvodnì byla knihovna vytváøena pro pou¾ití v~projektu OpenH323, je¹tì pod 
-jménem PWLib. Pozdìji pøibyla Open Phone Abstraction Library -- OPAL\ref{opal},
+jménem PWLib. Pozdìji pøibyla Open Phone Abstraction Library -- OPAL\cite{opal},
 která umo¾òuje jednotným zpùsobem volání jak protokolem H.323, tak SIP.
 Obì knihovny jsou zveøejnìny pod licencí Mozilla Public License. 
 
@@ -670,9 +670,9 @@ Pøipojující se posílá hlavièku bez \verb|id|.
 <stream:stream 
    xmlns:stream='http://etherx.jabber.org/streams' 
    xmlns='jabber:client' to='im.pihhan.info' >
-\end{verbatim}
+\end{lstlisting}
 Server na ni odpoví tagem stream ji¾ s~identifkátorem.
-\begin{verbatim}
+\begin{lstlisting}
 <?xml version='1.0'?>
 <stream:stream 
    xmlns:stream='http://etherx.jabber.org/streams' 
@@ -905,6 +905,8 @@ napøíklad statistické údaje vyu¾ití slu¾by. Pokud entita nemá ¾ádné vnoøené
 prvky, vrací v odpovìdi prázný XML element.
 
 \subsubsection*{Entity Capabilities}
+
+\label{entityCapabilitiesSection}
 Aby nebylo nutné pøi ka¾dém pøipojení posílat ka¾dému kontaktu dotaz na 
 podporované protokoly, existuje roz¹íøení Entity Capabilities\cite{xmppCapabilities}. Ka¾dý klient podporující toto roz¹íøení posílá pøi prvotním nastavením
 stavu ve stanze \verb|presence| také tag \verb|c| se jmenným prostorem
@@ -987,6 +989,10 @@ parametry. Roz¹íøení, která definují zpùsob ustavení pøenosového
 kanálu\cite{xmppJingleUdp} a výbìr kodeku pro pøená¹ená data\cite{xmppJingleRtp}
 jsou definovány v~samostatných roz¹íøeních. Sestavení obecného sezení pou¾ívá
 napøíklad klient Jabbim pro dohodnutí fungujícího zpùsobu pro pøenos souboru.
+Pomocí jingle session ustaví sezení, kde nejprve zkusí pøímý pøenos mezi 
+koncovými body, pokud sel¾e, pokusí se o pøenos pomocí bytestream proxy. 
+Nefunguje-li ani tento zpùsob, zmìní protokol pøenosu na in-band stream, který
+pøená¹í data sekvencí XML stanz pøímo ve spojení k serveru.
 
 \begin{figure}[ht]
 \begin{center}
@@ -1003,9 +1009,10 @@ zahajuje zasláním session-initiate. Po jeho zaslání mù¾e protistrana odmítnout,
 èím se pøejde pøímo na koneèný stav. Sezení zùstává ve stavu pending, dokud
 jej protistrana nepotvrdí a nepøejde tak do stavu aktivního. Potvrzení bude
 v~programu obvykle vypadat jako schválení ¾ádosti o~zahájení multimediálního
-spojení u¾ivatelem.
+spojení u¾ivatelem. Je vhodné zmínit, ¾e potvrzení pøijetí stanzy a potvrzení
+pøijetí spojení jsou dvì rozdílné akce.
 
-\newpage
+%\newpage
 Zahájení spojení mù¾e vypadat napøíklad takto\cite{xmppJingle}:
 \begin{lstlisting}[language=XML]
 <iq from='romeo@montague.lit/orchard'
@@ -1039,7 +1046,8 @@ obsahu do sezení, jeho modifikaci.
 
 Jedno sezení mù¾e mít jeden nebo více 
 popisù pøená¹ených médií. Popisem je my¹lena specifikace podporovaných kodekù, 
-pøiøazená dynamická èísla obsahu pøiøazená jednotlivým kodekùm èi vzorkovací frekvence. Pro nìkteré kodeky mù¾e být potøeba uvést dal¹í parametry. Popis 
+pøiøazená dynamická èísla RTP obsahu jednotlivým kodekùm a jejich vzorkovací 
+frekvence. Pro nìkteré kodeky mù¾e být potøeba uvést dal¹í parametry. Popis 
 multimediálních formátù pøená¹ených protokolem RTP\cite{rtp} definuje roz¹íøení {\em Jingle RTP Sessions}\cite{xmppJingleRtp}, XEP~167.
 
 Pro uskuteènìní spojení je potøeba vymìnit si informace o~sí»ovém pøipojení, 
@@ -1055,7 +1063,7 @@ a opìtovné vy¾ádání zaslání ztraceného paketu mù¾e trvat pøíli¹ dlouho na to,
 aby ztracená informace po opìtovném doruèení byla je¹tì u¾iteèná. Navíc 
 datagramy UDP nemají explicitnì definované zahájení a ukonèení spojení. 
 Absence pøesného zahájení znemo¾òuje firewallùm stavovou kontrolu paketu, jakou 
-bì¾nì provádí u~TCP spojení. Proto¾e TCP definuje jaké pøíznaky musí být 
+bì¾nì provádí u~TCP spojení. Proto¾e TCP definuje, jaké pøíznaky musí být 
 nastaveny pro zahájení spojení, s~jakými pøíznaky systém zahájení spojení 
 potvrdí, nebo naopak odmítne, stavový firewall mù¾e odfiltrovat potvrzení 
 neexistujícího spojení, pøípadnì opakované zahájení probíhajícího spojení.
@@ -1073,7 +1081,13 @@ vlastní adresou a portem. Proto si smìrovaè musí vést tabulku v¹ech svých
 spojení a spojení v¹ech pøekládaných poèítaèù. Pøíchozí paket porovná s~tabulkou spojení a najde, zda paket má zpracovat sám, nebo nahradit tentokráte cílovou 
 adresu a pøedat do vnitøní sítì. Aby smìrovaè pøedcházel pøeplnìní tabulky spojení, udr¾uje si ke ka¾dému spojení i jeho stav a dobu od poslední aktivity. Pokud spojení je pøíli¹ dlouho bez jakékoliv odezvy, spojení z~tabulky vyøadí.
 
-Zde je rozdíl mezi TCP a UDP nevíce patrný. Pro TCP mù¾e vyøadit spojení z~tabulky ihned poté, co jej komunikující strany ukonèí. Podobnì pokud neobdr¾í smìrovaè oznámení o~ukonèení spojení, patrnì bude spojení aktivní, i kdy¾ se právì ¾ádná data nepøená¹í. Stav pro UDP se omezuje pouze na dobu poslední aktivity~a 
+Zde je rozdíl mezi TCP a UDP nevíce patrný. Pro TCP mù¾e vyøadit spojení 
+z~tabulky ihned poté, co jej komunikující strany ukonèí. Podobnì pokud 
+neobdr¾í smìrovaè oznámení o~ukonèení spojení, patrnì bude spojení aktivní, 
+i kdy¾ se právì ¾ádná data nepøená¹í. Mù¾e nastat i pøeru¹ení komunikace
+v dùsledku náhlého výpadku napájení, havárie systému nebo aktivace firewallu
+mezi koncovými body.
+Stav pro UDP se omezuje pouze na dobu poslední aktivity~a 
 zda alespoò jednou pøi¹la odpovìï. Proto¾e spojení pomocí datagramù nerozli¹uje komunikující strany na initiátora a pøíjemce spojení, lze pomocí vhodných technik navázat pøímou komunikaci i mezi dvìma uzly v~rùzných privátních sítích. 
 Pøesto, ¾e poèítaèe nejsou ve stejné síti, mohou pomocí dodateèných znalostí
 o~svém pøipojení navázat komunikací pøímo mezi sebou, bez nutnosti retranslace
@@ -1083,7 +1097,8 @@ tøetí stranou.
 
 Pro navázání pøímého spojení mezi úèastníky za pøedkladem adres slou¾í protokol
 Interactive Connectivity Establishment, zkrácenì ICE\cite{ICE}. Jeho cílem 
-je umo¾nit v~maximální míøe mo¾nost spojit pøímo koncové body pøi nejrùznìj¹ích
+je umo¾nit s co nejvìt¹í pravdìpodobností mo¾nost spojit pøímo koncové body 
+pøi nejrùznìj¹ích
 konfiguracích sítì. Pøeklady adres se mohou provádìt rùznými zpùsoby, podle 
 pou¾itého smìrovaèe, jeho nastavení a po¾adavkù na zabezpeèení. Hlavní rozdíly 
 spoèívají v~algoritmu urèení zdrojového portu na pøelo¾ené veøejné adrese a jeho
@@ -1091,9 +1106,9 @@ vztahu k~pùvodnímu zdrojovému portu na vnitøní adrese.
 
 Nejèastìj¹í pøípad je 
 pou¾ití stejného portu, neexistuje-li je¹tì takové spojení. V~pøípadì ji¾ 
-obsazeného portu se pou¾ije náhodnì vygenenerované èíslo neobsazeného portu.
+obsazeného portu se obvykle pou¾ije náhodnì vygenenerované èíslo neobsazeného portu.
 Dal¹í mo¾ností je pøiètení jisté absolutní hodnoty k~èíslu portu, která je pro
-v¹echny porty smìøované z~dané vnitøní adresy stejná. Pro oba zmínìné pøípady 
+v¹echny porty smìrované z~dané vnitøní adresy stejná. Pro oba zmínìné pøípady 
 protokol ICE umo¾ní navázání pøímého spojení mezi úèastníky. 
 
 Jestli¾e pøi 
@@ -1269,7 +1284,8 @@ Stavy elementù jsou následující:
 \end{description}
 
 Pøi pøehrávání ze ¾ivého vstupu se chování mírnì upravuje a elementy pøechází
-do stavu PAUSED bez úvodního pøednaètení, aby pøi pøijetí dat ji¾ byly schopny
+do stavu PAUSED asynchronnì bez úvodního pøednaètení, aby pøi pøijetí 
+dat ji¾ byly schopny
 ihned data zpracovávat bez zbyteèného prodlení.
 
 Gstreamer je vícevláknový systém a zpracování multimédií se 
@@ -1302,7 +1318,7 @@ v modulech pro komunikaci RTP protokolem a protokolem pro komunikaci s
 Live Messengerem. RTP protokol je implementován z èásti pomocí modulù
 obsa¾ených v Gstreameru, z èásti vlastní implementací. Komunikace probíhá
 celá v re¾ii øetìzce gstreameru, vlastní jádro farsight je implementováno
-jako \verb|GstBin| pøidaný do øetìzce a komunikace knihovny k programu
+jako \verb|GstBin| pøidaný do øetìzce. Komunikace knihovny k programu
 probíhá výhradnì pomocí zpráv, od programu se instrukce pøedávají 
 odpovídajícími funkcemi. Sí»ová èást knihovny vyu¾ívá elementy Gstreameru
 k posílání dat. Knihovna implementuje dva podsystémy pro pøenos RTP dat.
@@ -1328,6 +1344,7 @@ k pøenosu, a zároveò slou¾í jako element pøidaný do øetìzce GStreameru. Pro
 ka¾dý pøená¹ený zdroj se vytvoøí session, která podle typu pøená¹eného
 média inicializuje seznam kodekù dostupných v systému. K jedné session lze
 pøipojit nejvíce jeden zdroj, audio nebo video, podle jejího typu.
+
 Pro ka¾dého pøíjemce
 vytvoøíme z ka¾dé session jeden stream, který reprezentuje jedno spojení 
 s jedním úèastníkem. Stream obsahuje seznam místních adres pou¾itých 
@@ -1335,6 +1352,54 @@ k odchozímu spojení a cílové adresy, kterým posíláme vlastní zakódovaná
 multimédia. Dále obsahuje seznam kodekù, které protistrana podporuje. Jejich
 výmìna není souèástí knihovny farsight. Pokud dojde k úspì¹nému spojení,
 obdr¾íme od streamu signál s pøipojením dekódovaných dat k výstupnímu zaøízení.
+
+Ponìkud nepøíjemná je skuteènost, ¾e souèasná verze knihovny neumo¾òuje 
+sledování kvality pøenosu, ani ètení hodnot, které protistrana posílá
+protokolem RTCP. Farsight se nastavuje vnìj¹ím rozhraním seznamem kodekù,
+ke kterým je interními rutinami vytvoøena vìtev kódovací a dekódovací, je¾
+pøevede surový video nebo audio formát na formát podporovaný kódovacím resp.
+dekódovacím elementem. Vstup nebo výstup zaji¹»uje tøída FsTransmitter,
+která bì¾nì zùstává skryta a není potøeba s ní manipulovat. 
+
+Problém tohoto 
+pøístupu tkví v absenci programového rozhraní pro získání odkazu èi reference
+na kódovací element. Elementy pro kódování videa umo¾òují nastavování 
+dodateèných parametrù, jakými jsou napøíklad algoritmy pou¾ité pro kvantizaci,
+ale i pro pøenos pomìrnì dùle¾ité údaje, jakým je po¾adovaná støední ¹íøka 
+pøená¹eného toku. Bohu¾el neexistuje ani jednotné rozhraní pro elementy 
+GStreameru definující minimální popis parametrù nastavující alespoò obvyklé
+parametry nebo relativnì alespoò výpoèetní nároènost pro jednotlivé algoritmy.
+Nastavení by muselo být závislé na pøávì pou¾itém kodeku, kde kodek se mù¾e 
+mìnit v prùbìhu sezení i bez dal¹í signalizace. I kdy¾ je FsConference
+potomkem GstBin, a lze tedy procházet obsa¾ené elementy podle jména, chybí 
+provázání mezi odpovídající FsSession pøípadnì FsStream, které by umo¾òilo
+spárovat kódovací element s odpovídající vzdálenou stranou.
+
+Mìnit bitový tok lze tedy jen ovlivnìním vstupu do FsStream je¹tì pøed tím,
+ne¾ zaène kódování. U videa je mo¾né pou¾ít element videorate, který umo¾ní
+zahazovat periodicky snímky a posílat tak do kódování videa ménì snímkù,
+a tím zároveò sní¾it datový tok i výpoèetní nároènost. Dal¹í mo¾ností by bylo
+pøípadnì sní¾it velikost jednoho snímku pøená¹eného videa. Elementy vyu¾ívající
+video vstup rozhraním V4L ale musejí nastavit velikost videa je¹tì pøed 
+zahájením pøenosu jednotlivých snímkù. V prùbìhu pøenosu tedy nelze mìnit 
+velikost videa pøímo na vstupním zaøízení, pøidání elementu zmen¹ujícím video 
+pøed vstup do FsStream sice mo¾né je, ale spí¹e výpoèetní nároènost zvý¹í, 
+ne¾ naopak. 
+
+V pøípadì audio vstupu je situace podobná. Kodéry zvuku
+pracují obvykle jenom s~nìkolika frekvencemi, podle po¾adované kvality pøenosu.
+Pro nízkou kvalitu odpovídající telefonní kvalitì se pou¾ívá frekvence 8\,kHz,
+pro vy¹¹í kvalitu 12\,nebo 16\,kHz. Vzorkovací frekvenci lze mìnit pomocí zmìny
+popisu rtp kodeku, který knihovna mìnit umo¾òuje. Pøistupovat k parametrùm
+kódovacího elementu, jako je stupeò kvality, maximální pøípustný tok, opìt 
+knihovna neumo¾òuje ani pro audio vstup. Pro absenci statistik odeslaných dat
+nejde jednodu¹e poèítat, jak velkým tokem vlastnì aplikace data odesílá.
+
+Vzhledem k uvedeným omezením pou¾ité knihovny alespoò v souèasné verzi nejde 
+implementovat prùbì¾nì mìnící se bitový tok v závislosti na mìnící se kvalitì
+a rychlosti pøipojení, jak to umí napøíklad Skype. Podle mého prùzkumu takové 
+pøizpùsobení neprovádí ¾ádný z open source klientù, kteøí volání podporují, 
+v mém roz¹íøení bohu¾el nebude implementován rovnì¾.
 
 %
 %Pøesto pøedpokládám, ¾e RTP budu implementovat vlastní, takté¾ za pomoci
@@ -1344,6 +1409,95 @@ obdr¾íme od streamu signál s pøipojením dekódovaných dat k výstupnímu zaøízení.
 %musí zvládnout fungování i v~pøípadì, ¾e jsou oba u¾ivatelé schovaní za 
 %pøekladem adres a ani jeden z~nich nemá veøejnou IP adresu, se kterou by ¹lo
 %navázat pøímo spojení.
+
+\section{Reimplementace seznamu kontaktù}
+
+Pùvodní aplikace mìla seznam kontaktù, v terminologii XMPP roster, 
+implementovaný pomocí systému Qt model/viewer, který umo¾òuje oddìlenì
+implementovat vzhled kontaktù od správy jejich dat a stavù. Datový model 
+mù¾e zachytit
+jak prostý seznam polo¾ek, tak i stromovou strukturu, napøíklad slo¾ku 
+v~souborovém systému a její soubory i adresáøe. 
+
+Originální model implementovat seznam kontaktù zpùsobem takovým, jakým bude
+zobrazen v grafické reprezentaci. Základem jsou polo¾ky seznamu, které mohou
+být vnoøeny do skupin. Jednotlivé polo¾ky mohou být buï vlastní kontakty, nebo
+i vnoøená skupina. Model je navr¾en dostateènì flexibilnì tak, aby seznam kontaktù mohl pøípadnì obsahovat i jiné typy polo¾ek, napøíklad zálo¾ky do skupinových
+diskuzí. 
+    
+Model byl sice vhodnì navr¾ený pro hierarchické zobrazování kontaktù, ale
+zpùsob ulo¾ení dat neodpovídal ulo¾ení dat pøi komunikaci s~XMPP serverem. 
+Z~pohledu XMPP serveru v seznamu kontaktù jsou jednotlivé polo¾ky s unikátním 
+Jabber ID, obvykle v holé formì bez èásti zdroje. Ka¾dý takový kontakt mù¾e 
+být èlenem jedné i více skupin. Naproti tomu model je implementován jako 
+hierarchická struktura, kde existuje koøenová skupina obsahující èleny skupiny,
+tedy kontakty i skupiny. Navíc jsou pøítomny speciální skupiny, kam se 
+pøesunují 
+kontakty pøi zmìnì nastavení zobrazení rosteru. 
+
+Pùvodní model pracoval pouze s jednoduchým stavem kontaktu a vùbec nerozli¹oval
+víc pøipojených entit s~rùznými zdroji. Vùbec neukládal informace o zdroji 
+kontaktu, nebylo tak mo¾né poslat dotaz na plné Jabber Id. Standard vy¾aduje,
+aby iq dotazy byly zasílány na jednoznaènou adresu, tedy vèetnì zdroje entity,
+pokud nìjaký má. Multimediální roz¹íøení funguje výhradnì pomocí iq stanz,
+je proto nutné stav kontaktù uchovávat úplný. Také aktualizace kontaktù pøi 
+zmìnì stavu nebyla naprogramována ideálnì. Pøi zmìnì stavu bylo nutné iterovat
+pøes v¹echny kontakty a upravit v¹echny výskyty kontaktu, pokud kontakt byl ve 
+více skupinách. Kontakty stejného Jabber~Id toti¾ nebyly nijak mezi sebou 
+propojené. Model tím neumo¾òoval ani jednodu¹e zjistit stav podle Jabber Id.
+
+%Navíc je vhodné vìdìt, jaký
+%protokol protistrana podporuje je¹tì pøed pokusem o navázání spojení.
+
+Pùvodní zámìr byl pøepsat znovu model pro seznam kontaktù, aby nesl plnou 
+informaci o~stavu kontaktù. Ka¾dý kontakt musí kromì jména a~Jabber Id nést
+informaci o v¹ech pøipojených zdrojích. Pro ka¾dý zdroj musí nést informace
+o stavu pøipojené entity a pøípadné dal¹í vlastnosti entity, jakým je napøíklad
+seznam podporovaných vlastností entity. Pøi návrhu modelu kontaktù se ukázalo,
+¾e systém indexù pro stromový model musí mít formu skupin od koøene, pokud má
+být pou¾it pomocí reimplementace standardního widgetu QTreeView. Ji¾ 
+implementovaný model splòuje v¹echno potøebné pro grafické zobrazení,
+ jen je vhodné doplnit jej o jednotnou správu stavù tak, aby stav byl zaznamenán
+ jenom v jednom místì a mohl být snadno vyhledáván podle Jabber Id.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{contactlist/contactlist}
+  \caption{Diagram tøíd správy kontaktù}
+  \label{pic_contactlist}
+\end{center}
+\end{figure}
+
+Tøídy datového modelu jsou zachyceny na obrázku \ref{pic_contactlist}. 
+Nejdùle¾itìj¹í tøídou je virtuální tøída \em{ContactListContact}, její¾
+reimplementace poskytují vlastní informace se spoleèným rozhraním.
+Tøída \em{MaknetoGroupedContact} slou¾í jako zprostøedkovatel mezi databází
+stavù a polo¾kami zobrazenými v pohledu. Tato tøída se mù¾e v seznamu kontaktù
+nacházet v nìkolika skupinách, a pøitom má jediný sdílený stav uchovávající
+informaci o stavu zobrazovaného kontaktu, který je jí pøedán v konstruktoru.
+Také umo¾ní skrytí kontaktu ve slo¾ené skupinì, pokud v jiné skupinì kontakt
+být zobrazen má.
+MaknetoContact je vlastní implementace pro jeden kontakt, která uchovává jen
+jméno kontaktu, jeho id, a ve kterých skupinách je èlenem. Dále obsahuje seznam
+pøipojených zdrojù, tedy odkazy na MaknetoContactResource, které teprve
+nesou informaci o stavu pøipojené entity a jejích vlastnostech. MaknetoContact
+pouze zprostøedkovává data ulo¾ená pro jednotlivé zdroje s tím, ¾e vybírá pro 
+zobrazení zdroj s nejvy¹¹í prioritou.
+
+Se seznamem kontaktù souvisí také implementace seznamu vlastností pro pøipojené
+entity, která spravuje seznam podporovaných roz¹íøení pro ka¾dý kontakt. Tím lze
+zobrazit pøi po¾adavku na volání s videem pouze ty kontakty, které pøenos videa
+podporují. To je velmi u¾iteèná vlastnost v pøípadì, ¾e pøipojených kontaktù je
+nìkolik desítek a jen nìkolik z nich podporuje nìjakou formu volání. 
+Ke skrytí kontaktù nepodporujících roz¹íøení je pou¾itý stejný princip, jako
+pro skrytí odpojených kontaktù -- pøesunem kontaktu do speciální skupiny 
+nezobrazených kontaktù a pøekreslením pohledu ze zmìnìného datového modelu.
+Pro omezení zbyteèného zji¹»ování pro ka¾dý kontakt je implementován správce
+vlastností, který vyu¾ívá roz¹íøení entity capabilities. Získané hodnoty jsou
+ulo¾eny do datového skladu ve tøídì FeatureListManager, pøi ukonèení programu
+se ukládají do XML databáze na disk, aby mohly být pøi spu¹tìní opìt naèteny 
+z~disku. Není tedy nutné ¾ádat po pøipojení seznam schopností klienta, pokud
+ji¾ vlastnosti jsou známé.
 
 \chapter{Závìr}
 
