@@ -231,9 +231,8 @@ void PollPlugin::buttonClicked()
   recreateWidget();
 }
 
-QDomElement PollPlugin::svg()
+QDomElement PollPlugin::svg(QDomDocument &doc)
 {
-  QDomDocument doc;
   QDomElement svg, xml, el, child;
   QDomText text;
   svg = doc.createElement("foreignObject");

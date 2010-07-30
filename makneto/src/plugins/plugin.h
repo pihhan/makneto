@@ -3,6 +3,7 @@
 
 #include <QtCore/QObject>
 #include <QtXml/QDomElement>
+#include <QtXml/QDomDocument>
 
 class QGraphicsItem;
 class QSize;
@@ -16,7 +17,7 @@ class Plugin : public QObject
     Plugin(QGraphicsItem *graphicsItem = 0);
 
     /** Generates svg to transmit to the server */
-    virtual QDomElement svg() = 0;
+    virtual QDomElement svg(QDomDocument &document) = 0;
 
     /** Parse incoming svg element */
     virtual void parseSvg(const QDomNode &svg) = 0;

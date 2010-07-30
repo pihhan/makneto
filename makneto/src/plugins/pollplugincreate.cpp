@@ -15,7 +15,7 @@ PollPluginCreate::PollPluginCreate()
 
   addLine();
 
-  addButton = new QPushButton("Add question", this);
+  addButton = new QPushButton(tr("Add question"), this);
   layout->addWidget(addButton, 0, 2);
   connect(addButton, SIGNAL(pressed()), this, SLOT(addQuestion()));
 
@@ -38,7 +38,7 @@ QMap<int, QString> PollPluginCreate::getQuestions()
 void PollPluginCreate::addLine()
 {
   int row = questions.size();
-  QLabel *label = new QLabel(QString("Question #%1").arg(row + 1), this);
+  QLabel *label = new QLabel(QString(tr("Question #%1")).arg(row + 1), this);
   layout->addWidget(label, row, 0);
   QLineEdit *question = new QLineEdit(this);
   layout->addWidget(question, row, 1);
@@ -52,3 +52,4 @@ void PollPluginCreate::addQuestion()
   addLine();
   layout->addWidget(addButton, questions.size() - 1, 2);
 }
+

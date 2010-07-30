@@ -35,15 +35,35 @@ RoasterView::RoasterView(QWidget *, Makneto *makneto): m_makneto(makneto)
 	m_buttonslayout = new QHBoxLayout();
 
 	// buttons
-	m_addcontact = new QPushButton(KIconLoader::global()->loadIcon("list-add-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Add contact"), this);
+	m_addcontact = new QPushButton(KIconLoader::global()->loadIcon("contact-new", KIconLoader::Toolbar), i18n(""), this);
+        m_addcontact->setToolTip(i18n("Click to add new contact"));
 	m_buttonslayout->addWidget(m_addcontact);
 	connect(m_addcontact, SIGNAL(clicked(bool)), SLOT(addContactClicked(bool)));
 
-	m_offline = new QPushButton(KIconLoader::global()->loadIcon("edit-find-user", KIconLoader::Toolbar, KIconLoader:: SizeSmall), i18n("&Show all"), this);
+	m_offline = new QPushButton(KIconLoader::global()->loadIcon("edit-find-user", KIconLoader::Toolbar), i18n(""), this);
+        m_offline->setToolTip(i18n("Push to display only connected contacts"));
 	m_offline->setCheckable(true);
 	m_offline->setChecked(true);
 	m_buttonslayout->addWidget(m_offline);
 	connect(m_offline, SIGNAL(clicked(bool)), SLOT(offlineClicked(bool)));
+
+        QPixmap audioIcon = KIconLoader::global()->loadIcon(
+                "speaker", KIconLoader::Toolbar);
+        m_audio = new QPushButton(audioIcon, i18n(""));
+        m_audio->setToolTip(i18n("Push to display users can do audio call."));
+        m_audio->setCheckable(true);
+        m_audio->setChecked(false);
+        m_buttonslayout->addWidget(m_audio);
+        connect(m_audio, SIGNAL(clicked(bool)), SLOT(audioClicked(bool)) );
+
+        QPixmap videoIcon = KIconLoader::global()->loadIcon(
+                "webcamsend", KIconLoader::Toolbar);
+        m_video = new QPushButton(videoIcon, i18n(""));
+        m_video->setToolTip(i18n("Push to display users can do video call."));
+        m_video->setCheckable(true);
+        m_video->setChecked(false);
+        m_buttonslayout->addWidget(m_video);
+        connect(m_video, SIGNAL(clicked(bool)), SLOT(videoClicked(bool)) );
 
 	// contact list model
 	m_model = new ContactListModel(m_makneto->getContactList());
@@ -182,5 +202,16 @@ void RoasterView::offlineClicked(bool toggled)
 {
 	m_makneto->getContactList()->setShowOffline(toggled);
 }
+
+void RoasterView::audioClicked(bool toggled)
+{
+    m_makneto->getContactList()->setShowOnlyAudio(toggled);
+}
+
+void RoasterView::videoClicked(bool toggled)
+{
+    m_makneto->getContactList()->setShowOnlyVideo(toggled);
+}
+
 
 #include "roasterview.moc"

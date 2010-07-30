@@ -55,7 +55,7 @@ class PollPlugin : public Plugin
     PollPlugin();
     ~PollPlugin();
     bool getQuestions();
-    QDomElement svg();
+    QDomElement svg(QDomDocument &doc);
     void parseSvg(const QDomNode &svg);
   public slots:
     void send();

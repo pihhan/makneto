@@ -290,7 +290,15 @@ void MediaManager::incomingSession(QtJingleSession *session)
 void MediaManager::reportMsg(MessageType type, const std::string &comment)
 {
     QString msg = QString::fromStdString(comment);
-    emit pipelineMessage(msg);
+	QString prefix;
+	switch (type) {
+		case MSG_DEBUG:		prefix="DEBUG:"; break;
+		case MSG_WARNING:	prefix="WARNING:"; break;
+		case MSG_INFO:		prefix="INFO:"; break;
+		case MSG_ERROR:		prefix="ERROR:"; break;
+		case MSG_FATAL_ERROR: prefix="FATAL ERROR:"; break;
+	}
+    emit pipelineMessage(prefix + msg);
     qDebug() << "pipeline message type " << type << ": " << msg;
 }
 

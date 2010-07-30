@@ -115,6 +115,11 @@ class MediaManager : public QObject,
     void mediaTestFinished();
     void audioTestFinished();
     void videoTestFinished();
+	
+	void wentPaused();
+	void wentPlaying();
+	void wentStopped();
+	void wentFailed();
 
     private:
     Makneto *m_makneto;

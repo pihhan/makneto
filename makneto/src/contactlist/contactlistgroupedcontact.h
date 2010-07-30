@@ -38,6 +38,9 @@ class ContactListGroupedContact : public ContactListContact
 	virtual int countOnline() const;
 
     virtual bool supportsFeature(const QString &string) const;
+        virtual bool supportsVideo() const;
+        virtual bool supportsAudio() const;
+        virtual bool supportsWhiteboard() const;
 
         public Q_SLOTS:
         void emitContactChanged();

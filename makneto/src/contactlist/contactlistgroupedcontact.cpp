@@ -95,3 +95,18 @@ void ContactListGroupedContact::emitContactChanged()
         emit contactChanged(this);
 }
 
+bool ContactListGroupedContact::supportsVideo() const
+{
+    return m_contact->supportsVideo();
+}
+
+bool ContactListGroupedContact::supportsAudio() const
+{
+    return m_contact->supportsAudio();
+}
+
+bool ContactListGroupedContact::supportsWhiteboard() const
+{
+    return m_contact->supportsWhiteboard();
+}
+

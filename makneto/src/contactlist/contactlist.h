@@ -27,6 +27,8 @@ public:
 	ContactList(QObject* parent = 0);
 	bool showOffline() const { return showOffline_; }
 	bool showGroups() const { return showGroups_; }
+        bool showOnlyAudio() const;
+        bool showOnlyVideo() const;
 	ContactListRootItem* invisibleGroup();
 	ContactListRootItem* rootItem();
     ContactListRootItem* contactRoot();
@@ -54,6 +56,8 @@ signals:
 public slots:
 	void setShowOffline(bool);
 	void setShowGroups(bool);
+        void setShowOnlyAudio(bool);
+        void setShowOnlyVideo(bool);
 	void setSearch(const QString&);
 	void emitDataChanged(); // Not wild about this one
         void emitDataChanged(ContactListItem *item);
@@ -69,6 +73,8 @@ protected:
 
 private:
 	bool showOffline_, showGroups_;
+        bool showAudio_;
+        bool showVideo_;
 	QString search_;
 	ContactListItemComparator* itemComparator_;
 

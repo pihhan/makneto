@@ -33,7 +33,10 @@ public:
 
 	virtual int countOnline() const;
 
-    virtual bool supportsFeature(const QString &string) const;
+        virtual bool supportsFeature(const QString &string) const;
+        virtual bool supportsAudio() const;
+        virtual bool supportsVideo() const;
+        virtual bool supportsWhiteboard() const;
 
         typedef QList<ContactListGroup *> GroupsList;
         GroupsList getGroups();

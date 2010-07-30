@@ -53,7 +53,7 @@ QGraphicsItem* WbForeign::graphicsItem()
 QDomElement WbForeign::svg()
 {
   if (m_plugin)
-    return m_plugin->svg();
+    return m_plugin->svg(document());
   else
     return QDomElement();
 }

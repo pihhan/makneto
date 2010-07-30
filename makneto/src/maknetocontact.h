@@ -63,9 +63,9 @@ public:
 
         QIcon statusIcon() const;
 
-        bool supportsVideo() const;
-        bool supportsAudio() const;
-        bool supportsWhiteboard() const; 
+        virtual bool supportsVideo() const;
+        virtual bool supportsAudio() const;
+        virtual bool supportsWhiteboard() const; 
 private: 
         MaknetoContact  *m_bare;
 	ContactListStatus m_status;
@@ -138,9 +138,9 @@ public:
 
         virtual bool supportsFeature(const QString &feature) const;
 
-        bool supportsVideo() const;
-        bool supportsAudio() const;
-        bool supportsWhiteboard() const;
+        virtual bool supportsVideo() const;
+        virtual bool supportsAudio() const;
+        virtual bool supportsWhiteboard() const;
         bool isOnline() const;
 
         ResourcesHash allResources()

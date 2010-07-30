@@ -78,6 +78,14 @@ void ContactListContact::updateParent()
 		newParent = contactList()->rootItem();
 	}
 
+        if (contactList()->showOnlyAudio() && !supportsAudio()) {
+                newParent = contactList()->invisibleGroup();
+        }
+
+        if (contactList()->showOnlyVideo() && !supportsVideo()) {
+                newParent = contactList()->invisibleGroup();
+        }
+
 	if (newParent != parent())
 		setParent(newParent);
 }
@@ -112,6 +120,22 @@ void    ContactListContact::removeGroup(ContactListGroup *group)
  *  \param feature Text namespace to check
  *  \return true if supported, false otherwise. */
 bool ContactListContact::supportsFeature(const QString &) const
+{
+    return false;
+}
+
+
+bool ContactListContact::supportsAudio() const
+{
+    return false;
+}
+
+bool ContactListContact::supportsVideo() const
+{
+    return false;
+}
+
+bool ContactListContact::supportsWhiteboard() const
 {
     return false;
 }

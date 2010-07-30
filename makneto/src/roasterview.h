@@ -49,6 +49,8 @@ public slots:
 	void search(const QString& search);
 	void offlineClicked(bool toggled);
 	void addContactClicked(bool toggled);
+        void audioClicked(bool toggled);
+        void videoClicked(bool toggled);
   void itemDoubleClicked(const QString &);
 
     void showContextMenu(const QPoint &point);
@@ -67,6 +69,8 @@ private:
 
 	QPushButton *m_addcontact;
 	QPushButton *m_offline;
+        QPushButton *m_audio;
+        QPushButton *m_video;
 
 	Makneto *m_makneto;
 

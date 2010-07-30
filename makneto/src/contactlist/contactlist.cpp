@@ -9,7 +9,8 @@
 
 
 ContactList::ContactList(QObject* parent)
-	: QObject(parent), showOffline_(false), showGroups_(true)
+	: QObject(parent), showOffline_(false), showGroups_(true),
+            showAudio_(false), showVideo_(false)
 {
 	rootItem_ = new ContactListRootItem(this);
 	invisibleGroup_ = new ContactListRootItem(this);
@@ -250,5 +251,27 @@ unsigned int ContactList::contactCount() const
 ContactListRootItem* ContactList::contactRoot()
 {
     return contactRootGroup_;
+}
+
+bool ContactList::showOnlyAudio() const
+{
+    return showAudio_;
+}
+
+bool ContactList::showOnlyVideo() const
+{
+    return showVideo_;
+}
+
+void ContactList::setShowOnlyAudio(bool show)
+{
+    showAudio_ = show;
+    updateParents();
+}
+
+void ContactList::setShowOnlyVideo(bool show)
+{
+    showVideo_ = show;
+    updateParents();
 }
 
