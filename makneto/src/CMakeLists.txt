@@ -39,8 +39,8 @@ find_package(Iris REQUIRED)
 
 include_directories( ${KDE4_INCLUDES} ${KDE4_PHONON_INCLUDES}  ${KDE4_KDECORE_INCLUDES} ${QT_INCLUDES} ${QCA2_INCLUDE_DIR} ${IRIS_INCLUDES} 
 ${FARSIGHT_IFACES_INCLUDE_DIRS} ${FARSIGHT_INCLUDE_DIRS}
-gst/jingleecho
-gst/jingleecho/irisbot
+gst/jingle
+gst/jingle/gui
 )
 
 
@@ -138,7 +138,7 @@ kde4_add_kcfg_files(makneto_SRCS settings.kcfgc )
 
 kde4_add_executable(makneto ${makneto_SRCS})
 
-set (JINGLE_LIBS     jinglegui jingleecho)
+set (JINGLE_LIBS     jinglegui jingle)
 message(STATUS ${QT_LIBRARIES})
 SET_TARGET_PROPERTIES(makneto PROPERTIES COMPILE_FLAGS "-g")
 
@@ -162,5 +162,5 @@ install( FILES maknetoui.rc  DESTINATION  ${DATA_INSTALL_DIR}/makneto )
 
 add_subdirectory( icons )
 
-add_subdirectory( gst/jingleecho )
+add_subdirectory( gst/jingle )
 

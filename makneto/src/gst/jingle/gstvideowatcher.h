@@ -22,7 +22,9 @@ class GstVideoWatcher
     virtual void handleExpose() = 0;
 
     void setOutput(AVOutput *out);
+    void setVideoOutput(AVOutput *out);
     AVOutput * output() const;
+    AVOutput * videoOutput() const;
 
     private:
     AVOutput    *m_output;

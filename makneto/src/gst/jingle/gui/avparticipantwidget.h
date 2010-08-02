@@ -30,7 +30,6 @@ class AVParticipantWidget : public QFrame,
     QtJingleSession *session() const;
     void setSession(QtJingleSession *session);
 
-    virtual void prepareWindowId();
     virtual void videoResolutionChanged(const FrameSize &size);
 
     virtual void setWindowId(unsigned long id);
@@ -41,6 +40,18 @@ class AVParticipantWidget : public QFrame,
 
     void setSelected(bool s);
     bool selected() const;
+
+    public slots:
+    virtual void prepareWindowId();
+    void videoExposed();
+    void videoResolutionChanged(const QSize &size);
+
+    void displayVolume(int volume);
+    void setVolume(int volume);
+    void setVolume(double volume);
+
+    signals:
+    void videoWindowIdChanged(WId id);
 
     private:
 

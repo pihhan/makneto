@@ -7,6 +7,7 @@
  */
 
 #include "audiowatcher.h"
+#include "avoutput.h"
 
 GstAudioWatcher::GstAudioWatcher()
     : m_level(0)
@@ -30,6 +31,46 @@ bool GstAudioWatcher::acceptsForElement(GstElement *level)
 {
     return (!m_level || m_level == level);
 }
+
+void GstAudioWatcher::setAudioOutput(AVOutput *output)
+{
+    m_output = output;
+}
+
+AVOutput * GstAudioWatcher::audioOutput() const
+{
+    return m_output;
+}
+
+void GstAudioWatcher::setAudioVolume(double volume)
+{
+    if (m_output)
+        m_output->setVolume(volume);
+}
+
+double GstAudioWatcher::audioVolume() const
+{
+    if (m_output)
+        return m_output->volume();
+    else
+        return 0.0;
+}
+
+
+void GstAudioWatcher::setMuted(bool muted)
+{
+    if (m_output)
+        m_output->setMuted(muted);
+}
+
+bool GstAudioWatcher::muted() const
+{
+    if (m_output)
+        return m_output->muted();
+    else
+        return true;
+}
+
 
 /***
  * GstWatcherRegistry ***i

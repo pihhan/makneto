@@ -121,6 +121,9 @@ class MediaManager : public QObject,
 	void wentStopped();
 	void wentFailed();
 
+    protected:
+    void reportDebugMessage(const QString &message);
+
     private:
     Makneto *m_makneto;
     MediaSessionGroup *m_sessiongroup; ///! current session group if any.

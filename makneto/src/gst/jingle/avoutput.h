@@ -29,6 +29,9 @@ class AVOutput
     bool enableAudio();
     bool enableVideo();
 
+    bool disableAudio();
+    bool disableVideo();
+
     bool audioEnabled();
     bool videoEnabled();
 
@@ -52,6 +55,7 @@ class AVOutput
     void setName(const std::string &name);
 
     bool handleLevelMessage(GstMessage *msg);
+    void parseLevelMessage(GstMessage *msg);
 
     void registerAudioWatcher(GstAudioWatcher *watcher);
     void registerVideoWatcher(GstVideoWatcher *watcher);
@@ -61,6 +65,13 @@ class AVOutput
 
     void expose();
     void setWindowId(unsigned long id);
+
+    double volume() const;
+    void setVolume(double volume);
+
+    bool muted() const;
+    void setMuted(bool muted);
+
 
     farsight::Stream *audioStream() const;
     farsight::Stream *videoStream() const;

@@ -4,6 +4,8 @@
 #include <kstandarddirs.h>
 #include <typeinfo>
 
+#include <kstatusbar.h>
+
 #include "mediamanager.h"
 #include "irisjinglemanager.h"
 #include "settings.h"
@@ -31,6 +33,12 @@ MediaManager::MediaManager(Makneto *makneto)
         this, SLOT(mediaTestTimeout()));
 
     m_audioplayer->setMediaConfig(mediaSettings());
+
+    // connect error messages to status bar
+    //MaknetoMainWindow *mainwin = makneto->getMaknetoMainWindow();
+
+    //connect(this, SIGNAL(pipelineMessage(QString)), 
+    //        mainwin->statusBar(), SLOT(showMessage(QString)) );
 }
 
 /** @brief Begin test of audio and video subsystem settings.
@@ -256,7 +264,11 @@ void MediaManager::startRingTerminated()
 }
 
 
-/** @brief Handle incoming session, notify user about waiting call. */
+/** @brief Handle incoming session, notify user about waiting call. 
+    This will create AVParticipantControl for user, add that control
+    to pending sessions list, and start ringing. 
+    TODO: Check for existing session, reply with busy if there is
+    existing session. */
 void MediaManager::incomingSession(QtJingleSession *session)
 {
     PJid remote = session->session()->remote();
@@ -280,7 +292,10 @@ void MediaManager::incomingSession(QtJingleSession *session)
     connect(control, SIGNAL(declined()), this, SLOT(handleCallDeny()) );
     m_participants.append(control);
 
-    startRingIncomingCall();
+    if (Settings::audioRingPopup())
+        control->raisePopup();
+    if (Settings::audioRingLoud())
+        startRingIncomingCall();
 }
 
 
@@ -292,6 +307,7 @@ void MediaManager::reportMsg(MessageType type, const std::string &comment)
     QString msg = QString::fromStdString(comment);
 	QString prefix;
 	switch (type) {
+                case MSG_NONE:          prefix=""; break;
 		case MSG_DEBUG:		prefix="DEBUG:"; break;
 		case MSG_WARNING:	prefix="WARNING:"; break;
 		case MSG_INFO:		prefix="INFO:"; break;
@@ -299,6 +315,7 @@ void MediaManager::reportMsg(MessageType type, const std::string &comment)
 		case MSG_FATAL_ERROR: prefix="FATAL ERROR:"; break;
 	}
     emit pipelineMessage(prefix + msg);
+    reportDebugMessage(prefix + msg);
     qDebug() << "pipeline message type " << type << ": " << msg;
 }
 
@@ -319,6 +336,10 @@ void MediaManager::contentCandidatesActive(JingleCandidatePair &pair, const std:
 {
     qDebug() << "contentCandidatesActive" <<
         QString::fromStdString(content);
+
+    QString msg("Content %1 has new active pair: %2");
+    reportDebugMessage(msg.arg(QString::fromStdString(content)).
+        arg(QString::fromStdString(pair.toString()) ) );
 }
 
 void MediaManager::localCandidatesPrepared(
@@ -413,6 +434,8 @@ void MediaManager::handleCallDeny()
         ctrl->session()->terminate();
     }
 
+    if (Settings::audioRingLoud())
+        startRingTerminated();
 }
 
 /** @brief This slot is triggered by timer, to cancel running media test
@@ -446,6 +469,14 @@ void MediaManager::mediaTestComplete()
 QtAudioPlayer * MediaManager::player() const
 {
     return m_audioplayer;
+}
+
+/** @brief Write debug message to main application status bar. */
+void MediaManager::reportDebugMessage(const QString &message)
+{
+    MaknetoMainWindow *mainwin = m_makneto->getMaknetoMainWindow();
+    mainwin->statusBar()->showMessage(message);
+    qDebug() << objectName() << ": " << message;
 }
 
 

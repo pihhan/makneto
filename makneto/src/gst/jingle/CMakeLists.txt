@@ -17,7 +17,7 @@ find_package(PkgConfig)
 add_definitions(-DIRIS -D_POSIX_SOURCE)
 
 
-list(APPEND LOCAL_INCLUDES ipv6 irisbot ../ipv6 ../logger ..)
+list(APPEND LOCAL_INCLUDES ipv6 gui ../ipv6 ../logger ..)
 
 pkg_check_modules(FARSIGHT farsight2-0.10)
 
@@ -87,8 +87,8 @@ set(JINGLEECHO_SOURCES
 
 #QT4_WRAP_CPP(MOC_FILES audiowatcher.h gstvideowatcher.h)
 
-add_subdirectory(irisbot)
+add_subdirectory(gui)
 
-add_library(jingleecho ${JINGLEECHO_SOURCES} ${MOC_FILES})
+add_library(jingle ${JINGLEECHO_SOURCES} ${MOC_FILES})
 
 

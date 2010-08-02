@@ -5,11 +5,67 @@
 #include "qpipeline.h"
 
 #include "audiowatcher.h"
+#include <gst/gst.h>
 #include <gst/interfaces/xoverlay.h>
 
 using namespace farsight;
 
 #define QPLOG() (LOGGER(logit))
+
+/** @brief Simple class to allocate volume information for 
+    specified count of channels.
+*/
+class VolumeInformation 
+{
+    public:
+
+    void freeChannels()
+    {
+        if (levels) {
+            delete levels;
+            levels = 0;
+        }
+        if (decays) {
+            delete decays;
+            decays = 0;
+        }
+        if (peaks) {
+            delete peaks;
+            peaks = 0;
+        }
+    }
+
+    void allocateChannels(int channels)
+    {
+        if (channels <= 0)
+            return;
+        freeChannels();
+
+        levels = new double[channels];
+        peaks = new double[channels];
+        decays = new double[channels];
+    }
+
+    /** @brief Create volume information with specified number of channels.
+        Volume values are undefined until you write something into them. */
+    VolumeInformation(int channels)
+        : channels(channels), levels(0), peaks(0), decays(0)
+    {
+        allocateChannels(channels);
+    }
+
+    virtual ~VolumeInformation()
+    {
+        freeChannels();
+    }
+
+    int channels;
+    double *levels;
+    double *peaks;
+    double *decays;
+};
+
+
 
 AVOutput::AVOutput(QPipeline *p)
     : m_vsink(0), m_asink(0), m_afilter(0), m_vfilter(0), m_level(0), 
@@ -42,6 +98,10 @@ bool AVOutput::enableAudio()
             success = success && m_pipeline->add(m_afilter);
             success = success && m_pipeline->link(m_afilter, m_asink);
         }
+
+        m_level = gst_element_factory_make("level", NULL);
+        m_volume = gst_element_factory_make("volume", NULL);
+
     } else {
         return false;
     }
@@ -62,6 +122,25 @@ bool AVOutput::enableVideo()
     }
     return success;
 }
+
+bool AVOutput::disableAudio()
+{
+    bool success = true;
+    success = success && m_pipeline->remove(m_asink);
+    if (m_afilter)
+        success = success && m_pipeline->remove(m_afilter);
+    return success;
+}
+
+bool AVOutput::disableVideo()
+{
+    bool success = true;
+    success = success && m_pipeline->remove(m_vsink);
+    if (m_vfilter)
+        success = success && m_pipeline->remove(m_vfilter);
+    return success;
+}
+
 
 bool AVOutput::audioEnabled()
 {
@@ -224,10 +303,59 @@ void AVOutput::registerVideoWatcher(GstVideoWatcher *watcher)
     m_videowatcher = watcher;
 }
 
+/** @brief Parse values from gstreamer level message and 
+    use it to send updateVolumes() call. 
+    Pointers to doubles with volumes will be freed after
+    updateVolumes call of audio watcher, if you want to keep
+    them, you have to copy them. */
+void AVOutput::parseLevelMessage(GstMessage *msg)
+{
+    GstStructure *s = msg->structure;
+    if (s && gst_structure_has_name(s, "level")) {
+        const GValue *peaks = gst_structure_get_value(s, "peak");
+        const GValue *decays = gst_structure_get_value(s, "decay");
+        const GValue *levels = gst_structure_get_value(s, "rms");
+
+        int channels = gst_value_list_get_size(levels);
+
+        VolumeInformation vols(channels);
+
+        if (peaks && decays && levels) {
+            for (unsigned int channel=0; 
+                    channel < gst_value_list_get_size(peaks) ;
+                    channel++) {
+                const GValue *v = gst_value_list_get_value(peaks, channel);
+                vols.peaks[channel] = g_value_get_double(v);
+            }
+
+            for (unsigned int channel=0; 
+                    channel < gst_value_list_get_size(decays);
+                    channel++) {
+                const GValue *v = gst_value_list_get_value(decays, channel);
+                vols.decays[channel] = g_value_get_double(v);
+            }
+
+            for (unsigned int channel=0; 
+                    channel < gst_value_list_get_size(levels);
+                    channel++) {
+                const GValue *v = gst_value_list_get_value(levels, channel);
+                vols.levels[channel] = g_value_get_double(v);
+            }
+
+            if (m_audiowatcher)
+                m_audiowatcher->updateVolumes(channels, 
+                    vols.levels, vols.peaks, vols.decays);
+        }
+    } else {
+        g_warning("AVOutput::parseLevelMessage called not on level message, "
+            "but %s", gst_structure_get_name(s));
+    }
+}
+
 bool AVOutput::handleLevelMessage(GstMessage *msg)
 {
     if (m_audiowatcher) {
-        m_audiowatcher->updateMessage(msg);
+        parseLevelMessage(msg);
         return true;
     } else
         return false;
@@ -235,15 +363,19 @@ bool AVOutput::handleLevelMessage(GstMessage *msg)
 
 void AVOutput::expose()
 {
-    if (m_vsink) 
+    if (m_vsink && GST_IS_X_OVERLAY(m_vsink)) 
         gst_x_overlay_expose(GST_X_OVERLAY(m_vsink));
+    else
+        g_error("Tried to expose on null video sink, or sink is not XOverlay");
 }
 
 /** @brief Set X11 window id to video output element. */
 void AVOutput::setWindowId(unsigned long id)
 {
-    if (m_vsink)
+    if (m_vsink && GST_IS_X_OVERLAY(m_vsink))
         gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(m_vsink), id);
+    else
+        g_error("Tried to set window id on null video sink, or sink is not XOverlay");
 }
 
 Stream *AVOutput::audioStream() const
@@ -267,4 +399,39 @@ void AVOutput::setVideoStream(Stream *s)
     m_videoStream = s;
 }
 
+double AVOutput::volume() const
+{
+    if (m_volume) {
+        double vol = -1.0;
+        g_object_get(GST_OBJECT(m_volume), "volume", &vol, NULL);
+        return vol;
+    } else
+        return -1.0;
+}
+
+void AVOutput::setVolume(double volume)
+{
+    if (m_volume) {
+        g_object_set(GST_OBJECT(m_volume), "volume", volume, NULL);
+    }
+}
+
+bool AVOutput::muted() const
+{
+    if (m_volume) {
+        gboolean muted = false;
+        g_object_get(GST_OBJECT(m_volume), "mute", &muted, NULL);
+        return muted;
+    } else
+        return true;
+}
+
+void AVOutput::setMuted(bool muted)
+{
+    if (m_volume) {
+        g_object_set(GST_OBJECT(m_volume),
+            "mute", (gboolean) muted, 
+            NULL);
+    }
+}
 

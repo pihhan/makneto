@@ -5,6 +5,8 @@
 #include <list>
 #include <gst/gst.h>
 
+class AVOutput;
+
 class GstAudioWatcher
 {
     public:
@@ -17,8 +19,18 @@ class GstAudioWatcher
     virtual void updateMessage(GstMessage *msg) = 0;
     virtual void updateVolumes(int channels, double *rms, double *peak, double *decay) = 0;
 
+    virtual void setAudioVolume(double volume);
+    virtual double audioVolume() const;
+
+    virtual void setMuted(bool muted);
+    virtual bool muted() const;
+
+    void setAudioOutput(AVOutput *audio);
+    AVOutput * audioOutput() const;
+
     private:
     GstElement *m_level;
+    AVOutput    *m_output;
 
 };
 

@@ -3,6 +3,7 @@
 #define AVPARTICIPANT_CONTROL_H
 #include <QObject>
 #include <QString>
+#include <QWidget>
 
 #include "gstvideowatcher.h"
 #include "audiowatcher.h"
@@ -19,7 +20,7 @@ class MaknetoContact;
 /** @brief Non-graphic class to control sessions for
     one participant.
 
-    This intends to be main class for managing one multimedia session
+    This intends to be main class to manage one multimedia session
     with one participant, connecting media objects to roster item and
     GUI work.
 */
@@ -42,7 +43,6 @@ class AVParticipantControl : public QObject,
     virtual void prepareWindowId();
     virtual void videoResolutionChanged(const FrameSize &size);
 
-    virtual void setWindowId(unsigned long id);
     virtual void handleExpose();
 
     virtual void updateMessage(GstMessage *msg);
@@ -60,9 +60,19 @@ class AVParticipantControl : public QObject,
     void raisePopup();
 
     public slots:
+    virtual void setWindowId(WId id);
+
     void notificationAccept();
     void notificationAcceptAudioVideo();
     void notificationDecline();
+
+    void setVideo(bool enable);
+    void enableVideo();
+    void disableVideo();
+
+    void setAudio(bool enable);
+    void enableAudio();
+    void disableAudio();
 
     signals:
     void acceptedAudio();

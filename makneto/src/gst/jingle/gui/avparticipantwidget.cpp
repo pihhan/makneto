@@ -2,6 +2,7 @@
 #include <QBoxLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QApplication>
 
 #include "avparticipantwidget.h"
 #include "aspectedlayout.h"
@@ -47,6 +48,9 @@ void AVParticipantWidget::setName(const QString &name)
 void AVParticipantWidget::prepareWindowId()
 {
     // noop, window is now created with widget itself.
+    WId winid = m_video->winId();
+    QApplication::syncX();
+    emit videoWindowIdChanged(winid);
 }
 
 void AVParticipantWidget::videoResolutionChanged(const FrameSize &size)
@@ -98,5 +102,31 @@ void AVParticipantWidget::setSelected(bool s)
 bool AVParticipantWidget::selected() const
 {
     return m_selected;
+}
+
+/** @brief Slot connected to video expose signal. */
+void AVParticipantWidget::videoExposed()
+{
+    handleExpose();
+}
+
+
+void AVParticipantWidget::videoResolutionChanged(const QSize &size)
+{
+    m_video->setVideoSize(size);
+}
+
+
+void AVParticipantWidget::displayVolume(int volume)
+{
+
+}
+
+void AVParticipantWidget::setVolume(int volume)
+{
+}
+
+void AVParticipantWidget::setVolume(double volume)
+{
 }
 

@@ -130,7 +130,7 @@ void AVParticipantControl::raisePopup()
     else calltype = i18n("call without any media");
        
     notify->setText(i18n("%1 is requesting %2. Do you want to accept?",
-        nick));
+        nick,calltype));
     notify->setActions(i18n("Accept,Decline").split(","));
     connect(notify, SIGNAL(action1Activated()), this, 
         SLOT(notificationAccept()));
@@ -159,4 +159,41 @@ void AVParticipantControl::notificationDecline()
     m_notification->close();
 }
 
+void AVParticipantControl::setVideo(bool enable)
+{
+    if (enable)
+        enableVideo();
+    else
+        disableVideo();
+}
+
+void AVParticipantControl::enableVideo()
+{
+    AVOutput *avo = videoOutput();
+    if (avo)
+        avo->enableVideo();
+}
+
+void AVParticipantControl::disableVideo()
+{
+    AVOutput *avo = videoOutput();
+    if (avo)
+        avo->disableVideo();
+}
+
+void AVParticipantControl::setAudio(bool enable)
+{
+    if (enable)
+        enableAudio();
+    else
+        disableAudio();
+}
+
+void AVParticipantControl::enableAudio()
+{
+}
+
+void AVParticipantControl::disableAudio()
+{
+}
 

@@ -12,7 +12,7 @@
 
 class SessionView;
 
-/** @brief Widget displaying media controls, and video outputs. */
+/** @brief Widget to display media controls and video output(s). */
 class MediaViewWidget : public QWidget {
     Q_OBJECT
     public:

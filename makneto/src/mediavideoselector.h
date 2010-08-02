@@ -8,7 +8,7 @@
 
 #include "maknetocontact.h"
 
-/** @brief Vidget for displaying one, or more of user videos. */
+/** @brief Widget for displaying one, or more of user videos. */
 class MediaVideoSelector : public QWidget
 {
     Q_OBJECT
