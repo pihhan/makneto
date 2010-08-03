@@ -1754,7 +1754,7 @@ Jako vstup pou¾ije místní soubor, jako výstup zaøízení pro zvonìní.
 Qt verze pøehrávaèe umí navíc spou¹tìt opakování omezené poètem, nekoneèné
 do zru¹ení nebo jenom jediné pøehrání.
 
-\subsection*{Grafický výstup}
+\subsection{Grafický výstup}
 
 Jak ji¾ bylo naznaèeno v pøedchozích kapitolách, video se obvykle kóduje 
 a pøená¹í v nìkteré variantì YUV kódování. Pro rychlej¹í výstup je potøeba
@@ -1806,6 +1806,12 @@ identifikátor vysílá 2 zprávy. První je signál na pøípravu okna, kdy u¾ je
 jasné, ¾e bude pou¾itý. Druhý signál pøijde po nastavení identifikátoru.
 Elementy posílají tyto zprávy pøes sbìrnici jako GstMessage, je na aplikaci
 na tyto zprávy nìjak zareagovat.
+
+Z mnou zkoumaných aplikací, ¾ádná aplikace s frameworkem Qt nepou¾ívá pøímo
+window Id. Kopete, jediný komunikátor s podporou videa, øe¹í vykreslování videa
+pomocí vlastní QPixmap, tedy softwarovì. Psi v souèasné verzi nepodporuje 
+videohovor, aplikace pro práci s webkamerou Kamoso vyu¾ívá pro zobrazení èásti
+pøehrávaèe VLC.
 
 \section{Reimplementace seznamu kontaktù}
 
