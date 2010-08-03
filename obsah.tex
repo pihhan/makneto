@@ -1868,7 +1868,8 @@ sezení a zároveò pøijímá stanzy od XMPP knihovny. Proto¾e prvotní testy jsem
 implementoval pomocí knihovny gloox, je JingleManager virtuální tøídou, její¾
 odesílání a pøijímání stanzy reimplementuje pro knihovnu Iris\footnote{XMPP knihovna pou¾itá v aplikaci Makneto} tøída IrisJingleManager. IrisJingleManager
 poskytuje signály pro pøíchozí spojení, je¾ se dále pøipojují do MediaManageru
-pro vyvolání grafické reakce.
+pro vyvolání grafické reakce. Pøíjem XMPP stanzy u knihovny Iris je øe¹en
+reimplementací tøídy XMPP::Task, IrisJingleManager je potomkem dvou tøíd.
 
 \chapter{Závìr}
 
