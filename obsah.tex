@@ -579,13 +579,13 @@ Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. J
 po¹ty s~mnoha jejími problémy a \uv{ne¹vary}. 
 Je sice nìkolikanásobnì rychlej¹í ne¾ jakýkoliv po¹»ák, který po¹tu 
 rozná¹í, ale pøesto není zamý¹lena na komunikaci v~reálném èase. Bì¾ný email se k~u¾ivateli nedoruèuje pøímo,
-ale doruèuje se do jeho schránky. Teprve z~této schránky si mù¾e u¾ivatel nový email vyzvednout~a
+ale doruèuje se do jeho schránky\cite{CalendarBot}. Teprve z~této schránky si mù¾e u¾ivatel nový email vyzvednout~a
 následnì pøeèíst. I~kdy¾ dnes má vìt¹ina programù nastavené vybírání po¹ty na krátkou periodu, nejèastìji
 5 minut, stále to není dost rychle ani na pomalý rozhovor. Proto¾e lidé si rádi vykládají, rádi by si 
 vykládali tro¹ku rychleji. 
 
 A~to je právì úèel programù {\em Instant Messangingu}, volnì pøelo¾eno programù pro rychlou výmìnu zpráv.
-Na èeském internetu se podobné programy stále èastìji oznaèují "kecálky". Tyto programy u¾ nemají ¾ádnou 
+Na èeském internetu se podobné programy stále èastìji oznaèují \uv{kecálky}. Tyto programy u¾ nemají ¾ádnou 
 schránku, do které nejprve nìco musí doruèit. Tyto programy se naopak sna¾í o~doruèení pøímé, od u¾ivatele
 k~u¾ivateli. Komunikace v~tìchto sítích se nazývá komunikací v~témìø reálném èase. Slovíèko {\em témìø}
 je na místì,
@@ -1745,6 +1745,68 @@ nastavení.
 Pomocí druhé pipeline poskytuje 
 pøehrávaè zvukového vyzvánìní pøi pøíchozím hovoru.
 
+\subsection*{Pøehrávaè zvonìní}
+
+Pro akustické upozornìní je implementován ve tøídì MediaManager samostatný
+pøehrávaè zvukù z nastavení. QtSoundPlayer je tøída vyu¾ívající speciálnì
+nastavenou pipeline pomocí tøídy QPipeline, zmìny nastavení pomoci MediaConfig.
+Jako vstup pou¾ije místní soubor, jako výstup zaøízení pro zvonìní.
+Qt verze pøehrávaèe umí navíc spou¹tìt opakování omezené poètem, nekoneèné
+do zru¹ení nebo jenom jediné pøehrání.
+
+\subsection*{Grafický výstup}
+
+Jak ji¾ bylo naznaèeno v pøedchozích kapitolách, video se obvykle kóduje 
+a pøená¹í v nìkteré variantì YUV kódování. Pro rychlej¹í výstup je potøeba
+pou¾ít na platformì závislá volání, v pøípadì systému X11 je to rozhraní
+XV. GStreamer umo¾òuje pou¾ití akcelerovaného výstupu s pou¾itím elementu
+{\em xvimagesink}, neakcelerovaný výstup umo¾òuje element {\em ximagesink}.
+
+Ve výchozím nastavení výstup vytvoøí nové okno, do kterého se promítá výsledné
+video. Existuje v¹ak i rozhraní, které umo¾ní nastavit výstupu existující
+okno, do kterého se bude kreslit.
+
+Zde je na místì osvìtlit princip správy oken v~X Windows. Nízkoúrovòová 
+aplikace vytváøející
+hlavní okno aplikace vytvoøí okno, do kterého protom vlo¾í dal¹í prvky. 
+Tyto prvky, napøíklad popisky, tlaèítka, nebo jiné ovládací prvky jsou 
+v X11 také podøazená okna, která mají svùj identifikátor definovaný 
+bezeznaménkovým typem long. X server tato okna vede jako svoje zdroje.
+Pojmenování struktury Window je ponìkud zavádìjící, proto¾e nejde nutnì
+pouze okénko aplikace, ale obecnou obdélníkovou plochu zobrazitelnou na
+obrazovce, potomka typu Drawable. 
+
+V u¾ivatelském rozhraní mluvíme obvykle o oknu tehdy, pokud je to hlavní
+okno aplikace nebo jeho samostatný dialog, který má titulek a ostatní dekorace.
+Tyto dekorace v¹ak v X Windows zaji¹»uje speciální proces, správce oken,
+který jednotlivým oknùm aplikace pøidává dekoraci dodateènì.
+
+Knihovna Qt umo¾òuje získat nízkoúrovòový identifikátor pomocí volání 
+QWidget::winId(), který lze pou¾ít pro nastavení zobrazení videa do vnitøních
+prvkù aplikace. Pomocí rozhraní Gstreameru X Overlay je mo¾né, na v¹echny
+videovýstupy podporující toto rozhraní, nastavit identifikátor okna, do kterého
+bude videovýstup zobrazen. Pokud lze výstupním snímkùm mìnit velikost, tedy
+je-li pøítomný element videoresize v øetìzci, nebo umí-li výstup zvìt¹ování 
+sám\footnote{Akcelerované výstupy xvimagesink a sdlimagesink podporují hardwarové ¹kálování}, je mo¾né mìnit pøi promítání velikost výsledného okna.
+
+I kdy¾ lze jednodu¹e zobrazovat video do prostého QWidget, implementoval jsem
+pro zobrazení videa speciální tøídu GstVideoWidget. Tato tøída má pomoci
+napøíklad se zvìt¹ováním videa v nìjakém mìøítku, nebo pøekreslování v pøípadì,
+¾e je pipeline zastavená. Tøída reimplementuje sizeHint, tak¾e je mo¾né dodr¾et
+pomìry vý¹ky a ¹írky pøi zvìt¹ení videa pomocí bì¾ného layoutu, pouhým 
+nastavením parametru zoom.
+
+Proto¾e vytváøení zdrojù X serveru probíhá pro vìt¹í rychlost asynchronnì,
+je nutné po spu¹tìní pipeline, ale je¹tì pøed zobrazením prvního výstupu,
+synchronizovat X server pøed pou¾itím identifikátoru okna. Pokud se 
+nesynchronizuje, hrozí pøi spu¹tìní GStreameru v jiném vláknì, ¾e pou¾ije 
+identifikátor døíve, ne¾ server alokuje pro okno prostøedky. Pokud se tak stane,
+aplikace skonèí havárií. Video výstup gstreameru pro usnadnìní pøípravy 
+identifikátor vysílá 2 zprávy. První je signál na pøípravu okna, kdy u¾ je
+jasné, ¾e bude pou¾itý. Druhý signál pøijde po nastavení identifikátoru.
+Elementy posílají tyto zprávy pøes sbìrnici jako GstMessage, je na aplikaci
+na tyto zprávy nìjak zareagovat.
+
 \section{Reimplementace seznamu kontaktù}
 
 Pùvodní aplikace mìla seznam kontaktù, v terminologii XMPP roster, 
@@ -1835,6 +1897,12 @@ se ukládají do XML databáze na disk, aby mohly být pøi spu¹tìní opìt naèteny
 z~disku. Není tedy nutné ¾ádat po pøipojení seznam schopností klienta, pokud
 ji¾ vlastnosti jsou známé.
 
+V kontextové nabíce pøi kliknutí na u¾ivatele byly pùvodnì pøeddefinovány
+staticky dvì akce, otevøení nového sezení a ètení detailù o kontaktu. 
+Novì jsou akce vytváøeny a¾ v okam¾iku kliknutí, proto¾e jejich obsah závisí
+na schopnostech klienta, je¾ se mohou èasem mìnit. Nabídka pro volání nebo
+videohovor je nabídnuta pouze v pøípadì, ¾e kontakt volání podporuje. 
+
 \section{Jingle}
 
 Pro práci s pøíchozími stanzami jsem implementoval jejich ekvivalenty
@@ -1871,6 +1939,39 @@ poskytuje signály pro pøíchozí spojení, je¾ se dále pøipojují do MediaManageru
 pro vyvolání grafické reakce. Pøíjem XMPP stanzy u knihovny Iris je øe¹en
 reimplementací tøídy XMPP::Task, IrisJingleManager je potomkem dvou tøíd.
 
+\section{Systém nastavení}
+
+Desktop KDE obsahuje centralizované úlo¾i¹tì konfigurace, které má napomoci 
+centrální správì nastavení napøíklad z jiného poèítaèe nebo jiným u¾ivatelem.
+Nastavení aplikace se generuje ze sady nìkolika widgetù navr¾ených pomocí 
+QtDesigneru. V¹echny volby aplikace definuje soubor makneto.kcfg, vèetnì 
+formátù parametrù a popisu, co volby znamenají. Z tohoto souboru se pomocí 
+kompileru nastavení generuje tøída Settings, která obsahuje statické metody pro
+zji¹»ování nastavení. 
+
+Vzhled dialogu nastavení je vytvoøen pomocí jednotlivých widgetù designeru.
+Ve tøídì MaknetoMainWindow je sestavena z jednotlivých widgetù do jednoho 
+dialogu a je zobrazen. Nastavení obsahuje XMPP parametry pro pøipojení
+do sítì, výbìr zaøízení pro vstup a výstup audio a video, zaøízení pro 
+pøehrávání zvuku.
+
+Pro nastavení pipeline se pou¾ívá speciální tøída MediaConfig, která má 
+odstínit tìsnou závislost na KDE od multimediálního øetìzce, který je navr¾ený
+jako nezávislý na frameworku. MediaConfig obsahuje nastavení zaøízení pro 
+jednotlivá zaøízení prostøednictvím MediaDevice. Zaøízení obsa¾ená jsou
+vstupní a výstupní modul pro audio, vstup a výstup videa, zvukové zaøízení
+pou¾ité pro výstup zvonìní a modul GStreameru pou¾itý pro ètení souboru. 
+Proto¾e pro vyzvánìní je pou¾itý vstup z lokálního souboru, výchozí nastavení
+je filesrc modul doplnìný filtrem decodebin. Decodebin je obecný modul 
+pou¾itelný pro dekódování obecného vstupu podle pøipojeného výstupu. Tento
+filtr ale vy¾aduje speciální zacházení, proto¾e výstup se objeví a¾ po
+spu¹tìní pipeline, a pøi vytváøení decodebin vùbec nemá výstupní element.
+QPipeline tedy definuje pro decodebin callback vyvolaný pøi pøidání výstupního
+padu k decodebinu, který je následnì pøipojený na audio výstup. 
+Celý pøehrávaè se tak chová jako bì¾ná pipeline, jenom jako AudioInput je pou¾itý FileInput, a místo AudioOutput se pou¾ije výstupní modul pro RingOutput 
+uvedený v MediaConfig. Parsování nastavení KDE na MediaConfig provádí tøída 
+MediaManager.
+
 \chapter{Závìr}
 
 Aplikace Makneto je program s~mnoha mo¾nostmi, i kdy¾ na nìkterých místech je
@@ -1891,5 +1992,48 @@ Co je Makneto, jak vypadá, jaké má funkce a nedostatky jsem shrnul ve druhé
 kapitole. Porovnání s~jinými známými programy jsem uvedl v~kapitole tøetí.
 Shrnutí nutných protokolù k~implementaci real--time pøenosu jsem uvedl v~kapitole ètvrté, v~následující jsem popsal knihovny, které budou pou¾ity k~implementaci
 a~model jejich implementace.
+
+Pøi návrhu rozhraní jsem bohu¾el navrhl pøíli¹ univerzální rozhraní nezávislé
+na pou¾ité knihovnì. Knihovna GLib je komplexní a má celou øadu vlastních 
+datových typù, stejnì jak GStreamer. Mùj pokus vytvoøit jednoduchou C++ obálku
+kolem tìchto struktur se ukázal být kontraproduktivní, proto¾e jsem vytvoøil
+dal¹í mezijazyk mezi dvìma velkými knihovnami. Tøídy takto vzniklé nepatøí ani 
+do C/Glib, ani do C++/Qt. Obì knihovny mají svùj systém signálù pøená¹ející
+události. Já místo vyu¾ití jednoho ze zpùsobù jsem vytvoøil mezi nimi most
+callbacky pomocí virtuálních funkcí. Zpìtnì tento zámìr musím zhodnotit jako 
+ne¹tastný. Pøíli¹né odstínìní pou¾ité knihovny pøidalo pøíli¹ mnoho práce
+na mezivrstvì, která musí být schopná pokrýt témìø v¹echny mo¾nosti.
+
+Podobnì nevhodné se ukázalo zobecnìní JingleManageru na knihovnì 
+nezávislé, je¾ se na konkrétní knihovnu napojuje a¾ reimplementací 
+funkcí závislých na konkrétní knihovnì. Jádro JingleManageru mìlo fungovat jak
+pro knihovnu gloox, ve které jsem mìl implementovány základní testování, a Iris,
+je¾ je pou¾ita v pùvodním projektu Makneto. Nevhodnost spoèívá pøedev¹ím 
+v rozdílné filozofii pøijímání zpráv ze sítì.
+
+Za vhodnìj¹í øe¹ení dnes pova¾uji pou¾ití QtGStreamer bindingu. Tento sice
+nedovoluje propojit nativní GStreamer elementy knihovny farsight, jak jsem 
+zamý¹lel pou¾ít. Jedním øe¹ením by mohlo být pou¾ítí Qt4 telepathy, dal¹ím
+øe¹ením vytvoøit obálku Qt kolem farsight tak, aby s QtGStreamer byla 
+kompatibilní. Výhledovì by bylo pou¾ití rozhraní Telepathy asi vhodnìj¹í,
+ne¾ vlastní implementace v aplikaci.
+
+Je otázkou, proè zatím pomìrnì málo programù psaných s pou¾itím knihovny 
+Qt nabízí video hovor, nebo alespoò hlasové volání. Jeden z dùvodù spatøuji 
+v neexistenci vstupních elementù pro nativní Qt rozhraní phonon, dal¹í 
+v absenci ni¾¹í úrovnì pøístupu k video zaøízení. Teprve s verzí Qt 4.6
+se objevuje nízkoúrovòové rozhraní pro obsluhu video a audio vstupù a výstupù,
+není ale urèeno pro bì¾né desktopové vydání, spí¹e pro embedded zaøízení. 
+Je zvlá¹tní, ¾e v¹echny u¾ivatelsky pøívìtivìj¹í programy s podporou videohovoru
+jsou zalo¾ené na nìjaké formì GTK, a» u¾ pøímo (Pidgin, Ekiga), nebo pomocí 
+python bindings (Gajim).
+
+Dal¹í problém byl zpùsoben zámìrem pøipravit aplikaci na mo¾nost videohovoru
+s více úèastníky, je¾ zkomplikoval jak návrh pipeline, tak vytváøení grafických 
+prvkù nutných pro pøípavu více widgetù v jednom výstupu. 
+
+Aplikace bohu¾el není dokonèená a neumo¾òuje ani základní audio hovor, ani 
+video hovor. 
+
 
 % CO SAKRA TADY MAM PSAT ZA BLBOSTI?
