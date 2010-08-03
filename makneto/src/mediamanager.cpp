@@ -479,4 +479,8 @@ void MediaManager::reportDebugMessage(const QString &message)
     qDebug() << objectName() << ": " << message;
 }
 
+void MediaManager::configureLocalPreviewWidget() 
+{
+
+}
 

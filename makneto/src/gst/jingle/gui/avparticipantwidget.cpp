@@ -70,19 +70,6 @@ void AVParticipantWidget::handleExpose()
         output()->expose();
 }
 
-#if 0
-void AVParticipantWidget::updateVolumes(
-    int channels,
-    double *rms,
-    double *peak,
-    double *decay)
-{
-    for (int channel=0; channel < channels; channel++) {
-        m_volumebar->updateVolumes(channels, rms, peak, decay);
-    }
-}
-#endif
-
 void AVParticipantWidget::updateVolumes(int channels, double *rms, double *peak, double *decay)
 {
     m_volumebar->updateVolumes(channels, rms, peak, decay);
@@ -119,14 +106,40 @@ void AVParticipantWidget::videoResolutionChanged(const QSize &size)
 
 void AVParticipantWidget::displayVolume(int volume)
 {
-
+    double dv = volume / 100.0;
+    double zero = 0.0;
+    m_volumebar->updateVolumes(1, &dv, &zero, &zero);
 }
 
 void AVParticipantWidget::setVolume(int volume)
 {
+    double dv = volume / 100.0;
+    setVolume(dv);
 }
 
 void AVParticipantWidget::setVolume(double volume)
 {
+    // TODO
 }
+
+void AVParticipantWidget::videoDisabled()
+{
+    m_video->setPlaying(false);
+}
+
+void AVParticipantWidget::videoEnabled()
+{
+    m_video->setPlaying(true);
+}
+
+void AVParticipantWidget::audioDisabled()
+{
+    m_volumebar->setEnabled(false);
+}
+
+void AVParticipantWidget::audioEnabled()
+{
+    m_volumebar->setEnabled(true);
+}
+
 

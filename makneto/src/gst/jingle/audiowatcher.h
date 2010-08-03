@@ -14,9 +14,11 @@ class GstAudioWatcher
     GstAudioWatcher();
     virtual ~GstAudioWatcher();
 
+#ifdef DEPRECATED_AWATCHER
     void assignSource(GstElement *level);
     bool acceptsForElement(GstElement *level);
     virtual void updateMessage(GstMessage *msg) = 0;
+#endif
     virtual void updateVolumes(int channels, double *rms, double *peak, double *decay) = 0;
 
     virtual void setAudioVolume(double volume);

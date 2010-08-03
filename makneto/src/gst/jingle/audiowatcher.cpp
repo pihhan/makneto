@@ -19,6 +19,7 @@ GstAudioWatcher::~GstAudioWatcher()
 {
 }
 
+#ifdef DEPRECATED_AWATCHER
 void GstAudioWatcher::assignSource(GstElement *level)
 {
     if (m_level)
@@ -31,6 +32,7 @@ bool GstAudioWatcher::acceptsForElement(GstElement *level)
 {
     return (!m_level || m_level == level);
 }
+#endif
 
 void GstAudioWatcher::setAudioOutput(AVOutput *output)
 {
@@ -82,7 +84,9 @@ GstAudioWatcherRegistry::GstAudioWatcherRegistry()
 
 void GstAudioWatcherRegistry::registerWatcher(GstAudioWatcher *watcher, GstElement *level)
 {
+#ifdef DEPRECATED_AWATCHER
     watcher->assignSource(level);
+#endif
     watchers.push_back(watcher);
 }
 
@@ -92,8 +96,10 @@ void GstAudioWatcherRegistry::propagateLevelMessage(GstMessage *msg)
     GstAudioWatcherList::const_iterator it;
     for (it=watchers.begin(); it!=watchers.end(); it++) {
         GstElement *e = GST_ELEMENT(msg->src);
+#ifdef DEPRECATED_AWATCHER
         if ((*it)->acceptsForElement(e)) 
             (*it)->updateMessage(msg);
+#endif
     }
 }
 

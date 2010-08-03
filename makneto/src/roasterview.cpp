@@ -160,9 +160,6 @@ void RoasterView::showContextMenu(const QPoint &point)
                     acall->setData(jid);
                     connect(acall, SIGNAL(triggered()), this, SLOT(audioCall()) );
                 }
-                if (contact->supportsFeature("urn:xmpp:jingle:1")) {
-                        menu->addAction(tr("Jingle bells!"));
-                }
 
                 QAction *result = menu->exec(m_roster->mapToGlobal(point));
                 if (result) {

@@ -38,9 +38,9 @@ MaknetoView::MaknetoView(QWidget *, Makneto *makneto)
 
 	m_sidebar->appendTabWidget(m_roaster, KIconLoader::global()->loadIcon("system-users", KIconLoader::Toolbar, KIconLoader:: SizeSmall), 1, i18n("Contacts"));
   
-  m_sidebar->appendTabWidget(m_muc, KIconLoader::global()->loadIcon("goto", KIconLoader::Toolbar, KIconLoader::SizeSmall), 2, i18n("MUC"));
+  m_sidebar->appendTabWidget(m_muc, KIconLoader::global()->loadIcon("irc-join-channel", KIconLoader::Toolbar, KIconLoader::SizeSmall), 2, i18n("MUC"));
 
-  LocalPreview *m_preview = new LocalPreview(this, makneto);
+  m_preview = new LocalPreview(this, makneto);
   m_sidebar->appendTabWidget(m_preview, 
     KIconLoader::global()->loadIcon("media-record", KIconLoader::Toolbar, KIconLoader::SizeSmall), 3, i18n("Preview"));
 

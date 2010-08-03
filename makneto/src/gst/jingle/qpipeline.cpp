@@ -321,8 +321,13 @@ bool QPipeline::createVideoSink()
 bool QPipeline::createLocalVideoSink()
 {
     MediaDevice d = m_config.localVideoOutput();
-    return createElementsFromDevice(d,
+    bool created = createElementsFromDevice(d,
         &m_localvideosink, &m_lvsinkfilter, "local-video-sink");
+    if (m_localvideosink) {
+        // tee element needs to turn off sync on second video output
+        g_object_set(G_OBJECT(m_localvideosink), "sync", FALSE, NULL);
+    }
+    return created;
 }
 
 /** @brief Enable local video sink, create it if not created already. */

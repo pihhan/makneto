@@ -45,6 +45,10 @@ class AVParticipantWidget : public QFrame,
     virtual void prepareWindowId();
     void videoExposed();
     void videoResolutionChanged(const QSize &size);
+    void videoDisabled();
+    void videoEnabled();
+    void audioDisabled();
+    void audioEnabled();
 
     void displayVolume(int volume);
     void setVolume(int volume);

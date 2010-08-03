@@ -46,6 +46,7 @@ public:
     SessionTabManager *getSessionTabManager(void) { return m_sessiontabmanager; }
     SidebarWidget *getSidebarWidget(void) { return m_sidebar; }
     MUCView *getMUCView() { return m_muc; }
+    LocalPreview    *getLocalPreview() { return m_preview; }
 
 signals:
     /**

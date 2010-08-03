@@ -59,9 +59,6 @@ class MediaManager : public QObject,
 
     AVParticipantControl *createParticipant(const QString &jid);
 
-    void testMediaSettings();
-    void testAudioSettings();
-    void testVideoSettings();
 
     bool configureDevice(
         MediaDevice &device,
@@ -70,7 +67,9 @@ class MediaManager : public QObject,
         const QString &parameters);
 
 		
-	QString locateSoundFile(const QString &filename) const;
+    QString locateSoundFile(const QString &filename) const;
+
+    void configureLocalPreviewWidget();
 
     public slots:
     void startRingIncomingCall();
@@ -83,6 +82,10 @@ class MediaManager : public QObject,
 
     /** @brief Slot to start ring and ask user to accept or deny session. */
     void incomingSession(QtJingleSession *session);
+
+    void testMediaSettings();
+    void testAudioSettings();
+    void testVideoSettings();
 
     void mediaTestTimeout();
     void mediaTestComplete();

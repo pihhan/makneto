@@ -26,14 +26,14 @@ class AVOutput
 
     virtual ~AVOutput();
 
-    bool enableAudio();
-    bool enableVideo();
+    virtual bool enableAudio();
+    virtual bool enableVideo();
 
-    bool disableAudio();
-    bool disableVideo();
+    virtual bool disableAudio();
+    virtual bool disableVideo();
 
-    bool audioEnabled();
-    bool videoEnabled();
+    virtual bool audioEnabled();
+    virtual bool videoEnabled();
 
     MediaDevice videoConfig() const;
     MediaDevice audioConfig() const;
@@ -41,8 +41,8 @@ class AVOutput
     void setVideoConfig(const MediaDevice &d);
     void setAudioConfig(const MediaDevice &d);
 
-    GstPad *getVideoSinkPad();
-    GstPad *getAudioSinkPad();
+    virtual GstPad * getVideoSinkPad();
+    virtual GstPad * getAudioSinkPad();
 
     GstElement *videoElement();
     GstElement *audioElement();
@@ -63,14 +63,14 @@ class AVOutput
     bool createAudioSink();
     bool createVideoSink();
 
-    void expose();
-    void setWindowId(unsigned long id);
+    virtual void expose();
+    virtual void setWindowId(unsigned long id);
 
-    double volume() const;
-    void setVolume(double volume);
+    virtual double volume() const;
+    virtual void setVolume(double volume);
 
-    bool muted() const;
-    void setMuted(bool muted);
+    virtual bool muted() const;
+    virtual void setMuted(bool muted);
 
 
     farsight::Stream *audioStream() const;
@@ -80,14 +80,17 @@ class AVOutput
 
     private:
     std::string participant;
+    protected:
     GstElement *m_vsink;
     GstElement *m_asink;
     GstElement *m_afilter;
     GstElement *m_vfilter;
     GstElement *m_level; ///<! level element, to read audio volume levels
     GstElement *m_volume; ///<! volume element, to modify audio volume
+    private:
     MediaDevice m_audioconfig;
     MediaDevice m_videoconfig;
+    protected:
     QPipeline   *m_pipeline;
     GstAudioWatcher *m_audiowatcher;
     GstVideoWatcher *m_videowatcher;
