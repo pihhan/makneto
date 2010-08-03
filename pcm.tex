@@ -1,14 +1,20 @@
 \chapter{Přenos a formát multimédií}
 
-\subsection{Přenos hlasu}
-
 Před přenosem signálu po internetu nejdříve potřebujeme data zaznamenat a
-digitalizovat. V případě audio signálu jako záznamové zařízení obvykle
+digitalizovat. Dále je třeba použít takové uložení dat, kterému příjímající
+strana dokáže porozumět.
+
+\section{Přenos a kódování hlasu}
+
+V případě audio signálu jako záznamové zařízení obvykle
 slouží snímací zařízení, například mikrofon, připojené k převodníku
-analogové úrovně napětí na diskrétní čísla. Pomocí analogově--digitálního
-převodníku získáváme sekvenci čísel o předem nastavené vzorkovací frekvenci.
+analogové úrovně napětí na sekvenci diskrétních čísel. Pomocí analogově--digitálního
+převodníku získáváme sekvenci čísel s pevnou desetinnou čárkou 
+o předem nastavené vzorkovací frekvenci a bitové šířce.
 Takové kódování analogového signálu nazýváme pulzně kódová modulace, 
-anglicky pulse--code modulation (PCM). Digitální kódování umožňuje ideální
+anglicky pulse--code modulation (PCM), pro záznamová zařízení je pravděpodobně
+nepoužívanějším kódováním.
+Digitální kódování umožňuje ideální
 rekonstrukci zaznamenaného signálu po celé přenosové cestě, takže nedochází
 k poškození signálu při přenosu. Jistou nevýhodou je omezení zaznamenané 
 frekvence na nejvýše polovinu frekvence vzorkovací, pokud nemá být výsledný
@@ -19,7 +25,7 @@ Kódování dělíme na ztrátové, při jehož použití ztrácíme část pře
 informace, a bezeztrátové, kde použijeme výhodnější způsob uložení a odstraníme
 nadbytečnou redundanci přenášené informace. Při záznamu hlasu obvykle 
 nevyžadujeme bezchybný přenos beze ztráty informace, ale raději omezíme 
-množství přenášené informace, abychom mohli komunikovat i po pomalejší lince,
+množství přenášené informace, abychom mohli komunikovat i~po pomalejší lince,
 nebo abychom po ní mohli přenést více toků v přijatelné kvalitě.
 Protože ztrátová komprese je zaměřená na vynechání nebo redukci informace, 
 kterou lidské
@@ -36,15 +42,128 @@ například hudbu. Nevýhodou je vyšší bitový tok, tedy nižší účinnost 
 ústrojí člověka, pokud takový zvuk chce vydat. Nazýváme též vokodéry. 
 Výhodou je nižší objem 
 přenášených informací, nevýhodou obvykle vyšší výpočetní náročnost a nižší 
-kvalita. }
+kvalita.}
+\item{Kombinace obou předchozích způsobů.}
 \end{itemize}
 
 Protože oba přístupy mají své přednosti, pro vyšší kvalitu přenosu hlasu 
 zpravidla oba přístupy kompinujeme v hybridních kodecích. Hybridní kodek
 popisuje některé části řeči parametricky, část obtížně popsatelnou několika
-parametry zakóduje popisem vlnění. V současnosti používané kodeky jsou 
+parametry (buzení) zakóduje popisem vlnění. V současnosti používané kodeky jsou 
 zpravidla hybridní, pokud není potřeba přenášet i neřečové signály,
 nebo zachovat kompatibilitu se sítí nepodporující jiné kódování. Například 
-pro přenos komunikace faxu je nutné použít kodek určený nejen pro přenos 
+pro přenos komunikace analogového faxu je nutné použít kodek určený nejen pro přenos 
 lidského hlasu.
 
+Současné moderní algoritmy pro zvýšení účinnosti komprese používají zpravidla
+nějakou formu prediktoru, kterým se na základě předešlých dat pokoušejí
+popsat změnu oproti předchozímu stavu. Využívají skutečnosti, že především
+u znělých souhlásek je signál periodický a~pravděpodobně se skokově nezmění.
+Další technikou je vytvoření slovníku fonémů, kde parametricky popíšeme
+běžně se vyskytující úseky řeči a při kódování hledáme, kterému vzorku ve 
+slovníku je vstupní signál nejvíce podobný. Poté se přenáší pouze odkaz
+do slovníku, přijímající strana signál zrekonstruuje na základě vlastního
+slovníku.
+
+Algoritmů pro kódování hlasu je řada a stále probíhá vývoj lepších, 
+efektivnějších postupů pro získání nižší potřebné přenosové rychlosti 
+či menší výpočetní náročnosti, nebo jejich kombinací. 
+Protože vývoj nových algoritmů je poměrně
+náročný, chrání si vývojáři svoje postupy často patentovou ochranou ve státech,
+kde jim to legislativa umožňuje. Existence řady různých algoritmů pro kódování
+hlasu není pouze problém čistě technický, v praktických aplikacích hraje roli
+také licencování existujících řešení. 
+
+\section{Formát a kódování videa}
+
+Pohybujícím se videem obvykle chápeme sekvenci obrázků zobrazovanou rychle po
+sobě. Na rozdíl od zvuku je video vícerozměrná matice jednotlivých bodů obrazu a obvykle potřebuje výrazně vyšší přenosovou kapacitu, než zvukový kanál. Jednotlivé snímky nesou informaci pro každý pixel obrazu, kde pixelem
+rozumíme nejmenší viditelný bod v obrazu. 
+
+Pro snímky v odstínech šedé jde o sekvenci úrovní jednotlivých pixelů v definované bitové hloubce, barevné
+snímky mají nejčastěji pro každý pixel uvedenou hodnotu jasu a k~ní dvě další
+složky definující barvu. Způsobů uložení pixelů v jednom snímku je celá řada,
+liší se podle typu kamery, kterou byl snímek pořízen a zobrazovacího zařízení, na který mají být snímky zobrazovány. 
+
+Pro statické obrázky je nejčastější formou uložení pixelů trojice úrovní pro barvy červenou, zelenou a modrou -- RGB. Nejčastěji se setkáme s formátem
+osmi bitů pro každou složku, celkem jeden bod má 24 bitů. V některých situacích je výhodné mít ještě další kanál, průhlednost, na jeden pixel použijeme 32 bitů. 
+
+Lidské oko ale nemá stejnou citlivost na všechny barevné složky. Oko je citlivější na intenzitu světla, protože počet tyčinek v oku je výrazně vyšší,
+než počet čípků rozlišujících jednotlivé odstíny barev. Při ukládání videa
+máme velký počet snímků o velkém počtu snímků, je proto vhodné rozdíly v citlivosti na jednotlivé složky zohlednit. Protože se snažíme dosáhnout co nejmenšího objemu jednoho snímku, pro každý pixel videa častěji používáme
+barevný model úrovně jasu a dvou odchylek tónu barvy -- YUV. Hodnotu luminance obvykle ukládáme s vyšším počtem bitů, než složky s barevnou odchylkou, zpravidla mají barevné složky dohromady stejnou velikost, jako
+složka jasu.
+
+Kromě velikosti jednotlivých složek se může měnit i způsob uložení v paměti.
+První způsob je prokládání jednotlivých barevných složek pixelů za sebou, 
+druhou variantou je uložení jedné ze složek všech pixelů za sebou, následující sekvencí pixelů další složky. Protože kombinací uložení je celá
+řada, pro popis formátu snímku zpravidla používáme 32 bitové označení složené ze čtyř písmen, Fourcc\cite{fourcc}. Kromě formátu uložení jednotlivých složek rozlišujeme také barevný model obrazu, tedy přiřazení
+konkrétních barev určitým úrovním jasu. Mezi jednotlivými barevnými modely můžeme na jiné snadno převádět pomocí matic, s konstantami závisejícími na původu pixelů.
+
+Protože video musí zobrazit několik snímků za vteřinu, bylo by nevýhodné muset pro každý jeden snímek přepočítat z formátu YUV na barevný model RGB,
+ve kterém nejčastěji ukládáme barevný obraz na grafické kartě. Aby nebylo nutné přepočítat vždy každý snímek, moderní grafické karty obsahují akceleraci ve formě převodu barevného formátu přímo v kartě. Pro zobrazení snímku potom stačí přenést obrázek ve formátu YUV, a karta zařídí konverzi 
+nutnou k zobrazení, obvykle včetně hardwarového škálování obrázku. V grafickém prostředí X11 akceleraci poskytuje rozšíření Xv, příkazem {\em xvinfo} lze vypsat podporované formáty snímků, které lze zobrazovat přímo na kartu.
+
+Aby se zmenšil objem videa, přenášené snímky můžeme komprimovat na úrovni
+jednotlivých snímků, aby jeden snímek měl minimální velikost. Příkladem je
+kódování JPEG, v případě videa Motion JPEG, kde video je sekvencí nezávislých snímků. Protože v běžném videu se zpravidla nemění scéna skokově, ale postupně, existuje redundance informace mezi jednotlivými snímky. Pro vyšší efektivitu se obvykle používá kromě kódování jednotlivých snímků také kódování mezi snímky, kde přenášíme pouze rozdíl proti několika
+předcházejícím snímkům. Obvykle se použije seznam transformací upravujících 
+předchozí snímek do nové podoby, kde z původního obrazu použijeme makrobloky
+a definujeme jejich posun, rotaci či změnu měřítka. I v případě videa se 
+obvykle setkáváme s prediktory, které charakterizují předešlé změny tak,
+aby nebylo potřeba přenést všechny transformace, ale pouze změny v pohybu.
+Mezisnímkové kódování má nepříjemnou vlastnost, při ztrátě či poškození jednoho snímku
+přestanou následné transformace dávat správné výsledky. Proto se přenáší pravidelně klíčový snímek, který nese kompletní snímek, po něm následuje sekvence částečných snímků, které nesou změny proti tomuto snímku.
+
+\section{Přenos v paketové síti}
+Pokud chceme přenášet multimédia v paketové síti, je potřeba data rozdělit
+na časově ohraničené rámce o velikosti, jež je síť schopná přenést. Protože
+pro živý přenos je důležité zachovat minimální zpoždění, používá se zpravidla
+pro přenos datagramů bez zajištění bezchybného přenosu.
+
+Data je potřeba přenášet tak, aby obě strany rozuměly přenášeným datům a byly
+je schopny správně přehrávat. Prvním předpokladem je použití stejného 
+protokolu pro přenos dat a jím definovaný formát přenášených dat. Druhým předpokladem je dohodnutí parametrů přenosu před zahájením vlastního datového
+přenosu.
+
+Dohodnutí parametrů přenosu se obvykle provádí jiným spojením, než samotný
+datový přenos. K ustavení spojení a dohodnutí parametrů slouží signalizační
+kanál. Může být spojen jak protokolem TCP jako v případě XMPP a Jingle,
+nebo UDP obvykle používané protokolem SIP, oba už byly popsány v předchozích kapitolách. Pro signalizační kanál je důležité, aby byl schopen fungovat 
+na různých konfiguracích sítě, i na sítích používajících překlad adres. Právě
+pomocí signalizačního kanálu je umožněno dohodnutí parametrů mezi účastníky
+spojení, aby mohlo vůbec započít sestavování přímého spojení. Signalizační
+kanál umožní výměnu adres, případně může pomoci při zjišťování topologie
+ sítě. Protože signalizace nepřenáší multimediální data, není potřeba jej 
+ synchronizovat a dosahovat nízké odezvy, důležitějším parametrem je spolehlivost. Proto není na závadu případné zpoždění TCP/IP spojení při výpadku několika paketů, nebo kaskáda proxy serverů v případě SIP.
+ 
+Datový přenos se navazuje pokud možno přímo mezi koncovými uživateli, 
+v případě nemožnosti přímého spojení přes proxy se zvýšením doby odezvy.
+Kromě minimální potřebné rychlosti vyžaduje kvalitní přenos malé
+ kolísání doby odezvy, tedy jitter. Protože při průchodu internetem obvykle
+ nejsme schopni zaručit prioritní zpracování multimediálních dat, kolísání
+ nemůžeme eliminovat, ale je možné potlačit jeho vliv, pokud není příliš velké. Kolísání odezvy odfiltruje přidání vstupní fronty, která čeká na přijímaná data po určitou krátkou dobu a vyrovnává tak nárazově přicházející
+ data. Nevýhodou je další umělé zvýšení zpoždění přehrávanách dat. Čím větší
+je kolísání doby přenosu, tím větší je nutné mít frontu, aby se kompenzoval vliv kolísání. Stále však chceme co nejnižší zpoždění, proto zpoždění 
+přenosu i jeho kolísání chceme mít minimální.
+
+Minimálně u zvuku požadujeme navazující datový tok bez mezer\cite{RtpBook}. 
+Výpadky mohou nastat z více důvodů. Nejčastějšími důvody je ztracení posílaných dat a příliš velké zpoždění, kdy už fragment nemá smysl přehrát a je zahozen. V IP sítích jsou datové vyšší protokoly, TCP i UDP, chráněny 
+kontrolním součtem, který zajišťuje, že nedošlo k poškození přenášeného obsahu. Pokud kontrolní součet nesouhlasí, systém paket zahodí a k vlastní
+aplikaci se nedostane ani poškozený paket s částečnou informací. Kvůli 
+1 chybnému bitu tak můžeme ztratit celý fragment obsahující 20\,ms řeči.
+
+Protože použitý protokol UDP nezajištuje bezchybný přenos, je nutné nějak
+reagovat na ztracené pakety. Aplikace by měla zajistit zotavení z chyb tak,
+aby pro koncového uživatele nebyla chyba příliš viditelná. Pokud nepoužijeme 
+na straně vysílání prokládání s~přidanými informacemi pro zotavení, nezbývá,
+než nahradit chybějící fragment nějakým odhadem chybějícího obsahu. 
+
+V případě výpadku audio signálu existuje řada postupů, obvykle vyžadují 
+znalosti vnitřního stavu dekodéru, aby výsledná korekce zněla věrohodně.
+Pro znělé hlásky je vhodné nahradit chybějící fragment předchozím fragmentem,
+neznělé souhlásky lépe nahradí šumová funkce\cite{RtpBook}. Zotavení z chyb je nedílnou součástí návrh algoritmu a způsobu jeho zabalení v RTP paketu.
+Protože komprese zpravidla využívá predikce pro snížení objemu přenášených
+zpráv, výpadky části provozu mohou negativně ovlivnit celou řadu správně
+doručených datagramů. Odolnost proti chybám v přenosu je dalším parametrem
+měřítkem kvality implementace daného algoritmu.

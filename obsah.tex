@@ -578,7 +578,7 @@ tok nebyl ve výsledku vy¹¹í, ne¾ tok vlastních dat.
 Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. Je to elektronická obdoba
 po¹ty s~mnoha jejími problémy a \uv{ne¹vary}. 
 Je sice nìkolikanásobnì rychlej¹í ne¾ jakýkoliv po¹»ák, který po¹tu 
-rozná¹í, ale pøesto není my¹lena na komunikaci v~reálném èase. Bì¾ný email se k~u¾ivateli nedoruèuje pøímo,
+rozná¹í, ale pøesto není zamý¹lena na komunikaci v~reálném èase. Bì¾ný email se k~u¾ivateli nedoruèuje pøímo,
 ale doruèuje se do jeho schránky. Teprve z~této schránky si mù¾e u¾ivatel nový email vyzvednout~a
 následnì pøeèíst. I~kdy¾ dnes má vìt¹ina programù nastavené vybírání po¹ty na krátkou periodu, nejèastìji
 5 minut, stále to není dost rychle ani na pomalý rozhovor. Proto¾e lidé si rádi vykládají, rádi by si 
@@ -961,18 +961,20 @@ Proto¾e je takových roz¹íøení
 mít dlouhý seznam roz¹íøení pro ka¾dou vlastnost, kterou u¾ivatel chce nebo
 nechce zveøejòovat. Je ¾ádoucí, aby seznam roz¹íøení nebyl pøíli¹ dlouhý, 
 proto¾e se zasílá pøi ka¾dé zmìnì stavu klienta. Proto se v novìj¹ích
-verzích neoznaèuje momentálních schopností verzí klienta a seznamem roz¹íøení,
+verzích neoznaèuje souhrn momentálních schopností èíslem verze klienta 
+a~seznamem roz¹íøení,
 ale kryptografickým hashem vyrobeným ze seøazených schopností. 
 
 \section{Jingle}
 
 XMPP má velmi mnoho mo¾ností pøi zpracování a výmìnì zpráv, ale podpora 
 multimédií stále není implementována. První pokusy o~pøenos multimédií
-se zkou¹ely pomocí roz¹íøení bistreamù, pou¾ívaných pøi pøenosu souboru. 
+se zkou¹ely pomocí roz¹íøení bitstreamù, pou¾ívaných pøi pøenosu souboru. 
 Velice brzy bylo jasné, ¾e takový zpùsob je nedostateèný a není schopen 
 obsáhnout v¹echny pøípady pou¾ití.
 
-Ukázalo se, ¾e jedním z~problémù je zavedený zpùsob IQ dotazù, které poèítají
+Ukázalo se, ¾e jedním z~problémù je zavedený zpùsob IQ dotazù\cite{XmppBook}, 
+které poèítají
 s~chováním dotaz--odpovìï, a nepoèítají s~mo¾ností dále nìjak reagovat na 
 odpovìï dal¹ím dotazem. U~multimédií se ale ukázalo, ¾e jednou ustavené spojení
 mù¾e být potøebné zmìnit, napøíklad kvùli zmìnì podmínek pøipojení. Bì¾ný IQ 
@@ -1057,7 +1059,178 @@ závisí na volbì protokolu, kterým se budou multimédia pøená¹et. Pro pøenos
 multimediálního obsahu v~pøímém pøenosu se nejèastìji pou¾ívají protokoly bez
 korekce ztracených paketù. 
 
-\subsubsection{Pøeklad adres a datagramy}
+\chapter{Pøenos a formát multimédií}
+
+Pøed pøenosem signálu po internetu nejdøíve potøebujeme data zaznamenat a
+digitalizovat. Dále je tøeba pou¾ít takové ulo¾ení dat, kterému pøíjímající
+strana doká¾e porozumìt.
+
+\section{Pøenos a kódování hlasu}
+
+V pøípadì audio signálu jako záznamové zaøízení obvykle
+slou¾í snímací zaøízení, napøíklad mikrofon, pøipojené k pøevodníku
+analogové úrovnì napìtí na sekvenci diskrétních èísel. Pomocí analogovì--digitálního
+pøevodníku získáváme sekvenci èísel s pevnou desetinnou èárkou 
+o pøedem nastavené vzorkovací frekvenci a bitové ¹íøce.
+Takové kódování analogového signálu nazýváme pulznì kódová modulace, 
+anglicky pulse--code modulation (PCM), pro záznamová zaøízení je pravdìpodobnì
+nepou¾ívanìj¹ím kódováním.
+Digitální kódování umo¾òuje ideální
+rekonstrukci zaznamenaného signálu po celé pøenosové cestì, tak¾e nedochází
+k po¹kození signálu pøi pøenosu. Jistou nevýhodou je omezení zaznamenané 
+frekvence na nejvý¹e polovinu frekvence vzorkovací, pokud nemá být výsledný
+signál po¹kozen.
+
+Nevýhodou PCM je vysoký nutný tok vzhledem k mno¾ství pøenesené informace\cite{digital_speech}, oproti pùvodnímu analogovému signálu potøebujeme vy¹¹í pøenosovou kapacitu. Proto volíme jiné zpùsoby kódování k ukládání a pøenosu øeèi.
+Kódování dìlíme na ztrátové, pøi jeho¾ pou¾ití ztrácíme èást pøená¹ené 
+informace, a bezeztrátové, kde pou¾ijeme výhodnìj¹í zpùsob ulo¾ení a odstraníme
+nadbyteènou redundanci pøená¹ené informace. Pøi záznamu hlasu obvykle 
+nevy¾adujeme bezchybný pøenos beze ztráty informace, ale radìji omezíme 
+mno¾ství pøená¹ené informace, abychom mohli komunikovat i~po pomalej¹í lince,
+nebo abychom po ní mohli pøenést více tokù v pøijatelné kvalitì.
+Proto¾e ztrátová komprese je zamìøená na vynechání nebo redukci informace, 
+kterou lidské
+ucho nevnímá, nebo pro pochopení øeèi není zásadní, dosahuje ztrátová komprese
+výraznì lep¹í úèinnosti, ne¾ bezeztrátová. 
+
+Ztrátová komprese hlasu má dva základní pøístupy, jakými lze pøená¹et hlas.
+\begin{itemize}
+\item{Kódování signálu tak, aby zakódovaný signál mìl co nejmen¹í
+odchylku od pùvodního signálu byla co nejmen¹í. Zakódovaný signál popisuje
+tvar vlnìní signálu. Jeho výhodou je schopnost popsat kvalitnì i obecné zvuky,
+napøíklad hudbu. Nevýhodou je vy¹¹í bitový tok, tedy ni¾¹í úèinnost komprese.}
+\item{Parametrické kódování signálu, popisující parametry a tvar øeèového 
+ústrojí èlovìka, pokud takový zvuk chce vydat. Nazýváme té¾ vokodéry. 
+Výhodou je ni¾¹í objem 
+pøená¹ených informací, nevýhodou obvykle vy¹¹í výpoèetní nároènost a ni¾¹í 
+kvalita.}
+\item{Kombinace obou pøedchozích zpùsobù.}
+\end{itemize}
+
+Proto¾e oba pøístupy mají své pøednosti, pro vy¹¹í kvalitu pøenosu hlasu 
+zpravidla oba pøístupy kompinujeme v hybridních kodecích. Hybridní kodek
+popisuje nìkteré èásti øeèi parametricky, èást obtí¾nì popsatelnou nìkolika
+parametry (buzení) zakóduje popisem vlnìní. V souèasnosti pou¾ívané kodeky jsou 
+zpravidla hybridní, pokud není potøeba pøená¹et i neøeèové signály,
+nebo zachovat kompatibilitu se sítí nepodporující jiné kódování. Napøíklad 
+pro pøenos komunikace analogového faxu je nutné pou¾ít kodek urèený nejen pro pøenos 
+lidského hlasu.
+
+Souèasné moderní algoritmy pro zvý¹ení úèinnosti komprese pou¾ívají zpravidla
+nìjakou formu prediktoru, kterým se na základì pøede¹lých dat pokou¹ejí
+popsat zmìnu oproti pøedchozímu stavu. Vyu¾ívají skuteènosti, ¾e pøedev¹ím
+u znìlých souhlásek je signál periodický a~pravdìpodobnì se skokovì nezmìní.
+Dal¹í technikou je vytvoøení slovníku fonémù, kde parametricky popí¹eme
+bì¾nì se vyskytující úseky øeèi a pøi kódování hledáme, kterému vzorku ve 
+slovníku je vstupní signál nejvíce podobný. Poté se pøená¹í pouze odkaz
+do slovníku, pøijímající strana signál zrekonstruuje na základì vlastního
+slovníku.
+
+Algoritmù pro kódování hlasu je øada a stále probíhá vývoj lep¹ích, 
+efektivnìj¹ích postupù pro získání ni¾¹í potøebné pøenosové rychlosti 
+èi men¹í výpoèetní nároènosti, nebo jejich kombinací. 
+Proto¾e vývoj nových algoritmù je pomìrnì
+nároèný, chrání si vývojáøi svoje postupy èasto patentovou ochranou ve státech,
+kde jim to legislativa umo¾òuje. Existence øady rùzných algoritmù pro kódování
+hlasu není pouze problém èistì technický, v praktických aplikacích hraje roli
+také licencování existujících øe¹ení. 
+
+\section{Formát a kódování videa}
+
+Pohybujícím se videem obvykle chápeme sekvenci obrázkù zobrazovanou rychle po
+sobì. Na rozdíl od zvuku je video vícerozmìrná matice jednotlivých bodù obrazu a obvykle potøebuje výraznì vy¹¹í pøenosovou kapacitu, ne¾ zvukový kanál. Jednotlivé snímky nesou informaci pro ka¾dý pixel obrazu, kde pixelem
+rozumíme nejmen¹í viditelný bod v obrazu. 
+
+Pro snímky v odstínech ¹edé jde o sekvenci úrovní jednotlivých pixelù v definované bitové hloubce, barevné
+snímky mají nejèastìji pro ka¾dý pixel uvedenou hodnotu jasu a k~ní dvì dal¹í
+slo¾ky definující barvu. Zpùsobù ulo¾ení pixelù v jednom snímku je celá øada,
+li¹í se podle typu kamery, kterou byl snímek poøízen a zobrazovacího zaøízení, na který mají být snímky zobrazovány. 
+
+Pro statické obrázky je nejèastìj¹í formou ulo¾ení pixelù trojice úrovní pro barvy èervenou, zelenou a modrou -- RGB. Nejèastìji se setkáme s formátem
+osmi bitù pro ka¾dou slo¾ku, celkem jeden bod má 24 bitù. V nìkterých situacích je výhodné mít je¹tì dal¹í kanál, prùhlednost, na jeden pixel pou¾ijeme 32 bitù. 
+
+Lidské oko ale nemá stejnou citlivost na v¹echny barevné slo¾ky. Oko je citlivìj¹í na intenzitu svìtla, proto¾e poèet tyèinek v oku je výraznì vy¹¹í,
+ne¾ poèet èípkù rozli¹ujících jednotlivé odstíny barev. Pøi ukládání videa
+máme velký poèet snímkù o velkém poètu snímkù, je proto vhodné rozdíly v citlivosti na jednotlivé slo¾ky zohlednit. Proto¾e se sna¾íme dosáhnout co nejmen¹ího objemu jednoho snímku, pro ka¾dý pixel videa èastìji pou¾íváme
+barevný model úrovnì jasu a dvou odchylek tónu barvy -- YUV. Hodnotu luminance obvykle ukládáme s vy¹¹ím poètem bitù, ne¾ slo¾ky s barevnou odchylkou, zpravidla mají barevné slo¾ky dohromady stejnou velikost, jako
+slo¾ka jasu.
+
+Kromì velikosti jednotlivých slo¾ek se mù¾e mìnit i zpùsob ulo¾ení v pamìti.
+První zpùsob je prokládání jednotlivých barevných slo¾ek pixelù za sebou, 
+druhou variantou je ulo¾ení jedné ze slo¾ek v¹ech pixelù za sebou, následující sekvencí pixelù dal¹í slo¾ky. Proto¾e kombinací ulo¾ení je celá
+øada, pro popis formátu snímku zpravidla pou¾íváme 32 bitové oznaèení slo¾ené ze ètyø písmen, Fourcc\cite{fourcc}. Kromì formátu ulo¾ení jednotlivých slo¾ek rozli¹ujeme také barevný model obrazu, tedy pøiøazení
+konkrétních barev urèitým úrovním jasu. Mezi jednotlivými barevnými modely mù¾eme na jiné snadno pøevádìt pomocí matic, s konstantami závisejícími na pùvodu pixelù.
+
+Proto¾e video musí zobrazit nìkolik snímkù za vteøinu, bylo by nevýhodné muset pro ka¾dý jeden snímek pøepoèítat z formátu YUV na barevný model RGB,
+ve kterém nejèastìji ukládáme barevný obraz na grafické kartì. Aby nebylo nutné pøepoèítat v¾dy ka¾dý snímek, moderní grafické karty obsahují akceleraci ve formì pøevodu barevného formátu pøímo v kartì. Pro zobrazení snímku potom staèí pøenést obrázek ve formátu YUV, a karta zaøídí konverzi 
+nutnou k zobrazení, obvykle vèetnì hardwarového ¹kálování obrázku. V grafickém prostøedí X11 akceleraci poskytuje roz¹íøení Xv, pøíkazem {\em xvinfo} lze vypsat podporované formáty snímkù, které lze zobrazovat pøímo na kartu.
+
+Aby se zmen¹il objem videa, pøená¹ené snímky mù¾eme komprimovat na úrovni
+jednotlivých snímkù, aby jeden snímek mìl minimální velikost. Pøíkladem je
+kódování JPEG, v pøípadì videa Motion JPEG, kde video je sekvencí nezávislých snímkù. Proto¾e v bì¾ném videu se zpravidla nemìní scéna skokovì, ale postupnì, existuje redundance informace mezi jednotlivými snímky. Pro vy¹¹í efektivitu se obvykle pou¾ívá kromì kódování jednotlivých snímkù také kódování mezi snímky, kde pøená¹íme pouze rozdíl proti nìkolika
+pøedcházejícím snímkùm. Obvykle se pou¾ije seznam transformací upravujících 
+pøedchozí snímek do nové podoby, kde z pùvodního obrazu pou¾ijeme makrobloky
+a definujeme jejich posun, rotaci èi zmìnu mìøítka. I v pøípadì videa se 
+obvykle setkáváme s prediktory, které charakterizují pøede¹lé zmìny tak,
+aby nebylo potøeba pøenést v¹echny transformace, ale pouze zmìny v pohybu.
+Mezisnímkové kódování má nepøíjemnou vlastnost, pøi ztrátì èi po¹kození jednoho snímku
+pøestanou následné transformace dávat správné výsledky. Proto se pøená¹í pravidelnì klíèový snímek, který nese kompletní snímek, po nìm následuje sekvence èásteèných snímkù, které nesou zmìny proti tomuto snímku.
+
+\section{Pøenos v paketové síti}
+Pokud chceme pøená¹et multimédia v paketové síti, je potøeba data rozdìlit
+na èasovì ohranièené rámce o velikosti, je¾ je sí» schopná pøenést. Proto¾e
+pro ¾ivý pøenos je dùle¾ité zachovat minimální zpo¾dìní, pou¾ívá se zpravidla
+pro pøenos datagramù bez zaji¹tìní bezchybného pøenosu.
+
+Data je potøeba pøená¹et tak, aby obì strany rozumìly pøená¹eným datùm a byly
+je schopny správnì pøehrávat. Prvním pøedpokladem je pou¾ití stejného 
+protokolu pro pøenos dat a jím definovaný formát pøená¹ených dat. Druhým pøedpokladem je dohodnutí parametrù pøenosu pøed zahájením vlastního datového
+pøenosu.
+
+Dohodnutí parametrù pøenosu se obvykle provádí jiným spojením, ne¾ samotný
+datový pøenos. K ustavení spojení a dohodnutí parametrù slou¾í signalizaèní
+kanál. Mù¾e být spojen jak protokolem TCP jako v pøípadì XMPP a Jingle,
+nebo UDP obvykle pou¾ívané protokolem SIP, oba u¾ byly popsány v pøedchozích kapitolách. Pro signalizaèní kanál je dùle¾ité, aby byl schopen fungovat 
+na rùzných konfiguracích sítì, i na sítích pou¾ívajících pøeklad adres. Právì
+pomocí signalizaèního kanálu je umo¾nìno dohodnutí parametrù mezi úèastníky
+spojení, aby mohlo vùbec zapoèít sestavování pøímého spojení. Signalizaèní
+kanál umo¾ní výmìnu adres, pøípadnì mù¾e pomoci pøi zji¹»ování topologie
+ sítì. Proto¾e signalizace nepøená¹í multimediální data, není potøeba jej 
+ synchronizovat a dosahovat nízké odezvy, dùle¾itìj¹ím parametrem je spolehlivost. Proto není na závadu pøípadné zpo¾dìní TCP/IP spojení pøi výpadku nìkolika paketù, nebo kaskáda proxy serverù v pøípadì SIP.
+ 
+Datový pøenos se navazuje pokud mo¾no pøímo mezi koncovými u¾ivateli, 
+v pøípadì nemo¾nosti pøímého spojení pøes proxy se zvý¹ením doby odezvy.
+Kromì minimální potøebné rychlosti vy¾aduje kvalitní pøenos malé
+ kolísání doby odezvy, tedy jitter. Proto¾e pøi prùchodu internetem obvykle
+ nejsme schopni zaruèit prioritní zpracování multimediálních dat, kolísání
+ nemù¾eme eliminovat, ale je mo¾né potlaèit jeho vliv, pokud není pøíli¹ velké. Kolísání odezvy odfiltruje pøidání vstupní fronty, která èeká na pøijímaná data po urèitou krátkou dobu a vyrovnává tak nárazovì pøicházející
+ data. Nevýhodou je dal¹í umìlé zvý¹ení zpo¾dìní pøehrávanách dat. Èím vìt¹í
+je kolísání doby pøenosu, tím vìt¹í je nutné mít frontu, aby se kompenzoval vliv kolísání. Stále v¹ak chceme co nejni¾¹í zpo¾dìní, proto zpo¾dìní 
+pøenosu i jeho kolísání chceme mít minimální.
+
+Minimálnì u zvuku po¾adujeme navazující datový tok bez mezer\cite{RtpBook}. 
+Výpadky mohou nastat z více dùvodù. Nejèastìj¹ími dùvody je ztracení posílaných dat a pøíli¹ velké zpo¾dìní, kdy u¾ fragment nemá smysl pøehrát a je zahozen. V IP sítích jsou datové vy¹¹í protokoly, TCP i UDP, chránìny 
+kontrolním souètem, který zaji¹»uje, ¾e nedo¹lo k po¹kození pøená¹eného obsahu. Pokud kontrolní souèet nesouhlasí, systém paket zahodí a k vlastní
+aplikaci se nedostane ani po¹kozený paket s èásteènou informací. Kvùli 
+1 chybnému bitu tak mù¾eme ztratit celý fragment obsahující 20\,ms øeèi.
+
+Proto¾e pou¾itý protokol UDP nezaji¹tuje bezchybný pøenos, je nutné nìjak
+reagovat na ztracené pakety. Aplikace by mìla zajistit zotavení z chyb tak,
+aby pro koncového u¾ivatele nebyla chyba pøíli¹ viditelná. Pokud nepou¾ijeme 
+na stranì vysílání prokládání s~pøidanými informacemi pro zotavení, nezbývá,
+ne¾ nahradit chybìjící fragment nìjakým odhadem chybìjícího obsahu. 
+
+V pøípadì výpadku audio signálu existuje øada postupù, obvykle vy¾adují 
+znalosti vnitøního stavu dekodéru, aby výsledná korekce znìla vìrohodnì.
+Pro znìlé hlásky je vhodné nahradit chybìjící fragment pøedchozím fragmentem,
+neznìlé souhlásky lépe nahradí ¹umová funkce\cite{RtpBook}. Zotavení z chyb je nedílnou souèástí návrh algoritmu a zpùsobu jeho zabalení v RTP paketu.
+Proto¾e komprese zpravidla vyu¾ívá predikce pro sní¾ení objemu pøená¹ených
+zpráv, výpadky èásti provozu mohou negativnì ovlivnit celou øadu správnì
+doruèených datagramù. Odolnost proti chybám v pøenosu je dal¹ím parametrem
+mìøítkem kvality implementace daného algoritmu.
+
+
+\subsection{Pøeklad adres a datagramy}
 Pro ¾ivý pøenos je dùle¾ité minimální zpo¾dìní,
 a opìtovné vy¾ádání zaslání ztraceného paketu mù¾e trvat pøíli¹ dlouho na to, 
 aby ztracená informace po opìtovném doruèení byla je¹tì u¾iteèná. Navíc 
@@ -1075,11 +1248,21 @@ Pøeklad adres umo¾òuje smìrovaèi s~jedinou
 vìøejnì dostupnou adresou pøipojit vìt¹í mno¾ství poèítaèù na vnitøní síti,
 které nemusí mít adresu pøímo dostupnou z~veøejného internetu, tedy s~privátními adresami\cite{privateAddress}. Aby poèítaèe ve vnitøní síti mohly posílat
 pakety do veøejného internetu, musí jim být schopny cílové uzly doruèit odpovìï.
+Jaký je rozdíl v komunikaci mezi veøejnou a privátní adresou ukazuje 
+obrázek \ref{pic_nat}.
 Smìrovaè pøevezme z~vnitøní sítì odcházející pakety, poznaèí si ètveøici 
 zdrojovou, cílovou adresu a zdrojový a cílový port. Paket upraví tak, ¾e nahradí zdrojovou adresu (a pøípadnì i port), v~paketu svojí vlastní adresou, a paket ode¹le smìrem k~cílové adrese. Paket s~odpovìdí pøichází na smìrovaè s~jeho 
 vlastní adresou a portem. Proto si smìrovaè musí vést tabulku v¹ech svých 
 spojení a spojení v¹ech pøekládaných poèítaèù. Pøíchozí paket porovná s~tabulkou spojení a najde, zda paket má zpracovat sám, nebo nahradit tentokráte cílovou 
 adresu a pøedat do vnitøní sítì. Aby smìrovaè pøedcházel pøeplnìní tabulky spojení, udr¾uje si ke ka¾dému spojení i jeho stav a dobu od poslední aktivity. Pokud spojení je pøíli¹ dlouho bez jakékoliv odezvy, spojení z~tabulky vyøadí.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=11cm,keepaspectratio]{nat/nat}
+  \caption{Zobrazení rozdílu komunikace mezi veøejnou a privátní adresou.}
+  \label{pic_nat}
+\end{center}
+\end{figure}
 
 Zde je rozdíl mezi TCP a UDP nevíce patrný. Pro TCP mù¾e vyøadit spojení 
 z~tabulky ihned poté, co jej komunikující strany ukonèí. Podobnì pokud 
@@ -1109,12 +1292,25 @@ pou¾ití stejného portu, neexistuje-li je¹tì takové spojení. V~pøípadì ji¾
 obsazeného portu se obvykle pou¾ije náhodnì vygenenerované èíslo neobsazeného portu.
 Dal¹í mo¾ností je pøiètení jisté absolutní hodnoty k~èíslu portu, která je pro
 v¹echny porty smìrované z~dané vnitøní adresy stejná. Pro oba zmínìné pøípady 
-protokol ICE umo¾ní navázání pøímého spojení mezi úèastníky. 
+protokol ICE umo¾ní navázání pøímého spojení mezi úèastníky. Obrázek 
+\ref{pic_nat_direct} ukazuje, jak bude vypadat pøímé propojení obou úèastníkù
+za pøekladem adres.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{nat/nat-direct}
+  \caption{Pøímé propojení úèastníkù skrytých za pøekladem adres.}
+  \label{pic_nat_direct}
+\end{center}
+\end{figure}
+
+
 
 Jestli¾e pøi 
 pøekladu adres pro ka¾dé nové spojení vygeneruje smìrovaè odchozí port náhodnì,
 potom jsou ¹ance na sestavení pøímého spojení minimální. V~takovém pøípadì 
-nezbude, ne¾ pou¾ít pomoc tøetí strany -- relay, která má veøejnou adresu a oba klienti se s~ní spojí pøímo. Ta potom komunikaci mezi klienty pøedává. 
+nezbude, ne¾ pou¾ít pomoc tøetí strany -- relay, která má veøejnou adresu a oba klienti se s~ní spojí pøímo. Ta potom komunikaci mezi klienty pøedává, jak
+ukazuje obrázek \ref{pic_nat_relayed}.
 Její nasazení pøiná¹í i nevýhody. Relay je dal¹ím prvkem v~komunikaci, který
 pøídává dal¹í zpo¾dìní, je potøeba ji provozovat na serveru s~veøejnou adresou
 a dostateènou rychlostí. Datový tok komunikace prochází pøes relay dvakrát, 
@@ -1123,6 +1319,14 @@ navíc nutné spravovat a udr¾ovat, její existence obvykle pøiná¹í finanèní
 náklady na její provozování a linku. Je tedy v~zájmu provozovatele slu¾by 
 umo¾nit pøímé spojení v¹ude tam, kde je to mo¾né, a relay pou¾ít jen jako 
 zálohu. Komunikaci s~relay serverem popisuje protokol TURN\cite{TURN}.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{nat/nat-relayed}
+  \caption{Komunikace mezi úèastníky zprostøedkována tøetí stranou.}
+  \label{pic_nat_relayed}
+\end{center}
+\end{figure}
 
 Protokol nezapoudøuje komunikaci dovnitø, ale pou¾ívá se soubì¾nì s~datovou 
 komunikací na stejném portu. Aplikace musí umìt rozli¹it, zda je o~¾ádost ICE,
@@ -1251,8 +1455,11 @@ výstupù. Podle úèelu elementu mù¾e mít pouze vstupy pro zdroje dat,
 pouze výstupy pro výstupní zaøízení, a obojí v pøípadì filtrù konvertujících
 data na jiný formát. Vstup èi výstup se pøipojuje pomocí 
 struktury \verb|GstPad|,
-která popisuje vlastnosti dat plynoucí vysílaných nebo pøijímaných daným 
-elementem. Formát vlastních dat popisuje struktura \verb|GstCaps|, která
+která popisuje vlastnosti dat vysílaných nebo pøijímaných daným 
+elementem. Ka¾dý GstPad má unikátní jméno ve svém elementu a~popis dat, 
+u~nìkterých
+speciálních elementù mù¾e mít i~dal¹í parametry propojení. 
+Formát vlastních dat popisuje struktura \verb|GstCaps|, která
 u¾ivá pro popis MIME typ média spoleènì s dal¹ími parametry. Jeden vstup mù¾e
 podporovat celou øadu rùzných formátù, k výbìru pou¾itého formátu dojde a¾
 pøi naètení prvotních dat ze zdroje. Tuto èinnost nazýváme \verb|preroll|,
@@ -1260,16 +1467,17 @@ neboli pøedtoèení.
 
 Dal¹í dùle¾itou strukturou jsou speciální typy elementù, které umo¾òují do
 sebe vkládat dal¹í elementy a organizovat tak skupinu do pøehlednìj¹ích celkù.
-Takovým elementem je \verb|GstBin|, který je implementací bì¾ného elementu.
+Takovým elementem je \verb|GstBin|, který je potomkem bì¾ného elementu.
 Speciálním pøípadem binu je GstPipeline, která implementuje navíc jenom 
-nastavení zdroje èasu a prodlevu. 
+nastavení zdroje èasu a prodlevy. 
 
 Ka¾dý element má svùj stav, jeho¾ zmìnami se aktivují multimediální zdroje
 a pøi zmìnách také probíhá dohodnutí formátu vymìòovaných médií. Obvykle se
-nastavuje stav pouze na objekt pipeline, která postupnì mìní stavy obsa¾ených
+nastavuje stav pouze na objekt pipeline, která postupnì mìní stavy 
+v~ní obsa¾ených
 elementù. Po pøejití v¹ech elementù na po¾adovaný stav teprve nastaví nový
-stav na vlastní objekt. Stavy se mìní postupnì po jednom asynchronnì, pouze
-zastavení pipeline se provádí synchronnì.
+stav na vlastním objektu. Stavy se mìní postupnì po jednom asynchronnì, pouze
+zastavení pipeline pøechodem do stavu NULL se provádí synchronnì.
 
 Stavy elementù jsou následující:
 \begin{description}
@@ -1291,8 +1499,10 @@ ihned data zpracovávat bez zbyteèného prodlení.
 Gstreamer je vícevláknový systém a zpracování multimédií se 
 provádí v oddìlených vláknech. Komunikace s hlavním vláknem probíhá primárnì
 pomocí \verb|GstMessage|, které komunikují s hlavním vláknem pomocí callbacku
-sledujícího sbìrnici zpráv. Zprávy chodí asynchronnì, ka¾dá zpráva má svùj typ
-a pøípadnou datovou strukturu. Zprávy jsou zasílány napøíklad pøi zmìnì stavu
+sledujícího sbìrnici zpráv\footnote{GstBus}. Zprávy pøicházejí asynchronnì, 
+ka¾dá zpráva má svùj typ
+a pøípadnì datovou strukturu s parametry zprávy. 
+Zprávy jsou zasílány napøíklad pøi zmìnì stavu
 elementu, nebo mohou zasílat zprávy typu element, jejich¾ formát je závislý
 na konkrétním elementu. Vlastní zprávy elementù mají navíc typ oznaèený 
 øetìzcem. Zprávy pro pøedávání hodnot vyu¾ívají napøíklad elementy \verb|level|,
@@ -1301,12 +1511,15 @@ nebo \verb|fsconference|.
 Nìkteré elementy mohou pou¾ívat i signálù, jejich 
 zpracování je ale problematiètìj¹í, proto¾e obsluha signálu se vykonává 
 ve vláknì zpracovávající multimediální øetìzec a pøi del¹ím výpoètu mù¾e mít 
-negativní vliv na kvalitu pøehrávání.
+negativní vliv na kvalitu pøehrávání. Vìt¹ina volání chránìná proti po¹kození
+pøi souèasném volání z více vláken pomocí zamykání, bì¾né operace lze tedy
+provádìt jak z hlavní smyèky programu, tak z~callbackù a~signálù v~reakci 
+na události v elementech.
 
 \section{Farsight}
 
-Farsight 2\cite{farsight} je knihovna pro snadnìj¹í budování komunikaèního 
-systému s podporou prùchodu pøes pøeklad adres. Farsight je projekt psaný 
+Farsight~2\cite{farsight} je knihovna pro snadnìj¹í budování komunikaèního 
+systému, s~podporou prùchodu pøes pøeklad adres. Farsight je projekt psaný 
 v jazyce C, pro systém GStreamer a GLib. Vychází z pøedchozí verze knihovny,
 která implementovala jak pøenos médií protokolem SIP/RTP, tak komunikaci
 s Live Messengerem. Nejdùle¾itìj¹ím projektem vyu¾ívajícím farsight je
@@ -1410,6 +1623,126 @@ v mém roz¹íøení bohu¾el nebude implementován rovnì¾.
 %pøekladem adres a ani jeden z~nich nemá veøejnou IP adresu, se kterou by ¹lo
 %navázat pøímo spojení.
 
+\subsection{Návrh multimediálního øetìzce}
+
+Aplikace Makneto je napsaná v jazyce C++, s vyu¾itím knihovny Qt. Pøesto¾e
+C++ samotné obsahuje velké mno¾ství podpùrných tøíd pro práci jak s~øetìzci, 
+tak soubory, práci se seznamy, poli a dal¹í v jmenném prostoru std, 
+v~knihovnì Qt je vìt¹ina tìchto nástrojù reimplementována s~nìkterými 
+vylep¹eními. Napøíklad práce s~øetìzci je reimplementována v~tøídì QString.
+Výhodné vlastnosti jsou napøíklad automatická podpora unicode, automatické
+pøevody z èísel na textové reprezentace. Pro tvorbu pøekladù je také
+u¾iteèná vlastnost dosazení za parametry v jednom øetìzci, kde parametry
+mohou být èísla, øetìzce, nebo knihovnou podporované objekty. Svým chováním
+tak pøipomíná funkci jazyka C sprintf, jenom je typovì chránìná, navíc 
+parametrùm lze v øetìzci zmìnit poøadí. Zmìna poøadí mù¾e být dùle¾itá u~jazykù,
+u~kterých je jiná stavba vìty a obvyklé poøadí slov se li¹í od toho, pou¾itého
+programátorem.
+
+Existence vlastních typù má ale nepøíjemný dùsledek, je nutné pøevádìt z typù
+standardní knihovny a jazyka C na typy knihovny Qt, a pøevod není zcela 
+automatický. Navíc velké knihovny glib a Qt øe¹í podobné problémy vlastní 
+cestou a v~aplikaci se tak setkávají obì knihovny zároveò. Návrhem tøíd
+jsem se sna¾il skrýt implementaèní detaily pou¾ité knihovny tak, aby bylo
+mo¾né pøípadnì doimplementovat podporu jiného rozhraní, stejnì jako objektùm
+GObject poskytnout nìkteré vlastnosti objektového jazyka C++. Tøídy tak mají
+skrýt implementaèní detaily GStreameru a~aplikace bude komunikovat 
+prostøednictvím rozhraním  mnou navr¾ených tøíd. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=11cm,keepaspectratio]{fstjingle}
+  \caption{Návrh základních tøíd multimediálního øetìzce}
+  \label{pic_fstjingle}
+\end{center}
+\end{figure}
+
+Tøídy schematicky zobrazuje 
+obrázek \ref{pic_fstjingle}. Tøída QPipeline je C++ obálkou kolem GstPipeline,
+která má rozhraní pro pøidání, odstranìní a propojování elementù
+do øetìzce. Navíc obsahuje elementy pro audio a video vstup, pomocné filtry 
+k~nim, jejich nastavení, tedy jaké elementy mají být pou¾ity pro vstup a výstup.
+Proto¾e knihovna farsight poèítá s mo¾ností více úèastníkù sezení, návrh tøíd
+nemìl tuto mo¾nost znemo¾nit. Místo jediného video výstupu vzdálené strany
+proto existuje tøída AVOutput, která v sobì uchovává elementy uskuteènující
+video výstup, mìøení hlasitosti hovoru jednoho úèastníka, 
+modifikaci jeho hlasitosti a základní ovládání výstupù, vèetnì rozhraní 
+pro vytvoøení elementù. AVOutput tedy reprezentuje výstupy jednoho vzdáleného
+úèastníka a~jejich základní správu. AVOutput má dále sledovací tøídu, jejich¾ reimplementací lze
+sledovat události úèastníka, napøíklad hlasitost jeho hovoru a graficky ji 
+zobrazit. Seznam výstupù spravuje tøída AVOutputManager, která umí vyhledávat
+výstupní tøídu podle jména nìkterého z jejích elementù. To je dùle¾ité 
+pøi obsluze zpráv z~pipeline, aby ¹lo jednodu¹e pøiøadit zprávu ke vzdálenému 
+úèastníkovi.
+
+Dal¹í tøídy jsou pomocné tøídy pro práci s~rozhraním farsight. Vytvoøení
+a správu elementu fsrtpconference zaji¹»uje tøída Conference, souèasnì 
+s~rozhraním pro vyhledávání podøízených tøíd. 
+Conference obsahuje pipeline
+pou¾itou pro komunikaci, vytváøí farsight session, je¾ reprezentuje jeden
+typ multimediálních dat a jeho úèastníky. Tøída Session reprezentuje buï
+audio nebo video vstup na místní stranì, s popisem kodekù podporovaných na
+pøíjmu podle typu médií. Obsahuje jeden vstupní pad, na který se pøipojuje
+vstupní audio nebo video element. Blokové zobrazení zapojení vstupních elementù
+na session ukazuje obrázek \ref{pic_input_blocks}. Je vidìt, ¾e video se li¹í 
+tím, ¾e odboèuje vstup z kamery také do místního náhledu videa.
+Jedna session mù¾e vytvoøit více sí»ových výstupù, oznaèených
+jako Stream. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{media/input-blocks}
+  \caption{Blokové propojení elementù vstupu.}
+  \label{pic_input_blocks}
+\end{center}
+\end{figure}
+
+
+Stream je popisem jednoho sí»ového pøenosu dat s jedním vzdáleným úèastníkem. 
+Stream
+odesílá vstup pøená¹ený do Session jednomu úèastníkovi. Spojení se uskuteèòuje
+mezi páry adres uvedenými v~místních kadidátech a vzdálených kandidátech.
+Místní kandidát se získává pøeètením v¹ech adres poèítaèe, na kterém je program
+spu¹tìn. Navíc se pou¾ije volání STUN pro získání veøejné adresy a portu,
+který bude nabídnut protistranì. Vzdálené kandidáty zasílá druhá strana pomocí
+XMPP Jingle, stejnì tak seznam kodekù, které bude k vysílání dat pou¾ívat. 
+Stream mù¾e mít jediný výstupní pad, který se po pøíjmu dat 
+od protistrany pøipojí na odpovídající výstupní element ve struktuøe AVOutput.
+
+Výstupy video a audio se mírnì li¹í. Proto¾e existují ovladaèe zvukových karet,
+které neumo¾òují vícenásobné otevøení zaøízení pro souèasné pøehrání více
+zvukù, výstup z AVOutput nejde pøímo na zvukovou kartu. Aby bylo mo¾né souèasné
+pøehrání více u¾ivatelù, výstup jde na element adder. Tento element umo¾òuje
+spojit více audio tokù v jeden prostým sèítáním vzorkù. Výsledný tok jde
+na zvukovou kartu. Video výstup naproti tomu má ka¾dý u¾ivatel sám pro sebe,
+proto¾e videosink je nastaven pomocí nastavení X overlaye zvlá¹» ka¾dému 
+u¾ivateli. Schematicky jsou výstupní elementy vidìt na obrázku 
+\ref{pic_output_blocks}.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{media/output-blocks}
+  \caption{Blokové propojení výstupních elementù.}
+  \label{pic_output_blocks}
+\end{center}
+\end{figure}
+
+Pipeline hlásí zmìny a chyby asynchronnì pomocí zpráv sbìrnice. Ve tøídì 
+Conference je implementován callback pro v¹echny zprávy. Èást zpráv 
+je zpracována ve tøídách Session nebo Stream, èást je pøedávána dál pomocí
+virtuální tøídy FstStatusReader. Tøída reimplementující tøídu FstStatusReader
+tak dostává zprávy napøíklad o~zmìnì stavu pipeline, chybách, pøípadnì informace
+o prùbìhu. Právì tímto spojením jsou oddìleny implementaèní detaily Farsight 
+a~GStreamer od aplikace. Pomocné tøídy pro správu sezení a pøevádìní typù
+glib na C++ jsou imlementovány ve tøídì FstJingle.
+
+Propojení na grafické rozhraní implementuje tøída MediaManager. Reimplementuje
+rozhraní FstStatusReader, propojuje grafické zálo¾ky jednotlivých sezení 
+s výstupními prvky multimediálního øetìzce. Nastavuje pipeline ze~systémového
+nastavení.
+Pomocí druhé pipeline poskytuje 
+pøehrávaè zvukového vyzvánìní pøi pøíchozím hovoru.
+
 \section{Reimplementace seznamu kontaktù}
 
 Pùvodní aplikace mìla seznam kontaktù, v terminologii XMPP roster, 
@@ -1449,7 +1782,8 @@ propojené. Model tím neumo¾òoval ani jednodu¹e zjistit stav podle Jabber Id.
 %Navíc je vhodné vìdìt, jaký
 %protokol protistrana podporuje je¹tì pøed pokusem o navázání spojení.
 
-Pùvodní zámìr byl pøepsat znovu model pro seznam kontaktù, aby nesl plnou 
+Pùvodní zámìr byl pøepsat znovu datový model pro seznam kontaktù tak, 
+aby nesl plnou 
 informaci o~stavu kontaktù. Ka¾dý kontakt musí kromì jména a~Jabber Id nést
 informaci o v¹ech pøipojených zdrojích. Pro ka¾dý zdroj musí nést informace
 o stavu pøipojené entity a pøípadné dal¹í vlastnosti entity, jakým je napøíklad
@@ -1469,9 +1803,9 @@ implementovaný model splòuje v¹echno potøebné pro grafické zobrazení,
 \end{figure}
 
 Tøídy datového modelu jsou zachyceny na obrázku \ref{pic_contactlist}. 
-Nejdùle¾itìj¹í tøídou je virtuální tøída \em{ContactListContact}, její¾
+Nejdùle¾itìj¹í tøídou je virtuální tøída {\em ContactListContact}, její¾
 reimplementace poskytují vlastní informace se spoleèným rozhraním.
-Tøída \em{MaknetoGroupedContact} slou¾í jako zprostøedkovatel mezi databází
+Tøída {\em MaknetoGroupedContact} slou¾í jako zprostøedkovatel mezi databází
 stavù a polo¾kami zobrazenými v pohledu. Tato tøída se mù¾e v seznamu kontaktù
 nacházet v nìkolika skupinách, a pøitom má jediný sdílený stav uchovávající
 informaci o stavu zobrazovaného kontaktu, který je jí pøedán v konstruktoru.
