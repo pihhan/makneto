@@ -1,0 +1,23 @@
+
+\chapter{Návrh aplikace}
+
+Úspěšný přenos multimédií v reálném internetu vyžaduje velké množství 
+podpůrných systémů, které není vhodné implementovat vlastními silami, pokud
+existují vhodné, již existující stavební prvky. V grafickém programu 
+je použita jednak knihovna pro tvorbu rozhraní, v této aplikaci jde 
+o~multiplatformní toolkit Qt. Další částí je podpora videa a audia, s podporou
+záznamu živých zařízení, pro tento projekt jsem zvolil již zmíněný GStreamer.
+Při implementaci jsem řešil propojení dvou rozdílných přístupů, protože 
+GStreamer využívá knihovny GLib, psaná v jazyce C. GLib je komplexní knihovna,
+která poskytuje jednak řadu rutin pro běžnou algoritmizaci, které standardní 
+knihovna nenabízí. Příkladem mohou být obecné seznamy objektů, řetězců, nebo
+implementované rutiny pro práci se stromem. 
+
+Poměrně mocné je implementace podpory objektového přístupu nad jazykem, který
+objektově orientované programování nenabízí. Systém GObject nabízí dědičnost,
+ vlastnosti objektů i reimplementovatelné metody s dědičností. Dědičnost je 
+ řešena vhodně navrženými strukturami v kombinaci s pojmenováváním obslužných 
+ funkcí podle dohodnutých pravidel. Přes to, že implemetovaný systém nedosahuje 
+ možností skutečně objektového jazyka, jakým je C++, nabízí dostatečné 
+
+Přenos živého záznamu vyžaduje minimalizaci odezvy. 

@@ -1,0 +1,36 @@
+
+Implementing Voice over IP
+Published Online: 12 Jun 2003
+Author(s): Bhumip Khasnabish
+Print ISBN: 9780471216667    Online ISBN: 9780471225270
+DOI: 10.1002/0471225274
+Copyright © 2003 John Wiley & Sons, Inc.
+ http://www3.interscience.wiley.com/cgi-bin/bookhome/104538748
+
+ Quality of Service Control in High-Speed Networks
+ Published Online: 12 Feb 2002
+ Author(s): H. Jonathan Chao, Xiaolei Guo
+ Print ISBN: 9780471003977    Online ISBN: 9780471224396
+ DOI: 10.1002/0471224391
+ Copyright © 2002 by John Wiley & Sons, Inc.
+ http://www3.interscience.wiley.com/cgi-bin/bookhome/90512006
+
+ Speech Processing for IP Networks
+ Published Online: 27 Feb 2007
+ Author(s): Dave Burke
+ Print ISBN: 9780470028346    Online ISBN: 9780470060599
+ DOI: 10.1002/9780470060599
+ Copyright © 2007 John Wiley & Sons, Ltd
+ http://www3.interscience.wiley.com/cgi-bin/bookhome/114122283
+
+ Voice over Packet Networks
+ Series: Wiley Series on Communications Technology
+ Published Online: 30 Jul 2004
+ Author(s): David J. Wright
+ Series Editor(s): Professor Barry Evans, Professor David Hutchison
+ Print ISBN: 9780471495161    Online ISBN: 9780470858622
+ DOI: 10.1002/0470858621
+ Copyright © 2001 John Wiley & Sons, Ltd
+ http://www3.interscience.wiley.com/cgi-bin/bookhome/86512392
+
+

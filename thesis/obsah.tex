@@ -1,0 +1,2045 @@
+%=========================================================================
+% (c) David Øezáè, 2002
+%=========================================================================
+\chapter{Úvod}
+
+
+Jednou z~prvních metod komunikaci u¾ od poèátkù internetu byla elektronická 
+po¹ta. Textová komunikace je nejjednodu¹¹í a nejménì nároèná na formu pøenosu.
+Efektivita takového pøenosu je velmi vysoká a s~minimálními nároky na datový 
+tok lze pøenést velké mno¾ství informace. Textová komunikace nepotøebuje ¾ádnou
+kompresi, proto¾e sama o~sobì je u¾ velice efektivní. Poèítaèové zpracování 
+textu bez dal¹ího formátování je velice rychlé a pamì»ovì nenároèné, proto je
+také zdaleka nejpou¾ívanìj¹í formou komunikace s~poèítaèem nebo mezilidské 
+komunikace s~pomocí poèítaèe. Tato tvrzení v¹ak platí pouze pro digitální 
+pøenos dat.
+
+Technicky nejjednodu¹¹í pøenos informace je analogový pøenos hlasu. Pøi 
+velice jednoduchém technickém zaøízení lze pøenést plynulou øeè na vzdálenost 
+nìkolika kilometrù. Pro pøenesení stejné informace v~digitální formì je ale
+potøeba slo¾itý poèítaè s~urèitou minimální rychlostí a pomìrnì rychlé 
+pøipojení, aby bylo mo¾né pøenést i hlasovou informaci. S~rozvojem 
+miniaturizace, nárustu výpoèetního výkonu a pøitom sní¾ení ceny, se staly
+mo¾nými i jiné formy elektronické komunikace. Výkon ka¾dého souèasného 
+poèítaèe postaèuje s~velkou rezervou na kompresi lidského hlasu v~reálném
+èase. S~rozvojem a zrychlením pøipojení k~internetu tak mù¾e i bì¾ný u¾ivatel
+s~obyèejným poèítaèem a prùmìrným pøipojením komunikovat i v~pøirozeném jazyce.
+
+Hlasová komunikace má øadu výhod. Jednak je nám pøirozenìj¹í, proto¾e se 
+nemusíme soustøedit na hledání písmen na klávesnici a mù¾eme pøemý¹let o~vìcech,
+které chceme probrat. Velkou pomoc nabízí i lidem s~nìjakými posti¾eními, kteøí
+jsou schopní psát pomocí klávesnice jenom velmi pomalu, v~hor¹ím pøípadì vùbec.
+Navíc, pomocí hlasu mù¾eme pøenést intonaci a zprostøedkovat tak osobì na druhé
+stranì na¹e náladu a na¹e emoce.
+
+S~je¹tì vìt¹ím nárùstem rychlosti internetu i procesorù je mo¾né pøená¹et nejen
+hlas, ale i obraz. I~kdy¾ hlasová komunikace mù¾e prozradit nìco z~nálady 
+mluvèího, gesta a výraz tváøe obvykle vyjádøí z~pocitù mnohem více. Navíc 
+mù¾eme na dálku ukázovat pøedmìty, které by bylo popsat slovy slo¾ité a 
+nevýsti¾né. 
+
+K~multimediální komunikaci existuje øada programù, ale vìt¹ina z~nich jsou 
+jenom konkrétní aplikace konkrétních výrobcù, bez mo¾nosti komunikace
+s~u¾ivateli jiných programù. Pøesto ¾e existují i otevøené systémy pro komunikaci,
+témìø ¾ádný nepodporuje nebo nemá implementovánu ¾ádnou formu hlasové nebo
+vizuální komunikace. Tato práce si klade za cíl vytvoøit aplikaci pro otevøený
+systém XMPP aplikaci s~fungující komunikací nejen hlasovou, ale i obrazovou.
+Zároveò by aplikace mìla být podobnì snadno ovladatelná a pou¾itelná i bez
+detailních technických znalostí a odborného vzdìlání, navíc fungující také
+v~systému GNU/Linux.
+
+Ve druhé kapitole je pøiblí¾ena existující aplikace Makneto, popsáno jak vypadá a také jak funguje.
+
+Tøetí kapitola popisuje rùzné podobné existující programy, se struènou 
+charakteristikou a výètem schopností, které mají, nebo jim naopak chybí.
+
+Co je to XMPP, jak vypadá a struènì jak funguje protokol pøezdívaný Jabber,
+ukazuje kapitola ètvrtá.
+
+Poslední kapitola nás seznámí s~existujícím multimediálními frameworky a popí¹e
+jejich mo¾nosti, klady a zápory.
+
+
+
+\chapter{Makneto}
+
+Aplikace Makneto vznikla v~akademickém roce 2007/2008 jako diplomová práce 
+Jaroslava Øezníka s~titulem Sdílená tabule\cite{Makneto}. 
+Program má zprostøedkovat mo¾nost 
+nejen psaní zpráv, ale i jednoduchého grafického vyjádøení v~reálném èase mezi 
+lidmi na dálku, elektronickou formou. Ke komunikaci po internetu je vyu¾it 
+XMPP protokol a jeho roz¹íøení pro pokroèilej¹í vìci. 
+
+\section{Grafické u¾ivatelské rozhraní}
+
+Aplikace je napsána pouze pro operaèní systém Linux, resp. systémy typu POSIX.
+Grafický kabátek je napsán v~pomìrnì novém toolkitu Qt verze 4 a KDE také 
+verze~4. I~kdy¾ Qt4 je multiplatormní toolkit pro tvorbu grafických aplikací, a na 
+rozdíl od pøedchozích verzí nemá ani problém s~právními podmínkami pro 
+svobodné programy na jiných platformách, program je závislý i na KDE~4, které 
+nejsou snadno pøenositelné na jiné platformy jako MS Windows nebo Apple OS X.
+Momentálnì ale Makneto není schopno bì¾et v~jiném prostøedí ne¾ GNU/Linuxu.
+
+Qt4 knihovna je pomìrnì zdaøilá knihovna vyvíjená firmou Trolltech. Knihovna
+je naimplementovaná v~jazyce C++ a v~nìm se i vyvíjejí aplikace v~této knihovnì
+napsané. Knihovna je multiplatformní a mù¾e fungovat na v¹ech majoritních
+souèasných platformách - MS Windows, MAC OS, GNU/Linux. Verze Qt existují i pro
+miniaturní zaøízení na bázi embeddded linuxu a Windows CE, ale ty se pro
+tento program nijak nevyu¾ijí. Knihovna má dvì rozdílné licenèní politiky.
+Jedna verze, pou¾ívaná Maknetem, je pøístupná zdarma pro open source aplikace
+pod licencí GNU General Public License (GPL). 
+Druhá verze je nabízena pro komerèní propriletární aplikace a její vyu¾ívání
+vy¾aduje nákup licence. 
+
+Qt pou¾ívá oproti standardnímu jazyku C++ nìkterá 
+roz¹íøení v~pøekladaèích GNU GCC. Jsou to tzv. sloty a signály, které zastupují
+roli bì¾ných callbackù. Za cenu drobného sní¾ení výkonu poskytují intuitivnìj¹í
+práci z~pohledu programátora a silnou typovou kontrolu pøedávaných parametrù.
+Jejich pou¾ití ale vy¾aduje pøekládání programu pomocí pøízpùsobených nástrojù
+a není mo¾né pomocí na linuxu bì¾ných GNU Autotools. Ruèní kompilace pomocí
+manuálnì psaného makefile a nástroje make je témìø nemo¾ná, proto¾e knihovna
+Qt obsahuje øadu oddìlených èástí a øadu podknihoven, které jsou potøeba pøedat linkeru pøi pøekladu. Nejbì¾nìj¹í nástroj pro 
+správu projektù Qt je nástroj Qmake dodávaný spolu s~knihovnou. V~projektu 
+Makneto se v¹ak pou¾ívá systém CMake, který je pomìrnì bì¾ný v~KDE 4.
+
+Desktopové prostøedí KDE je jedním ze dvou nejroz¹íøenìj¹ích grafických 
+prostøedí na systémech GNU/Linux. Projekt KDE\cite{kdehistory} zalo¾il 
+v~roce 1996 Matthias 
+Ettricht. Jeho poslední øada 4 byla vydána 11. ledna 2008, zhruba v~dobì psaní
+této aplikace Jaroslavem Øezníkem. KDE~4 pøiná¹í pomìrnì revoluèní zmìny 
+v~ovládání a práce s~desktopem. Pøiná¹í kromì nového grafického tématu nového
+správce plochy - Plasmu. Pøiná¹í pokroèilej¹í mo¾nosti pro applety - aplikace
+ji¾ jde integrovat snadno do bì¾né plochy. Pøibyla i podpora pro akcelerované
+grafické efekty pomocí kompozitního správce integrovaná pøímo do KDE. Makneto 
+je psané pøímo pro KDE 4 a bez nìj nemù¾e bì¾et, ale do nového prostøedí
+zapadne a pou¾ívá i systémové téma KDE.
+
+Aplikace je jednookenní aplikace s~hlavní kreslící plochou a boèní li¹tou.
+V~boèní li¹tì najdeme seznam kontaktù (v~prostøedí Jabberu s~ustáleným 
+jménem roster) pøepínatelný s~nastavováním stavù. Ukázka aplikace se
+zahájením sezení je vidìt na obrázku \ref{pic_makneto_workplace}. 
+Aplikace má korektnì 
+naimplementován roster, se synchronizací kontaktù na server, ètením pøezdívek 
+a zobrazování stavu u¾ivatele. Funguje také správnì sdru¾ování kontaktù do 
+skupin. I~kdy¾ aplikace nenabízí nìjak velké mno¾ství funkcí, má pomìrnì
+intuituvní ovládání s~celkem vydaøeným vzhledem a nechybí ani vestavìná 
+nápovìda. Pro lep¹í pøehlednost obsahuje aplikace systém zálo¾ek, pomocí nich¾
+lze pøepínat mezi jednotlivými zobrazeními boèních panelù. Program umí i re¾im práce pøes celou obrazovku, co¾ se pro demostraèní
+úèely mù¾e celkem hodit. 
+
+Makneto má implementováno spojení do sítì XMPP pomocí knihovny Iris\cite{iris}.
+Iris je knihovna psaná v~Qt, proto je propojení s~nativními aplikacemi v~Qt
+jednoduché a bezproblémové. Knihovna Iris vznikla oddìlením rutin obsluhujících
+pøipojení k~XMPP serveru z~open-source klienta Psi\cite{psi}. I~kdy¾ se Iris
+hodí pro psaní Qt aplikací pøipojujících se k~XMPP serveru, jejím pomìrnì
+velkým nedostatkem je velmi øídce komentovaný kód a neexistence fungujících
+návodù na její pou¾ívání. Jako jedina referenèní pøíruèka tak obvykle slou¾í
+zdrojový kód klienta Psi.
+
+Jedna instance aplikace mù¾e mít zároveò nìkolik sezení se sdílenou plochou
+mezi rùznými u¾ivateli. Jejich pøepínání se provádí pomocí zálo¾ek, které tak
+poskytují komfort víceokenní aplikace, pøi zachování jediného okna. Nedochází
+tak snadno k~tomu, ¾e by u¾ivatel kreslil do jiné plochy, ne¾ zamý¹lel. 
+Bohu¾el aplikace neumí samostatnou kreslící plochu vyjmout, pokud by u¾ivatel
+radìji samostatná okna mìl.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{makneto-plocha}
+  \caption{Hlavní okno aplikace Makneto}
+  \label{pic_makneto_workplace}
+\end{center}
+\end{figure}
+
+\subsection*{Kreslící plocha}
+
+Zahajování sezení se provádí pøes seznam kontaktù v~boèním panelu. Program
+pøedem nekontroluje, zda cílový kontakt umí stejný protokol kreslící plochy,
+jako aplikace Makneto. 
+Na aplikace je poznat, ¾e není star¹í jednoho roku a pracoval na ní jediný 
+vývojáø. Sestavení spojení lze provést na jakýkoliv kontakt, vèetnì kontaktù
+odpojených. Navíc aplikace nehlásí u¾ivateli, pokud protìj¹í aplikace neumí 
+stejný protokol a u¾ivatel tak zùstane v~pøesvìdèení, ¾e protìj¹í strana
+vidí to, co on kreslí.
+
+Nefunkèní kontrola úspì¹ného nebo neúspì¹ného zahájení sezení citelnì chybí,
+u¾ivatelé musí pou¾ít externí prostøedek, nebo alespoò rozhovor integrovaný 
+do Makneta ke kontrole, za jim sdílená tabule ji¾ funguje. Tato chyba mù¾e 
+umo¾nit vyzkou¹ení aplikace i u¾ivateli, který nemá v~kontaktech ¾ádný 
+kontakt, který by podporoval protokol sdílené plochy. Pøesto se jedná zjevì 
+o~chybu programu a ne zámìr tvùrce.
+
+Program pou¾ívá pro kreslení vektorový model dat a v¹echna data jsou kreslená
+pomocí vektorovì definovaných èar. V~nabídce je kreslení tu¾kou volnou rukou,
+kreslení èáry, obdélníku, elipsy a kruhu. Je mo¾né také vlo¾it bitmapový 
+obrázek v~podporovaných formátech jpeg a png.
+
+Se v¹emi objekty jdou provádìt základní operace - zvìt¹ení, posunutí a rotace.
+Objekty lze samozøejmì z~plochy vyjmout. 
+
+ 
+\chapter{Existující komunikaèní programy}
+
+\section{Komunikaèní programy}
+
+\subsection*{Skype}
+V~èeské republice je jedním z~nejbì¾nìji pou¾ívaných programù pro
+hlasovou komunikaci Skype. Program lze stáhnou zdarma z~WWW stránek 
+na adrese {\tt http://www.skype.com/}.
+
+Skype byl zalo¾en v~roce 2003 pány Niklas Zennström a Janus Friis.
+Není sice v~¾ádném pøípadì prvním softwarem, které by umo¾òoval hlasovou
+komunikaci pomocí internetu, pøesto právì tento program pøinesl volání
+z~poèítaèe na poèítaè bì¾ným u¾ivatelùm a stal se masovì pou¾ívaný.
+
+Skype toti¾ vyøe¹il øadu problémù, které mìly tehdej¹í multimediální programy
+a telefony. Tento problém byl a i dnes je pøítomnost pøekladu adres na 
+smìrovaèích\footnote{Anglicky Network Address Translation, bì¾nì znám pod 
+zkratkou NAT}. 
+
+Skype se toti¾ li¹í v~celé øadì vìcí od ostatních programù podobného úèelu.
+První výraznou odli¹ností je zpùsob pøenosu dat a pøihla¹ování k~síti.
+Skype pou¾ívá plnì decentralizovanou topologii, kde nejen ¾e audio data, 
+pøípadnì video data, putují pøímo mezi poèítaèi bez serveru, který by je 
+opakoval, ale stejnì posílá zprávy textové svým u¾ivatelùm, pøená¹í soubory
+a pøihla¹uje se k~síti. Je zøejmé, ¾e neexistence jakékoliv formy serveru
+by neumo¾òovala fungující spojení mezi rùznými poèítaèi, které o~sobì je¹tì 
+neví. A~právì øe¹ení tohoto problému je unikátní vlastností Skype. 
+
+Sí» programu skype\cite{skypeprotocol} se skládá z~poèítaèù jednotlivých u¾ivatelù - bì¾ný bod
+a speciální bod - supernode. Supernode je významný bod,
+který se mù¾e stát ze keréhokoliv poèítaèe pøipojeného do sítì skype. Tímto 
+bodem se stanou poèítaèe s~dostateèným výkonem a dostateènì kvalitním pøipojením
+do internetu. Takové body se spojí s~ostatními supernody, jejich¾ adresy jim 
+sdìlí ostatní supernody. Ka¾dý klient má v~sobì zakódovaný seznam nìkolika 
+orientaèních supernodù, navíc si pamatuje ty, je¾ mu byly sdìleny pøi posledním
+spojení. Supernody slou¾í jako servery pro omezený poèet koncových obyèejných 
+klientù, kteøí pøes nì oznamují pøítomnost v~síti a stavy sítì. Pøes tyto
+význaèné body posílají bì¾né body informace s~¾ádostmi o~pøímé pøopojení, 
+vyhledávají pøihla¹ovací údaje. Pokud se dva bì¾ní klienti nemohou spojit pøímo
+mezi sebou, jsou audio data hovorù pøená¹eny také pøes tyto supernody. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=8cm,keepaspectratio]{skypenet}
+  \caption{Architektura sítì Skype}
+  \label{pic_skypenet}
+\end{center}
+\end{figure}
+
+Proto¾e témìø ve¹kerá zátì¾ sítì probíhá pøímo me¾i u¾ivateli mimo jakékoliv
+servery spoleènosti, mohl nabídnout skype jako jeden z~prvních neomezenì dlouhé
+hovory zdarma mezi 2 poèítaèi. Navíc program má nìkolik mo¾ností, jak projít
+i pøes restriktivní filtry. Program sice bì¾nì komunikuje pomocí UDP\footnote{User Datagram Protocol} protokolu,
+ale je schopen fungovat i v~sítích, kde je z~jakéhokoliv dùvodu zakázán UDP 
+provoz. Program tak funguje a umo¾òuje volání i v~sítích, kde si to jejich 
+správcové nepøejí a sna¾í se takovou komunikaci blokovat. Program si získal
+oblíbenost i tím, ¾e fungoval ve firemních sítích, kde byla bì¾ná komunikace 
+omezena a existující programy nefungovaly. Tento pøístup má ale i nevýhody.
+U¾ivatel není schopen zvolit, zda se chce stát supernodem èi ne. Mù¾e se tak 
+stát, ¾e bude pøená¹et kromì dat vlastního hovoru i data nìkolika hovorù 
+dal¹ích -- cizích -- i v~pøípadì, ¾e platí za jednotku pøenesených dat.
+
+Od verze Skype 2 podporuje skype i pøenos videa pomocí webové kamery. 
+Ve Skype máte mo¾nost pøizvat si do ji¾ probíhající hlasová diskuze dal¹ího
+diskutujícího, a vytvoøit tak konferenèní hovor. Dal¹í ze
+zajímavých vlastností je i existence oficiálního programu pro jinou platformu,
+ne¾ jenom Microsoft Windows. Z~bì¾nì dostupných a známých programù je jediným 
+komerèním programem, který má oficiální verzi programu i pro GNU/Linux.
+
+Na rozdíl od ostatních sítí, ale nemá ¾ádnou rozumnì funkèní alternativní 
+implementaci -- neoriginálního klienta. Nejen, ¾e program nemá vìøejnì dostupný
+popis protokolu, ale jeho autoøi velmi aktivnì brání pochopení a zji¹tìní 
+fungování protokolu rùznými 
+technikami\cite{skypeprotocol}. Skype sice podporuje i ¹ifrování, 
+nicménì to není ¹ifrování na jaké jsme zvyklí napøíklad u~zabezpeèeného 
+pøístupu k~bance -- chybí certifikáty, které by ovìøily pravost protìj¹ku, není
+znám ani algoritmus ¹ifrování, ani velikost klíèe. Toto ¹ifrování má mimo jiné
+ztí¾it analýzu protokolu, nutnou pro tvorbu vlastního klientského programu.
+
+\subsection*{Windows Live Messenger}
+
+Microsoft nabízí u¾ivatelùm svého operaèního vlastní øe¹ení pro rychlou 
+komunikaci, MSN Messenger service. Slu¾by jsou pomìrnì dobøe provázané s~rùznými
+nástroji ve windows. Slu¾ba byla uvedena u¾ v~roce 1999 \cite{msnlaunch}.
+Audio a video pøenos zaji¹»oval program Netmeeting, uvedený ve Windows 2000
+jako nový software. Program pro pøipojení se v~dobì uvedení jmenoval MSN Messenger, pozdìji se nìkolikrát pøejmenoval. S~vydáním Windows XP byla vydána novìj¹í verze programu pod názvem Windows Messenger.
+
+Windows Messenger obsahoval øadu pomìrnì zajímavých vlastností. Kromì bì¾ného 
+psaní zpráv nabízí pøenos øeèi a videa pomocí webkamery. Windows Messenger asi
+nejvíce roz¹íøil pou¾ívání bì¾ných internetových kamer mezi bì¾nými u¾ivateli,
+ostatní slu¾by doplnily pøenos videa a¾ pozdìji. 
+
+Program nabízel øadu funkcí, které nejsou bì¾nì implementované ani v~dne¹ních 
+slu¾bách jiných výrobcù. Za zmínku stojí urèitì mo¾nost sdílení aplikací nebo
+podpora sdílené tabule (podobné té, kterou implementuje Makneto). Dal¹í 
+zvlá¹tností je mo¾nost vzdálené pomoci napojené na slu¾bu pøímo ve Windows.
+Slu¾ba taky nabízela jednodu¹e fungující pøenos souborù.
+
+Problémem slu¾by MSN byla nefunkènost vìt¹iny slu¾eb pøi absenci pøímého
+propojení mezi poèítaèi. To obvykle znamená, ¾e u¾ivatelé pøipojení smìrovaèem
+pou¾ívajícím pøeklad adres (NAT) nemohli tìchto vymo¾eností s~kontakty na
+internetu, ale pouze v~lokální síti. Vìt¹ina pokroèilej¹ích slu¾eb
+je toti¾ navázaná na Netmeeting, který práci s~pøekladem adres neumí a nemá 
+mo¾nost, jak i s~pøekladem adres navázat spojení, pokud smerovaè neumí povolit
+pøesmìrování TCP nebo UDP portu na poèítaè v~privátní síti, napøíklad protokolem
+UPnP.
+
+Poslední vydaná verze klienta pro sí» .NET Messenger service, jak byla slu¾ba 
+pøejmenovaná pozdìji, nese oznaèení Windows Live Messenger. Souèasná verze 
+obsahuje novinky jako podporu vestavìných her, mo¾nost zmìny vzhledu, ale jinak
+nenabízí nìjaké zásadní rozdíly proti pøedchozím verzím. Proti pøedchozím 
+verzím se zmìnila sdílená tabule, funguje spí¹ jako výmìna obrázku, do kterého
+oba u¾ivatelé støídavì dokreslují dal¹í vìci. Sice nejde o~øe¹ení pøímo 
+interaktivní, ale funguje i~na poèítaèích pøipojených za NAT. I~Windows Live 
+Messenger podporuje sdílení aplikací a vzálenou pomoc, ale ta nefunguje
+za firewallem nebo natem, jako u~pøedchozích verzích.
+
+Ani Windows Messenger nabízí na rozdíl od Skype zvolit si velikost snímku 
+pøená¹eného videa a nastavovat tak kvalitu a tedy i zátì¾. 
+
+Na rozdíl od Skype, ke slu¾bám Live existují i alternativní klienti, obvykle
+open source aplikace. Sí» Live Messengeru je pøíli¹ úzce navazaná na Windows a 
+v~GNU/Linuxu nefunguje. Existuje ale celá øada programù, která se umí do sítì
+MSN pøipojit. Vìt¹ina ale neumí ¾ádné multimediální funkce, jako pøenos videa
+z~webkamery ani pøenos hlasu. Jediná neoficiální implementace zvládající i 
+webkameru je program aMSN napsaná v~Tcl/Tk.
+
+Sí» .NET Messenger pou¾ívá internì protokol textovì orientovaný protokol podobný
+HTTP pro posílání zpráv a stavù. Pro dojednání sezení s~podporou multimédií
+pou¾ívá pøizpùsobenou variantu protokolu SIP pøes TCP spojení se serverem.
+
+\subsection*{Coccinela}
+Coccinela je klient napsaný v~jazyce Tcl/Tk. Tento program není pøíli¹ masovì
+roz¹íøen, pøitom nabízí ji¾ del¹í dobu funkci sdílené plochy, podobnì jako 
+Makneto. S~Maknetem jsou ale nekompatibilní a ka¾dý má svùj protokol vlastní.
+Zvlá¹tní je jednak pomìrnì netypickým jazykem, ve kterém je napsán. Co je
+ale opravdu unikátní podpora pøenosu hlasu. Bohu¾el program nepøená¹í data
+pomocí protokolu RTP, ale pomocí nestandartizovaného, i kdy¾ otevøeného,
+protokolu IAX2. Proto¾e jiné programy pou¾ívají èastìji RTP, dovoláte se
+s~Coccinelou zase jenom u¾ivatelùm stejného programu.
+
+\subsection*{Google Talk}
+
+Google Talk\cite{gtalk} je slu¾ba provozovaná firmou Google, je integrovaná spolu s~úètem
+na Gmail.com. Gmail nabízí ¹ikovné propojení emailu a IM, internì pou¾ívá 
+XMPP protokol, ale neumí v¹echna bì¾nì pou¾ívaná roz¹íøení, jako napøíklad
+vizitky. Google ve svém programu má podporu pøenosu hlasu, pomìrnì nový je 
+applet pro webového prohlí¾eèe s~podporou pøenosu videa.
+
+Podpora hlasu je napsaná s~vyu¾itím knihovny libjingle, kterou Google také 
+uvolnil jako svobodný software. Pøesto¾e klient od Googlu funguje dobøe,
+snad v¹ichni, kdo zkou¹eli knihovnu libjingle pou¾ít, nepochodili. Knihovna jde
+pøelo¾it pouze s~hodnì starou verzí ortp, kterou ov¹em na bì¾né distribuci 
+nenajdeme. Napøíklad vývojová verze Psi obsahuje verzi pro sestavení s~libjigle,
+nicménì ani ta tefunguje a s~podporou libjingle je hodnì nestabilní. Navíc tato
+knihovna pochází z~doby pøed vydáním XEP-166 (Jingle)\cite{xmppJingle} a není
+asi se specifikací plnì kompatibilní.
+
+\subsection*{Ekiga}
+Ekiga\cite{ekiga} je softwarový telefon s~podporou videokonference. Pùvodní 
+program se jmenoval GnomeMeeting, aby se pøede¹lo právním problémùm 
+s~registrovanou znaèkou NetMeeting, byl pøejmenován na jméno ekiga. Projekt
+vznikl v~roce 2000 jako diplomová práce Damiena Sandrase na Louvain School of Engineering v~Belgii\cite{ekiga_begin}. Myslím, ¾e tento program je v~souèasnosti
+nejlep¹ím programem pro hlasovou komunikaci na platformì GNU/Linux, existuje
+v¹ak i verze pro Microsoft Windows. Ekiga podporuje volání pomocí rodin protokolù SIP a H.323, vèetnì øady pokroèilej¹ích funkcí, jako napøíklad instant messanging a presence nad protokolem SIP. 
+
+Grafické u¾ivatelské rozhraní programu je napsáno pomocí knihovny GTK. 
+Projekt vyu¾ívá ke správì vstupních, výstupních zaøízení knihovnu PTLib.
+Pùvodnì byla knihovna vytváøena pro pou¾ití v~projektu OpenH323, je¹tì pod 
+jménem PWLib. Pozdìji pøibyla Open Phone Abstraction Library -- OPAL\cite{opal},
+která umo¾òuje jednotným zpùsobem volání jak protokolem H.323, tak SIP.
+Obì knihovny jsou zveøejnìny pod licencí Mozilla Public License. 
+
+Ekigu lze pou¾ívat jako softwarový telefon pro pøipojení k~VoIP ústøednì
+operátorù protokoly SIP nebo H.323 a volat tak do pevné telefonní sítì.
+Proto¾e se bì¾nì pou¾ívá pro VoIP, umí pracovat i s~událostmi stisku kláves
+vytáèení, lze ji tak pou¾ít pro práci s~telefoním automatem.
+Ekiga obsahuje podporu také pro videokonferenèní hovor, i kdy¾ nabídnuta je 
+pouze mo¾nost hovoru s~jedním volajícím. Pomocí protokolu H.323 je mo¾né 
+s~pou¾itím Multipoint Conference Unit (MCU) uskuteènit i hovor s~více úèastníky,
+i kdy¾ z~pohledu programu probíhá komunikace stále s~jedním úèastníkem a 
+spojení více úèastníkù provádí MCU. Program je èásteènì integrován do prostøedí
+Gnome, i kdy¾ v~nových vydáních jej nahrazuje projekt Empathy.
+
+V~souèasné dobì Ekiga neumo¾nuje volání pomocí protokolu XMPP, ani roz¹íøením
+Jingle, ani proprietárním roz¹íøením spoleènosti Google. Ani v~¾ádné vývojové verzi.
+
+\subsection*{Empathy}
+Program Empathy\cite{Empathy} je souèástí prostøedí GNOME od vydání 2.24. 
+Empathy je zalo¾ena na trochu odli¹ném konceptu ne¾ ostatní zmínìné aplikace,
+a jejím cílem je maximální integrace do prostøedí. Program samotný neprovádí
+v¹echny pøipojení k~protokolùm samostatnì, ale vyu¾ívá k~pøipojení k~serverùm
+instant messaningu i samotného multimediálního volání framework 
+Telepathy\cite{Telepathy}. Empathy vystøídala Ekigu jako výchozí program 
+pro VoIP volání ve vydání GNOME 2.28. Program podporuje celou øadu protokolù,
+z~nejznámnìj¹ích jmenujme XMPP, SIP, MSN, ICQ, IRC a dal¹í.
+
+Rozhraní Telepathy je zajímavé tím, ¾e pro prostøedí jednoho u¾ivatele bì¾í
+pouze jeden správce pøipojení na jednoho u¾ivatele poèítaèe. Tento správce bì¾í
+na pozadí a nemá ¾ádný grafický výstup, ale komunikuje s~programy pomocí 
+meziprocesové komunikaèní sbìrnice D-Bus. Mù¾e tak být jenom jedno 
+pøipojení k~serveru, ale zároveò øada aplikací, které mohou pomocí tohoto 
+pøipojení komunikovat, zji¹»ovat stav kontaktù a podobnì. Je tak mo¾né 
+napøíklad propojit stav pøipojení kontaktu v~IM síti s~kontaktem v~adresáøi
+emailového klienta, ani¾ by musel být emailový klient propojen s~jednou 
+konkrétní aplikací. 
+
+Empathy je vlastnì
+jenom zobrazením stavu správce pøipojení a jeho kontaktù, a rozhraním 
+pro zahájení pøípadných videohovorù nebo bì¾ného hlasového volání. Rozhraní 
+programu je vcelku jednoduché a nenabízí v¹echny pokroèilé funkce 
+implementované napøíklad v~IM klientech Pidgin nebo Gajim. Pøesto je Empathy 
+s~Telepathy prùkopníkem multimediálních sezení ve svìtì otevøeného software,
+funkèní volání pomocí roz¹íøení Jingle v~alespoò pøijatelné kvalitì a 
+s~dostateènì rozumným u¾ivatelským rozhraním pøinesla jako první, a øada 
+dal¹ích programù implementujících multimédia a Jingle vyu¾ívá velkou èást
+knihoven vyvíjených primárnì právì pro Telepathy.
+
+Empathy je psaná v~jazyce C, s~pou¾itím grafického toolkitu GTK. Telepathy
+samotné je v~podstatì jenom popis rozhraní pro D-Bus, implementace Mission
+Control, tedy správce pøipojení, je realizována s~pou¾itím objektových
+vlastností knihovny GLib. Správce pøipojení k~XMPP protokolu se jmenuje Gabble
+a takté¾ je napsán v~jazyce C nad knihovnou GLib. Pro pøenos multimédií se 
+vyu¾ívá knihovny Farsight\cite{farsight} a GStreameru pro vstupní a výstupní 
+zaøízení, je¾ jsou obì, stejnì jako pøedchozí, napsány v~C a GLib.
+
+\subsection*{Gajim}
+Gajim\cite{gajim} je pokroèilý XMPP klient napsaný v~jazyce Python, grafické
+rozhraní je realizováno pomocí GTK v~Pythonu. Nepodporuje ¾ádné dal¹í protokoly,
+kromì upraveného XMPP pro lokální sítì bez pøítomnosti serveru. Tento klient
+implementuje celou øadu roz¹íøení, mezi drobné rarity patøí napøíklad schopnost
+pøipojení pøes IPv6. Jako program specializovaný na jeden protokol umí naprostou
+vìt¹inu jinde implementovaných roz¹íøení. Gajim je dostupný jak pro Linux, tak
+ve verzi pro Microsoft Windows.
+
+Grafické rozhraní je uspoøádáno do tabù pro ka¾dého diskutujícího. V~dobì psaní této práce dosud 
+nevydaná vývojová verze dostupná v~repozitáøích podporuje i volání pomocí
+audia i videa. 
+
+Zajímavá je pøítomnost vytáèecí klávesnice, kterou lze
+posílat události jako stisk kláves na telefonním pøístroji, co¾ by se 
+v~kombinaci s~bránou napøíklad do PSTN\footnote{Public switched telephone network, neboli veøejná telefonní sí»} dalo vyu¾ít pro samooblu¾né nastavování
+úètu u~operátora. Zatím u~¾ádného jiného programu se schopností volat pøes XMPP/Jingle jsem podobnou klávesnici nebo její alternativu nena¹el. Pravda ale je,
+na rozdíl od SIP\cite{sip} má XMPP jasnì definovaný formát posílání zprávy
+v~povinném standardu, asi ka¾dý klient je schopen poslat textovou správu. Pøi
+vhodném provedení brány by bylo vhodnìj¹í, ne¾ pou¾ívat umìlá tlaèítka, prostì
+poslat èíslo zprávou ve vhodný okam¾ik. Ale pro pøímou spolupráci s~ústøednou,
+pøípadnì vyu¾ití v~chytrém telefonu s~vìt¹í klávesnicí pro èísla ne¾ písmena,
+jde o~zajímavý nápad.
+
+Pro pøenos multimédií pou¾ívá souèasný Gajim také kombinaci GStreameru a Farsight s~vyu¾itím pythonových rozhraní pro práci s~nimi.
+
+\subsection*{Psi}
+Klient Psi\cite{psi} je multiplatformní XMPP klient napsaný v~jazyce C++,
+grafické rozhraní je realizováno pomocí knihovny Qt\cite{Qt}, stejnì jako
+sí»ová komunikace a zpracování XMPP. Mezi hlavní autory patøí Justin Karneges 
+a Kevin Smith, øada dal¹ích pøispìla men¹ími èástmi. Psi je pomìrnì dlouho
+vyvíjený projekt, jeho vývoj zaèal u¾ v~roce 2001 a patøí k~nejdéle 
+aktivnì vyvíjeným klientùm pro XMPP vùbec. Pøesnìji byl vyvíjen u¾ pro 
+protokol Jabber pøedtím, ne¾ byl jako XMPP standardizován.
+
+Ve verzi 0.13 vydané v~èervenci roku 2009 pøibylo do Psi experimentální hlasové
+volání pomocí roz¹íøení Jingle. Podpora multimédií je øe¹ena samostatnì jako 
+modul PsiMedia, který vyu¾ívá èásteènì GStreamer ke kódování a dekódování audia.
+Pøenos po síti je øe¹en interní implementací nad knihovnou Qt, zajímavostí je
+podpora IPv6. I~kdy¾ demo program modulu PsiMedia testuje i kódování videa,
+souèasná implemetace Psi nabízí pouze pøenos hlasu, a to pouze s~kodekem Speex.
+
+Psi má k~mému projektu pomìrnì blízko, jednak vyu¾ívá stejnì jako Makneto
+knihovnu Qt a také stejnou knihovnu pro práci s~XMPP. V~prùbìhu mojí
+práce byla sí»ová èást pøenosu multimédií stále ve vývoji s~mìnícím se 
+programovým rozhraním, nebylo tedy vhodné zaèíst s~pomocí této knihovny vývoj.
+PsiMedia ani její èásti jsem ve svém projektu nepou¾il.
+
+\subsection*{Inkscape}
+
+Inkscape neumí ¾ádné pøenosy videa ani hlasu. Uvádím jej zde proto, mù¾e plnit
+podobnou funkci jako makneto - sdílenou plochu. Inkscape je zdaøilý editor
+vektorových obrázkù ve formátu SVG. SVG je formát s~otevøenou specifikací 
+spravovanou konsorciem W3C. Inkscape je propracovaný kreslící nástroj a celá
+øada ikon a témat pou¾ívaných v~linuxu je tvoøeno právì v~nìm.
+
+Inkscape má i mo¾nost sdílené plochy. Proto¾e i XMPP je zalo¾ený na XML, pou¾ívá
+pro komunikaci mezi vzdálenou plochou právì tento protokol. Inkscape je ale 
+stále spí¹e editorem, funkce sdílené plochy sice existuje, ale implementace
+není nejlep¹í a z~funkcí chybí témìø v¹e. Program má sice seznam kontaktù tak,
+jak ukládá XMPP-IM standard, ale má zcela nedoøe¹ené napøíklad skupiny kontaktù.
+Ka¾dý kontakt mù¾e patøit do jedné nebo více skupin a má seznam jmen skupin, do
+kterých nále¾í. Plugin Inkscapu ani neseskupuje kontakty do skupin, pouze
+pøidává kontakty do skupiny, pokud pou¾íváme stále stejnou skupinu. Ve výsledku
+tak mù¾eme mít jednu skupinu v~seznamu tøeba osmkrát nebo více. Zkrátka plugin
+tam je, ale pøíli¹ pou¾itelný (alespoò zatím) není.
+
+
+\section{Standardizované protokoly}
+
+\subsection*{Session Initialization Protocol}
+
+Session initialization protocol\cite{sip} je protokol pro ustavení sezení 
+pro výmìnu multimediálních dat. SIP je standartizován skupinou IETF a poslední
+vydanou verzí je RFC~3261. Protokol je pou¾íván pøedev¹ím pro internetouvou 
+telefonii (VoIP) s~voláním do standartní telefonní sítì pevných linek. 
+Úèelem tohoto protokolu není pøímo pøená¹et jakákoliv vlastní multimediální 
+data v~jakémkoliv kódování, ale pouze dohodnout parametry pøenosového kanálu
+pro vlastní multimediální pøenos. Pøesnìji zaji¹tuje tyto úlohy:
+
+\begin{itemize}
+\item{polohu -- rozhodnutí, který systém bude pou¾it pro komunikaci}
+\item{dostupnost -- rozhodnutí, za je volaná strana ochotná se podílet na komunikaci}
+\item{schopnosti -- výbìr média a jeho parametrù}
+\item{sestavení -- zvonìní a ustavení spojení na stranì volajícího i volaného}
+\item{správa -- zahrnuje pøedání, ukonèení sezení, zmìnu parametrù sezení}
+\end{itemize}
+
+Standartním portem pøiøazeným skupinou IANA je port 5060, zpravidla se pou¾ívá 
+pouze UDP protokol. Protokol pøená¹í data textovì a má podobnou syntaxi, jako
+má HTTP. Následuje pøíklad paketu:
+
+\begin{lstlisting}[language=]
+INVITE sip:bob@biloxi.com SIP/2.0
+Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: Bob <sip:bob@biloxi.com>
+From: Alice <sip:alice@atlanta.com>;tag=1928301774
+Call-ID: a84b4c76e66710@pc33.atlanta.com
+CSeq: 314159 INVITE
+Contact: <sip:alice@pc33.atlanta.com>
+Content-Type: application/sdp
+Content-Length: 142
+\end{lstlisting}
+
+Vlastní audio nebo video data se vymìòují na spojení, s~ustavenými parametry
+a cílovým IP adresami a porty, pomocí RTP. SIP se pou¾ívá velmi èasto ve firmách
+a ústøednách pro volání do telefonní pevné sítì i na mobilní telefony. Volání
+mezi poèítaèi zdarma sice mo¾né je, ale obvykle si poskytovatelé úètují nìjaký
+minimální mìsíèní poplatek.
+
+\subsection*{Real-Time Transport Protocol}
+
+Real-Time Transport Protocol\cite{rtp} je protokolem urèeným k~pøenosu 
+¾ivých dat, pro které je dùle¾ité minimální zpo¾dìní. Zpravidla jsou takovými
+daty hlas nebo obecnìji zvuk nebo obrazová informace ve formì videa. RTP 
+nezaji¹»uje ¾ádným zpùsobem minimální zpo¾dìní, bezchybovost nebo pøenos dat 
+ve správném poøadí. To je úkolem ni¾¹ích a vy¹¹ích vrstev sí»ových protokolù.
+RTP mù¾e pøená¹et i v¹esmìrovì pomocí multicastu, pokud to sí» dovoluje. 
+Protokol má dvì èásti:
+
+První je real-time transport protocol (RTP), který zapouzdøuje jeden kanál 
+multimediálních dat.
+
+Druhým je RTP control protocol (RTCP), který sleduje kvalitu slu¾by a zaji¹»uje
+základním zpùsobem informace o~poètu úèastníkù vysílání. Protokol se mù¾e 
+pou¾ívat nejen pro volání jednoho èlovìka s~jiným, ale mù¾e takté¾ pøená¹et
+data i celé konference a¾ o~stovkách úèastníkù.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=8cm,keepaspectratio]{rtp}
+  \caption{Hlavièka Real-time transport protokolu}
+  \label{pic_rtp_head}
+\end{center}
+\end{figure}
+
+Hlavièka RTP protokolu (viz. obrázek \ref{pic_rtp_head}) obsahuje dvoubitové oznaèení èísla 
+verze, aktuální je 2. Následuje pøíznak vyplnìní P, který znaèí, ¾e paket 
+obsahuje výplò, je¾ není souèástí pøená¹ených dat. Pøíznak roz¹íøení informuje
+o~pøítomnosti právì jedné hlavièky roz¹íøení za fixní hlavièkou. Následuje 
+ètyøbitové èíslo udávající poèet CSRC identifikátorù, které následují za fixní 
+hlavièkou. Dùle¾itou polo¾kou je sedmibitový typ pøená¹ených dat - payload type (PT), jeho¾ hodnotu urèuje RFC 3551\cite{rctp_profile}. Následuje 
+¹estnáctibitový èítaè, který 
+se pou¾ije pro detekci zahozených datagramù. Následuje 32 bitový údaj o~èase
+získání vzorku, podle kterého se pozdìji mohou synchronizovat pøená¹ená data 
+s~jinými proudy dat. SSRC je náhodnì zvolený identifikátor oznaèující 
+skuteèného pùvodce dat. CSRC je seznam podobných identifikátorù, které oznaèují
+èísla mixovacích zdrojù, které mohou napøíklad z~pùvodního zdroje pøevádìt
+záznam na jiný formát. Roz¹iøující hlavièka se skládá z~¹estnáctibitového
+èísla definovaného profilem, následující délkou takté¾ o~délce ¹estnácti bitù
+a následující vlastní hlavièce roz¹íøení.
+
+Hlavièka RTCP se li¹í podle typu zprávy, je¾ je posílaná. Základní typy jsou 
+Sender report (SR), kterou posílají pouze aktivní vysílající. Receiver report
+(RR) vysílají v¹ichni pøíjemci, kteøí zároveò nejsou aktivnì vysílající.
+Source description items (SDES) párují jednotlivé proudy pomocí CNAME ke
+kontrolnímu kanálu. Zprávy BYE oznaèují ukonèení úèasti na pøíjmu. Posledním
+typem mohou být aplikaènì specifické (APP) zprávy. Proto¾e øídící kanál datovì
+nenároèný, mù¾e být nìkolik typù zpráv v~jediném paketu posílaném do sítì.
+Kontrolní kanál je tøeba ¹kálovat podle poètu pøíjemcù, objem komunikace 
+kontrolního kanálu by nemìl pøesáhnout 5 setin objemu datového kanálu.
+Tento výpoèet není potøeba v~tomto projektu øe¹it pøíli¹ dùkladnì, proto¾e 
+bì¾nì bode spojení jeden s~jedním. Pøi malém poètu pøíjemcù mù¾e být interval
+posílání kontrolního paketu pøeddefinován staticky. Pøi vìt¹ím poètu pøíjemcù
+je nutné prodlu¾ovat interval podle zji¹tìného poètu posluchaèù, aby kontrolní 
+tok nebyl ve výsledku vy¹¹í, ne¾ tok vlastních dat.
+
+
+\chapter{XMPP}
+
+Pro komunikaci mezi lidmi slou¾í od dávných dob internetu systém zvaný e-mail. Je to elektronická obdoba
+po¹ty s~mnoha jejími problémy a \uv{ne¹vary}. 
+Je sice nìkolikanásobnì rychlej¹í ne¾ jakýkoliv po¹»ák, který po¹tu 
+rozná¹í, ale pøesto není zamý¹lena na komunikaci v~reálném èase. Bì¾ný email se k~u¾ivateli nedoruèuje pøímo,
+ale doruèuje se do jeho schránky\cite{CalendarBot}. Teprve z~této schránky si mù¾e u¾ivatel nový email vyzvednout~a
+následnì pøeèíst. I~kdy¾ dnes má vìt¹ina programù nastavené vybírání po¹ty na krátkou periodu, nejèastìji
+5 minut, stále to není dost rychle ani na pomalý rozhovor. Proto¾e lidé si rádi vykládají, rádi by si 
+vykládali tro¹ku rychleji. 
+
+A~to je právì úèel programù {\em Instant Messangingu}, volnì pøelo¾eno programù pro rychlou výmìnu zpráv.
+Na èeském internetu se podobné programy stále èastìji oznaèují \uv{kecálky}. Tyto programy u¾ nemají ¾ádnou 
+schránku, do které nejprve nìco musí doruèit. Tyto programy se naopak sna¾í o~doruèení pøímé, od u¾ivatele
+k~u¾ivateli. Komunikace v~tìchto sítích se nazývá komunikací v~témìø reálném èase. Slovíèko {\em témìø}
+je na místì,
+proto¾e není definované doba, za kterou musí být zpráva doruèena. Zasíláním zpráv v~reálném èase chápeme 
+v~dne¹ním internetu spí¹e vìci synchronizované s~èasem, kde zpozdìní má ne¾ádoucí efekt na kvalitu slu¾by.
+Systémy bì¾ící v~reálném èase jsou napøíklad øídící jednotky automobilových motorù, kde zpo¾dìní jedna vteøina
+v~¾ádném pøípadì nastat nesmí. Naproti tomu, v~bì¾né komunikaci mezi lidmi, nehraje jedna nebo dvì 
+vteøiny zásadní roli.
+
+Problém tìchto programù ov¹em je, ¾e, na rozdíl od emailu, nepochází ze stejného návrhu, ani nemají
+zveøejnìný protokol popisující komunikaci v~jejich síti. Dokonce provozovatelé takových sítí obvykle 
+vùbec nestojí o~to, aby se pøipojoval se nìkdo
+do jejich sítì s~jiným programem, ne¾ je jejich vlastním. Tím pádem jsou v¹echny takové sítì oddìlené jedna od
+druhé a jejich u¾ivatelé musí být v¹ichni na té stejné síti, pokud spolu chtìjí komunikovat. Tuto mezeru 
+vyplòuje právì protokol Jabber.
+
+\subsection*{Co je Jabber/XMPP}
+Prvním neznámým pojmem je \verb|Jabber/XMPP|. Slovo Jabber znamená v~pøekladu brebentit nebo breptat. 
+Jako protokol
+vnikl v~roce 1999 a za jeho vznikem a prvotní implementací stojí Jerremie Miller. Jednou z~jeho unikátních 
+vlastností je, mimo mnoha jiných, také jeho otevøenost. Protokol je zalo¾ený na otevøeném a uznávaném 
+standardu \verb|XML|. Jabber pøinesl otevøenost a jednoduchý 
+popis fungování protokolu. 
+
+Narozdíl od ostatních protokolù nebyl prosazován jednou firmou se svým oficiálním klientem, ale definoval
+jednoznaèný zpùsob, jak spolu mají jakékoliv dva programy komunikovat. Výbìr XML v~kombinaci
+s~XML namespaces pøinesl navíc mo¾nost 
+roz¹iøovat protokol o~nové prvky bez obav, ¾e slu¾by a programy podporující pouze staré vlastnosti 
+pøestanou fungovat. V~té dobì byl je¹tì protokol oznaèován jenom {\tt Jabber}.
+
+Pøesto¾e byl protokol Jabber ve své dobì stabilizován, existovala dostateènì stabilní implementace serveru a 
+u¾ivatelé pøibývali, poøád protokol pøipomínal jenom jednu sí» z~mnoha. Aby se pøede¹lo pochybnostem o~tom, ¾e
+protokol není jenom dal¹ím z~øady ji¾ existujících IM síti, jako jsou ICQ nebo MSN Messenger, byl navr¾en 
+nový, neutrální, název pro protokol {\em Extensible Messaging and Presence Protocol} -- \verb|XMPP|. A¾ pod 
+názvem \verb|XMPP| byl protokol uznán jako doporuèení {\tt IETF} pod oznaèením 
+\verb|RFC 3920|\cite{xmppCoreWeb} a \verb|RFC 3921|\cite{xmppImWeb}.
+
+XMPP je kompatibilní protokol s~pùvodními specifikacemi Jabber protokolu, ale zavádí nové povinnosti. V~podstatì
+tak starý protokol nahrazuje a pokud se bavíme dnes o~protokolu Jabber, máme na mysli spí¹e jeho
+následníka protokol XMPP. Detaily protokolu budou popsány v~dal¹ích kapitolách.
+
+\section{Jak funguje XMPP/Jabber}
+\subsection*{XMPP Core}
+\verb_XMPP Core_ \cite{xmppCoreWeb} je základní mno¾inou protokolu XMPP. Tato èást definuje základní prvky 
+protokolu. I~kdy¾ to není pøikázáno, obvyklá je architektura klient-server a spojení pomocí TCP protokolu.
+Jednou z~nejvìt¹ích pøedností je {\em decentralizace}. Neexistuje ¾ádný centrální server sítì 
+Jabber/XMPP a tedy není mo¾né vyøadit celou sí» pomocí napadení nebo selhání na jednom místì. Jak 
+funguje decentralizace ukazuje obrázek \ref{pic_decentralizace}.
+
+U¾ivatelé se pøipojují na svùj vlastní server. Pokud chtìjí komunikovat s~lidmi z~jiných serverù,
+po¾ádají o~autorizaci. Server automaticky rozpozná, ¾e zpráva není adresovaná kontaktùm lokálním, ale 
+serveru jinému.
+K~doruèení zprávy se potom musí server spojit s~cílovým serverem cílového kontaktu. 
+\verb_XMPP Core_ definuje
+pøedev¹ím zpùsob pøipojení autentizace klientù k~serveru. Tato specifikace uvádí pouze podporu \verb_SASL_\footnote{Simple Authentication and Security Layer}
+autentizace, av¹ak star¹í klienty a servery mohou pou¾ívat i star¹í zpùsob autentizace pomocí \verb_SHA1_ hashe
+hesla. Jednou z~hlavních pøedností protokolu je ¹iroká podpora bezpeènostích prvkù. Kromì ji¾ zmínìné bezpeèné
+autorizace poèítá protokol i s~pou¾itím ¹ifrovaného kanálu pro výmìnu dat. I~kdy¾ pùvodní Jabber servery 
+podporují i pøipojení na speciální TCP port chránìný pomocí SSL spojení, novìj¹í specifikace jasnì favorizuje
+pou¾ití TLS negotiation \footnote{Ustavení ¹ifrovaného kanálu a¾ po navázání ne¹ifrovaného spojení. Server tak mù¾e pou¾ít jediný port na ¹ifrované i ne¹ifrované spojení.} 
+a¾ po ustavení TCP spojení a úspì¹ném zpìtném volání
+\footnote{Princip zpìtného volání je vysvìtlen v~následující kapitole}. Speciální port chránìný ¹ifrovaným
+kanálem mohou vyu¾ít pouze klienti, pro spojení serverù mezi sebou tato mo¾nost není podporována. 
+
+Ve specifikaci se jasnì øíká, ¾e XMPP je zjednodu¹enou verzí XML a nìkteré typy dat nesmí obsahovat. 
+Mezi takové patøí napøíklad XML komentáøe, nebo speciální sekce CDATA obsahující binární kód. Ve¹kerý binární 
+obsah, jako jsou fotky, který je pøená¹en, musí být pøeveden do sedmibitové formy. K~tomu se pou¾ívá výhradnì 
+kódování base64.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=8cm,keepaspectratio]{decentralizace}
+  \caption{Ukázka decentralizace}
+  \label{pic_decentralizace}
+\end{center}
+\end{figure}
+
+\subsubsection*{Ukázka pøipojení k~serveru}
+Pøipojující se posílá hlavièku bez \verb|id|.
+\begin{lstlisting}[language=XML]
+<?xml version='1.0'?>
+<stream:stream 
+   xmlns:stream='http://etherx.jabber.org/streams' 
+   xmlns='jabber:client' to='im.pihhan.info' >
+\end{lstlisting}
+Server na ni odpoví tagem stream ji¾ s~identifkátorem.
+\begin{lstlisting}
+<?xml version='1.0'?>
+<stream:stream 
+   xmlns:stream='http://etherx.jabber.org/streams' 
+   xmlns='jabber:client' 
+   from='im.pihhan.info' 
+   id='r9o2mxpyygr5h7t3nzuwl873vrvytfgko5ma3c91'>
+\end{lstlisting}
+
+\subsubsection*{Zpìtné volání}
+Zpìtným voláním, neboli {\em dialbackem}, se ovìøuje toto¾nost vzdáleného serveru. 
+Proto¾e sí» je decentralizovaná, neexistuje ¾ádná centrální autorita, která by posuzovala bezpeènost a identitu
+serveru, se kterým se navazuje spojení. Jediná mo¾nost je tak spolehnout se na prostøedky ovìøení, které 
+má k~dispozici sám server. 
+
+Sice se nabízí kontrola identity serverù pomocí TLS negotiation a ovìøování jejich
+certifikátù. Pokud v¹ak kontaktovaný server nepou¾ívá TLS vùbec nebo jej pou¾ívá, ale jeho certifikát není 
+ovìøitelný z~na¹eho serveru, identitu tím neovìøíme. Serverù které mají certifikát podepsaný
+sám sebou, pøípadnì nám neznámou certifikaèní autoritou je na serveru mnoho. 
+Proto¾e komunikace mezi server probíhá na celém svìtì,
+není vùbec reálné, aby v¹echny servery byly schopny zkontrolovat 
+pravost ka¾dého certifikátu serveru, se kterým budou chtít komunikovat.
+
+Navíc existují zemì, kde pou¾ívání kryptografie je v~rozporu se zákonem, a tam by nebylo mo¾né ovìøit 
+vùbec ¾ádnou identitu. Zkrátka omezení je pøíli¹ mnoho na to, aby se dalo mluvit o~spolehlivém zpùsobu.
+Pokud se ale mù¾e pøipojit kdokoliv k~serveru, a øíct jakékoliv jméno. To je v~prostøedí internetu zcela 
+nepøijatelné, proto¾e by mohlo dojít k~zaslání dùvìrných zpráv nepovolaným osobám. Je tedy potøeba dostateènì
+jednoduchý zpùsob, jak ovìøit pravost identity vzdáleného serveru.
+
+Zpìtné volání funguje na pricipu sdíleného klíèe. Server navazující spojení vygeneruje a po¹le serveru svùj
+klíè pro toto spojení. Pøijímající server toto spojení zatím nepotvrdí, a dokud tak neudìlá, nepøenese
+tímto spojením ¾ádná data. Pro pøijetí klíèe zahájí cílový server vlastní navazování spojení. Nejdøíve
+musí urèit, kam se má pøipojovat. 
+
+Pro urèení cíle pou¾ívá internetem ovìøený systém \verb_DNS_. {\em Domain Name System} je bì¾nì pou¾ívaný systém
+v~internetu. Jeho pøednostmi je vysoká dostupnost a roz¹íøenost a kvalitní implementace nìkolika serverù.
+Hlavní úlohu v~bezpeènosti dialbacku le¾í na bedrech systému DNS. Proto¾e v¹ak v~dobì masového roz¹íøení 
+World Wide Webu je tato slu¾ba nepodstradatelná a podle toho jí také vìnuje vysoká pozornost kvùli zabezpeèení.
+
+K~získání adresy 
+cílového serveru vyu¾ívá dotaz na typ odpovìdi \verb_SRV_, a parametrem je 
+\\
+\texttt{\_xmpp-server.\_tcp.jmeno.serveru.net}. V~odpovìdi na tento dotaz mù¾e obdr¾et nìkolik doménových jmen,
+s~jejich prioritou a portem. Teprve na tato jména se pøipojí, podle nejvy¹¹í priority si vybere tu nejvhodnìj¹í.
+
+Po pøipojení na takto získaný server zahájí komunikaci zasláním standardního tagu \verb_stream_ s~atributem 
+\verb_to_, který urèuje jméno cílového serveru. Tím ¾e pøipojující se server uvede, s~jakým serverem se chce
+bavit, je umo¾nìno hostování více virtuálních serverù na jediném poèítaèi i \verb|TCP/IP| portu.
+
+Po zahájení komunikace server po¹le sdílený klíè, který obdr¾el od navazujícího serveru. 
+Pokud je \verb_DNS_ správnì nastaveno, server se pøipojil na ten samý server, který mu pøedtím posílal klíè.
+Proto¾e si pamatuje klíè, zkontroluje, zda takový klíè skuteènì poslal. Pokud ano, odpoví kladnì. Pro server,
+který pøijímal prvotní spojení, je to potvrzení, ¾e server je skuteènì tím, kým tvrdí. Po¹le tedy potvrzení
+o~úspì¹ném pøijetí dialbacku do pùvodního spojení a platnost tohoto spojení potvrdí. Od této chvíle povolí
+odesílání i pøijímaní xml paketù z~tohoto spojení. Schematický princip dialbacku je lépe vidìt na 
+obrázku \ref{pic_dialback}.
+
+% http://mpavus.wz.cz/uml/uml-sequence-7.php pou¾ívá termín sekvenèní diagram
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{dialback}
+  \caption{Sekvenèní diagram zpìtného volání}
+  \label{pic_dialback}
+\end{center}
+\end{figure}
+
+\subsection*{Stanzy}
+Stanzy jsou jednotlivé datové tagy XML, které se mohou vyskytovat v~hlavním tagu spojení \texttt{<stream>}.
+Èasto se také popisují slovem XML paket.
+Stanzami nejsou nìkteré xml zprávy pøi navazování spojení, jako parametry \verb|SASL| autorizace nebo ¾ádost
+od navázání ¹ifrovaného spojení TLS. Po úspì¹ném dokonèení pøipojování jak klienta, tak serveru, u¾ nesmí 
+být odeslán ¾ádný jiný \verb|XML| paket, ne¾ povolená stanza. Ka¾dá stanza odesílaná mezi servery musí
+obsahovat pøíjemce v~parametru \verb|to| i odesílatele v~parametru \verb|from|. Stanza odeslaná klientem
+v~závislosti na jejím typu nemusí mít ani jedno z~nich. Potom mají takové pakety zvlá¹ní význam pro server,
+který s~nimi zachází speciálnì. Server ale pøi doruèování tìchto stanz dal¹ím entitám v~síti tyto informace
+automaticky doplní.
+
+\subsubsection*{Zpráva}
+První stanzou je textová zpráva.
+Textové zprávy pro bì¾ného u¾ivatele cestují v~síti XMPP v~tagu \texttt{<message>}
+
+\begin{lstlisting}[language=XML]
+<message to='nekdo@example.org'>
+	<subject>Ukázková zpráva</subject>
+	<body>Zpráva pro ètenáøe textu</body>
+</message>
+\end{lstlisting}
+
+Zprávy mohou být 4. typù
+\begin{itemize}
+\item jednoduchá zpráva
+\item rozhovor
+\item titulek
+\item chybová zpráva
+\end{itemize}
+
+Jednoduchá zpráva je obdobou emailu v~síti XMPP. Tato zpráva mù¾e mít volitelnì i pøedmìt ve vnoøeném tagu
+\verb_<subject>_. Text zprávy je obsa¾en v~tagu \verb_<body>_.
+
+\subsubsection*{Informace o~dostupnosti}
+Dal¹í stanzou je \verb|presence|.
+Sí» nedovoluje nikomu zaslat stav o~dostupnosti bez toho, aby to ten daný èlovìk schválil. Pokud chcete
+vìdìt, jestli je pøítel online, napøed vám to musí povolit. Pro zaslání informace o~stavu dostupnosti
+i pro dotaz o~autorizaci dostupnosti se pou¾ívá tag \texttt{<presece>}.
+\begin{verbatim}
+<presence type='available'/>
+<presence>
+	<show/>
+</presence>
+\end{verbatim}
+
+Informace o~dostupnosti mù¾e mít nìkolik typù.
+\begin{description}
+\item [available] -- stav dostupný. Ohla¹uje, ¾e u¾ivatel je pøipojen a pøítomen. Pokud není typ stavu uveden, pøedpokládá se tento.
+\item [away] -- stav pryè. U¾ivatel pravdìpodobnì není u~svého poèítaèe, nebo zaøízení, kterým je do XMPP sítì 
+pøipojen.
+\item [xa] -- stav \verb|extended away|, v~èeských pøekladech èasto pøekládán jako dlouho pryè. Ohla¹uje, ¾e u¾ivatel není a pravdìpodobnì nebude u~poèítaèe del¹í dobu.
+\item [dnd] -- stav neru¹it. U¾ivatel sice u~poèítaèe je, ale nepøeje si být ru¹en.
+\item [unavailable] -- stav nedostupný. U¾ivatel není vùbec pøipojen, nebo je ve skrytém stavu.
+\end{description}
+
+Anglicky se autorizaci dostupnosti v~systému \verb|XMPP| øíká subscription. Pøesný pøeklad by znìl spí¹e "zápis", ale proto¾e jsou u¾ivatelé zvyklí napøíklad z~ICQ na termín \uv{autorizace}, obvykle se pou¾ívá v~èeských pøekladech termín \uv{autorizace}.
+
+\subsubsection*{Obecné dotazy}
+Pro v¹echny ostatní akce slou¾í obecné dotazy pomocí \verb_iq_ paketù. Iq packet slou¾í pro obecné dotazování
+typu dotaz a odpovìï, které mù¾e pøi komunikaci nastat. Slou¾í ke zji¹»ování schopností klientù, k~získávání
+verze klienta, atd. 
+
+Dotazy mají nìkolik povinných parametrù. Prvním z~nich je \verb|id|. \verb|Id| jednoznaènì rozli¹uje dotaz a 
+odpovìï od ostatních. Ka¾dý dotaz, který klient odesílá, musí mít unikátní identifikátor. Jedinì takto lze 
+jednoznaènì urèit, o~který typ se jedná. Dal¹í povinný parametr je \verb|namespace|. Namespace rozli¹uje,
+o~jaký typ akce se vlastnì jedná. Namespace jsou definovány v~jednotlivých roz¹íøeních, které
+registruje {\em XMPP Registrar}. Pou¾ití namespace umo¾òuje plynulý pøechod na novìj¹í technologie a rozli¹uje
+jednotlivé tagy. S~jeho pomocí klienti snadno urèí, zda takový dotaz zpracovat umí, nebo ne. 
+Namespace je obsa¾en uvnitø \verb|iq| tagu v~jeho prvním potomkovi. Jméno tagu potomka se mù¾e li¹it
+v~závislosti na roz¹íøení, zpravidla jím je ale tag \verb|query|.
+Posledním povinným parametrem je \verb|type|, který urèuje, o~jaký úkon se tento dotaz pokou¹í.
+
+\begin{description}
+\item [get] -- ¾ádost o~ètení hodnoty nebo polo¾ek. Asi nejèastìj¹í typ vyvolaný klientem.
+\item [set] -- ¾ádost o~ulo¾ení nebo nastavení. 
+\item [result] -- výsledek jednoho z~pøedchozích. musí obsahovat stejné \verb|id|, jako pùvodní dotaz. Oznaèuje úspì¹ný výsledek a v~sobì nese výsledná data.
+\item [error] -- ¾ádost skonèila chybou. Takté¾ musí obsahovat \verb|id| dotazu, který chybu vyvolal. Obsahuje jednak hlá¹ení s~chybou a obvykle také tìlo dotazu, který chybu vyvolal jako dal¹ího potomka.
+\end{description}
+
+Následuje pøíklad iq packetu.
+\begin{lstlisting}[language=XML]
+<iq type='get' id='aab1a' >
+<query xmlns='jabber:iq:roster'/>
+</iq>
+
+<iq type='result' id='aab1a' >
+<query xmlns='jabber:iq:roster'>
+<item subscription='from' jid='icq.gajim.org' />
+<item subscription='both' name='Jan Novák' jid='649465485@icq.gajim.org' />
+</query>
+</iq>
+\end{lstlisting}
+
+
+\subsection*{XMPP IM}
+\verb_XMPP IM_ \cite{xmppImWeb} definuje roz¹íøené vlastnosti specifické pro výmìnu zpráv a výmìnu 
+dostupnosti. Jedna z~hlavních èástí je také popis práce se seznamem kontaktù -- {\em rosteru}.
+
+Po¾adavky na základní fungování instang messangingu definuje standard takto.
+\begin{enumerate}
+\item Výmìna zpráv s~ostatními u¾ivateli.
+\item Výmìna informace o~dostupnosti s~ostatními u¾ivateli.
+\item Správa autorizací kontaktù
+\item Správa polo¾ek v~seznamu kontaktù. Systém \verb_XMPP_ nazývá seznam kontaktù pojmem Roster
+\item Zablokovat komunikaci k~nebo od urèitých u¾ivatelù
+\end{enumerate}
+
+První tøi body ji¾ byly popsány v~pøedchozích kapitolách. 
+Správu seznamu kontaktù zaji¹»uje \verb|iq query| s~namespace \verb|jabber:x:roster|. Tento protokol zaji¹tuje
+vyzvednutí seznamu po pøihlá¹ení klienta. Vyzvednutí a správa kontaktù na serveru je pro klienty povinná. 
+U¾ivatel není omezen kontakty ulo¾enými na svém poèítaèi, proto¾e podle specifikace ka¾dý klient musí
+pracovat s~kontakty na serveru. Tato správa kontaktù mimo jiné umo¾òuje pøipojení nìkolika klientù s~rùzným 
+\verb|resource| na stejný úèet a udr¾uje je v¹echny synchronizované. Kontakty, kterým pøijme jeden z~pøipojených
+klientù autorizaci, jsou automaticky serverem poslány v¹em zbylým jako nový kontakt do "rosteru".
+Tato operace se nazývá {\em roster push}.
+
+Blokování komunikace mezi urèitými u¾ivateli není v~XMPP IM definováno pøesnì. Buï blokování komunikace 
+zaji¹»ují klienti ve vlastní re¾ii, nebo ji blokuje server podle pravidel roz¹íøení {\em Privacy Lists}.
+
+\subsection*{Jabber ID}
+Jabber ID nebo zkrácenì \verb_JID_ je jednoznaèný identifikátor v~síti XMPP. Identifikátor má 3 èásti.
+První je u¾ivatelská èást, která urèuje jednoznaènì u¾ivatele na jeho serveru. Druhá èást je plné doménové
+jméno serveru, která jej jednoznaènì urèuje v~síti. 
+Tøetí je pak {\em resource}, tedy zdroj. Zdroj rozli¹uje jednotlivé pøipojené instance
+daného u¾ivatele. Plné \verb_JID_ mù¾e vypadat napøíklad následovnì.
+
+\begin{verbatim}
+pihhan@jabber.cz/Psi
+\end{verbatim}
+
+\subsection*{XEP}
+{\em XMPP Extensions} jsou dal¹í zdokumentovaná roz¹íøení XMPP IM, která pøidávají dal¹í 
+funkcionalitu nad rámec základního protokolu \verb|XMPP|. Bez nich je \verb|XMPP IM| pouhý systém zasílání
+zpráv s~velmi omezenými vlastnostmi. 
+
+\subsection*{Service Discovery}
+Jedním z~dùle¾itých roz¹íøení je {\em XEP-0030}, Service Discovery. Toto roz¹íøení slou¾í ke zji¹tování 
+dostupných slu¾eb a jejich podporovaných vlastností. Tuto úlohu mìlo dnes ji¾ historické roz¹íøení 
+Jabber Browsing (XEP--0011) a Agent Information (XEP-0094). Obì tyto roz¹íøení nahrazuje plnì a mnohem lépe.
+Proto¾e jabber má velké mno¾ství roz¹íøení, je èasto potøeba zjistit, která roz¹íøení slu¾ba podporuje. 
+Toto roz¹íøení nejenom, ¾e umí zobrazit dostupné slu¾by pomocí dotazu na polo¾ky -- namespace 'http://jabber.org/protocol/disco\#items', ale také jejich vlastnosti pomocí namespace 'http://jabber.org/protocol/disco\#info'.
+
+% FIXME: Pøedìlat, pøí¹ernì nepochopitelné
+\subsubsection*{Discovery Info}
+Ka¾dá entita má svoje vlastnosti a schopnosti. Entitou rozumíme buï slu¾bu, kontakt nebo vnoøený objekt 
+nìjaké slu¾by, napøíklad místnost v~diskuzní skupinì. Entita je jedineènì urèená svým \verb|JabberID|, tedy u¾ivatelskou èástí, jménem serveru a zdrojem (resource), pøípadnì mù¾e být urèena i pomocí \verb|node|. 
+U¾ivatelská èást i zdroj mù¾e chybìt. Ka¾dá entita podporující
+Service Discovery musí umìt vrátit seznam podporovaných vlastností a identit. Identity rozli¹ují typ a 
+zamìøení entity. Výèet mo¾ných typù na rozdíl od pøedchozích specifikací není daný pøímo v~roz¹íøení, ale 
+je zaregistrován u~{\em Jabber Registrar}. Identita se skládá z~kategorie a typu. Pøíkladem kategorie je napøíklad 
+\verb|client|, typ u~nìj mù¾e být napøíklad \verb|pc| u~klasického PC klienta, nebo \verb|phone| pøi pøipojení
+Java aplikací z~mobilního telefonu. Jedna entita mù¾e mít v¾dy jen jeden typ z~ka¾dé kategorie. Kromì 
+identity vrací entita pøi dotazu na schopnosti také seznam podporovaných vlastností v~tagu 
+\verb|<features var='namespace'>|, kde {\em namespace} je ten stejný namespace, který se pou¾ije v~\verb|iq|
+stanze k~získání hodnoty. Tímto zpùsobem lze mo¾né tedy zjistit, co v¹echno daný kontakt podporuje je¹tì 
+pøedtím, ne¾ ode¹leme ¾ádost o~provedení. To se hodí napøíklad pøi vytváøení nabídky pro daný kontakt, proto¾e
+nemá smysl u¾ivateli nabízet tucet vlastností, pøi jejich¾ vykonání na nìj stejnì vyskoèí chyba 
+neimplementováno.
+
+\subsubsection*{Discovery Items}
+Ka¾dá entita mù¾e mít nìkolik vnoøených entit. Jejich zji¹tìní provádí klient dotazem s~namespace 'http://jabber.org/protocol/disco\#info'. Entita mù¾e vrátit nìkolik dal¹ích entit, které mohou být znovu prohlí¾eny.
+Lze tak vytvoøit stromovou strukturu s~rùznými polo¾kami, kde ka¾dá polo¾ka
+mù¾e mít specifikován typ, podporované vlastnosti, pøípadnì jiné údaje, 
+napøíklad statistické údaje vyu¾ití slu¾by. Pokud entita nemá ¾ádné vnoøené 
+prvky, vrací v odpovìdi prázný XML element.
+
+\subsubsection*{Entity Capabilities}
+
+\label{entityCapabilitiesSection}
+Aby nebylo nutné pøi ka¾dém pøipojení posílat ka¾dému kontaktu dotaz na 
+podporované protokoly, existuje roz¹íøení Entity Capabilities\cite{xmppCapabilities}. Ka¾dý klient podporující toto roz¹íøení posílá pøi prvotním nastavením
+stavu ve stanze \verb|presence| také tag \verb|c| se jmenným prostorem
+http://jabber.org/protocol/caps a kryptografickým hashem ze seznamu v¹ech
+roz¹íøení podporovaných klientem. Tento hash je témìø jistì unikátní a 
+jednoznaènì pøiøadí kontakt do mno¾iny kontaktù se stejnými schopnostmi.
+Potom staèí pouze u~nìkolika kontaktù ovìøit, ¾e mají stejné vlastnosti pomocí
+discovery info. Potom ka¾dý pro kontakt, který se ohlásí takovým hashem,
+známe seznam podporovaných roz¹íøení bez toho, abychom se museli ptát pøi
+ka¾dém pøipojení v¹ech kontaktù. To je výhodné zejména pro tvorbu nabídek 
+v~u¾ivatelském rozhraní, proto¾e mù¾u nabídnout akce jenom k~tìm kontaktùm,
+kteøí takové akce umí vykonat. Tedy nemusím kliknout napøed na ikonu volání,
+aby mi program odepsal, ¾e kontaktu vlastnì ani volat nejde, proto¾e to neumí
+jeho program.
+
+Roz¹íøení je v souèasnosti implementováno v klientech ve dvou rùzných verzích,
+které se mírnì li¹í. Star¹í zpùsob pøedpokládal nemìnné schopnosti klienta
+v jeho konkrétní verzi. Jedno vydání tedy bude mít jisté implementované 
+vlastnosti v¾dy stejné. Pokud bude program roz¹íøen moduly naèítanými a¾
+po startu, které mohou pocházet od jiných výrobcù, tzv. pluginy, bude pro
+roz¹íøení pøidaná zásuvným modulem uvedeno jako extension. Program v presence
+posílá kromì svojí verze i seznam aktivních roz¹íøení. Pøíjemce, pokud
+chce znát ve¹keré schopnosti klienta, musí se dotázat jednak na schopnosti
+verze samotné, dále pro ka¾dé uvedené roz¹íøení samostatnì. Souhrn schopností
+získá souhrnem schopností v¹ech roz¹íøení a základní verze.
+
+Pøi dal¹ím vývoji se zaèaly pou¾ívat schopnosti i k signalizaci vlastností,
+které si u¾ivatel nastaví v nastavení programu. Nejvíce zmìny souvisejí 
+s roz¹íøením Publish--Subscribe, resp. jeho zjednodu¹enou formou 
+Personal Eventing Protocol. Publish--Subscribe je zpùsob zveøejnování informací
+v¹em zájemcùm, kteøí mají povolení od rozesílatele informace a zároveò si pøejí
+informaci obdr¾et. Publish--Subscribe umo¾òuje pomìrnì komplexní øízení pøístupových práv k uzlùv se zveøejòovanými informacemi, ale jejich správa je relativnì
+komplikovaná. Cílem Personal Eventing Protocol bylo zjednodu¹it registraci 
+pøíjemcù události dostateènì intuitivním zpùsobem, aby nebylo potøeba ani
+pøíli¹ slo¾itého kódu na stranì klienta, ani v u¾ivatelském rozhraní. PEP,
+jak roz¹íøení bì¾nì nazývají vývojáøi, má za cíl zveøejòovat krátké informace
+typu GPS souøadnice klienta, název pøehrávané skladby, nálada u¾ivatele 
+a podobnì. Informace jsou rozesílány pouze klientùm, kteøí informace umí 
+zpracovat. Na rozdíl od Publish--Subscribe se nemusí klient registrovat
+k uzlu zveøejòujícímu informaci. Tento uzel je spravován XMPP serverem a 
+je shodný s JID u¾ivatele bez èásti resource, tedy holé JabberId. 
+Server pozná, ¾e u¾ivatel má zájem pøijímat vybrané události tak, 
+¾e se nachází v 
+seznamu kontaktù u¾ivatele zveøejòujícího informaci a dostal od nìj
+povolení vidìt jeho online stav. Druhá podmínka je, ¾e pou¾ije právì roz¹íøení 
+Entity Capabilities a server umí s tímto roz¹íøením pracovat. Klient ¾ádá
+server o zasílání událostí prostým pøidáním \verb|+notify| za jmenný prostor
+roz¹íøení v seznamu podporovaných vlastností. 
+
+Proto¾e je takových roz¹íøení
+øada a velice pravdìpodobnì dal¹í pøibudou, bylo by znaènì nepraktické
+mít dlouhý seznam roz¹íøení pro ka¾dou vlastnost, kterou u¾ivatel chce nebo
+nechce zveøejòovat. Je ¾ádoucí, aby seznam roz¹íøení nebyl pøíli¹ dlouhý, 
+proto¾e se zasílá pøi ka¾dé zmìnì stavu klienta. Proto se v novìj¹ích
+verzích neoznaèuje souhrn momentálních schopností èíslem verze klienta 
+a~seznamem roz¹íøení,
+ale kryptografickým hashem vyrobeným ze seøazených schopností. 
+
+\section{Jingle}
+
+XMPP má velmi mnoho mo¾ností pøi zpracování a výmìnì zpráv, ale podpora 
+multimédií stále není implementována. První pokusy o~pøenos multimédií
+se zkou¹ely pomocí roz¹íøení bitstreamù, pou¾ívaných pøi pøenosu souboru. 
+Velice brzy bylo jasné, ¾e takový zpùsob je nedostateèný a není schopen 
+obsáhnout v¹echny pøípady pou¾ití.
+
+Ukázalo se, ¾e jedním z~problémù je zavedený zpùsob IQ dotazù\cite{XmppBook}, 
+které poèítají
+s~chováním dotaz--odpovìï, a nepoèítají s~mo¾ností dále nìjak reagovat na 
+odpovìï dal¹ím dotazem. U~multimédií se ale ukázalo, ¾e jednou ustavené spojení
+mù¾e být potøebné zmìnit, napøíklad kvùli zmìnì podmínek pøipojení. Bì¾ný IQ 
+dotaz má jedno unikátní id, které se ov¹em mù¾e pou¾ít jenom jednou pro odpovìï.
+Poté je tøeba vygenerovat pro následující dotaz nový identifikátor. Neexistuje
+tak vazba mezi dvìma po sobì jdoucími dotazy, i kdy¾ na sebe logicky navazují.
+Není tedy mo¾né øíct, ¾e chci manipulovat právì s~jedním konkrétním sestaveným 
+spojením. 
+
+Tuto situaci øe¹í obecné roz¹íøení Jingle \cite{xmppJingle}. Toto roz¹íøení 
+nespecifikuje dohodnutí pøenosu multimediálních dat, ale je pouze obecným 
+zpùsobem ustavení sezení, které je mo¾né mìnit v~jeho prùbìhu nebo mu upravovat
+parametry. Roz¹íøení, která definují zpùsob ustavení pøenosového 
+kanálu\cite{xmppJingleUdp} a výbìr kodeku pro pøená¹ená data\cite{xmppJingleRtp}
+jsou definovány v~samostatných roz¹íøeních. Sestavení obecného sezení pou¾ívá
+napøíklad klient Jabbim pro dohodnutí fungujícího zpùsobu pro pøenos souboru.
+Pomocí jingle session ustaví sezení, kde nejprve zkusí pøímý pøenos mezi 
+koncovými body, pokud sel¾e, pokusí se o pøenos pomocí bytestream proxy. 
+Nefunguje-li ani tento zpùsob, zmìní protokol pøenosu na in-band stream, který
+pøená¹í data sekvencí XML stanz pøímo ve spojení k serveru.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{jingle-states}
+  \caption{Stavy pøi sestavování sezení jingle.}
+  \label{pic_jingle_states}
+\end{center}
+\end{figure}
+
+Sezení jingle mù¾e mít 3 stavy, mezi kterými mù¾e pøecházet, jak je zobrazeno
+na obrázku \ref{pic_jingle_states}. Na hranách je zapsaná akce (atribut action 
+tagu jingle), kterou se mìní stav na jiný. Zahájení sestavování sezení se 
+zahajuje zasláním session-initiate. Po jeho zaslání mù¾e protistrana odmítnout,
+èím se pøejde pøímo na koneèný stav. Sezení zùstává ve stavu pending, dokud
+jej protistrana nepotvrdí a nepøejde tak do stavu aktivního. Potvrzení bude
+v~programu obvykle vypadat jako schválení ¾ádosti o~zahájení multimediálního
+spojení u¾ivatelem. Je vhodné zmínit, ¾e potvrzení pøijetí stanzy a potvrzení
+pøijetí spojení jsou dvì rozdílné akce.
+
+%\newpage
+Zahájení spojení mù¾e vypadat napøíklad takto\cite{xmppJingle}:
+\begin{lstlisting}[language=XML]
+<iq from='romeo@montague.lit/orchard'
+    id='jingle1'
+    to='juliet@capulet.lit/balcony'
+    type='set'>
+  <jingle xmlns='urn:xmpp:jingle:0'>
+          action='session-initiate'
+          initiator='romeo@montague.lit/orchard'
+          sid='a73sjjvkla37jfea'>
+    <content creator='initiator' name='voice'>
+      <description xmlns='urn:xmpp:jingle:apps:rtp:1' media='audio'>
+        <payload-type id='96' name='speex' clockrate='16000'/>
+        <payload-type id='97' name='speex' clockrate='8000'/>
+        <payload-type id='18' name='G729'/>
+        <payload-type id='0' name='PCMU' />
+        <payload-type id='103' name='L16' clockrate='16000' channels='2'/>
+        <payload-type id='98' name='x-ISAC' clockrate='8000'/>
+      </description>
+      <transport xmlns='urn:xmpp:jingle:transports:ice-udp:0'/>
+    </content>
+  </jingle>
+</iq>
+\end{lstlisting}
+
+\subsection{Inicializace spojení}
+Pro ustavení multimediálního spojení protokolem XMPP je definována trojice
+nutných roz¹íøení. První je samotné roz¹íøení pro sestavení a správu sezení, 
+Jingle\cite{xmppJingle}, XEP~166. Definuje zahájení sezení, pøidání nového 
+obsahu do sezení, jeho modifikaci. 
+
+Jedno sezení mù¾e mít jeden nebo více 
+popisù pøená¹ených médií. Popisem je my¹lena specifikace podporovaných kodekù, 
+pøiøazená dynamická èísla RTP obsahu jednotlivým kodekùm a jejich vzorkovací 
+frekvence. Pro nìkteré kodeky mù¾e být potøeba uvést dal¹í parametry. Popis 
+multimediálních formátù pøená¹ených protokolem RTP\cite{rtp} definuje roz¹íøení {\em Jingle RTP Sessions}\cite{xmppJingleRtp}, XEP~167.
+
+Pro uskuteènìní spojení je potøeba vymìnit si informace o~sí»ovém pøipojení, 
+adresách a portech pro spojení koncových u¾ivatelù. 
+Jaké parametry je potøeba si vymìnit 
+závisí na volbì protokolu, kterým se budou multimédia pøená¹et. Pro pøenos
+multimediálního obsahu v~pøímém pøenosu se nejèastìji pou¾ívají protokoly bez
+korekce ztracených paketù. 
+
+\chapter{Pøenos a formát multimédií}
+
+Pøed pøenosem signálu po internetu nejdøíve potøebujeme data zaznamenat a
+digitalizovat. Dále je tøeba pou¾ít takové ulo¾ení dat, kterému pøíjímající
+strana doká¾e porozumìt.
+
+\section{Pøenos a kódování hlasu}
+
+V pøípadì audio signálu jako záznamové zaøízení obvykle
+slou¾í snímací zaøízení, napøíklad mikrofon, pøipojené k pøevodníku
+analogové úrovnì napìtí na sekvenci diskrétních èísel. Pomocí analogovì--digitálního
+pøevodníku získáváme sekvenci èísel s pevnou desetinnou èárkou 
+o pøedem nastavené vzorkovací frekvenci a bitové ¹íøce.
+Takové kódování analogového signálu nazýváme pulznì kódová modulace, 
+anglicky pulse--code modulation (PCM), pro záznamová zaøízení je pravdìpodobnì
+nepou¾ívanìj¹ím kódováním.
+Digitální kódování umo¾òuje ideální
+rekonstrukci zaznamenaného signálu po celé pøenosové cestì, tak¾e nedochází
+k po¹kození signálu pøi pøenosu. Jistou nevýhodou je omezení zaznamenané 
+frekvence na nejvý¹e polovinu frekvence vzorkovací, pokud nemá být výsledný
+signál po¹kozen.
+
+Nevýhodou PCM je vysoký nutný tok vzhledem k mno¾ství pøenesené informace\cite{digital_speech}, oproti pùvodnímu analogovému signálu potøebujeme vy¹¹í pøenosovou kapacitu. Proto volíme jiné zpùsoby kódování k ukládání a pøenosu øeèi.
+Kódování dìlíme na ztrátové, pøi jeho¾ pou¾ití ztrácíme èást pøená¹ené 
+informace, a bezeztrátové, kde pou¾ijeme výhodnìj¹í zpùsob ulo¾ení a odstraníme
+nadbyteènou redundanci pøená¹ené informace. Pøi záznamu hlasu obvykle 
+nevy¾adujeme bezchybný pøenos beze ztráty informace, ale radìji omezíme 
+mno¾ství pøená¹ené informace, abychom mohli komunikovat i~po pomalej¹í lince,
+nebo abychom po ní mohli pøenést více tokù v pøijatelné kvalitì.
+Proto¾e ztrátová komprese je zamìøená na vynechání nebo redukci informace, 
+kterou lidské
+ucho nevnímá, nebo pro pochopení øeèi není zásadní, dosahuje ztrátová komprese
+výraznì lep¹í úèinnosti, ne¾ bezeztrátová. 
+
+Ztrátová komprese hlasu má dva základní pøístupy, jakými lze pøená¹et hlas.
+\begin{itemize}
+\item{Kódování signálu tak, aby zakódovaný signál mìl co nejmen¹í
+odchylku od pùvodního signálu byla co nejmen¹í. Zakódovaný signál popisuje
+tvar vlnìní signálu. Jeho výhodou je schopnost popsat kvalitnì i obecné zvuky,
+napøíklad hudbu. Nevýhodou je vy¹¹í bitový tok, tedy ni¾¹í úèinnost komprese.}
+\item{Parametrické kódování signálu, popisující parametry a tvar øeèového 
+ústrojí èlovìka, pokud takový zvuk chce vydat. Nazýváme té¾ vokodéry. 
+Výhodou je ni¾¹í objem 
+pøená¹ených informací, nevýhodou obvykle vy¹¹í výpoèetní nároènost a ni¾¹í 
+kvalita.}
+\item{Kombinace obou pøedchozích zpùsobù.}
+\end{itemize}
+
+Proto¾e oba pøístupy mají své pøednosti, pro vy¹¹í kvalitu pøenosu hlasu 
+zpravidla oba pøístupy kompinujeme v hybridních kodecích. Hybridní kodek
+popisuje nìkteré èásti øeèi parametricky, èást obtí¾nì popsatelnou nìkolika
+parametry (buzení) zakóduje popisem vlnìní. V souèasnosti pou¾ívané kodeky jsou 
+zpravidla hybridní, pokud není potøeba pøená¹et i neøeèové signály,
+nebo zachovat kompatibilitu se sítí nepodporující jiné kódování. Napøíklad 
+pro pøenos komunikace analogového faxu je nutné pou¾ít kodek urèený nejen pro pøenos 
+lidského hlasu.
+
+Souèasné moderní algoritmy pro zvý¹ení úèinnosti komprese pou¾ívají zpravidla
+nìjakou formu prediktoru, kterým se na základì pøede¹lých dat pokou¹ejí
+popsat zmìnu oproti pøedchozímu stavu. Vyu¾ívají skuteènosti, ¾e pøedev¹ím
+u znìlých souhlásek je signál periodický a~pravdìpodobnì se skokovì nezmìní.
+Dal¹í technikou je vytvoøení slovníku fonémù, kde parametricky popí¹eme
+bì¾nì se vyskytující úseky øeèi a pøi kódování hledáme, kterému vzorku ve 
+slovníku je vstupní signál nejvíce podobný. Poté se pøená¹í pouze odkaz
+do slovníku, pøijímající strana signál zrekonstruuje na základì vlastního
+slovníku.
+
+Algoritmù pro kódování hlasu je øada a stále probíhá vývoj lep¹ích, 
+efektivnìj¹ích postupù pro získání ni¾¹í potøebné pøenosové rychlosti 
+èi men¹í výpoèetní nároènosti, nebo jejich kombinací. 
+Proto¾e vývoj nových algoritmù je pomìrnì
+nároèný, chrání si vývojáøi svoje postupy èasto patentovou ochranou ve státech,
+kde jim to legislativa umo¾òuje. Existence øady rùzných algoritmù pro kódování
+hlasu není pouze problém èistì technický, v praktických aplikacích hraje roli
+také licencování existujících øe¹ení. 
+
+\section{Formát a kódování videa}
+
+Pohybujícím se videem obvykle chápeme sekvenci obrázkù zobrazovanou rychle po
+sobì. Na rozdíl od zvuku je video vícerozmìrná matice jednotlivých bodù obrazu a obvykle potøebuje výraznì vy¹¹í pøenosovou kapacitu, ne¾ zvukový kanál. Jednotlivé snímky nesou informaci pro ka¾dý pixel obrazu, kde pixelem
+rozumíme nejmen¹í viditelný bod v obrazu. 
+
+Pro snímky v odstínech ¹edé jde o sekvenci úrovní jednotlivých pixelù v definované bitové hloubce, barevné
+snímky mají nejèastìji pro ka¾dý pixel uvedenou hodnotu jasu a k~ní dvì dal¹í
+slo¾ky definující barvu. Zpùsobù ulo¾ení pixelù v jednom snímku je celá øada,
+li¹í se podle typu kamery, kterou byl snímek poøízen a zobrazovacího zaøízení, na který mají být snímky zobrazovány. 
+
+Pro statické obrázky je nejèastìj¹í formou ulo¾ení pixelù trojice úrovní pro barvy èervenou, zelenou a modrou -- RGB. Nejèastìji se setkáme s formátem
+osmi bitù pro ka¾dou slo¾ku, celkem jeden bod má 24 bitù. V nìkterých situacích je výhodné mít je¹tì dal¹í kanál, prùhlednost, na jeden pixel pou¾ijeme 32 bitù. 
+
+Lidské oko ale nemá stejnou citlivost na v¹echny barevné slo¾ky. Oko je citlivìj¹í na intenzitu svìtla, proto¾e poèet tyèinek v oku je výraznì vy¹¹í,
+ne¾ poèet èípkù rozli¹ujících jednotlivé odstíny barev. Pøi ukládání videa
+máme velký poèet snímkù o velkém poètu snímkù, je proto vhodné rozdíly v citlivosti na jednotlivé slo¾ky zohlednit. Proto¾e se sna¾íme dosáhnout co nejmen¹ího objemu jednoho snímku, pro ka¾dý pixel videa èastìji pou¾íváme
+barevný model úrovnì jasu a dvou odchylek tónu barvy -- YUV. Hodnotu luminance obvykle ukládáme s vy¹¹ím poètem bitù, ne¾ slo¾ky s barevnou odchylkou, zpravidla mají barevné slo¾ky dohromady stejnou velikost, jako
+slo¾ka jasu.
+
+Kromì velikosti jednotlivých slo¾ek se mù¾e mìnit i zpùsob ulo¾ení v pamìti.
+První zpùsob je prokládání jednotlivých barevných slo¾ek pixelù za sebou, 
+druhou variantou je ulo¾ení jedné ze slo¾ek v¹ech pixelù za sebou, následující sekvencí pixelù dal¹í slo¾ky. Proto¾e kombinací ulo¾ení je celá
+øada, pro popis formátu snímku zpravidla pou¾íváme 32 bitové oznaèení slo¾ené ze ètyø písmen, Fourcc\cite{fourcc}. Kromì formátu ulo¾ení jednotlivých slo¾ek rozli¹ujeme také barevný model obrazu, tedy pøiøazení
+konkrétních barev urèitým úrovním jasu. Mezi jednotlivými barevnými modely mù¾eme na jiné snadno pøevádìt pomocí matic, s konstantami závisejícími na pùvodu pixelù.
+
+Proto¾e video musí zobrazit nìkolik snímkù za vteøinu, bylo by nevýhodné muset pro ka¾dý jeden snímek pøepoèítat z formátu YUV na barevný model RGB,
+ve kterém nejèastìji ukládáme barevný obraz na grafické kartì. Aby nebylo nutné pøepoèítat v¾dy ka¾dý snímek, moderní grafické karty obsahují akceleraci ve formì pøevodu barevného formátu pøímo v kartì. Pro zobrazení snímku potom staèí pøenést obrázek ve formátu YUV, a karta zaøídí konverzi 
+nutnou k zobrazení, obvykle vèetnì hardwarového ¹kálování obrázku. V grafickém prostøedí X11 akceleraci poskytuje roz¹íøení Xv, pøíkazem {\em xvinfo} lze vypsat podporované formáty snímkù, které lze zobrazovat pøímo na kartu.
+
+Aby se zmen¹il objem videa, pøená¹ené snímky mù¾eme komprimovat na úrovni
+jednotlivých snímkù, aby jeden snímek mìl minimální velikost. Pøíkladem je
+kódování JPEG, v pøípadì videa Motion JPEG, kde video je sekvencí nezávislých snímkù. Proto¾e v bì¾ném videu se zpravidla nemìní scéna skokovì, ale postupnì, existuje redundance informace mezi jednotlivými snímky. Pro vy¹¹í efektivitu se obvykle pou¾ívá kromì kódování jednotlivých snímkù také kódování mezi snímky, kde pøená¹íme pouze rozdíl proti nìkolika
+pøedcházejícím snímkùm. Obvykle se pou¾ije seznam transformací upravujících 
+pøedchozí snímek do nové podoby, kde z pùvodního obrazu pou¾ijeme makrobloky
+a definujeme jejich posun, rotaci èi zmìnu mìøítka. I v pøípadì videa se 
+obvykle setkáváme s prediktory, které charakterizují pøede¹lé zmìny tak,
+aby nebylo potøeba pøenést v¹echny transformace, ale pouze zmìny v pohybu.
+Mezisnímkové kódování má nepøíjemnou vlastnost, pøi ztrátì èi po¹kození jednoho snímku
+pøestanou následné transformace dávat správné výsledky. Proto se pøená¹í pravidelnì klíèový snímek, který nese kompletní snímek, po nìm následuje sekvence èásteèných snímkù, které nesou zmìny proti tomuto snímku.
+
+\section{Pøenos v paketové síti}
+Pokud chceme pøená¹et multimédia v paketové síti, je potøeba data rozdìlit
+na èasovì ohranièené rámce o velikosti, je¾ je sí» schopná pøenést. Proto¾e
+pro ¾ivý pøenos je dùle¾ité zachovat minimální zpo¾dìní, pou¾ívá se zpravidla
+pro pøenos datagramù bez zaji¹tìní bezchybného pøenosu.
+
+Data je potøeba pøená¹et tak, aby obì strany rozumìly pøená¹eným datùm a byly
+je schopny správnì pøehrávat. Prvním pøedpokladem je pou¾ití stejného 
+protokolu pro pøenos dat a jím definovaný formát pøená¹ených dat. Druhým pøedpokladem je dohodnutí parametrù pøenosu pøed zahájením vlastního datového
+pøenosu.
+
+Dohodnutí parametrù pøenosu se obvykle provádí jiným spojením, ne¾ samotný
+datový pøenos. K ustavení spojení a dohodnutí parametrù slou¾í signalizaèní
+kanál. Mù¾e být spojen jak protokolem TCP jako v pøípadì XMPP a Jingle,
+nebo UDP obvykle pou¾ívané protokolem SIP, oba u¾ byly popsány v pøedchozích kapitolách. Pro signalizaèní kanál je dùle¾ité, aby byl schopen fungovat 
+na rùzných konfiguracích sítì, i na sítích pou¾ívajících pøeklad adres. Právì
+pomocí signalizaèního kanálu je umo¾nìno dohodnutí parametrù mezi úèastníky
+spojení, aby mohlo vùbec zapoèít sestavování pøímého spojení. Signalizaèní
+kanál umo¾ní výmìnu adres, pøípadnì mù¾e pomoci pøi zji¹»ování topologie
+ sítì. Proto¾e signalizace nepøená¹í multimediální data, není potøeba jej 
+ synchronizovat a dosahovat nízké odezvy, dùle¾itìj¹ím parametrem je spolehlivost. Proto není na závadu pøípadné zpo¾dìní TCP/IP spojení pøi výpadku nìkolika paketù, nebo kaskáda proxy serverù v pøípadì SIP.
+ 
+Datový pøenos se navazuje pokud mo¾no pøímo mezi koncovými u¾ivateli, 
+v pøípadì nemo¾nosti pøímého spojení pøes proxy se zvý¹ením doby odezvy.
+Kromì minimální potøebné rychlosti vy¾aduje kvalitní pøenos malé
+ kolísání doby odezvy, tedy jitter. Proto¾e pøi prùchodu internetem obvykle
+ nejsme schopni zaruèit prioritní zpracování multimediálních dat, kolísání
+ nemù¾eme eliminovat, ale je mo¾né potlaèit jeho vliv, pokud není pøíli¹ velké. Kolísání odezvy odfiltruje pøidání vstupní fronty, která èeká na pøijímaná data po urèitou krátkou dobu a vyrovnává tak nárazovì pøicházející
+ data. Nevýhodou je dal¹í umìlé zvý¹ení zpo¾dìní pøehrávanách dat. Èím vìt¹í
+je kolísání doby pøenosu, tím vìt¹í je nutné mít frontu, aby se kompenzoval vliv kolísání. Stále v¹ak chceme co nejni¾¹í zpo¾dìní, proto zpo¾dìní 
+pøenosu i jeho kolísání chceme mít minimální.
+
+Minimálnì u zvuku po¾adujeme navazující datový tok bez mezer\cite{RtpBook}. 
+Výpadky mohou nastat z více dùvodù. Nejèastìj¹ími dùvody je ztracení posílaných dat a pøíli¹ velké zpo¾dìní, kdy u¾ fragment nemá smysl pøehrát a je zahozen. V IP sítích jsou datové vy¹¹í protokoly, TCP i UDP, chránìny 
+kontrolním souètem, který zaji¹»uje, ¾e nedo¹lo k po¹kození pøená¹eného obsahu. Pokud kontrolní souèet nesouhlasí, systém paket zahodí a k vlastní
+aplikaci se nedostane ani po¹kozený paket s èásteènou informací. Kvùli 
+1 chybnému bitu tak mù¾eme ztratit celý fragment obsahující 20\,ms øeèi.
+
+Proto¾e pou¾itý protokol UDP nezaji¹tuje bezchybný pøenos, je nutné nìjak
+reagovat na ztracené pakety. Aplikace by mìla zajistit zotavení z chyb tak,
+aby pro koncového u¾ivatele nebyla chyba pøíli¹ viditelná. Pokud nepou¾ijeme 
+na stranì vysílání prokládání s~pøidanými informacemi pro zotavení, nezbývá,
+ne¾ nahradit chybìjící fragment nìjakým odhadem chybìjícího obsahu. 
+
+V pøípadì výpadku audio signálu existuje øada postupù, obvykle vy¾adují 
+znalosti vnitøního stavu dekodéru, aby výsledná korekce znìla vìrohodnì.
+Pro znìlé hlásky je vhodné nahradit chybìjící fragment pøedchozím fragmentem,
+neznìlé souhlásky lépe nahradí ¹umová funkce\cite{RtpBook}. Zotavení z chyb je nedílnou souèástí návrh algoritmu a zpùsobu jeho zabalení v RTP paketu.
+Proto¾e komprese zpravidla vyu¾ívá predikce pro sní¾ení objemu pøená¹ených
+zpráv, výpadky èásti provozu mohou negativnì ovlivnit celou øadu správnì
+doruèených datagramù. Odolnost proti chybám v pøenosu je dal¹ím parametrem
+mìøítkem kvality implementace daného algoritmu.
+
+
+\subsection{Pøeklad adres a datagramy}
+Pro ¾ivý pøenos je dùle¾ité minimální zpo¾dìní,
+a opìtovné vy¾ádání zaslání ztraceného paketu mù¾e trvat pøíli¹ dlouho na to, 
+aby ztracená informace po opìtovném doruèení byla je¹tì u¾iteèná. Navíc 
+datagramy UDP nemají explicitnì definované zahájení a ukonèení spojení. 
+Absence pøesného zahájení znemo¾òuje firewallùm stavovou kontrolu paketu, jakou 
+bì¾nì provádí u~TCP spojení. Proto¾e TCP definuje, jaké pøíznaky musí být 
+nastaveny pro zahájení spojení, s~jakými pøíznaky systém zahájení spojení 
+potvrdí, nebo naopak odmítne, stavový firewall mù¾e odfiltrovat potvrzení 
+neexistujícího spojení, pøípadnì opakované zahájení probíhajícího spojení.
+Stejnì tak TCP umo¾òuje jasnì rozli¹it, která ze stran spojení navazuje, a která
+spojení pøijímá. Udr¾ování stavu ka¾dého spojení je velmi dùle¾ité pro smìrovaèe
+provádìjící pøeklad adres -- NAT. 
+
+Pøeklad adres umo¾òuje smìrovaèi s~jedinou
+vìøejnì dostupnou adresou pøipojit vìt¹í mno¾ství poèítaèù na vnitøní síti,
+které nemusí mít adresu pøímo dostupnou z~veøejného internetu, tedy s~privátními adresami\cite{privateAddress}. Aby poèítaèe ve vnitøní síti mohly posílat
+pakety do veøejného internetu, musí jim být schopny cílové uzly doruèit odpovìï.
+Jaký je rozdíl v komunikaci mezi veøejnou a privátní adresou ukazuje 
+obrázek \ref{pic_nat}.
+Smìrovaè pøevezme z~vnitøní sítì odcházející pakety, poznaèí si ètveøici 
+zdrojovou, cílovou adresu a zdrojový a cílový port. Paket upraví tak, ¾e nahradí zdrojovou adresu (a pøípadnì i port), v~paketu svojí vlastní adresou, a paket ode¹le smìrem k~cílové adrese. Paket s~odpovìdí pøichází na smìrovaè s~jeho 
+vlastní adresou a portem. Proto si smìrovaè musí vést tabulku v¹ech svých 
+spojení a spojení v¹ech pøekládaných poèítaèù. Pøíchozí paket porovná s~tabulkou spojení a najde, zda paket má zpracovat sám, nebo nahradit tentokráte cílovou 
+adresu a pøedat do vnitøní sítì. Aby smìrovaè pøedcházel pøeplnìní tabulky spojení, udr¾uje si ke ka¾dému spojení i jeho stav a dobu od poslední aktivity. Pokud spojení je pøíli¹ dlouho bez jakékoliv odezvy, spojení z~tabulky vyøadí.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=11cm,keepaspectratio]{nat/nat}
+  \caption{Zobrazení rozdílu komunikace mezi veøejnou a privátní adresou.}
+  \label{pic_nat}
+\end{center}
+\end{figure}
+
+Zde je rozdíl mezi TCP a UDP nevíce patrný. Pro TCP mù¾e vyøadit spojení 
+z~tabulky ihned poté, co jej komunikující strany ukonèí. Podobnì pokud 
+neobdr¾í smìrovaè oznámení o~ukonèení spojení, patrnì bude spojení aktivní, 
+i kdy¾ se právì ¾ádná data nepøená¹í. Mù¾e nastat i pøeru¹ení komunikace
+v dùsledku náhlého výpadku napájení, havárie systému nebo aktivace firewallu
+mezi koncovými body.
+Stav pro UDP se omezuje pouze na dobu poslední aktivity~a 
+zda alespoò jednou pøi¹la odpovìï. Proto¾e spojení pomocí datagramù nerozli¹uje komunikující strany na initiátora a pøíjemce spojení, lze pomocí vhodných technik navázat pøímou komunikaci i mezi dvìma uzly v~rùzných privátních sítích. 
+Pøesto, ¾e poèítaèe nejsou ve stejné síti, mohou pomocí dodateèných znalostí
+o~svém pøipojení navázat komunikací pøímo mezi sebou, bez nutnosti retranslace
+tøetí stranou.
+
+\subsubsection{Interactive Connectivity Establishment}
+
+Pro navázání pøímého spojení mezi úèastníky za pøedkladem adres slou¾í protokol
+Interactive Connectivity Establishment, zkrácenì ICE\cite{ICE}. Jeho cílem 
+je umo¾nit s co nejvìt¹í pravdìpodobností mo¾nost spojit pøímo koncové body 
+pøi nejrùznìj¹ích
+konfiguracích sítì. Pøeklady adres se mohou provádìt rùznými zpùsoby, podle 
+pou¾itého smìrovaèe, jeho nastavení a po¾adavkù na zabezpeèení. Hlavní rozdíly 
+spoèívají v~algoritmu urèení zdrojového portu na pøelo¾ené veøejné adrese a jeho
+vztahu k~pùvodnímu zdrojovému portu na vnitøní adrese. 
+
+Nejèastìj¹í pøípad je 
+pou¾ití stejného portu, neexistuje-li je¹tì takové spojení. V~pøípadì ji¾ 
+obsazeného portu se obvykle pou¾ije náhodnì vygenenerované èíslo neobsazeného portu.
+Dal¹í mo¾ností je pøiètení jisté absolutní hodnoty k~èíslu portu, která je pro
+v¹echny porty smìrované z~dané vnitøní adresy stejná. Pro oba zmínìné pøípady 
+protokol ICE umo¾ní navázání pøímého spojení mezi úèastníky. Obrázek 
+\ref{pic_nat_direct} ukazuje, jak bude vypadat pøímé propojení obou úèastníkù
+za pøekladem adres.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{nat/nat-direct}
+  \caption{Pøímé propojení úèastníkù skrytých za pøekladem adres.}
+  \label{pic_nat_direct}
+\end{center}
+\end{figure}
+
+
+
+Jestli¾e pøi 
+pøekladu adres pro ka¾dé nové spojení vygeneruje smìrovaè odchozí port náhodnì,
+potom jsou ¹ance na sestavení pøímého spojení minimální. V~takovém pøípadì 
+nezbude, ne¾ pou¾ít pomoc tøetí strany -- relay, která má veøejnou adresu a oba klienti se s~ní spojí pøímo. Ta potom komunikaci mezi klienty pøedává, jak
+ukazuje obrázek \ref{pic_nat_relayed}.
+Její nasazení pøiná¹í i nevýhody. Relay je dal¹ím prvkem v~komunikaci, který
+pøídává dal¹í zpo¾dìní, je potøeba ji provozovat na serveru s~veøejnou adresou
+a dostateènou rychlostí. Datový tok komunikace prochází pøes relay dvakrát, 
+jednou pøi pøíjmu, podruhé pøi odesílání protìj¹í stranì. Proto¾e relay se 
+navíc nutné spravovat a udr¾ovat, její existence obvykle pøiná¹í finanèní 
+náklady na její provozování a linku. Je tedy v~zájmu provozovatele slu¾by 
+umo¾nit pøímé spojení v¹ude tam, kde je to mo¾né, a relay pou¾ít jen jako 
+zálohu. Komunikaci s~relay serverem popisuje protokol TURN\cite{TURN}.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{nat/nat-relayed}
+  \caption{Komunikace mezi úèastníky zprostøedkována tøetí stranou.}
+  \label{pic_nat_relayed}
+\end{center}
+\end{figure}
+
+Protokol nezapoudøuje komunikaci dovnitø, ale pou¾ívá se soubì¾nì s~datovou 
+komunikací na stejném portu. Aplikace musí umìt rozli¹it, zda je o~¾ádost ICE,
+nebo o~pøená¹ená data. Pøi pou¾ití lze velmi jednodu¹e rozli¹it mezi obojím 
+pomocí RTP hlavièky, kterou má ka¾dý datový paket.
+
+K~navázání spojení dochází v~nìkolika krocích.
+\begin{itemize}
+\item{Shromá¾dìní lokálních kandidátù -- vytvoøí se prostý seznam v¹ech adres 
+pøiøazených rozhraním poèítaèe, kromì místní smyèky.}
+\item{Shromá¾dìním vzdálených kandidátù -- dotazem na STUN server se získají veøejné adresy, pod kterou vlastní poèítaè komunikuje do internetu. Pøípadnì lze po¾ádat }
+\item{Seøazení kandidátù podle priority}
+\item{Výmìna kandidátù s~protìj¹í stranou pomocí signalizaèního spojení, v~mém pøípadì XMPP}
+\item{Pro ka¾dý pár místního a vzdáleného kandidáta se provede test spojení pomocí dotazu STUN na vzdálenou stranu}
+\end{itemize}
+
+\chapter{Implementace}
+
+K~implementaci aplikací pracujících s~multimédii je tøeba pracovat 
+s~jednotlivými zdroji a výstupy. Ka¾dý typ zdroje má svoje specifika~a 
+obecnì je nutné pro podporu v¹ech zaøízení naprogramovat do aplikace,
+aby program mohl fungovat na ka¾démo poèítaèi, jak pøedpokládá u¾ivatel.
+
+Z~nízkoúroòových rozhraní jmenujme napøíklad {\em Advanced Linux Sound Architecture} (ALSA),
+stejný úèel má i Open Sound System, který je jednodu¹¹í a na nìkterých zvukových
+kartách funguje lépe, na nìkterých hùø. Neøe¹í ale souèasné pøehrávání více 
+zvukù zaráz, to øe¹í zvukové démony jako esd nebo novìj¹í pulse. Pro pouhé
+pøehrání zvuku je tak potøeba naimplementovat hned 4 rozhraní, má-li aplikace
+fungovat v¹ude.
+Se situací s~pøehráváním videa to není o~mnoho jednodu¹¹í, existuje 
+neakcelerovaný výstup, akcelerovaný výstup roz¹íøením Xv nebo výstup pomocí
+OpenGL akcelerace, který jediný bude fungovat na desktopu s~kompozitním 
+mana¾erem.
+
+Proto¾e implementovat v¹echny detaily je pøíli¹ nároèné a na jiných platformách mù¾e být potøeba implementovat dal¹í rozhraní, hodí se pro práci s~multimédii
+pou¾ít framework, který skryje implementaèní detaily a usnadní jak prvnotní
+vývoj, tak pøízpùsobení stávajících aplikací na nové rozhraní hardware, které
+pùvodní aplikace nepodporovala. Takovými frameworky v~linuxu jsou napøíklad
+Phonon v~KDE a GStreamer g GNOME.
+
+\section{Phonon}
+
+Makneto je aplikace implementovaná pro systém KDE verze 4. Je tedy ¾ádoucí 
+vyu¾ít multimediální framework KDE/Qt, je¾ se nazývá Phonon\cite{phonon}. 
+Framework má
+usnadnit vývoj multimediálních aplikací pro KDE a zjednodu¹it pøidání
+multimediálních vlastností do existujících aplikací.
+
+Phonon má tøi základní pøístupy -- media objekty, cesty a výstupy. Media 
+objekty øídí pøehrávání èi záznam a poskytují data médií. K~výstupùm se 
+pøipojují pomocí cest, mezi které lze vsunou je¹tì dal¹í objekty, napøíklad 
+efekty. 
+
+Phonon je implementován pøímo v~Qt a vyu¾ívá systému slotù a signálù a zaèlenit
+jej do aplikace v~tomto toolkitu je pomìrnì jednoduché. Jako dekodér multimédií 
+mù¾e vyu¾ít nìkterý z~existujících frameworkù k~tomu urèených, jako napøíklad
+Gstreamer nebo Helix. Phonon není platformnì závislý a mù¾e fungovat i na jiných
+platoformách ne¾ linuxu.
+
+Nevýhodou Phononu je, ¾e je pomìrnì nový a má implementováno pomìrnì málo tøíd.
+Neexistuje napøíklad vùbec návrh pro nahrávací zaøízení nebo objekt pro zdroj
+obrazu z~webkamery. Obecnì vstup ze zaøízení není stále implementován, jsou 
+dostupné pouze vstupy ze souborù a sítì, nutné pro sestrojení pøehrávaèe. Proto
+nebudu spoléhat pøi implementaci vstupu pouze na Phonon a spí¹e budu 
+implementovat vstup pomocí Gstreameru, který vstup z~webkamery ovládá pøímo.
+
+\section{Gstreamer}
+Podobnì jako Phonon je Gstreamer frameworkem pro práci s~multimédii. Na rozdíl
+od Phononu u¾ má ale lecos za sebou a má celou øadu vstupních i výstupních 
+modulù, které lze øetìzit za sebe podle potøeby. Podobnì jako phonon má objekty
+a jejich propojení, i kdy¾ terminologie pou¾ívané u~gstreameru se pomìrnì li¹í.
+
+Gstreamer øadí jednotlivé objekty za sebe jako filtry do øetìzu. Dle tvrzení 
+autorù \cite{gstreamer} si vypùjèuje to nejlep¹í z~Microsoft DirectShow.
+Systém je navr¾en tak, aby minimalizoval poèet kopírování mezi moduly, kde
+to není naprosto nutné. Zøetìzením objektù lze dosáhnout nejen pøehrávaèe
+médií, ale napøíklad i konvertoru do jiného formátu nebo streamování do sítì.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{gstreamer-overview}
+  \caption{Architektura gstreameru.}
+  \label{pic_gstreamer_overview}
+\end{center}
+\end{figure}
+
+Objekty frameworku lze rozdìlit do nìkolika skupin, seznam skupin je zobrazen
+na obrázku \ref{pic_gstreamer_overview}. Asi nejdùle¾itìj¹í jsou
+zdroje dat a jejich výstupy, zvané sink \footnote{doslovnì pøelo¾eno umyvadlo}. Ka¾dý 
+objekt v~øetìzci mù¾e mít jeden nebo více výstupù a jeden nebo více vstupù.
+Jednotlivé vstupy lze propojovat do sinkù jiných objektù, a jejich øetìzením
+tam vznikne posloupnost napøíklad z~webkamery pøes sí» a¾ na výstup monitoru.
+Mohou být zøejmì objekty, které nemají ¾ádný výstup (objekt xvideosink pro
+zobrazování videa data u¾ zpìt do gstreameru neposílá) nebo ¾ádný vstup 
+(zdroj ze souboru sice data ète, ale 
+z~pohledu gstreameru je prvním vstupem v~øadì).
+
+Velkou výhodou gstreameru je øada ji¾ existujících a ozkou¹ených pluginù. 
+Existuje také pøehrávaè, který u¾ je jako výchozí pøehrávaè v~distribuci 
+Ubuntu - pøehrávaè totem, který pøehrává pouze pomocí gstreameru. Gstreamer
+má také existující implementaci zdroje z~Video4linux, co¾ je rozhraní pro vstup
+videa na linuxových systémech. Je tedy mo¾né pøímo pomocí gstreameru zobrazit 
+obraz z~kamery na obrazovku nebo poslat do sítì. Existují dokonce 2 implementace
+RTP protokolu pro gstreamer. Jedna star¹í implementace vyu¾ívající knihovnu 
+jRTP, druhá novìj¹í, implementovaná s~vyu¾itím knihovny Farsight2. K~první verzi
+dokonce existuje funkèní rtpjitterbuffer, který øe¹í i poøadí pøíchozích paketù
+v~nesprávném poøadí. 
+
+\subsection{Architektura GStreameru}
+GStreamer vyu¾ívá implementaci objektového pøístupu a dìdiènosti z~knihovny 
+GLib, respektive GObject. GLib jsou obecné funkce chybìjící ve standardní 
+knihovnì jazyka C, jako napøíklad práce se seznamy, práce se stromem. 
+V knihovnì GObject jsou implementovány rutiny pro práci se strukturami,
+typovými hodnotami i s mo¾ností definice u¾ivatelského typu, makra pro odvození
+nové struktury z rodièovské a systém vlastností objektu. Metody objektu, jak 
+je chápeme v objektových jazycích pøímo pro objekty, jsou obvykle øe¹eny
+pouze vhodným pojmenováním funkce podle stanovené konvence. 
+Objekt mù¾e mít také signály, kterými mù¾e pøi zmìnì stavu pøedávat informace
+pøipojeným objektùm. Na rozdíl od knihovny Qt signály GObject nevy¾adují 
+roz¹íøení jazyka ani preprocesor.
+
+Hlavním typem v prostøedí GStreameru je typ \verb|GstElement|, který slou¾í 
+jako vlastní stavební kámen multimediálního øetìzce. Element mù¾e mít 
+jeden èi více datových vstupù, stejnì tak mù¾e mít jeden èi více datových 
+výstupù. Podle úèelu elementu mù¾e mít pouze vstupy pro zdroje dat, 
+pouze výstupy pro výstupní zaøízení, a obojí v pøípadì filtrù konvertujících
+data na jiný formát. Vstup èi výstup se pøipojuje pomocí 
+struktury \verb|GstPad|,
+která popisuje vlastnosti dat vysílaných nebo pøijímaných daným 
+elementem. Ka¾dý GstPad má unikátní jméno ve svém elementu a~popis dat, 
+u~nìkterých
+speciálních elementù mù¾e mít i~dal¹í parametry propojení. 
+Formát vlastních dat popisuje struktura \verb|GstCaps|, která
+u¾ivá pro popis MIME typ média spoleènì s dal¹ími parametry. Jeden vstup mù¾e
+podporovat celou øadu rùzných formátù, k výbìru pou¾itého formátu dojde a¾
+pøi naètení prvotních dat ze zdroje. Tuto èinnost nazýváme \verb|preroll|,
+neboli pøedtoèení.
+
+Dal¹í dùle¾itou strukturou jsou speciální typy elementù, které umo¾òují do
+sebe vkládat dal¹í elementy a organizovat tak skupinu do pøehlednìj¹ích celkù.
+Takovým elementem je \verb|GstBin|, který je potomkem bì¾ného elementu.
+Speciálním pøípadem binu je GstPipeline, která implementuje navíc jenom 
+nastavení zdroje èasu a prodlevy. 
+
+Ka¾dý element má svùj stav, jeho¾ zmìnami se aktivují multimediální zdroje
+a pøi zmìnách také probíhá dohodnutí formátu vymìòovaných médií. Obvykle se
+nastavuje stav pouze na objekt pipeline, která postupnì mìní stavy 
+v~ní obsa¾ených
+elementù. Po pøejití v¹ech elementù na po¾adovaný stav teprve nastaví nový
+stav na vlastním objektu. Stavy se mìní postupnì po jednom asynchronnì, pouze
+zastavení pipeline pøechodem do stavu NULL se provádí synchronnì.
+
+Stavy elementù jsou následující:
+\begin{description}
+    \item[NULL]{výchozí stav zastaveného øetìzce, pøi nìm ¾ádné zaøízení není otevøeno}
+    \item[READY]{stav, kdy se otevírají vstupní a výstupní zaøízení,
+     teprve pøi tomto stavu lze zjistit, ¾e po¾adované zaøízení není dostupné.
+     Pøípadnì jaké formáty dat vlastní zaøízení podporuje.}
+    \item[PAUSED]{pozastavení, pøi kterém u¾ se pøednaèítají úvodní data
+        ze zdrojù a celý øetìzec se pøipraví podle naètených dat.}
+    \item[PLAYING]{aktivní stav øetìzce, pøi kterém probíhá vlastní pøehrávání
+        ze zdroje}
+\end{description}
+
+Pøi pøehrávání ze ¾ivého vstupu se chování mírnì upravuje a elementy pøechází
+do stavu PAUSED asynchronnì bez úvodního pøednaètení, aby pøi pøijetí 
+dat ji¾ byly schopny
+ihned data zpracovávat bez zbyteèného prodlení.
+
+Gstreamer je vícevláknový systém a zpracování multimédií se 
+provádí v oddìlených vláknech. Komunikace s hlavním vláknem probíhá primárnì
+pomocí \verb|GstMessage|, které komunikují s hlavním vláknem pomocí callbacku
+sledujícího sbìrnici zpráv\footnote{GstBus}. Zprávy pøicházejí asynchronnì, 
+ka¾dá zpráva má svùj typ
+a pøípadnì datovou strukturu s parametry zprávy. 
+Zprávy jsou zasílány napøíklad pøi zmìnì stavu
+elementu, nebo mohou zasílat zprávy typu element, jejich¾ formát je závislý
+na konkrétním elementu. Vlastní zprávy elementù mají navíc typ oznaèený 
+øetìzcem. Zprávy pro pøedávání hodnot vyu¾ívají napøíklad elementy \verb|level|,
+nebo \verb|fsconference|. 
+
+Nìkteré elementy mohou pou¾ívat i signálù, jejich 
+zpracování je ale problematiètìj¹í, proto¾e obsluha signálu se vykonává 
+ve vláknì zpracovávající multimediální øetìzec a pøi del¹ím výpoètu mù¾e mít 
+negativní vliv na kvalitu pøehrávání. Vìt¹ina volání chránìná proti po¹kození
+pøi souèasném volání z více vláken pomocí zamykání, bì¾né operace lze tedy
+provádìt jak z hlavní smyèky programu, tak z~callbackù a~signálù v~reakci 
+na události v elementech.
+
+\section{Farsight}
+
+Farsight~2\cite{farsight} je knihovna pro snadnìj¹í budování komunikaèního 
+systému, s~podporou prùchodu pøes pøeklad adres. Farsight je projekt psaný 
+v jazyce C, pro systém GStreamer a GLib. Vychází z pøedchozí verze knihovny,
+která implementovala jak pøenos médií protokolem SIP/RTP, tak komunikaci
+s Live Messengerem. Nejdùle¾itìj¹ím projektem vyu¾ívajícím farsight je
+framework Telepathy\cite{Telepathy}, se kterým je pomìrnì úzce propojená 
+a vyvíjí se vedle sebe.
+
+Knihovna farsight je modulární a implementuje jedno spoleèné rozhraní 
+v modulech pro komunikaci RTP protokolem a protokolem pro komunikaci s 
+Live Messengerem. RTP protokol je implementován z èásti pomocí modulù
+obsa¾ených v Gstreameru, z èásti vlastní implementací. Komunikace probíhá
+celá v re¾ii øetìzce gstreameru, vlastní jádro farsight je implementováno
+jako \verb|GstBin| pøidaný do øetìzce. Komunikace knihovny k programu
+probíhá výhradnì pomocí zpráv, od programu se instrukce pøedávají 
+odpovídajícími funkcemi. Sí»ová èást knihovny vyu¾ívá elementy Gstreameru
+k posílání dat. Knihovna implementuje dva podsystémy pro pøenos RTP dat.
+Prvním je nativní pøenos v UDP datagramech bez dal¹ího roz¹íøení, 
+v terminologii Jingle to transport raw-udp. Tento re¾im nepodporuje signalizaci
+uskuteènìného spojení jinak, ne¾ pøijetím dat po úspì¹ném spojení.
+Druhým je transport zalo¾ený na knihovnì nice, který pomocí protokolu
+výraznì vylep¹uje mo¾nosti prùchodu pøímého spojení nejbì¾nìj¹ími typy NATu.
+Transport nice implementuje protokol Interactive Connection Estabilishment (ICE).
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{nat/farsight}
+  \caption{Schematické propojení tøíd pro audio/video spojení se dvìma úèasníky
+    s pomocí knihovny Farsight}
+  \label{pic_farsight}
+\end{center}
+\end{figure}
+
+Obrázek \ref{pic_farsight} ukazuje základní hierarchii propojení tøíd 
+v knihovnì farsight. Základní je tøída Conference, která urèuje systém pou¾itý
+k pøenosu, a zároveò slou¾í jako element pøidaný do øetìzce GStreameru. Pro 
+ka¾dý pøená¹ený zdroj se vytvoøí session, která podle typu pøená¹eného
+média inicializuje seznam kodekù dostupných v systému. K jedné session lze
+pøipojit nejvíce jeden zdroj, audio nebo video, podle jejího typu.
+
+Pro ka¾dého pøíjemce
+vytvoøíme z ka¾dé session jeden stream, který reprezentuje jedno spojení 
+s jedním úèastníkem. Stream obsahuje seznam místních adres pou¾itých 
+k odchozímu spojení a cílové adresy, kterým posíláme vlastní zakódovaná 
+multimédia. Dále obsahuje seznam kodekù, které protistrana podporuje. Jejich
+výmìna není souèástí knihovny farsight. Pokud dojde k úspì¹nému spojení,
+obdr¾íme od streamu signál s pøipojením dekódovaných dat k výstupnímu zaøízení.
+
+Ponìkud nepøíjemná je skuteènost, ¾e souèasná verze knihovny neumo¾òuje 
+sledování kvality pøenosu, ani ètení hodnot, které protistrana posílá
+protokolem RTCP. Farsight se nastavuje vnìj¹ím rozhraním seznamem kodekù,
+ke kterým je interními rutinami vytvoøena vìtev kódovací a dekódovací, je¾
+pøevede surový video nebo audio formát na formát podporovaný kódovacím resp.
+dekódovacím elementem. Vstup nebo výstup zaji¹»uje tøída FsTransmitter,
+která bì¾nì zùstává skryta a není potøeba s ní manipulovat. 
+
+Problém tohoto 
+pøístupu tkví v absenci programového rozhraní pro získání odkazu èi reference
+na kódovací element. Elementy pro kódování videa umo¾òují nastavování 
+dodateèných parametrù, jakými jsou napøíklad algoritmy pou¾ité pro kvantizaci,
+ale i pro pøenos pomìrnì dùle¾ité údaje, jakým je po¾adovaná støední ¹íøka 
+pøená¹eného toku. Bohu¾el neexistuje ani jednotné rozhraní pro elementy 
+GStreameru definující minimální popis parametrù nastavující alespoò obvyklé
+parametry nebo relativnì alespoò výpoèetní nároènost pro jednotlivé algoritmy.
+Nastavení by muselo být závislé na pøávì pou¾itém kodeku, kde kodek se mù¾e 
+mìnit v prùbìhu sezení i bez dal¹í signalizace. I kdy¾ je FsConference
+potomkem GstBin, a lze tedy procházet obsa¾ené elementy podle jména, chybí 
+provázání mezi odpovídající FsSession pøípadnì FsStream, které by umo¾òilo
+spárovat kódovací element s odpovídající vzdálenou stranou.
+
+Mìnit bitový tok lze tedy jen ovlivnìním vstupu do FsStream je¹tì pøed tím,
+ne¾ zaène kódování. U videa je mo¾né pou¾ít element videorate, který umo¾ní
+zahazovat periodicky snímky a posílat tak do kódování videa ménì snímkù,
+a tím zároveò sní¾it datový tok i výpoèetní nároènost. Dal¹í mo¾ností by bylo
+pøípadnì sní¾it velikost jednoho snímku pøená¹eného videa. Elementy vyu¾ívající
+video vstup rozhraním V4L ale musejí nastavit velikost videa je¹tì pøed 
+zahájením pøenosu jednotlivých snímkù. V prùbìhu pøenosu tedy nelze mìnit 
+velikost videa pøímo na vstupním zaøízení, pøidání elementu zmen¹ujícím video 
+pøed vstup do FsStream sice mo¾né je, ale spí¹e výpoèetní nároènost zvý¹í, 
+ne¾ naopak. 
+
+V pøípadì audio vstupu je situace podobná. Kodéry zvuku
+pracují obvykle jenom s~nìkolika frekvencemi, podle po¾adované kvality pøenosu.
+Pro nízkou kvalitu odpovídající telefonní kvalitì se pou¾ívá frekvence 8\,kHz,
+pro vy¹¹í kvalitu 12\,nebo 16\,kHz. Vzorkovací frekvenci lze mìnit pomocí zmìny
+popisu rtp kodeku, který knihovna mìnit umo¾òuje. Pøistupovat k parametrùm
+kódovacího elementu, jako je stupeò kvality, maximální pøípustný tok, opìt 
+knihovna neumo¾òuje ani pro audio vstup. Pro absenci statistik odeslaných dat
+nejde jednodu¹e poèítat, jak velkým tokem vlastnì aplikace data odesílá.
+
+Vzhledem k uvedeným omezením pou¾ité knihovny alespoò v souèasné verzi nejde 
+implementovat prùbì¾nì mìnící se bitový tok v závislosti na mìnící se kvalitì
+a rychlosti pøipojení, jak to umí napøíklad Skype. Podle mého prùzkumu takové 
+pøizpùsobení neprovádí ¾ádný z open source klientù, kteøí volání podporují, 
+v mém roz¹íøení bohu¾el nebude implementován rovnì¾.
+
+%
+%Pøesto pøedpokládám, ¾e RTP budu implementovat vlastní, takté¾ za pomoci
+%knihovny farshight2 v~kombinaci s~knihovnou nice, která implementuje ICE 
+%protokol, který by mìl pomoci pøekonat v¹echny bì¾né druhy firewallu a NATu.
+%Mým cílem je, aby aplikace mohla fungovat v~ka¾dé bì¾nì nastavené síti, tedy
+%musí zvládnout fungování i v~pøípadì, ¾e jsou oba u¾ivatelé schovaní za 
+%pøekladem adres a ani jeden z~nich nemá veøejnou IP adresu, se kterou by ¹lo
+%navázat pøímo spojení.
+
+\subsection{Návrh multimediálního øetìzce}
+
+Aplikace Makneto je napsaná v jazyce C++, s vyu¾itím knihovny Qt. Pøesto¾e
+C++ samotné obsahuje velké mno¾ství podpùrných tøíd pro práci jak s~øetìzci, 
+tak soubory, práci se seznamy, poli a dal¹í v jmenném prostoru std, 
+v~knihovnì Qt je vìt¹ina tìchto nástrojù reimplementována s~nìkterými 
+vylep¹eními. Napøíklad práce s~øetìzci je reimplementována v~tøídì QString.
+Výhodné vlastnosti jsou napøíklad automatická podpora unicode, automatické
+pøevody z èísel na textové reprezentace. Pro tvorbu pøekladù je také
+u¾iteèná vlastnost dosazení za parametry v jednom øetìzci, kde parametry
+mohou být èísla, øetìzce, nebo knihovnou podporované objekty. Svým chováním
+tak pøipomíná funkci jazyka C sprintf, jenom je typovì chránìná, navíc 
+parametrùm lze v øetìzci zmìnit poøadí. Zmìna poøadí mù¾e být dùle¾itá u~jazykù,
+u~kterých je jiná stavba vìty a obvyklé poøadí slov se li¹í od toho, pou¾itého
+programátorem.
+
+Existence vlastních typù má ale nepøíjemný dùsledek, je nutné pøevádìt z typù
+standardní knihovny a jazyka C na typy knihovny Qt, a pøevod není zcela 
+automatický. Navíc velké knihovny glib a Qt øe¹í podobné problémy vlastní 
+cestou a v~aplikaci se tak setkávají obì knihovny zároveò. Návrhem tøíd
+jsem se sna¾il skrýt implementaèní detaily pou¾ité knihovny tak, aby bylo
+mo¾né pøípadnì doimplementovat podporu jiného rozhraní, stejnì jako objektùm
+GObject poskytnout nìkteré vlastnosti objektového jazyka C++. Tøídy tak mají
+skrýt implementaèní detaily GStreameru a~aplikace bude komunikovat 
+prostøednictvím rozhraním  mnou navr¾ených tøíd. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=11cm,keepaspectratio]{fstjingle}
+  \caption{Návrh základních tøíd multimediálního øetìzce}
+  \label{pic_fstjingle}
+\end{center}
+\end{figure}
+
+Tøídy schematicky zobrazuje 
+obrázek \ref{pic_fstjingle}. Tøída QPipeline je C++ obálkou kolem GstPipeline,
+která má rozhraní pro pøidání, odstranìní a propojování elementù
+do øetìzce. Navíc obsahuje elementy pro audio a video vstup, pomocné filtry 
+k~nim, jejich nastavení, tedy jaké elementy mají být pou¾ity pro vstup a výstup.
+Proto¾e knihovna farsight poèítá s mo¾ností více úèastníkù sezení, návrh tøíd
+nemìl tuto mo¾nost znemo¾nit. Místo jediného video výstupu vzdálené strany
+proto existuje tøída AVOutput, která v sobì uchovává elementy uskuteènující
+video výstup, mìøení hlasitosti hovoru jednoho úèastníka, 
+modifikaci jeho hlasitosti a základní ovládání výstupù, vèetnì rozhraní 
+pro vytvoøení elementù. AVOutput tedy reprezentuje výstupy jednoho vzdáleného
+úèastníka a~jejich základní správu. AVOutput má dále sledovací tøídu, jejich¾ reimplementací lze
+sledovat události úèastníka, napøíklad hlasitost jeho hovoru a graficky ji 
+zobrazit. Seznam výstupù spravuje tøída AVOutputManager, která umí vyhledávat
+výstupní tøídu podle jména nìkterého z jejích elementù. To je dùle¾ité 
+pøi obsluze zpráv z~pipeline, aby ¹lo jednodu¹e pøiøadit zprávu ke vzdálenému 
+úèastníkovi.
+
+Dal¹í tøídy jsou pomocné tøídy pro práci s~rozhraním farsight. Vytvoøení
+a správu elementu fsrtpconference zaji¹»uje tøída Conference, souèasnì 
+s~rozhraním pro vyhledávání podøízených tøíd. 
+Conference obsahuje pipeline
+pou¾itou pro komunikaci, vytváøí farsight session, je¾ reprezentuje jeden
+typ multimediálních dat a jeho úèastníky. Tøída Session reprezentuje buï
+audio nebo video vstup na místní stranì, s popisem kodekù podporovaných na
+pøíjmu podle typu médií. Obsahuje jeden vstupní pad, na který se pøipojuje
+vstupní audio nebo video element. Blokové zobrazení zapojení vstupních elementù
+na session ukazuje obrázek \ref{pic_input_blocks}. Je vidìt, ¾e video se li¹í 
+tím, ¾e odboèuje vstup z kamery také do místního náhledu videa.
+Jedna session mù¾e vytvoøit více sí»ových výstupù, oznaèených
+jako Stream. 
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{media/input-blocks}
+  \caption{Blokové propojení elementù vstupu.}
+  \label{pic_input_blocks}
+\end{center}
+\end{figure}
+
+
+Stream je popisem jednoho sí»ového pøenosu dat s jedním vzdáleným úèastníkem. 
+Stream
+odesílá vstup pøená¹ený do Session jednomu úèastníkovi. Spojení se uskuteèòuje
+mezi páry adres uvedenými v~místních kadidátech a vzdálených kandidátech.
+Místní kandidát se získává pøeètením v¹ech adres poèítaèe, na kterém je program
+spu¹tìn. Navíc se pou¾ije volání STUN pro získání veøejné adresy a portu,
+který bude nabídnut protistranì. Vzdálené kandidáty zasílá druhá strana pomocí
+XMPP Jingle, stejnì tak seznam kodekù, které bude k vysílání dat pou¾ívat. 
+Stream mù¾e mít jediný výstupní pad, který se po pøíjmu dat 
+od protistrany pøipojí na odpovídající výstupní element ve struktuøe AVOutput.
+
+Výstupy video a audio se mírnì li¹í. Proto¾e existují ovladaèe zvukových karet,
+které neumo¾òují vícenásobné otevøení zaøízení pro souèasné pøehrání více
+zvukù, výstup z AVOutput nejde pøímo na zvukovou kartu. Aby bylo mo¾né souèasné
+pøehrání více u¾ivatelù, výstup jde na element adder. Tento element umo¾òuje
+spojit více audio tokù v jeden prostým sèítáním vzorkù. Výsledný tok jde
+na zvukovou kartu. Video výstup naproti tomu má ka¾dý u¾ivatel sám pro sebe,
+proto¾e videosink je nastaven pomocí nastavení X overlaye zvlá¹» ka¾dému 
+u¾ivateli. Schematicky jsou výstupní elementy vidìt na obrázku 
+\ref{pic_output_blocks}. Prvky level a volume jsou zde pro regulaci hlasitosti 
+jednoho u¾ivatele, jeho pøípadné umlèení, a zobrazení hlasitosti v grafických
+prvcích.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{media/output-blocks}
+  \caption{Blokové propojení výstupních elementù.}
+  \label{pic_output_blocks}
+\end{center}
+\end{figure}
+
+Pipeline hlásí zmìny a chyby asynchronnì pomocí zpráv sbìrnice. Ve tøídì 
+Conference je implementován callback pro v¹echny zprávy. Èást zpráv 
+je zpracována ve tøídách Session nebo Stream, èást je pøedávána dál pomocí
+virtuální tøídy FstStatusReader. Tøída reimplementující tøídu FstStatusReader
+tak dostává zprávy napøíklad o~zmìnì stavu pipeline, chybách, pøípadnì informace
+o prùbìhu. Právì tímto spojením jsou oddìleny implementaèní detaily Farsight 
+a~GStreamer od aplikace. Pomocné tøídy pro správu sezení a pøevádìní typù
+glib na C++ jsou imlementovány ve tøídì FstJingle.
+
+Propojení na grafické rozhraní implementuje tøída MediaManager. Reimplementuje
+rozhraní FstStatusReader, propojuje grafické zálo¾ky jednotlivých sezení 
+s výstupními prvky multimediálního øetìzce. Nastavuje pipeline ze~systémového
+nastavení.
+Pomocí druhé pipeline poskytuje 
+pøehrávaè zvukového vyzvánìní pøi pøíchozím hovoru.
+
+\subsection*{Pøehrávaè zvonìní}
+
+Pro akustické upozornìní je implementován ve tøídì MediaManager samostatný
+pøehrávaè zvukù z nastavení. QtSoundPlayer je tøída vyu¾ívající speciálnì
+nastavenou pipeline pomocí tøídy QPipeline, zmìny nastavení pomoci MediaConfig.
+Jako vstup pou¾ije místní soubor, jako výstup zaøízení pro zvonìní.
+Qt verze pøehrávaèe umí navíc spou¹tìt opakování omezené poètem, nekoneèné
+do zru¹ení nebo jenom jediné pøehrání.
+
+\subsection{Grafický výstup}
+
+Jak ji¾ bylo naznaèeno v pøedchozích kapitolách, video se obvykle kóduje 
+a pøená¹í v nìkteré variantì YUV kódování. Pro rychlej¹í výstup je potøeba
+pou¾ít na platformì závislá volání, v pøípadì systému X11 je to rozhraní
+XV. GStreamer umo¾òuje pou¾ití akcelerovaného výstupu s pou¾itím elementu
+{\em xvimagesink}, neakcelerovaný výstup umo¾òuje element {\em ximagesink}.
+
+Ve výchozím nastavení výstup vytvoøí nové okno, do kterého se promítá výsledné
+video. Existuje v¹ak i rozhraní, které umo¾ní nastavit výstupu existující
+okno, do kterého se bude kreslit.
+
+Zde je na místì osvìtlit princip správy oken v~X Windows. Nízkoúrovòová 
+aplikace vytváøející
+hlavní okno aplikace vytvoøí okno, do kterého protom vlo¾í dal¹í prvky. 
+Tyto prvky, napøíklad popisky, tlaèítka, nebo jiné ovládací prvky jsou 
+v X11 také podøazená okna, která mají svùj identifikátor definovaný 
+bezeznaménkovým typem long. X server tato okna vede jako svoje zdroje.
+Pojmenování struktury Window je ponìkud zavádìjící, proto¾e nejde nutnì
+pouze okénko aplikace, ale obecnou obdélníkovou plochu zobrazitelnou na
+obrazovce, potomka typu Drawable. 
+
+V u¾ivatelském rozhraní mluvíme obvykle o oknu tehdy, pokud je to hlavní
+okno aplikace nebo jeho samostatný dialog, který má titulek a ostatní dekorace.
+Tyto dekorace v¹ak v X Windows zaji¹»uje speciální proces, správce oken,
+který jednotlivým oknùm aplikace pøidává dekoraci dodateènì.
+
+Knihovna Qt umo¾òuje získat nízkoúrovòový identifikátor pomocí volání 
+QWidget::winId(), který lze pou¾ít pro nastavení zobrazení videa do vnitøních
+prvkù aplikace. Pomocí rozhraní Gstreameru X Overlay je mo¾né, na v¹echny
+videovýstupy podporující toto rozhraní, nastavit identifikátor okna, do kterého
+bude videovýstup zobrazen. Pokud lze výstupním snímkùm mìnit velikost, tedy
+je-li pøítomný element videoresize v øetìzci, nebo umí-li výstup zvìt¹ování 
+sám\footnote{Akcelerované výstupy xvimagesink a sdlimagesink podporují hardwarové ¹kálování}, je mo¾né mìnit pøi promítání velikost výsledného okna.
+
+I kdy¾ lze jednodu¹e zobrazovat video do prostého QWidget, implementoval jsem
+pro zobrazení videa speciální tøídu GstVideoWidget. Tato tøída má pomoci
+napøíklad se zvìt¹ováním videa v nìjakém mìøítku, nebo pøekreslování v pøípadì,
+¾e je pipeline zastavená. Tøída reimplementuje sizeHint, tak¾e je mo¾né dodr¾et
+pomìry vý¹ky a ¹írky pøi zvìt¹ení videa pomocí bì¾ného layoutu, pouhým 
+nastavením parametru zoom.
+
+Proto¾e vytváøení zdrojù X serveru probíhá pro vìt¹í rychlost asynchronnì,
+je nutné po spu¹tìní pipeline, ale je¹tì pøed zobrazením prvního výstupu,
+synchronizovat X server pøed pou¾itím identifikátoru okna. Pokud se 
+nesynchronizuje, hrozí pøi spu¹tìní GStreameru v jiném vláknì, ¾e pou¾ije 
+identifikátor døíve, ne¾ server alokuje pro okno prostøedky. Pokud se tak stane,
+aplikace skonèí havárií. Video výstup gstreameru pro usnadnìní pøípravy 
+identifikátor vysílá 2 zprávy. První je signál na pøípravu okna, kdy u¾ je
+jasné, ¾e bude pou¾itý. Druhý signál pøijde po nastavení identifikátoru.
+Elementy posílají tyto zprávy pøes sbìrnici jako GstMessage, je na aplikaci
+na tyto zprávy nìjak zareagovat.
+
+Z mnou zkoumaných aplikací, ¾ádná aplikace s frameworkem Qt nepou¾ívá pøímo
+window Id. Kopete, jediný komunikátor s podporou videa, øe¹í vykreslování videa
+pomocí vlastní QPixmap, tedy softwarovì. Psi v souèasné verzi nepodporuje 
+videohovor, aplikace pro práci s webkamerou Kamoso vyu¾ívá pro zobrazení èásti
+pøehrávaèe VLC.
+
+\section{Reimplementace seznamu kontaktù}
+
+Pùvodní aplikace mìla seznam kontaktù, v terminologii XMPP roster, 
+implementovaný pomocí systému Qt model/viewer, který umo¾òuje oddìlenì
+implementovat vzhled kontaktù od správy jejich dat a stavù. Datový model 
+mù¾e zachytit
+jak prostý seznam polo¾ek, tak i stromovou strukturu, napøíklad slo¾ku 
+v~souborovém systému a její soubory i adresáøe. 
+
+Originální model implementovat seznam kontaktù zpùsobem takovým, jakým bude
+zobrazen v grafické reprezentaci. Základem jsou polo¾ky seznamu, které mohou
+být vnoøeny do skupin. Jednotlivé polo¾ky mohou být buï vlastní kontakty, nebo
+i vnoøená skupina. Model je navr¾en dostateènì flexibilnì tak, aby seznam kontaktù mohl pøípadnì obsahovat i jiné typy polo¾ek, napøíklad zálo¾ky do skupinových
+diskuzí. 
+    
+Model byl sice vhodnì navr¾ený pro hierarchické zobrazování kontaktù, ale
+zpùsob ulo¾ení dat neodpovídal ulo¾ení dat pøi komunikaci s~XMPP serverem. 
+Z~pohledu XMPP serveru v seznamu kontaktù jsou jednotlivé polo¾ky s unikátním 
+Jabber ID, obvykle v holé formì bez èásti zdroje. Ka¾dý takový kontakt mù¾e 
+být èlenem jedné i více skupin. Naproti tomu model je implementován jako 
+hierarchická struktura, kde existuje koøenová skupina obsahující èleny skupiny,
+tedy kontakty i skupiny. Navíc jsou pøítomny speciální skupiny, kam se 
+pøesunují 
+kontakty pøi zmìnì nastavení zobrazení rosteru. 
+
+Pùvodní model pracoval pouze s jednoduchým stavem kontaktu a vùbec nerozli¹oval
+víc pøipojených entit s~rùznými zdroji. Vùbec neukládal informace o zdroji 
+kontaktu, nebylo tak mo¾né poslat dotaz na plné Jabber Id. Standard vy¾aduje,
+aby iq dotazy byly zasílány na jednoznaènou adresu, tedy vèetnì zdroje entity,
+pokud nìjaký má. Multimediální roz¹íøení funguje výhradnì pomocí iq stanz,
+je proto nutné stav kontaktù uchovávat úplný. Také aktualizace kontaktù pøi 
+zmìnì stavu nebyla naprogramována ideálnì. Pøi zmìnì stavu bylo nutné iterovat
+pøes v¹echny kontakty a upravit v¹echny výskyty kontaktu, pokud kontakt byl ve 
+více skupinách. Kontakty stejného Jabber~Id toti¾ nebyly nijak mezi sebou 
+propojené. Model tím neumo¾òoval ani jednodu¹e zjistit stav podle Jabber Id.
+
+%Navíc je vhodné vìdìt, jaký
+%protokol protistrana podporuje je¹tì pøed pokusem o navázání spojení.
+
+Pùvodní zámìr byl pøepsat znovu datový model pro seznam kontaktù tak, 
+aby nesl plnou 
+informaci o~stavu kontaktù. Ka¾dý kontakt musí kromì jména a~Jabber Id nést
+informaci o v¹ech pøipojených zdrojích. Pro ka¾dý zdroj musí nést informace
+o stavu pøipojené entity a pøípadné dal¹í vlastnosti entity, jakým je napøíklad
+seznam podporovaných vlastností entity. Pøi návrhu modelu kontaktù se ukázalo,
+¾e systém indexù pro stromový model musí mít formu skupin od koøene, pokud má
+být pou¾it pomocí reimplementace standardního widgetu QTreeView. Ji¾ 
+implementovaný model splòuje v¹echno potøebné pro grafické zobrazení,
+ jen je vhodné doplnit jej o jednotnou správu stavù tak, aby stav byl zaznamenán
+ jenom v jednom místì a mohl být snadno vyhledáván podle Jabber Id.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{contactlist/contactlist}
+  \caption{Diagram tøíd správy kontaktù}
+  \label{pic_contactlist}
+\end{center}
+\end{figure}
+
+Tøídy datového modelu jsou zachyceny na obrázku \ref{pic_contactlist}. 
+Nejdùle¾itìj¹í tøídou je virtuální tøída {\em ContactListContact}, její¾
+reimplementace poskytují vlastní informace se spoleèným rozhraním.
+Tøída {\em MaknetoGroupedContact} slou¾í jako zprostøedkovatel mezi databází
+stavù a polo¾kami zobrazenými v pohledu. Tato tøída se mù¾e v seznamu kontaktù
+nacházet v nìkolika skupinách, a pøitom má jediný sdílený stav uchovávající
+informaci o stavu zobrazovaného kontaktu, který je jí pøedán v konstruktoru.
+Také umo¾ní skrytí kontaktu ve slo¾ené skupinì, pokud v jiné skupinì kontakt
+být zobrazen má.
+MaknetoContact je vlastní implementace pro jeden kontakt, která uchovává jen
+jméno kontaktu, jeho id, a ve kterých skupinách je èlenem. Dále obsahuje seznam
+pøipojených zdrojù, tedy odkazy na MaknetoContactResource, které teprve
+nesou informaci o stavu pøipojené entity a jejích vlastnostech. MaknetoContact
+pouze zprostøedkovává data ulo¾ená pro jednotlivé zdroje s tím, ¾e vybírá pro 
+zobrazení zdroj s nejvy¹¹í prioritou.
+
+Se seznamem kontaktù souvisí také implementace seznamu vlastností pro pøipojené
+entity, která spravuje seznam podporovaných roz¹íøení pro ka¾dý kontakt. Tím lze
+zobrazit pøi po¾adavku na volání s videem pouze ty kontakty, které pøenos videa
+podporují. To je velmi u¾iteèná vlastnost v pøípadì, ¾e pøipojených kontaktù je
+nìkolik desítek a jen nìkolik z nich podporuje nìjakou formu volání. 
+Ke skrytí kontaktù nepodporujících roz¹íøení je pou¾itý stejný princip, jako
+pro skrytí odpojených kontaktù -- pøesunem kontaktu do speciální skupiny 
+nezobrazených kontaktù a pøekreslením pohledu ze zmìnìného datového modelu.
+Pro omezení zbyteèného zji¹»ování pro ka¾dý kontakt je implementován správce
+vlastností, který vyu¾ívá roz¹íøení entity capabilities. Získané hodnoty jsou
+ulo¾eny do datového skladu ve tøídì FeatureListManager, pøi ukonèení programu
+se ukládají do XML databáze na disk, aby mohly být pøi spu¹tìní opìt naèteny 
+z~disku. Není tedy nutné ¾ádat po pøipojení seznam schopností klienta, pokud
+ji¾ vlastnosti jsou známé.
+
+V kontextové nabíce pøi kliknutí na u¾ivatele byly pùvodnì pøeddefinovány
+staticky dvì akce, otevøení nového sezení a ètení detailù o kontaktu. 
+Novì jsou akce vytváøeny a¾ v okam¾iku kliknutí, proto¾e jejich obsah závisí
+na schopnostech klienta, je¾ se mohou èasem mìnit. Nabídka pro volání nebo
+videohovor je nabídnuta pouze v pøípadì, ¾e kontakt volání podporuje. 
+
+\section{Jingle}
+
+Pro práci s pøíchozími stanzami jsem implementoval jejich ekvivalenty
+jako C++ tøídy. Existují tøídy pro popis RTP pøenosu, seznam kandidátù, pro
+popis jednoho audio nebo video obsahu, je¾ obsahuje oba pøede¹lé. Ka¾dá tøída 
+vytváøí XML stanzu pro svoji èást a parsuje pøedaný podstrom k naplnìní.
+Obrázek \ref{pic_jingle} ukazuje vztahy vybraných tøíd.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{jingle}
+  \caption{Diagram rozhraní k XMPP Jingle}
+  \label{pic_jingle}
+\end{center}
+\end{figure}
+
+Za zmínku stojí tøída JingleContent, která nese ve¹kerý popis jedné strany 
+spojení. Nese v sobì typ sí»ového pøipojení, adresy kterými bude navazováno 
+spojení, seznam podporovaných kodekù a jejich parametry. Tato tøída mù¾e být
+vícekrát obsa¾ena v JingleStanza, co¾ je reprezentace jedné XML stanzy a slou¾í
+k vlastnímu odeslání stanzy za pomoci JingleManageru.
+
+JingleSession je tøída uchovávající v¹echny parametry XMPP sezení, na 
+kterých se strany dohodly. Má páry lokálních a vzdálených obsahù, které spojení
+obsahuje. JingleSession je implementovaná v C++ bez Qt objektù. Aby bylo 
+jednodu¹¹í ji propojovat do Qt aplikace, je reimplementovaná v Qt obálce 
+obsahující signály a sloty pro ovládání sezení.
+
+Nejdùle¾itìj¹í tøídou je JingleManager, který slou¾í jako správce v¹ech jingle
+sezení a zároveò pøijímá stanzy od XMPP knihovny. Proto¾e prvotní testy jsem 
+implementoval pomocí knihovny gloox, je JingleManager virtuální tøídou, její¾
+odesílání a pøijímání stanzy reimplementuje pro knihovnu Iris\footnote{XMPP knihovna pou¾itá v aplikaci Makneto} tøída IrisJingleManager. IrisJingleManager
+poskytuje signály pro pøíchozí spojení, je¾ se dále pøipojují do MediaManageru
+pro vyvolání grafické reakce. Pøíjem XMPP stanzy u knihovny Iris je øe¹en
+reimplementací tøídy XMPP::Task, IrisJingleManager je potomkem dvou tøíd.
+
+\section{Systém nastavení}
+
+Desktop KDE obsahuje centralizované úlo¾i¹tì konfigurace, které má napomoci 
+centrální správì nastavení napøíklad z jiného poèítaèe nebo jiným u¾ivatelem.
+Nastavení aplikace se generuje ze sady nìkolika widgetù navr¾ených pomocí 
+QtDesigneru. V¹echny volby aplikace definuje soubor makneto.kcfg, vèetnì 
+formátù parametrù a popisu, co volby znamenají. Z tohoto souboru se pomocí 
+kompileru nastavení generuje tøída Settings, která obsahuje statické metody pro
+zji¹»ování nastavení. 
+
+Vzhled dialogu nastavení je vytvoøen pomocí jednotlivých widgetù designeru.
+Ve tøídì MaknetoMainWindow je sestavena z jednotlivých widgetù do jednoho 
+dialogu a je zobrazen. Nastavení obsahuje XMPP parametry pro pøipojení
+do sítì, výbìr zaøízení pro vstup a výstup audio a video, zaøízení pro 
+pøehrávání zvuku.
+
+Pro nastavení pipeline se pou¾ívá speciální tøída MediaConfig, která má 
+odstínit tìsnou závislost na KDE od multimediálního øetìzce, který je navr¾ený
+jako nezávislý na frameworku. MediaConfig obsahuje nastavení zaøízení pro 
+jednotlivá zaøízení prostøednictvím MediaDevice. Zaøízení obsa¾ená jsou
+vstupní a výstupní modul pro audio, vstup a výstup videa, zvukové zaøízení
+pou¾ité pro výstup zvonìní a modul GStreameru pou¾itý pro ètení souboru. 
+Proto¾e pro vyzvánìní je pou¾itý vstup z lokálního souboru, výchozí nastavení
+je filesrc modul doplnìný filtrem decodebin. Decodebin je obecný modul 
+pou¾itelný pro dekódování obecného vstupu podle pøipojeného výstupu. Tento
+filtr ale vy¾aduje speciální zacházení, proto¾e výstup se objeví a¾ po
+spu¹tìní pipeline, a pøi vytváøení decodebin vùbec nemá výstupní element.
+QPipeline tedy definuje pro decodebin callback vyvolaný pøi pøidání výstupního
+padu k decodebinu, který je následnì pøipojený na audio výstup. 
+Celý pøehrávaè se tak chová jako bì¾ná pipeline, jenom jako AudioInput je pou¾itý FileInput, a místo AudioOutput se pou¾ije výstupní modul pro RingOutput 
+uvedený v MediaConfig. Parsování nastavení KDE na MediaConfig provádí tøída 
+MediaManager.
+
+\chapter{Závìr}
+
+Aplikace Makneto je program s~mnoha mo¾nostmi, i kdy¾ na nìkterých místech je
+je¹tì nutné pracovat a nìkteré vlastnosti vypilovat. Cílem práce je pøidat
+do aplikace u¾ivatelsky pøívìtivou podporu multimediální komunikace.
+
+Byla odstranìna chyba 
+v~aplikaci, která se projevovala zdánlivì jenom na nìkterých distribucích. 
+Problém se ukázal být ve skrytých vlastnostech knihovny a neúplném pochopení
+parametrù knihovny, kde bylo vynuceno v¾dy provádìt oboustrannou autentizaci
+pøi pøihla¹ování knihovou SASL. Podle verze a nastavení knihovny ale selhalo
+pøihlá¹ení v¾dy bez ohledu na heslo, proto¾e interní implementace tuto vlastnost
+nepodporuje a v¾dy ti¹e sel¾e. Také propojení s~externí knihovnou je pøíli¹
+závislé na konkrétní verzi a nelze ji snadno nahradit novìj¹í verzí, i kdy¾ 
+jsem vylep¹il kompatibilitu a pøeportoval Makneto na novìj¹í verzi Iris.
+
+Co je Makneto, jak vypadá, jaké má funkce a nedostatky jsem shrnul ve druhé 
+kapitole. Porovnání s~jinými známými programy jsem uvedl v~kapitole tøetí.
+Shrnutí nutných protokolù k~implementaci real--time pøenosu jsem uvedl v~kapitole ètvrté, v~následující jsem popsal knihovny, které budou pou¾ity k~implementaci
+a~model jejich implementace.
+
+Pøi návrhu rozhraní jsem bohu¾el navrhl pøíli¹ univerzální rozhraní nezávislé
+na pou¾ité knihovnì. Knihovna GLib je komplexní a má celou øadu vlastních 
+datových typù, stejnì jak GStreamer. Mùj pokus vytvoøit jednoduchou C++ obálku
+kolem tìchto struktur se ukázal být kontraproduktivní, proto¾e jsem vytvoøil
+dal¹í mezijazyk mezi dvìma velkými knihovnami. Tøídy takto vzniklé nepatøí ani 
+do C/Glib, ani do C++/Qt. Obì knihovny mají svùj systém signálù pøená¹ející
+události. Já místo vyu¾ití jednoho ze zpùsobù jsem vytvoøil mezi nimi most
+callbacky pomocí virtuálních funkcí. Zpìtnì tento zámìr musím zhodnotit jako 
+ne¹tastný. Pøíli¹né odstínìní pou¾ité knihovny pøidalo pøíli¹ mnoho práce
+na mezivrstvì, která musí být schopná pokrýt témìø v¹echny mo¾nosti.
+
+Podobnì nevhodné se ukázalo zobecnìní JingleManageru na knihovnì 
+nezávislé, je¾ se na konkrétní knihovnu napojuje a¾ reimplementací 
+funkcí závislých na konkrétní knihovnì. Jádro JingleManageru mìlo fungovat jak
+pro knihovnu gloox, ve které jsem mìl implementovány základní testování, a Iris,
+je¾ je pou¾ita v pùvodním projektu Makneto. Nevhodnost spoèívá pøedev¹ím 
+v rozdílné filozofii pøijímání zpráv ze sítì.
+
+Za vhodnìj¹í øe¹ení dnes pova¾uji pou¾ití QtGStreamer bindingu. Tento sice
+nedovoluje propojit nativní GStreamer elementy knihovny farsight, jak jsem 
+zamý¹lel pou¾ít. Jedním øe¹ením by mohlo být pou¾ítí Qt4 telepathy, dal¹ím
+øe¹ením vytvoøit obálku Qt kolem farsight tak, aby s QtGStreamer byla 
+kompatibilní. Výhledovì by bylo pou¾ití rozhraní Telepathy asi vhodnìj¹í,
+ne¾ vlastní implementace v aplikaci.
+
+Je otázkou, proè zatím pomìrnì málo programù psaných s pou¾itím knihovny 
+Qt nabízí video hovor, nebo alespoò hlasové volání. Jeden z dùvodù spatøuji 
+v neexistenci vstupních elementù pro nativní Qt rozhraní phonon, dal¹í 
+v absenci ni¾¹í úrovnì pøístupu k video zaøízení. Teprve s verzí Qt 4.6
+se objevuje nízkoúrovòové rozhraní pro obsluhu video a audio vstupù a výstupù,
+není ale urèeno pro bì¾né desktopové vydání, spí¹e pro embedded zaøízení. 
+Je zvlá¹tní, ¾e v¹echny u¾ivatelsky pøívìtivìj¹í programy s podporou videohovoru
+jsou zalo¾ené na nìjaké formì GTK, a» u¾ pøímo (Pidgin, Ekiga), nebo pomocí 
+python bindings (Gajim).
+
+Dal¹í problém byl zpùsoben zámìrem pøipravit aplikaci na mo¾nost videohovoru
+s více úèastníky, je¾ zkomplikoval jak návrh pipeline, tak vytváøení grafických 
+prvkù nutných pro pøípavu více widgetù v jednom výstupu. 
+
+Aplikace bohu¾el není dokonèená a neumo¾òuje ani základní audio hovor, ani 
+video hovor. 
+
+
+% CO SAKRA TADY MAM PSAT ZA BLBOSTI?

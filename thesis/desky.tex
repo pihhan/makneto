@@ -1,0 +1,44 @@
+%============================================================================
+% tento soubor pouzijete pro vysazeni desek
+% kodovaní: iso-8859-2 (zmena prikazem iconv, recode nebo cstocs)
+%----------------------------------------------------------------------------
+% zpracování: make desky, make clean
+% pøipomínky posílejte na e-mail: peringer AT fit.vutbr.cz
+% vim: set syntax=tex encoding=latin2:
+%============================================================================
+\documentclass{cls/fitthesis}
+%Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit parametr 
+%english  \documentclass[english]{cls/fitthesis}
+
+% zde zvolime kodovani, ve kterem je napsan text prace
+% "latin2" pro iso8859-2 nebo "cp1250" pro windows-1250
+\usepackage[latin2]{inputenc}
+
+%Informace o praci/projektu
+%---------------------------------------------------------------------------
+\projectinfo{
+  %Prace
+  project=DP,           %typ prace BP/DP
+  year=2009,             %rok
+  date=\today,           %datum odevzdani
+  %Nazev prace
+  title.cs=Pøenos hlasu a videa pøes jabber,  %nazev prace v cestine
+  title.en=Voice and Video over Jabber, %nazev prace v anglictine
+  %Autor
+  author=Petr Men¹ík,   %jmeno prijmeni autora
+  author.title.p=Bc., %titul pred jmenem (nepovinne)
+  %author.title.a=PhD, %titul za jmenem (nepovinne)
+  %Ustav
+  department=UPGM,
+  %Skolitel
+  supervisor=Jozef Mlích, %jmeno prijmeni skolitele
+  supervisor.title.p=Ing.,   %titul pred jmenem (nepovinne)
+%  supervisor.title.a=Ph.D.,    %titul za jmenem (nepovinne)
+}
+
+
+\begin{document}
+  % Vysazeni desek
+  % ----------------------------------------------
+  \makecover
+\end{document}
