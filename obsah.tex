@@ -1717,7 +1717,9 @@ spojit více audio tokù v jeden prostým sèítáním vzorkù. Výsledný tok jde
 na zvukovou kartu. Video výstup naproti tomu má ka¾dý u¾ivatel sám pro sebe,
 proto¾e videosink je nastaven pomocí nastavení X overlaye zvlá¹» ka¾dému 
 u¾ivateli. Schematicky jsou výstupní elementy vidìt na obrázku 
-\ref{pic_output_blocks}.
+\ref{pic_output_blocks}. Prvky level a volume jsou zde pro regulaci hlasitosti 
+jednoho u¾ivatele, jeho pøípadné umlèení, a zobrazení hlasitosti v grafických
+prvcích.
 
 \begin{figure}[ht]
 \begin{center}
@@ -1832,6 +1834,41 @@ ulo¾eny do datového skladu ve tøídì FeatureListManager, pøi ukonèení programu
 se ukládají do XML databáze na disk, aby mohly být pøi spu¹tìní opìt naèteny 
 z~disku. Není tedy nutné ¾ádat po pøipojení seznam schopností klienta, pokud
 ji¾ vlastnosti jsou známé.
+
+\section{Jingle}
+
+Pro práci s pøíchozími stanzami jsem implementoval jejich ekvivalenty
+jako C++ tøídy. Existují tøídy pro popis RTP pøenosu, seznam kandidátù, pro
+popis jednoho audio nebo video obsahu, je¾ obsahuje oba pøede¹lé. Ka¾dá tøída 
+vytváøí XML stanzu pro svoji èást a parsuje pøedaný podstrom k naplnìní.
+Obrázek \ref{pic_jingle} ukazuje vztahy vybraných tøíd.
+
+\begin{figure}[ht]
+\begin{center}
+  \includegraphics[width=10cm,keepaspectratio]{jingle}
+  \caption{Diagram rozhraní k XMPP Jingle}
+  \label{pic_jingle}
+\end{center}
+\end{figure}
+
+Za zmínku stojí tøída JingleContent, která nese ve¹kerý popis jedné strany 
+spojení. Nese v sobì typ sí»ového pøipojení, adresy kterými bude navazováno 
+spojení, seznam podporovaných kodekù a jejich parametry. Tato tøída mù¾e být
+vícekrát obsa¾ena v JingleStanza, co¾ je reprezentace jedné XML stanzy a slou¾í
+k vlastnímu odeslání stanzy za pomoci JingleManageru.
+
+JingleSession je tøída uchovávající v¹echny parametry XMPP sezení, na 
+kterých se strany dohodly. Má páry lokálních a vzdálených obsahù, které spojení
+obsahuje. JingleSession je implementovaná v C++ bez Qt objektù. Aby bylo 
+jednodu¹¹í ji propojovat do Qt aplikace, je reimplementovaná v Qt obálce 
+obsahující signály a sloty pro ovládání sezení.
+
+Nejdùle¾itìj¹í tøídou je JingleManager, který slou¾í jako správce v¹ech jingle
+sezení a zároveò pøijímá stanzy od XMPP knihovny. Proto¾e prvotní testy jsem 
+implementoval pomocí knihovny gloox, je JingleManager virtuální tøídou, její¾
+odesílání a pøijímání stanzy reimplementuje pro knihovnu Iris\footnote{XMPP knihovna pou¾itá v aplikaci Makneto} tøída IrisJingleManager. IrisJingleManager
+poskytuje signály pro pøíchozí spojení, je¾ se dále pøipojují do MediaManageru
+pro vyvolání grafické reakce.
 
 \chapter{Závìr}
 
