@@ -65,23 +65,28 @@
   %bud pomoci nasledujicich parametru nebo pomoci vyhrazenych maker (viz dale)
   %===========================================================================
   %Klicova slova
-  keywords.cs={video, hlas, jabber, xmpp, rtp, jingle, voip}, %klicova slova v ceskem jazyce
-  keywords.en={video, voice, jabber, xmpp, rtp, jingle, voip}, %klicova slova v anglickem jazyce
+  keywords.cs={video, hlas, jabber, xmpp, rtp, jingle, voip, gstreamer, farsight}, %klicova slova v ceskem jazyce
+  keywords.en={video, voice, jabber, xmpp, rtp, jingle, voip, gstreamer, farsight}, %klicova slova v anglickem jazyce
   %Abstract
   abstract.cs={Tato práce se zabývá roz¹íøením existující aplikace Makneto 
   o mo¾nost multimediální
   komunikace jak pomocí hlasu, tak pomocí obrazu. Detailnì rozebírá protokoly
-  XMPP, RTP a SIP. K pøenosu dat bude
-  pou¾it protokol XMPP a jeho roz¹íøení Jingle.}, % abstrakt v ceskem jazyce
+  XMPP, RTP a SIP. Navázání spojení se uskuteèní roz¹íøením Jingle,
+  kódování a zpracování dat knihovnami GStreamer a farsight.}, % abstrakt v ceskem jazyce
   abstract.en={This thesis adresses extending of existing application Makneto 
     with
       possibility of multimedia communication channel for both voice and video.
-      It describe in detail protocols XMPP, SIP and RTP.
+      It describe in detail protocols XMPP, SIP and RTP. Channel signalling
+      will use Jingle extension, multimedia encoding and transmission
+      will use GStreamer and farsight libraries.
       }, % abstrakt v anglickem jazyce
   %Prohlaseni
   declaration={Prohla¹uji, ¾e jsem tuto diplomovou práci vypracoval samostatnì pod vedením pana Jozefa Mlícha},
   %Podekovani (nepovinne)
 %  acknowledgment={Zde je mo¾no uvést podìkování vedoucímu práce a tìm, kteøí poskytli odbornou pomoc} % nepovinne
+  acknowledgment={Zde bych rád podìkoval panu Josefu Mlíchovi za odbornou pomoc 
+  i morální podporu. Dále Jaroslavu Øezníkovi za pøedchozí práci na této 
+  aplikaci a jeho cenné rady.} % nepovinne
 }
 
 %Abstrakt (cesky, anglicky)
