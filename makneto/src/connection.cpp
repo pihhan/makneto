@@ -50,7 +50,9 @@ Connection::Connection(Makneto *makneto): m_makneto(makneto)
 
         // FIXME: make this better and more secure, also this does memleak
         m_tls = new QCA::TLS();
-        //m_tlsHandler = new XMPP::QCATLSHandler(m_tls);
+        m_tlsHandler = new XMPP::QCATLSHandler(m_tls);
+        connect(m_tlsHandler, SIGNAL(tlsHandshaken()), this, SLOT(tlsHandshaken()) );
+        connect(m_tlsHandler, SIGNAL(tlsHandshaken()), m_tlsHandler, SLOT(continueAfterHandshake()) );
 
 	QStringList features;
         // FIXME: this features list is invalid
@@ -96,17 +98,21 @@ Connection::~Connection()
   log.flush();
   log.device()->close();
   
-	logout();
+    logout();
 
+    if (m_tls)
+        delete m_tls;
+    if (m_tlsHandler)
+        delete m_tlsHandler;
 
-	delete m_stream;
-	m_stream = 0;
+    delete m_stream;
+    m_stream = 0;
 
-	delete m_conn;
-	m_conn = 0;
+    delete m_conn;
+    m_conn = 0;
 
-	delete m_client;
-	m_client = 0;
+    delete m_client;
+    m_client = 0;
 
 }
 
@@ -123,7 +129,8 @@ bool Connection::login()
 	m_conn = new AdvancedConnector(this);
 
 	// TODO:ssl connection
-	m_conn->setOptSSL(false);
+        bool ssl = Settings::useSSL();
+	m_conn->setOptSSL(ssl);
 	m_conn->setOptProbe(false);
 	
 	if (!Settings::jabberHost().isEmpty())
