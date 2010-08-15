@@ -1,0 +1,16 @@
+This is Makneto repository, XMPP tool for whiteboarding and collaboration.
+
+Official repository is at http://makneto.sourceforge.net
+
+Original application was created as master thesis by Jaroslav Reznik,
+and extended as bachelor thesis by Radek Novacek with MUC support.
+
+
+This fork has goal to add multimedia communication with audio and video.
+So far, i failed that task.
+
+You will need recent enough distribution, that means Fedora 13 or Ubuntu 9.10,
+if you do not want to compile your own farsight library.
+
+You need development headers for KDE, gstreamer, farsight. Also you need cmake.
+
